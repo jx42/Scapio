@@ -127,7 +127,9 @@ async function haupt(): Promise<void> {
       antwort.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }).end(basis);
       return;
     }
-    const statusseite = STATUSSEITEN[anfrage.url ?? ''];
+    const url = anfrage.url ?? '';
+    // Ohne hasOwn liefe `/constructor` oder `/toString` in Object.prototype.
+    const statusseite = Object.hasOwn(STATUSSEITEN, url) ? STATUSSEITEN[url] : undefined;
     if (statusseite !== undefined) {
       antwort.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' }).end(statusseite());
       return;
