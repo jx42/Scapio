@@ -40,6 +40,6 @@ body:
   - type: textarea
     id: verify
     attributes:
-      label: Ausgabe von `npm run verify`
-      description: Besonders wichtig, wenn eine Zahl nicht stimmt.
+      label: Ausgabe von `npm run verify:zaehlung`
+      description: Besonders wichtig, wenn eine Zahl nicht stimmt. Nennt nur Tag und Feld, keine Beträge — `npm run verify` dagegen zeigt Depotwerte und gehört nicht hierher.
       render: text

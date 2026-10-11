@@ -1,5 +1,7 @@
 # Nur die Actions: Ihre Pins stehen auf SHAs und veralten sonst still. npm-Updates bleiben eine
-# bewusste Handlung, abgesichert durch `npm run audit` vor jedem Push. [ADR-047]
+# bewusste Handlung, abgesichert durch `npm run audit` vor jedem Push. Für bekannte
+# Schwachstellen öffnet Dependabot trotzdem einen PR (Security Updates in den Einstellungen).
+# [ADR-047]
 version: 2
 updates:
   - package-ecosystem: github-actions

@@ -49,7 +49,8 @@ tatsächlich laufen, deckt das Audit damit nicht ab.
 - **Git-Weg:** `npm run update` zieht weiter `main`. Ab dem öffentlichen Repository kommt auf
   `main` nur, was per PR mit grüner Prüfung auf drei Plattformen kommt.
   [ADR-013](ADR-013-update-nur-auf-knopfdruck.md) bleibt unverändert.
-- **Inhalt des ZIPs:** Per `export-ignore` bleiben `test/`, `.github/` und `.claude/` draußen.
+- **Inhalt des ZIPs:** Per `export-ignore` bleiben `test/`, `.github/`, `.claude/`,
+  `demo-worker/`, `AGENTS.md`, `DESIGN.md`, `PRODUCT.md` und die `CLAUDE.md` der Ordner draußen.
   Das gilt auch für GitHubs eigene Quellarchive. `plans/` ist ohnehin nicht eingecheckt.
 - **Fußzeile:** Sie bleibt, wie [ADR-046](ADR-046-footer-link-zur-readme.md) sie
   festlegt: „Version 1.0“, ohne Patch-Stelle und ohne Commit.
