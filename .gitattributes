@@ -22,3 +22,8 @@
 /.github/   export-ignore
 /.claude/   export-ignore
 /demo-worker/ export-ignore
+# Agenten- und Design-Notizen; fuer Nutzer reichen README und docs/.
+/AGENTS.md   export-ignore
+/DESIGN.md   export-ignore
+/PRODUCT.md  export-ignore
+CLAUDE.md    export-ignore

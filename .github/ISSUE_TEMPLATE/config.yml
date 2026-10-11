@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Sicherheitslücke melden
+    url: https://github.com/jx42/Scapio/security/advisories/new
+    about: Privat über GitHub Security Advisories, nicht als öffentliches Issue.
+  - name: Frage stellen
+    url: https://github.com/jx42/Scapio/discussions
+    about: Fragen zu Einrichtung und Kennzahlen gehören in die Discussions.

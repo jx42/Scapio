@@ -1,0 +1,21 @@
+name: Funktion wünschen
+description: Eine Kennzahl, eine Ansicht oder eine Datenquelle fehlt.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Was Scapio nie wird — kein Handeln, keine Cloud, keine Zugangsdaten —, steht in [PRODUCT.md](https://github.com/jx42/Scapio/blob/main/PRODUCT.md).
+        Keine Depotwerte, ISINs oder Beträge posten, wenn sie nicht öffentlich sein sollen.
+  - type: textarea
+    id: frage
+    attributes:
+      label: Welche Frage soll Scapio beantworten?
+      description: Das Problem, nicht die Lösung — z. B. „Wie viel Dividende kam im letzten Jahr?“
+    validations:
+      required: true
+  - type: textarea
+    id: vorschlag
+    attributes:
+      label: Wie könnte es aussehen?
+      description: Optional. Kachel, Kennzahl, Datenquelle.
