@@ -1,0 +1,10 @@
+{
+  "port": 4732,
+  "mcpZeitlimitMs": 300000,
+  "csvZeitlimitMs": 30000,
+  "csvGroesstMb": 32,
+  "erlaubteHosts": ["www.ishares.com", "etf.dws.com", "www.amundietf.de", "ec.europa.eu", "data-api.ecb.europa.eu"],
+  "inflationsquelle": "eurostat",
+  "zinsquelle": "ecb",
+  "driftSchwellen": { "hinweis": 0.001, "banner": 0.005, "abbruch": 0.02 }
+}

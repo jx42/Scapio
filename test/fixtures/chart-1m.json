@@ -1,0 +1,14 @@
+{
+  "isin": "ZZ0000000001",
+  "timeframe": "one_month",
+  "currency": "EUR",
+  "source": "synthetic-feed",
+  "closingReferencePoint": { "timestampUtc": "2026-05-14T17:35:00+02:00", "midPrice": 123.4567 },
+  "dataPoints": [
+    { "timestampUtc": "2026-05-08T17:35:00+02:00", "midPrice": 121.1122 },
+    { "timestampUtc": "2026-05-11T17:35:00+02:00", "midPrice": 122.0099 },
+    { "timestampUtc": "2026-05-12T17:35:00+02:00", "midPrice": 122.875 },
+    { "timestampUtc": "2026-05-13T17:35:00+02:00", "midPrice": 122.4411 },
+    { "timestampUtc": "2026-05-14T17:35:00+02:00", "midPrice": 123.4567 }
+  ]
+}

@@ -1,0 +1,21 @@
+# Gliederung der Release-Notizen fuer `gh release create --generate-notes`. Ohne diese Datei
+# werden die Notizen eine flache PR-Liste. Die Labels werden im Repository angelegt.
+
+changelog:
+  exclude:
+    labels:
+      - ohne-notiz
+  categories:
+    - title: Neu
+      labels:
+        - neu
+    - title: Korrekturen
+      labels:
+        - korrektur
+    - title: Intern
+      labels:
+        - intern
+        - dependencies
+    - title: Sonstiges
+      labels:
+        - "*"

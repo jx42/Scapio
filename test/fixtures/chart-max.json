@@ -1,0 +1,17 @@
+{
+  "isin": "ZZ0000000001",
+  "timeframe": "max",
+  "currency": "EUR",
+  "source": "synthetic-feed",
+  "closingReferencePoint": { "timestampUtc": "2026-05-14T00:00:00+02:00", "midPrice": 123.4567 },
+  "dataPoints": [
+    { "timestampUtc": "2023-02-01T00:00:00+01:00", "midPrice": 81.2 },
+    { "timestampUtc": "2023-08-01T00:00:00+02:00", "midPrice": 86.75 },
+    { "timestampUtc": "2024-02-01T00:00:00+01:00", "midPrice": 91.125 },
+    { "timestampUtc": "2024-08-01T00:00:00+02:00", "midPrice": 95.6 },
+    { "timestampUtc": "2025-02-03T00:00:00+01:00", "midPrice": 102.25 },
+    { "timestampUtc": "2025-08-01T00:00:00+02:00", "midPrice": 109.875 },
+    { "timestampUtc": "2026-02-02T00:00:00+01:00", "midPrice": 117.4 },
+    { "timestampUtc": "2026-05-14T00:00:00+02:00", "midPrice": 123.4567 }
+  ]
+}

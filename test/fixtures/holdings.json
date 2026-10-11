@@ -1,0 +1,27 @@
+{
+  "portfolioId": "synthetic-portfolio-01",
+  "holdings": [
+    {
+      "isin": "ZZ0000000001",
+      "name": "Beispiel Globalfonds A",
+      "currentQuote": { "currency": "EUR", "midPrice": 123.4567, "timestamp": "2026-05-14T09:00:00+02:00" },
+      "savingsPlan": { "amount": 75.0, "frequency": "MONTHLY" },
+      "position": { "blocked": 0, "filled": 17.25, "pending": 0 }
+    },
+    {
+      "isin": "ZZ0000000002",
+      "name": "Beispiel Zukunftsfonds B",
+      "currentQuote": { "currency": "EUR", "midPrice": 54.321, "timestamp": "2026-05-14T09:00:00+02:00" },
+      "savingsPlan": null,
+      "position": { "blocked": 0, "filled": 8.5, "pending": 0 }
+    },
+    {
+      "isin": "ZZ0000000003",
+      "name": "Beispiel Sachwert C",
+      "currentQuote": { "currency": "EUR", "midPrice": 78.9, "timestamp": "2026-05-14T09:00:00+02:00" },
+      "savingsPlan": null,
+      "position": { "blocked": 0, "filled": 3.25, "pending": 0 }
+    }
+  ],
+  "cryptoHoldings": []
+}

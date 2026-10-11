@@ -1,0 +1,82 @@
+{
+  "componentsByNameMap": {
+    "holdings": {
+      "containersByNameMap": {
+        "all": {
+          "dataPointsByNameMap": {
+            "isin": {
+              "value": [
+                "US0378331005",
+                "US5949181045",
+                "US67066G1040",
+                "CH0038863350",
+                "CH0038863350",
+                "NL0010273215",
+                "JP3633400001",
+                "US0846707026",
+                null,
+                null
+              ]
+            },
+            "issueName": {
+              "value": [
+                "APPLE INC",
+                "MICROSOFT CORP",
+                "NVIDIA CORP",
+                "NESTLE SA",
+                "NESTLE SA",
+                "ASML HOLDING NV",
+                "TOYOTA MOTOR CORP",
+                "BERKSHIRE HATHAWAY INC, CLASS B",
+                "EUR CASH",
+                "FUTURES USD"
+              ]
+            },
+            "holdingPercent": {
+              "value": [
+                0.245,
+                0.2215,
+                0.183,
+                0.062,
+                0.031,
+                0.0945,
+                0.073,
+                0.05,
+                0.04,
+                -0.0025
+              ]
+            },
+            "sectorName": {
+              "value": [
+                "Informationstechnologie",
+                "Informationstechnologie",
+                "Informationstechnologie",
+                "Basiskonsumgueter",
+                "Basiskonsumgueter",
+                "Informationstechnologie",
+                "Nicht-Basiskonsumgueter",
+                "Finanzwerte",
+                "Cash und/oder Derivate",
+                "Cash und/oder Derivate"
+              ]
+            },
+            "countryOfRisk": {
+              "value": [
+                "Vereinigte Staaten",
+                "Vereinigte Staaten",
+                "Vereinigte Staaten",
+                "Schweiz",
+                "Schweiz",
+                "Niederlande",
+                "Japan",
+                "Vereinigte Staaten",
+                null,
+                null
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

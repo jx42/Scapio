@@ -1,0 +1,33 @@
+{
+  "hinweis": "Fonds von Xtrackers und Amundi erkennt die App von selbst; bei iShares nur Fonds, die schon einmal erkannt wurden -- diese Datei ist fuer den Rest noetig. Vorlage als funds.json ins Datenverzeichnis kopieren (macOS: ~/Library/Application Support/scapio, Windows: %LOCALAPPDATA%\\scapio), mit den betroffenen Fonds befuellen. Pro Eintrag 'anbieter' setzen (fehlt es, gilt 'ishares'). Ein Eintrag hier gewinnt immer gegen die automatische Erkennung. 'xtrackers'/'amundi' brauchen nur 'isin'. 'ishares' braucht zusaetzlich 'produktId' -- die Zahl in der Adresse der Produktseite auf ishares.com (.../produkte/<produktId>/...).",
+  "fonds": [
+    {
+      "anbieter": "ishares",
+      "isin": "XX0000000000",
+      "name": "Platzhalter World-ETF (iShares)",
+      "produktId": "000000"
+    },
+    {
+      "anbieter": "ishares",
+      "isin": "XX0000000001",
+      "name": "Platzhalter EM-ETF (iShares)",
+      "produktId": "000001"
+    },
+    {
+      "anbieter": "ishares",
+      "isin": "XX0000000002",
+      "name": "Platzhalter Europe-ETF (iShares)",
+      "produktId": "000002"
+    },
+    {
+      "anbieter": "xtrackers",
+      "isin": "XX0000000003",
+      "name": "Platzhalter World-ETF (Xtrackers)"
+    },
+    {
+      "anbieter": "amundi",
+      "isin": "XX0000000004",
+      "name": "Platzhalter EM-ETF (Amundi)"
+    }
+  ]
+}

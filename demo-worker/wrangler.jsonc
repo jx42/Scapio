@@ -1,0 +1,13 @@
+// Die Demo als statischer Abzug [ADR-048]. Erst `npm run demo:export`, dann aus diesem
+// Ordner `npx wrangler@<fest> deploy`. Jede Anfrage geht durch den Worker, damit auch die
+// Assets die Kopfzeilen des Servers tragen.
+{
+  "name": "scapio-demo",
+  "main": "index.ts",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "../.demo-export",
+    "binding": "ASSETS",
+    "run_worker_first": true
+  }
+}

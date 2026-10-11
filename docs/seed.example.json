@@ -1,0 +1,4 @@
+{
+  "hinweis": "Anfangsbestand fuer den Fall, dass list_portfolio_transactions nicht bis zum ersten Kauf zurueckreicht. Die Plausibilitaetspruefung meldet genau diesen Fall (Abschnitt 6.4, letzte Zeile). Jeder Eintrag wird wie eine Transaktion der Bank behandelt, bekommt aber eine id mit dem Praefix 'seed:' und damit einen eigenen Namensraum. Leeres Array heisst: die Bank liefert die Historie vollstaendig. Diese Datei als seed.json ins Datenverzeichnis kopieren (macOS: ~/Library/Application Support/scapio, Windows: %LOCALAPPDATA%\\scapio), nie in den Projektordner.",
+  "anfangsbestand": []
+}

@@ -1,0 +1,16 @@
+{
+  "portfolioId": "synthetic-portfolio-01",
+  "valuation": {
+    "total": 3160.62,
+    "securities": 2848.12,
+    "crypto": 0
+  },
+  "timestamps": {
+    "valuationTimestampUtc": "2026-05-13T20:00:00.000Z",
+    "inventoryTimestampUtc": "2026-05-14T07:00:00.000Z"
+  },
+  "performance": [
+    { "timeframe": "ONE_WEEK", "simpleAbsoluteReturn": 12.5 },
+    { "timeframe": "ONE_YEAR", "simpleAbsoluteReturn": 241.3 }
+  ]
+}

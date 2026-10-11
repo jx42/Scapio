@@ -1,0 +1,12 @@
+# Nur die Actions: Ihre Pins stehen auf SHAs und veralten sonst still. npm-Updates bleiben eine
+# bewusste Handlung, abgesichert durch `npm run audit` vor jedem Push. [ADR-047]
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      actions:
+        patterns:
+          - "*"

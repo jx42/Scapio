@@ -1,0 +1,21 @@
+{
+  "products": [
+    {
+      "productId": "ZZ0000000002",
+      "composition": {
+        "totalNumberOfInstruments": 1,
+        "compositionData": [
+          {
+            "compositionCharacteristics": {
+              "name": "APPLE INC",
+              "isin": "US0378331005",
+              "weight": "24.5%",
+              "sector": "Information Technology",
+              "countryOfRisk": "United States"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

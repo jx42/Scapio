@@ -1,0 +1,10 @@
+{
+  "isin": "ZZ0000000001",
+  "timeframe": "max",
+  "currency": "EUR",
+  "source": "synthetic-feed",
+  "closingReferencePoint": { "timestampUtc": "2026-05-14T00:00:00+02:00", "midPrice": 123.4567 },
+  "dataPoints": [
+    { "timestampUtc": "2026-05-14T00:00:00+02:00" }
+  ]
+}

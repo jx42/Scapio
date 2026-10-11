@@ -1,0 +1,18 @@
+{
+  "tables": [
+    {
+      "columns": [
+        { "key": "header", "value": "ISIN" },
+        { "key": "column_0", "value": "Name" },
+        { "key": "column_1", "value": "% Weight" }
+      ],
+      "values": [
+        {
+          "header": { "value": "US0378331005" },
+          "column_0": { "value": "APPLE INC", "type": "text" },
+          "column_1": { "value": "24.500%", "sortValue": 24.5, "type": "text" }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,4 @@
+{
+  "hinweis": "Schaltet die Kachel 'Top 25 Unternehmen' ein. Dafuer fragt Scapio iShares, Xtrackers und Amundi nach den Bestandslisten der gehaltenen ETFs; die Anbieter erfahren so, welche ihrer Fonds im Depot liegen (keine Mengen, keine Betraege). Diese Datei als einstellungen.json ins Datenverzeichnis kopieren (macOS: ~/Library/Application Support/scapio, Windows: %LOCALAPPDATA%\\scapio) und Scapio neu starten. Gibt es dort schon eine einstellungen.json, nur die Zeile mit top25 in sie uebernehmen. Ausschalten: true durch false ersetzen. Fonds von Xtrackers und Amundi erkennt Scapio selbst; fuer iShares-Fonds kann zusaetzlich eine funds.json noetig sein, die Kachel sagt dann, welche.",
+  "top25": true
+}

@@ -1,0 +1,38 @@
+{
+  "portfolioId": "synthetic-portfolio-01",
+  "totalSavingsPlanAmount": 100.0,
+  "items": [
+    {
+      "kind": "ETF_SAVINGS_PLAN",
+      "instrument": {
+        "identifier": "ZZ0000000001",
+        "name": "Beispiel Globalfonds A",
+        "securityType": "ETF"
+      },
+      "amount": 75.0,
+      "configuration": {
+        "frequency": "MONTHLY",
+        "dayOfMonth": 1,
+        "dynamizationRate": 0,
+        "paymentMethod": "REFERENCE_ACCOUNT",
+        "nextExecutionDate": "2026-09-01"
+      }
+    },
+    {
+      "kind": "ETF_SAVINGS_PLAN",
+      "instrument": {
+        "identifier": "ZZ0000000002",
+        "name": "Beispiel Zukunftsfonds B",
+        "securityType": "ETF"
+      },
+      "amount": 25.0,
+      "configuration": {
+        "frequency": "monthly",
+        "dayOfMonth": 15,
+        "dynamizationRate": 0,
+        "paymentMethod": "REFERENCE_ACCOUNT",
+        "nextExecutionDate": "2026-09-15"
+      }
+    }
+  ]
+}

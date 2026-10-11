@@ -1,0 +1,67 @@
+{
+ "header": {
+  "id": "9AAF2450-EST-B",
+  "test": false,
+  "prepared": "2026-08-26T10:00:00.000Z",
+  "sender": { "id": "ECB" }
+ },
+ "dataSets": [
+  {
+   "action": "Replace",
+   "validFrom": "2026-08-26T10:00:00.000Z",
+   "series": {
+    "0:0:0": {
+     "attributes": [],
+     "observations": {
+      "0": [-0.55],
+      "1": [-0.56]
+     }
+    },
+    "0:1:0": {
+     "attributes": [],
+     "observations": {
+      "0": [-0.6],
+      "1": [-0.61]
+     }
+    }
+   }
+  }
+ ],
+ "structure": {
+  "name": "Euro short-term rate",
+  "dimensions": {
+   "series": [
+    {
+     "id": "FREQ",
+     "name": "Frequency",
+     "role": "FREQ",
+     "values": [{ "id": "B", "name": "Business (daily)" }]
+    },
+    {
+     "id": "BENCHMARK_ITEM",
+     "name": "Benchmark item",
+     "values": [
+      { "id": "EU000A2X2A25", "name": "Euro short-term rate" },
+      { "id": "EU000A2X2A26", "name": "Ein zweiter Referenzsatz" }
+     ]
+    },
+    {
+     "id": "DATA_TYPE_EST",
+     "name": "Data type",
+     "values": [{ "id": "WT", "name": "Trimmed mean rate" }]
+    }
+   ],
+   "observation": [
+    {
+     "id": "TIME_PERIOD",
+     "name": "Time period",
+     "values": [{ "id": "2026-08-20" }, { "id": "2026-08-21" }]
+    }
+   ]
+  },
+  "attributes": {
+   "series": [],
+   "observation": []
+  }
+ }
+}

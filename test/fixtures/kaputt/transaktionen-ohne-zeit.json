@@ -1,0 +1,19 @@
+{
+  "page": { "nextCursor": null, "totalCount": 1, "returnedCount": 1 },
+  "transactions": [
+    {
+      "id": "tx-synth-0001",
+      "kind": "cash",
+      "category": "TRANSFER",
+      "status": "EXECUTED",
+      "currency": "EUR",
+      "isCancellation": false,
+      "description": null,
+      "custodian": "DEMO",
+      "security": null,
+      "cash": { "relatedIsin": null, "transactionType": "DEPOSIT", "amount": 3000.0 },
+      "nonTradeSecurity": null,
+      "eltif": null
+    }
+  ]
+}

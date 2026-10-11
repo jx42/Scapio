@@ -1,0 +1,20 @@
+{
+  "page": { "nextCursor": null, "totalCount": 1, "returnedCount": 1 },
+  "transactions": [
+    {
+      "id": "tx-synth-0001",
+      "kind": "cash",
+      "category": "TRANSFER",
+      "status": "EXECUTED",
+      "currency": "EUR",
+      "isCancellation": false,
+      "lastEventAt": "2023-02-03T09:12:00+01:00",
+      "description": null,
+      "custodian": "DEMO",
+      "security": null,
+      "cash": { "relatedIsin": null, "transactionType": "DEPOSIT", "amount": "zwoelf Euro" },
+      "nonTradeSecurity": null,
+      "eltif": null
+    }
+  ]
+}

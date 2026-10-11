@@ -1,0 +1,45 @@
+name: Fehler melden
+description: Etwas funktioniert nicht oder eine Zahl sieht falsch aus.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Sicherheitsfunde bitte nicht hier, sondern auf dem Weg aus [SECURITY.md](https://github.com/jx42/Scapio/blob/main/.github/SECURITY.md).
+        Vor dem Absenden Depotwerte, ISINs und Beträge aus Ausgaben und Screenshots entfernen, wenn sie nicht öffentlich sein sollen.
+  - type: textarea
+    id: beschreibung
+    attributes:
+      label: Was passiert, was wäre erwartet?
+      description: Schritte zum Nachstellen, sofern bekannt.
+    validations:
+      required: true
+  - type: dropdown
+    id: plattform
+    attributes:
+      label: Plattform
+      options:
+        - macOS
+        - Windows
+        - Linux
+    validations:
+      required: true
+  - type: input
+    id: node
+    attributes:
+      label: Node-Version
+      description: Ausgabe von `node --version`
+      placeholder: v24.x.x
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Scapio-Version
+      description: Steht unten auf der Seite, alternativ `git rev-parse --short HEAD`.
+  - type: textarea
+    id: verify
+    attributes:
+      label: Ausgabe von `npm run verify`
+      description: Besonders wichtig, wenn eine Zahl nicht stimmt.
+      render: text

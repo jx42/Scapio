@@ -1,0 +1,463 @@
+/*
+ * Die einzige Datei des Projekts, in der eine Farbe steht. [P-06]
+ *
+ * Die Tokens heissen fachlich (grund, flaeche, gewinn, verlust), nicht nach ihrem
+ * Aussehen — sonst heisst eines Tages etwas "blau" und ist gruen. Komponenten
+ * benutzen ausschliesslich die daraus erzeugten Tailwind-Utilities; Recharts bekommt
+ * `var(--color-chart-n)` als Zeichenkette, nie einen Hex-Wert aus dem Code.
+ *
+ * Die Kontraste rechnet `test/invarianten/kontrast.test.ts` aus diesen Werten nach
+ * (Text 4,5:1, Grafik 3:1); die Tabelle steht in docs/BARRIEREFREIHEIT.md und wird mit
+ * `npm run kontrast` neu geschrieben. Ein neues Token fuer Text oder Zustand gehoert
+ * dort in `PAARUNGEN` (start/kontrast.ts).
+ */
+
+@import 'tailwindcss';
+@import "tw-animate-css";
+@import "./shadcn-tailwind.css";
+/* Selbst ausgeliefert: das Paket legt Schriftschnitt und @font-face-Regeln in den Bau,
+   die Datei kommt spaeter aus `/assets/` vom eigenen Server. Keine fremde Adresse. [INV-11] */
+@import "@fontsource-variable/geist";
+
+@theme {
+  --color-grund: oklch(0.14 0.012 260);
+  --color-flaeche: oklch(0.2 0.012 260);
+  --color-rand: oklch(1 0 0 / 0.1);
+  --color-rand-licht: oklch(0.35 0.01 250);
+
+  /* Glas (ADR-029): Kachelfläche, schwebende Fläche (Menü, Tooltip, Dialog) und die
+     Lichtkante — oben hell, seitlich leiser, unten wieder etwas heller. `-hell` ist
+     dieselbe Kante beim Überfahren. */
+  --color-glas: oklch(1 0 0 / 0.035);
+  --color-glas-hoch: oklch(0.2 0.012 250 / 0.6);
+  --color-kante-oben: oklch(1 0 0 / 0.2);
+  --color-kante: oklch(1 0 0 / 0.095);
+  --color-kante-unten: oklch(1 0 0 / 0.11);
+  --color-kante-hell-oben: oklch(1 0 0 / 0.34);
+  --color-kante-hell: oklch(1 0 0 / 0.17);
+  --color-kante-hell-unten: oklch(1 0 0 / 0.16);
+
+  /* Bedienfläche (ADR-029): Auswahl-Knöpfe, Reiter, Zeitraum-Leiste und Outline-Knopf
+     teilen Fläche und Lichtkante; das gewählte Segment hebt sich nur über die Fläche ab. */
+  --color-bedien: oklch(1 0 0 / 0.04);
+  --color-bedien-aktiv: oklch(1 0 0 / 0.1);
+  /* Rand des gewählten Segments: die Fläche allein hebt sich nur mit 1,19:1 ab, der Rand
+     erreicht die 3:1 für Zustandsanzeigen (WCAG 1.4.11). */
+  --color-bedien-rand: oklch(0.54 0.01 250);
+  /* Dieselbe Farbe wie die Trennlinien (`border-rand/60`): die Linien gehen in der
+     Hover-Fläche auf. */
+  --color-zeile: color-mix(in oklch, var(--color-rand) 60%, transparent);
+
+  --shadow-kachel: 0 1px 1px oklch(0 0 0 / 0.1), 0 12px 32px -18px oklch(0 0 0 / 0.5);
+  --shadow-schwebend: 0 1px 3px oklch(0 0 0 / 0.2), 0 16px 40px -12px oklch(0 0 0 / 0.55);
+  --shadow-primaer:
+    inset 0 1px 0 oklch(1 0 0 / 0.22),
+    0 2px 8px -3px color-mix(in oklch, var(--color-chart-1) 40%, transparent);
+  --color-text: oklch(0.95 0.005 250);
+  --color-text-leise: oklch(0.7 0.01 250);
+  --color-gewinn: oklch(0.75 0.15 150);
+  --color-verlust: oklch(0.7 0.17 25);
+
+  /* Ergaenzt: die Selbstkontrolle braucht einen eigenen Ton, und der Fokusring
+     braucht einen, der auf jeder Flaeche mindestens 3:1 erreicht. */
+  --color-warnung: oklch(0.82 0.15 70);
+  --color-fokus: oklch(0.8 0.115 237.32);
+
+  --color-chart-1: oklch(0.72 0.14 240);
+  --color-chart-2: oklch(0.7 0.04 250);
+  --color-chart-3: oklch(0.8 0.14 80);
+  --color-chart-4: oklch(0.72 0.15 320);
+  --color-chart-5: oklch(0.78 0.13 165);
+
+  /* Seitenbreite: Tailwinds groesster benannter Schritt (7xl, 80rem) reicht der
+     Seite nicht mehr; eigener Schritt statt Arbitrary-Value in der Komponente. */
+  --container-8xl: 88rem;
+
+  /* Geist zuerst, danach die Systemschriften als Rueckfall — steht die Schrift noch
+     nicht, zeigt der Browser sofort eine Systemschrift statt unsichtbaren Text.
+     Genau EINE Definition je Variable: eine zweite weiter unten haette diese hier
+     still ersetzt. `--font-heading` bleibt bestehen, weil `font-heading` bereits an
+     Ueberschriften-Komponenten verwendet wird — zeigt aber auf dieselbe Schrift wie
+     `--font-sans`. */
+  --font-sans:
+    'Geist Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', 'Helvetica Neue', Arial,
+    sans-serif;
+  --font-heading:
+    'Geist Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', 'Helvetica Neue', Arial,
+    sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace;
+
+  /* Tailwinds Groessenskala um je 1px angehoben — Zeilenhoehe im selben Mass, damit
+     der Durchschuss gleich bleibt. Wirkt global, weil jede Komponente text-* nutzt. */
+  --text-xs: 0.8125rem;
+  --text-xs--line-height: 1.0625rem;
+  --text-sm: 0.9375rem;
+  --text-sm--line-height: 1.3125rem;
+  --text-base: 1.0625rem;
+  --text-base--line-height: 1.5625rem;
+  --text-lg: 1.1875rem;
+  --text-lg--line-height: 1.8125rem;
+  --text-xl: 1.3125rem;
+  --text-xl--line-height: 1.8125rem;
+  --text-2xl: 1.5625rem;
+  --text-2xl--line-height: 2.0625rem;
+  --text-3xl: 1.9375rem;
+  --text-3xl--line-height: 2.3125rem;
+
+  /* Eckenradien als feste Werte statt als `calc()` auf einer Zwischenvariablen:
+     nur diese vier werden benutzt (`rounded-sm/md/lg/xl`), und ein Wert, den man
+     liest, ist einer, den man nicht im Kopf ausrechnet. */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 0.875rem;
+
+  /* Aliase auf die fachlichen Tokens oben, unter den shadcn-üblichen Namen. Keine
+     bestehende Komponente benutzt sie, auch keine unter components/ui/ — sie sind nur
+     dafür da, dass eine neu per `npx shadcn add` eingefügte Komponente ohne
+     Umschreiben richtig rendert. Siehe ADR-019. */
+  --color-background: var(--color-grund);
+  --color-foreground: var(--color-text);
+  --color-card: var(--color-flaeche);
+  --color-card-foreground: var(--color-text);
+  --color-popover: var(--color-glas-hoch);
+  --color-popover-foreground: var(--color-text);
+  --color-primary: var(--color-chart-1);
+  --color-primary-foreground: var(--color-grund);
+  --color-secondary: var(--color-flaeche);
+  --color-secondary-foreground: var(--color-text);
+  --color-muted: var(--color-flaeche);
+  --color-muted-foreground: var(--color-text-leise);
+  --color-accent: var(--color-flaeche);
+  --color-accent-foreground: var(--color-text);
+  --color-destructive: var(--color-verlust);
+  --color-destructive-foreground: var(--color-grund);
+  --color-border: var(--color-rand);
+  --color-input: var(--color-rand);
+  --color-ring: var(--color-fokus);
+  --radius: var(--radius-lg);
+}
+
+/* Unlayered mit Absicht, nicht in @layer base: Tailwinds `outline-none`-Utility liegt in
+   der `utilities`-Schicht und schluege eine Regel in `base` bei jedem fokussierten
+   Element mit dieser Klasse tot (Layer schlagen Spezifitaet, nicht umgekehrt). Fokus ist
+   immer sichtbar — auch dort, wo ein Entwurf ihn "stoerend" faende. */
+/* Ausgenommen: Einträge in Select/Menü — Radix fokussiert dort schon beim Überfahren mit
+   der Maus, und nach einem Tastendruck gilt das als Tastaturfokus. Die Markierung
+   (`focus:bg-rand`) zeigt die Position dort ausreichend. Der Container selbst (menu,
+   listbox) bekommt beim Öffnen den Fokus, ist aber kein Ziel — ohne Ausnahme erhielte er
+   Rahmen und 2px-Radius. */
+:focus-visible:not([role='option'], [role^='menuitem'], [role='menu'], [role='listbox']) {
+  outline: 2px solid var(--color-fokus);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Scrollbare Tabellen-Regionen: Ring nach innen. Aussen schnitte ihn jedes `overflow-hidden`
+   der Kachel darueber ab (Kennzahlen kuerzt so). */
+[data-slot='table-container']:focus-visible {
+  outline-offset: -2px;
+}
+
+/* Toast-Typfarben (`richColors` in ui/sonner.tsx). Unlayered und mit `:root` davor, damit
+   die Regel Sonners eigene Dark-Variablen (gleiche Selektoren, ungelayert) sicher schlägt.
+   Flächen in oklab gemischt: oklch zöge den Farbton vom blauen Grund Richtung Violett. */
+:root [data-sonner-toaster][data-sonner-theme='dark'] {
+  --success-bg: color-mix(in oklab, var(--color-gewinn) 14%, var(--color-grund));
+  --success-border: color-mix(in oklch, var(--color-gewinn) 45%, transparent);
+  --success-text: var(--color-gewinn);
+  --warning-bg: color-mix(in oklab, var(--color-warnung) 14%, var(--color-grund));
+  --warning-border: color-mix(in oklch, var(--color-warnung) 45%, transparent);
+  --warning-text: var(--color-warnung);
+  --error-bg: color-mix(in oklab, var(--color-verlust) 16%, var(--color-grund));
+  --error-border: color-mix(in oklch, var(--color-verlust) 55%, transparent);
+  --error-text: var(--color-verlust);
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  /* `overscroll-behavior` unterbindet den Bounce beim Ueberscrollen. Das Farbfeld
+     steht mit `fixed` auf `body`, nicht auf `html` — so bleibt es beim Scrollen
+     stehen, waehrend nur der Inhalt (die Kacheln) sich bewegt. Blau, Tuerkis, Gruen:
+     die Farben der Oberflaeche, nichts Fremdes. */
+  html {
+    scroll-behavior: smooth;
+    overscroll-behavior: none;
+    background: var(--color-grund);
+    @apply font-sans;
+  }
+
+  body {
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    /* Tabellarische Ziffern: Spalten stehen still, wenn sich Zahlen aendern. [P-06] */
+    font-variant-numeric: tabular-nums;
+    -webkit-font-smoothing: antialiased;
+    background:
+      radial-gradient(55rem 38rem at 8% -8%, oklch(0.45 0.11 245 / 0.34), transparent 70%),
+      radial-gradient(45rem 36rem at 96% 6%, oklch(0.45 0.08 200 / 0.2), transparent 70%),
+      radial-gradient(60rem 42rem at 55% 108%, oklch(0.45 0.09 165 / 0.18), transparent 70%)
+      fixed var(--color-grund);
+  }
+
+  table {
+    border-collapse: collapse;
+  }
+
+  /* prefers-reduced-motion schaltet Uebergaenge ab; Zaehler und Chart-Animationen
+     fragen selbst nach (lib/bewegung.ts). */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  /*
+   * Strichstärke des Richtungspfeils folgt dem Schriftgewicht. CSS kann font-weight nicht
+   * lesen und Tailwinds --tw-font-weight erbt nicht (@property inherits: false); darum
+   * setzen die Gewichts-Utilities hier eine eigene, vererbte Variable.
+   */
+  .font-light { --pfeil-strich: 1.5; }
+  .font-normal { --pfeil-strich: 1.75; }
+  .font-medium { --pfeil-strich: 2; }
+  .font-semibold { --pfeil-strich: 2.25; }
+  .font-bold { --pfeil-strich: 2.5; }
+
+  /*
+   * INV-05, Ausnahme 1: <Balken> setzt --anteil als Datenwert. Die Breite selbst
+   * steht hier in der Stylesheet-Regel, nicht im Komponentencode.
+   */
+  .balken-spur {
+    display: block;
+    width: 100%;
+    height: 0.375rem;
+    overflow: hidden;
+    border-radius: 9999px;
+    background-color: var(--color-rand);
+  }
+
+  .balken-fuellung {
+    display: block;
+    height: 100%;
+    width: calc(var(--anteil, 0) * 100%);
+    border-radius: 9999px;
+    background-color: var(--color-chart-1);
+  }
+
+  /*
+   * INV-05, Ausnahme 2: <ChartRahmen> setzt --chart-hoehe. Recharts braucht ein
+   * Pixelmass am Container, sonst zeichnet es in eine Flaeche der Hoehe null.
+   */
+  .chart-flaeche {
+    width: 100%;
+    height: var(--chart-hoehe, 16rem);
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  /* Leuchten der Chartlinien in ihrer eigenen Farbe, auch beim Verlaufsstrich der
+     Rendite — das kann nur ein SVG-Filter, siehe <Leuchtfilter>. Nur auf der Kopie
+     unter der Linie (leuchtLinie), die Linie selbst bleibt ungefiltert scharf. */
+  .chart-flaeche .linie-schein .recharts-line-curve {
+    filter: url(#linie-leuchten);
+  }
+
+  /*
+   * INV-05, Ausnahme 3: <Kachel hoehe> setzt --kachel-hoehe. Kennzahlen bindet sich
+   * damit an die zur Laufzeit gemessene Hoehe von Aufteilung.
+   */
+  .kachel-hoehe-fest {
+    height: var(--kachel-hoehe, auto);
+  }
+}
+
+/*
+ * Glasfläche für Kachel und Karte. Kein backdrop-filter: dahinter liegt nur das weiche
+ * Farbfeld, und Chrome sampelt am oberen Viewportrand darüber hinaus — eine angeschnittene
+ * Kachel bekäme einen hellen Schleier. Ohne Backdrop Root blurrt außerdem ein Tooltip in
+ * der Kachel noch, was hinter ihm liegt.
+ *
+ * Die Lichtkante ist ein auf 1px maskierter Ring, nicht der `border`: verschiedene
+ * Randfarben je Seite stoßen in der Ecke diagonal aneinander, ein Verlauf nicht.
+ * Getönt wird über `glas-ton-*`.
+ */
+/* Lichtkante (ADR-029): 1px-Ring mit senkrechtem Verlauf über dem transparenten Rand —
+   Kacheln und Bedienelemente teilen sie. */
+@utility lichtkante {
+  --glas-kante-oben: var(--color-kante-oben);
+  --glas-kante: var(--color-kante);
+  --glas-kante-unten: var(--color-kante-unten);
+  position: relative;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    padding: 1px;
+    border-radius: inherit;
+    background: linear-gradient(
+      180deg,
+      var(--glas-kante-oben),
+      var(--glas-kante) 45%,
+      var(--glas-kante-unten)
+    );
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+}
+
+/* Hover: nur die Lichtkante wird heller — auch solange das Menü eines Auslösers offen ist. */
+@utility lichtkante-hover {
+  &:hover,
+  &[data-state='open'] {
+    --glas-kante-oben: var(--color-kante-hell-oben);
+    --glas-kante: var(--color-kante-hell);
+    --glas-kante-unten: var(--color-kante-hell-unten);
+  }
+}
+
+@utility glas {
+  @apply lichtkante;
+  background:
+    linear-gradient(
+      160deg,
+      color-mix(in oklch, var(--glas-ton, var(--color-text)) 5%, transparent),
+      transparent 55%
+    )
+    padding-box,
+    var(--color-glas) padding-box;
+  box-shadow: var(--shadow-kachel);
+}
+
+@utility glas-ton-* {
+  --glas-ton: --value(--color-*);
+}
+
+/* Kachel-Hover: hellere Lichtkante, dazu 1px Anheben — Bedienelemente heben nicht an. */
+@utility glas-hover {
+  @apply lichtkante-hover;
+  transition: transform 150ms ease;
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+}
+
+/* Zeilen-Hover (ADR-029): gerundete Fläche statt Zeilenhintergrund, seitlich 8px über
+   die bündig mit dem Text endenden Trennlinien hinaus — dort ist Platz für die Rundung.
+   Der Behälter braucht diese 8px (`-mx-2 px-2`), sonst schneidet sein Overflow sie ab.
+   `data-aktiv` hält sie stehen (hervorgehobene Position); `data-ruhig` schaltet sie ab.
+   Leise Schrift wird dabei hell: der Token wird für die Zeile umgebogen. */
+@utility zeile-hover {
+  position: relative;
+  isolation: isolate;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0 calc(var(--spacing) * -2);
+    z-index: -1;
+    border-radius: var(--radius-md);
+    transition: background-color 150ms ease;
+    pointer-events: none;
+  }
+
+  &:not([data-ruhig]):hover::before,
+  &[data-aktiv]::before {
+    background-color: var(--color-zeile);
+  }
+
+  &:not([data-ruhig]):hover,
+  &[data-aktiv] {
+    --color-text-leise: var(--color-text);
+  }
+}
+
+/* Dasselbe für `<tr>`: Chrome legt ein `::before` der Zeile als eigene Zelle an und
+   verschiebt die Spalten. Die Fläche entsteht deshalb stückweise aus den Zellen — die
+   erste und letzte ragen 8px hinaus und tragen die Rundung. */
+@utility tabellenzeile-hover {
+  & > * {
+    position: relative;
+    isolation: isolate;
+  }
+
+  & > *::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    transition: background-color 150ms ease;
+    pointer-events: none;
+  }
+
+  & > :first-child::before {
+    left: calc(var(--spacing) * -2);
+    border-top-left-radius: var(--radius-md);
+    border-bottom-left-radius: var(--radius-md);
+  }
+
+  & > :last-child::before {
+    right: calc(var(--spacing) * -2);
+    border-top-right-radius: var(--radius-md);
+    border-bottom-right-radius: var(--radius-md);
+  }
+
+  &:not([data-ruhig]):hover {
+    --color-text-leise: var(--color-text);
+  }
+
+  &:not([data-ruhig]):hover > *::before {
+    background-color: var(--color-zeile);
+  }
+}
+
+/* Schwebende Flächen — Menü, Select, Tooltip, Chart-Tooltip, Dialog, Toast. Lesbar durch
+   Blur plus Abdunkeln des Hintergrunds, nicht durch Deckkraft: eine Chartlinie dahinter
+   wird zum Schimmer statt zur Kontur. Nur `backdrop-filter` ohne `-webkit-`: Lightning
+   CSS verwirft sonst die unpräfixierte Zeile. */
+@utility schwebend {
+  border: 1px solid var(--color-kante);
+  background: linear-gradient(180deg, oklch(1 0 0 / 0.03), transparent 40%), var(--color-glas-hoch);
+  backdrop-filter: blur(24px) saturate(140%) brightness(0.85);
+  box-shadow: var(--shadow-schwebend);
+}
+
+/* `transition-colors` ohne `outline-color`: Tailwind v4 blendet sonst die Farbe des
+   Fokusrings mit ein, und der Ring erscheint erst nach 150 ms in voller Farbe. */
+@utility transition-farben {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
+  transition-duration: var(--tw-duration, var(--default-transition-duration));
+}
+
+/* Leuchten grosser Zahlen in der eigenen Textfarbe. */
+@utility leuchten-zahl {
+  text-shadow: 0 0 10px color-mix(in oklch, currentColor 8%, transparent);
+}
+
+/* Blendet den unteren Rand eines gekuerzten Inhalts nach transparent aus — als
+   Andeutung, dass noch mehr kommt, ohne eine zweite Flaeche ueber die durchscheinende
+   Kachel zu legen (die naemlich, anders als ein Verlauf zu einer Volltonfarbe, nie
+   exakt dieselbe Farbe haette). */
+@utility ausblenden-unten {
+  mask-image: linear-gradient(to top, transparent, black 4.5rem);
+}

@@ -1,0 +1,23 @@
+node_modules/
+dist/
+.start/
+coverage/
+.cache/
+data/
+*.db
+*.db-wal
+*.db-shm
+.DS_Store
+test-results/
+playwright-report/
+*.local
+.playwright-mcp/
+.claude/settings.local.json
+plans/
+ingest/funds.json
+.vscode/settings.json
+ingest/seed.json
+tsconfig.tsbuildinfo
+
+# Demo-Abzug (`npm run demo:export`), nur fuer den Deploy. [ADR-048]
+.demo-export/

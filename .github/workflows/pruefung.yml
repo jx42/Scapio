@@ -1,0 +1,102 @@
+# Die Uebergabepruefung, so wie sie lokal laeuft — nur auf einem Rechner, den niemand
+# vorher eingerichtet hat. Sie ersetzt `npm run check` nicht, sie wiederholt es.
+#
+# Drei Betriebssysteme, weil dieses Projekt Pfade, Dateirechte und Zeitzonen anfasst und
+# genau dort die Unterschiede sitzen. Windows ist keine Zugabe, sondern eine der beiden
+# Plattformen, die AGENTS.md nennt — und die einzige, auf der sich ein Pfadtrenner, eine
+# fehlende `LOCALAPPDATA` oder ein Unterprozess ohne Shell still anders verhaelt, als der
+# Autor es auf seinem Rechner sieht. Genau dafuer laeuft sie hier mit.
+#
+# Die Zeitzonen laufen nur unter Linux und ohne UTC: Die Runner stehen ohnehin auf UTC,
+# und Node bringt sein eigenes ICU mit, wertet `TZ` also ueberall gleich aus. [ADR-050]
+#
+# `--ignore-scripts` auch hier, aus demselben Grund wie ueberall sonst: kein Paket dieses
+# Projekts braucht ein Install-Skript, und eines, das eines mitbraechte, soll es nicht
+# unbemerkt ausfuehren duerfen. [docs/ENTWICKLUNG.md]
+
+name: Pruefung
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  # `release.yml` ruft dieselbe Pruefung auf, statt sie zu kopieren. [ADR-047]
+  workflow_call:
+
+permissions:
+  contents: read
+
+# Ein neuer Push auf einen Pull Request bricht dessen alten Lauf ab. Alles andere bekommt
+# eine eigene Gruppe — sonst koennte ein Push auf `main` die Pruefung eines Releases
+# verdraengen.
+concurrency:
+  group: ${{ github.event_name == 'pull_request' && format('pruefung-{0}', github.ref) || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: check (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      # Ein macOS-Fehler soll nicht verdecken, ob Linux gruen war — und umgekehrt.
+      fail-fast: false
+      matrix:
+        os: [macos-latest, ubuntu-24.04, windows-latest]
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci --ignore-scripts
+
+      # Vor `check`, nicht danach: INV-11 durchsucht `dist/` nach fremden Adressen im
+      # gebauten Ergebnis — ohne Bau vorher waere dieser Teil des Tests ein stiller
+      # Blindgaenger, der immer gruen ist, weil es nichts zu durchsuchen gibt.
+      # Nur `vite build`: den Typecheck macht `check` gleich danach.
+      - run: npx --no-install vite build
+
+      # typecheck + lint + tests + Invarianten.
+      - run: npm run check
+
+  # Westlich und oestlich von Berlin, je eine Fehlerart. UTC hat `check` schon. [INV-03, ADR-050]
+  zeitzonen:
+    name: zeitzonen
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci --ignore-scripts
+
+      - run: npm run test:tz -- America/Los_Angeles Pacific/Kiritimati
+
+  audit:
+    name: audit
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci --ignore-scripts
+
+      # Eigener Job, nicht Teil von `check`: das hier braucht das Netz, `check` nicht.
+      # Ein Fund haelt den Lauf an, aendert aber nichts an der Aussage der Tests.
+      - run: npm run audit

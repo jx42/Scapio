@@ -1,0 +1,93 @@
+{
+  "products": [
+    {
+      "productId": "ZZ0000000002",
+      "composition": {
+        "totalNumberOfInstruments": 9,
+        "compositionData": [
+          {
+            "compositionCharacteristics": {
+              "name": "APPLE INC",
+              "isin": "US0378331005",
+              "weight": 0.245,
+              "sector": "Information Technology",
+              "countryOfRisk": "United States"
+            }
+          },
+          {
+            "compositionCharacteristics": {
+              "name": "MICROSOFT CORP",
+              "isin": "US5949181045",
+              "weight": 0.2215,
+              "sector": "Information Technology",
+              "countryOfRisk": "United States"
+            }
+          },
+          {
+            "compositionCharacteristics": {
+              "name": "NVIDIA CORP",
+              "isin": "US67066G1040",
+              "weight": 0.183,
+              "sector": "Information Technology",
+              "countryOfRisk": "United States"
+            }
+          },
+          {
+            "compositionCharacteristics": {
+              "name": "NESTLE SA",
+              "isin": "CH0038863350",
+              "weight": 0.062,
+              "sector": "Consumer Staples",
+              "countryOfRisk": "Switzerland"
+            }
+          },
+          {
+            "compositionCharacteristics": {
+              "name": "NESTLE SA",
+              "isin": "CH0038863350",
+              "weight": 0.031,
+              "sector": "Consumer Staples",
+              "countryOfRisk": "Switzerland"
+            }
+          },
+          {
+            "compositionCharacteristics": {
+              "name": "ASML HOLDING NV",
+              "isin": "NL0010273215",
+              "weight": 0.0945,
+              "sector": "Information Technology",
+              "countryOfRisk": "Netherlands"
+            }
+          },
+          {
+            "compositionCharacteristics": {
+              "name": "TOYOTA MOTOR CORP",
+              "isin": "JP3633400001",
+              "weight": 0.073,
+              "sector": "Consumer Discretionary",
+              "countryOfRisk": "Japan"
+            }
+          },
+          {
+            "compositionCharacteristics": {
+              "name": "BERKSHIRE HATHAWAY INC, CLASS B",
+              "isin": "US0846707026",
+              "weight": 0.05,
+              "sector": "Financials",
+              "countryOfRisk": "United States"
+            }
+          },
+          {
+            "compositionCharacteristics": {
+              "name": "EUR CASH",
+              "isin": "",
+              "weight": 0.04,
+              "sector": null,
+              "countryOfRisk": null
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

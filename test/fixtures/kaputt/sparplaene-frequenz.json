@@ -1,0 +1,20 @@
+{
+  "totalSavingsPlanAmount": 75.0,
+  "items": [
+    {
+      "kind": "ETF_SAVINGS_PLAN",
+      "instrument": {
+        "identifier": "ZZ0000000001",
+        "name": "Beispiel Globalfonds A",
+        "securityType": "ETF"
+      },
+      "amount": 75.0,
+      "configuration": {
+        "dayOfMonth": 1,
+        "dynamizationRate": 0,
+        "paymentMethod": "REFERENCE_ACCOUNT",
+        "nextExecutionDate": "2026-09-01"
+      }
+    }
+  ]
+}

@@ -1,0 +1,151 @@
+{
+  "portfolioId": "synthetic-portfolio-01",
+  "page": { "nextCursor": null, "totalCount": 7, "returnedCount": 7 },
+  "transactions": [
+    {
+      "id": "tx-synth-0001",
+      "kind": "cash",
+      "category": "TRANSFER",
+      "status": "EXECUTED",
+      "currency": "EUR",
+      "isCancellation": false,
+      "lastEventAt": "2023-02-03T09:12:00+01:00",
+      "description": "Synthetische Einzahlung",
+      "custodian": "DEMO",
+      "security": null,
+      "cash": { "relatedIsin": null, "transactionType": "DEPOSIT", "amount": 3000.0 },
+      "nonTradeSecurity": null,
+      "eltif": null
+    },
+    {
+      "id": "tx-synth-0002",
+      "kind": "security",
+      "category": "TRADE",
+      "status": "EXECUTED",
+      "currency": "EUR",
+      "isCancellation": false,
+      "lastEventAt": "2023-02-06T15:41:22+01:00",
+      "description": null,
+      "custodian": "DEMO",
+      "security": {
+        "isin": "ZZ0000000001",
+        "transactionType": "BUY",
+        "quantity": 10,
+        "amount": 1234.56,
+        "side": null,
+        "limitPrice": null,
+        "stopPrice": null
+      },
+      "cash": null,
+      "nonTradeSecurity": null,
+      "eltif": null
+    },
+    {
+      "id": "tx-synth-0003",
+      "kind": "security",
+      "category": "SAVINGS_PLAN",
+      "status": "EXECUTED",
+      "currency": "EUR",
+      "isCancellation": false,
+      "lastEventAt": "2023-03-01T08:00:00+01:00",
+      "description": null,
+      "custodian": "DEMO",
+      "security": {
+        "isin": "ZZ0000000001",
+        "transactionType": "SAVINGS_PLAN",
+        "quantity": 0.6,
+        "amount": 75.0,
+        "side": null,
+        "limitPrice": null,
+        "stopPrice": null
+      },
+      "cash": null,
+      "nonTradeSecurity": null,
+      "eltif": null
+    },
+    {
+      "id": "tx-synth-0007",
+      "kind": "security",
+      "category": "TRADE",
+      "status": "EXECUTED",
+      "currency": "EUR",
+      "isCancellation": false,
+      "lastEventAt": "2023-09-12T10:20:00+02:00",
+      "description": null,
+      "custodian": "DEMO",
+      "security": {
+        "isin": "ZZ0000000003",
+        "transactionType": "BUY",
+        "quantity": 4,
+        "amount": 300.0,
+        "side": null,
+        "limitPrice": null,
+        "stopPrice": null
+      },
+      "cash": null,
+      "nonTradeSecurity": null,
+      "eltif": null
+    },
+    {
+      "id": "tx-synth-0004",
+      "kind": "security",
+      "category": "TRADE",
+      "status": "EXECUTED",
+      "currency": "EUR",
+      "isCancellation": false,
+      "lastEventAt": "2024-01-18T11:03:47+01:00",
+      "description": null,
+      "custodian": "DEMO",
+      "security": {
+        "isin": "ZZ0000000003",
+        "transactionType": "SINGLE",
+        "quantity": 0.75,
+        "amount": 55.5,
+        "side": "SELL",
+        "limitPrice": null,
+        "stopPrice": null
+      },
+      "cash": null,
+      "nonTradeSecurity": null,
+      "eltif": null
+    },
+    {
+      "id": "tx-synth-0005",
+      "kind": "cash",
+      "category": "INTEREST",
+      "status": "EXECUTED",
+      "currency": "EUR",
+      "isCancellation": false,
+      "lastEventAt": "2025-01-02T00:00:00+01:00",
+      "description": "Synthetischer Zinsertrag",
+      "custodian": "DEMO",
+      "security": null,
+      "cash": { "relatedIsin": null, "transactionType": "INTEREST", "amount": 1.23 },
+      "nonTradeSecurity": null,
+      "eltif": null
+    },
+    {
+      "id": "tx-synth-0006",
+      "kind": "security",
+      "category": "TRADE",
+      "status": "PENDING",
+      "currency": "EUR",
+      "isCancellation": false,
+      "lastEventAt": "2026-05-14T09:30:00+02:00",
+      "description": null,
+      "custodian": "DEMO",
+      "security": {
+        "isin": "ZZ0000000002",
+        "transactionType": "BUY",
+        "quantity": 0.9,
+        "amount": 48.89,
+        "side": null,
+        "limitPrice": null,
+        "stopPrice": null
+      },
+      "cash": null,
+      "nonTradeSecurity": null,
+      "eltif": null
+    }
+  ]
+}

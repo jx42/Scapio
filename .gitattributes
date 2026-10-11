@@ -1,0 +1,24 @@
+# Zeilenenden festnageln — fuer den gesamten Baum, nicht nur fuer die Doppelklick-Einstiege.
+#
+# Ohne Angabe entscheidet die `core.autocrlf`-Einstellung des Klonenden. Unter Windows
+# steht die per Installer auf `true`, auch auf `windows-latest`: der Checkout schreibt
+# dann CRLF in jede Textdatei. Das ist nicht nur Kosmetik — `start/abdruck.ts` hasht den
+# rohen Inhalt von `core/`, und mit CRLF kommt ein anderer Abdruck heraus als der in
+# `core/.abdruck.json` hinterlegte. INV-10 waere dort dauerhaft rot, ohne dass jemand
+# `core/` angefasst haette.
+#
+# Deshalb LF fuer alles, was Git als Text erkennt — und CRLF nur fuer die eine Dateiart,
+# die es braucht: `cmd.exe` liest eine Batchdatei zeilenweise und stolpert ueber
+# Sprungmarken, deren Zeile nur mit LF endet — `goto :abbruch` findet dann `:abbruch`
+# nicht. Umgekehrt macht CRLF ein zsh-Skript unbrauchbar: die Shell haengt das CR an das
+# letzte Wort jeder Zeile. Die Ausnahme steht zuletzt, weil die spaetere Regel gewinnt.
+*           text=auto eol=lf
+*.command   text eol=lf
+*.bat       text eol=crlf
+
+# Was nicht ins Release-ZIP gehoert (`git archive`, auch GitHubs Quellarchive). Der Klon hat
+# alles; `npm start` braucht keinen dieser Ordner. [ADR-047]
+/test/      export-ignore
+/.github/   export-ignore
+/.claude/   export-ignore
+/demo-worker/ export-ignore

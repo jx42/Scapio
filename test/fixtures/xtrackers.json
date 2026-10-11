@@ -1,0 +1,78 @@
+{
+  "tables": [
+    {
+      "columns": [
+        { "key": "header", "value": "ISIN" },
+        { "key": "column_0", "value": "Name" },
+        { "key": "column_1", "value": "% Weight" },
+        { "key": "column_2", "value": "Country" },
+        { "key": "column_3", "value": "Industry" }
+      ],
+      "values": [
+        {
+          "header": { "value": "US0378331005", "type": "text" },
+          "column_0": { "value": "APPLE INC", "type": "text" },
+          "column_1": { "value": "24.500%", "sortValue": 24.5, "type": "text" },
+          "column_2": { "value": "United States", "type": "text" },
+          "column_3": { "value": "Information Technology", "type": "text" }
+        },
+        {
+          "header": { "value": "US5949181045", "type": "text" },
+          "column_0": { "value": "MICROSOFT CORP", "type": "text" },
+          "column_1": { "value": "22.150%", "sortValue": 22.15, "type": "text" },
+          "column_2": { "value": "United States", "type": "text" },
+          "column_3": { "value": "Information Technology", "type": "text" }
+        },
+        {
+          "header": { "value": "US67066G1040", "type": "text" },
+          "column_0": { "value": "NVIDIA CORP", "type": "text" },
+          "column_1": { "value": "18.300%", "sortValue": 18.3, "type": "text" },
+          "column_2": { "value": "United States", "type": "text" },
+          "column_3": { "value": "Information Technology", "type": "text" }
+        },
+        {
+          "header": { "value": "CH0038863350", "type": "text" },
+          "column_0": { "value": "NESTLE SA", "type": "text" },
+          "column_1": { "value": "6.200%", "sortValue": 6.2, "type": "text" },
+          "column_2": { "value": "Switzerland", "type": "text" },
+          "column_3": { "value": "Consumer Staples", "type": "text" }
+        },
+        {
+          "header": { "value": "CH0038863350", "type": "text" },
+          "column_0": { "value": "NESTLE SA", "type": "text" },
+          "column_1": { "value": "3.100%", "sortValue": 3.1, "type": "text" },
+          "column_2": { "value": "Switzerland", "type": "text" },
+          "column_3": { "value": "Consumer Staples", "type": "text" }
+        },
+        {
+          "header": { "value": "NL0010273215", "type": "text" },
+          "column_0": { "value": "ASML HOLDING NV", "type": "text" },
+          "column_1": { "value": "9.450%", "sortValue": 9.45, "type": "text" },
+          "column_2": { "value": "Netherlands", "type": "text" },
+          "column_3": { "value": "Information Technology", "type": "text" }
+        },
+        {
+          "header": { "value": "JP3633400001", "type": "text" },
+          "column_0": { "value": "TOYOTA MOTOR CORP", "type": "text" },
+          "column_1": { "value": "7.300%", "sortValue": 7.3, "type": "text" },
+          "column_2": { "value": "Japan", "type": "text" },
+          "column_3": { "value": "Consumer Discretionary", "type": "text" }
+        },
+        {
+          "header": { "value": "US0846707026", "type": "text" },
+          "column_0": { "value": "BERKSHIRE HATHAWAY INC, CLASS B", "type": "text" },
+          "column_1": { "value": "5.000%", "sortValue": 5.0, "type": "text" },
+          "column_2": { "value": "United States", "type": "text" },
+          "column_3": { "value": "Financials", "type": "text" }
+        },
+        {
+          "header": { "value": "-", "type": "text" },
+          "column_0": { "value": "EUR CASH", "type": "text" },
+          "column_1": { "value": "4.000%", "sortValue": 4.0, "type": "text" },
+          "column_2": { "value": "-", "type": "text" },
+          "column_3": { "value": "Cash and/or Derivatives", "type": "text" }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+CREATE TABLE zins (tag TEXT PRIMARY KEY, zins_pro_jahr REAL NOT NULL, quelle TEXT NOT NULL);
