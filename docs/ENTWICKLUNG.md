@@ -82,6 +82,16 @@ Ein Release ist ein Tag auf einem geprüften Stand von `main`, mit `Scapio.zip` 
 4. **Rauchtest:** README-Link „ZIP herunterladen“ lädt die neue Version,
    `gh attestation verify Scapio.zip --repo jx42/Scapio` ist grün, die Fußzeile zeigt die
    Version (ADR-046), `Aktualisieren.command`/`.bat` öffnen das neue ZIP.
+5. **Demo deployen** ([ADR-048](entscheidungen/ADR-048-demo-als-statischer-abzug.md)), von Hand
+   auf dem getaggten Stand:
+
+   ```sh
+   git switch --detach vX.Y.Z
+   npm ci --ignore-scripts && npm run demo:export
+   cd demo-worker && npx wrangler@4.147.0 deploy
+   ```
+
+   Einmalig vorher `npx wrangler@4.147.0 login`. Danach die Demo öffnen: Fußzeile zeigt `vX.Y.Z`.
 
 ## Weiterführende Dokumentation
 

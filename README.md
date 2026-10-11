@@ -2,12 +2,12 @@
 
 [![Prüfung](https://github.com/jx42/Scapio/actions/workflows/pruefung.yml/badge.svg)](https://github.com/jx42/Scapio/actions/workflows/pruefung.yml)&nbsp;&nbsp;[![Version](https://img.shields.io/github/v/release/jx42/Scapio?label=Version)](https://github.com/jx42/Scapio/releases)&nbsp;&nbsp;![Lizenz: MIT](https://img.shields.io/badge/Lizenz-MIT-blue)&nbsp;&nbsp;![Node.js ≥ 24](https://img.shields.io/badge/Node.js-%E2%89%A5%2024-339933?logo=nodedotjs&logoColor=white)&nbsp;&nbsp;![macOS | Windows](https://img.shields.io/badge/macOS%20%7C%20Windows-lightgrey)
 
-[![Scapio-Dashboard mit Demodaten: Depotwert, Rendite, Drawdown, Verlauf und Aufteilung](docs/bilder/scapio-demo.png)](https://demo.scapio.workers.dev)
-
 **[Live-Demo ansehen](https://demo.scapio.workers.dev)** — mit erfundenem Depot, ohne Anmeldung.
 
+[![Scapio-Dashboard mit Demodaten: Depotwert, Rendite, Drawdown, Verlauf und Aufteilung](docs/bilder/scapio-demo.png)](https://demo.scapio.workers.dev)
+
 > [!IMPORTANT]
-> Scapio ist ein Community-Projekt und kein offizielles Produkt von Scalable Capital!
+> **Scapio ist kein offizielles Produkt von Scalable Capital!**
 
 ## ✅ Funktionen
 
