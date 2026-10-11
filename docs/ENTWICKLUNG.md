@@ -38,8 +38,11 @@ Die vollständige Befehlsliste, die Ordner und die zwölf Invarianten stehen in
 
 ## Push
 
-Ein Push ist eine Übergabe und endet nicht mit `git push`, sondern erst, wenn die Prüfung auf
-allen drei Plattformen grün ist. Der Ablauf wird ohne Rückfrage durchlaufen:
+Auf `main` kommt nichts direkt: Das Ruleset verlangt einen Pull Request mit fünf grünen Checks und
+kennt keinen Bypass, auch nicht für den Inhaber
+([ADR-051](entscheidungen/ADR-051-main-nur-ueber-pull-requests.md)). Ein Push ist eine Übergabe und
+endet nicht mit `git push`, sondern erst, wenn die Prüfung des PR auf allen drei Plattformen grün
+ist. Der Ablauf wird ohne Rückfrage durchlaufen:
 
 1. **Vorher lokal:** `npm run check` und `npm run test:tz`.
 2. **Vorher `npm run audit`.** Meldet es etwas, `npm audit fix --omit=dev --ignore-scripts`,
@@ -47,19 +50,23 @@ allen drei Plattformen grün ist. Der Ablauf wird ohne Rückfrage durchlaufen:
    `npm run check` erneut — die Abhängigkeiten haben sich geändert. Hilft nur `npm audit fix --force`, wird es
    nicht erzwungen: das ist ein Breaking Change in einer Abhängigkeit, also melden und auf
    Ansage warten.
-3. **Push.**
-4. **Danach den Lauf prüfen**, mit `gh` und ohne den Nutzer zu fragen: `gh run list --limit 1`,
+3. **Branch und PR:** `git switch -c <thema>`, committen, `git push -u origin <thema>`,
+   `gh pr create` mit Warum-Zeile und Label (`neu`, `korrektur`, `intern` oder `ohne-notiz`,
+   siehe [Release](#release)). Weitere Korrekturen kommen als neue Commits auf denselben Branch.
+4. **Danach den Lauf prüfen**, mit `gh` und ohne den Nutzer zu fragen: `gh pr checks <nr> --watch`,
    dann `gh run view <lauf-id>`. Nicht nur der Ausgang zählt, auch die Annotationen — eine
    Deprecation-Warnung an einer Action ist ein Befund, kein Rauschen.
 5. **Rot oder angemerkt?** Ursache im Log suchen (`gh run view --job <job-id> --log-failed`,
    Ausgabe immer in eine Datei umleiten und nur die Fehlerzeilen lesen — ein CI-Log ungefiltert
    in den Kontext zu holen ist nie richtig), beheben, lokal `check`, erneut pushen — von vorn,
    bis alles grün und ohne Anmerkung ist.
-6. **Erst dann melden**, mit der Nummer des grünen Laufs. Bleibt etwas offen, sagt die Meldung
-   was und warum.
+6. **Erst dann melden**, mit PR-Nummer und Nummer des grünen Laufs. Bleibt etwas offen, sagt die
+   Meldung was und warum.
+7. **Mergen tut der Nutzer**, per Squash. Ein Agent merged nicht und schaltet kein Auto-Merge ein:
+   Der Merge ist die eine Stelle, an der ein Mensch den Diff sieht, bevor er auf `main` landet.
 
-Der Nutzer soll nach einem Push nicht selbst nachsehen müssen, ob die CI etwas anzumerken hat.
-Ein Push, der rot endet und unkommentiert liegen bleibt, ist keine erledigte Aufgabe.
+Der Nutzer soll vor dem Merge nicht selbst nachsehen müssen, ob die CI etwas anzumerken hat.
+Ein PR, der rot endet und unkommentiert liegen bleibt, ist keine erledigte Aufgabe.
 
 ## Release
 
