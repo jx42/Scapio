@@ -85,6 +85,7 @@ Ein Push ist eine Übergabe und endet erst, wenn die Prüfung des PR auf allen d
 und die CI keine Anmerkung hat. Der Ablauf wird ohne Rückfrage durchlaufen: vorher `npm run check`,
 `npm run test:tz` und `npm run audit`, dann Branch pushen und PR öffnen, den Lauf mit `gh` prüfen und
 bei Rot beheben bis grün, dann mit der PR-Nummer melden. Mergen tut der Nutzer. `npm audit fix --force` wird nie erzwungen, sondern gemeldet. Der Ablauf im Einzelnen: [`docs/ENTWICKLUNG.md`](docs/ENTWICKLUNG.md#push).
+Ein Release folgt [`docs/ENTWICKLUNG.md`](docs/ENTWICKLUNG.md#release), einschließlich Deploy der Demo.
 
 ## Die zwölf Invarianten
 
