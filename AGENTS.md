@@ -79,10 +79,12 @@ und `audit` als eigene Jobs unter Linux ([ADR-050](docs/entscheidungen/ADR-050-z
 
 ## Push
 
-Ein Push ist eine Übergabe und endet erst, wenn die Prüfung auf allen drei Plattformen grün ist
+Auf `main` kommt nichts direkt, auch nicht vom Inhaber: jede Änderung geht über einen Branch und
+einen Pull Request, gemergt wird nur von Hand ([ADR-051](docs/entscheidungen/ADR-051-main-nur-ueber-pull-requests.md)).
+Ein Push ist eine Übergabe und endet erst, wenn die Prüfung des PR auf allen drei Plattformen grün ist
 und die CI keine Anmerkung hat. Der Ablauf wird ohne Rückfrage durchlaufen: vorher `npm run check`,
-`npm run test:tz` und `npm run audit`, nach dem Push den Lauf mit `gh` prüfen und bei Rot beheben
-bis grün, dann erst melden. `npm audit fix --force` wird nie erzwungen, sondern gemeldet. Der Ablauf im Einzelnen: [`docs/ENTWICKLUNG.md`](docs/ENTWICKLUNG.md#push).
+`npm run test:tz` und `npm run audit`, dann Branch pushen und PR öffnen, den Lauf mit `gh` prüfen und
+bei Rot beheben bis grün, dann mit der PR-Nummer melden. Mergen tut der Nutzer. `npm audit fix --force` wird nie erzwungen, sondern gemeldet. Der Ablauf im Einzelnen: [`docs/ENTWICKLUNG.md`](docs/ENTWICKLUNG.md#push).
 
 ## Die zwölf Invarianten
 

@@ -55,3 +55,4 @@ der Geschichte stehen. Eine neue ADR bekommt die nächste freie Nummer und eine 
 | [048](ADR-048-demo-als-statischer-abzug.md) | Demo als statischer Abzug | gilt |
 | [049](ADR-049-deinstallation-loescht-nur-den-datenordner.md) | Deinstallation löscht nur den Datenordner | gilt |
 | [050](ADR-050-zeitzonen-in-der-ci-nur-unter-linux.md) | Zeitzonen in der CI nur unter Linux, ohne UTC | gilt |
+| [051](ADR-051-main-nur-ueber-pull-requests.md) | `main` nur über Pull Requests, ohne Bypass | gilt |
