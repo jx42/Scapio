@@ -7,7 +7,7 @@ Eine Schwachstelle bitte **nicht** als öffentliches Issue melden, sondern über
 („Report a vulnerability" auf dem Tab „Security" dieses Repositories). Das legt eine private
 Diskussion an, bis ein Fix bereitsteht.
 
-Antwort innerhalb von 7 Tagen. Ist ein Fund bestätigt, folgt ein Fix vor der Veröffentlichung
+Antwort innerhalb von 30 Tagen. Ist ein Fund bestätigt, folgt ein Fix vor der Veröffentlichung
 des Advisories; ist er nicht reproduzierbar oder außerhalb des Geltungsbereichs, steht das
 ebenfalls in der Rückmeldung.
 
