@@ -75,14 +75,19 @@ Ein Release ist ein Tag auf einem geprüften Stand von `main`, mit `Scapio.zip` 
 
 1. **Version per PR:** `npm version X.Y.Z --no-git-tag-version`, mergen, sobald die CI grün ist.
    SemVer: Korrekturen erhöhen die dritte Stelle, Neues die zweite.
-2. **Auslösen:** Actions → Release → Run workflow auf `main`. Der Lauf bricht ab, wenn
+2. **Leak-Prüfung:** auf dem Stand von `main` `npm run leak-pruefung`. Sucht Depotwerte,
+   Kennungen, Token, Pfade und Benutzername aus Datenbank und Datenverzeichnis in jeder
+   Datei von `git ls-files` und nennt nur Art, Datei und Zeile ([ADR-042](entscheidungen/ADR-042-agenten-lesen-keine-depotwerte.md)).
+   Exit 1 hält den Release auf; Hinweise (runde Beträge, Depot-ISINs) ansehen — eine
+   Benchmark-ISIN ist kein Leak, ein Satz seltener ISINs zusammen schon.
+3. **Auslösen:** Actions → Release → Run workflow auf `main`. Der Lauf bricht ab, wenn
    `vX.Y.Z` schon existiert.
-3. **Release-Seite prüfen:** `Scapio.zip`, `SHA256SUMS` und Attestation sind da (die
+4. **Release-Seite prüfen:** `Scapio.zip`, `SHA256SUMS` und Attestation sind da (die
    Attestation nur bei öffentlichem Repository), die Notizen nach Labels gegliedert (`neu`, `korrektur`, `intern`; `ohne-notiz` fällt heraus).
-4. **Rauchtest:** README-Link „ZIP herunterladen“ lädt die neue Version,
+5. **Rauchtest:** README-Link „ZIP herunterladen“ lädt die neue Version,
    `gh attestation verify Scapio.zip --repo jx42/Scapio` ist grün, die Fußzeile zeigt die
    Version (ADR-046), `Aktualisieren.command`/`.bat` öffnen das neue ZIP.
-5. **Demo deployen** ([ADR-048](entscheidungen/ADR-048-demo-als-statischer-abzug.md)), von Hand
+6. **Demo deployen** ([ADR-048](entscheidungen/ADR-048-demo-als-statischer-abzug.md)), von Hand
    auf dem getaggten Stand:
 
    ```sh
