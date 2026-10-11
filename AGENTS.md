@@ -70,6 +70,7 @@ npm run vertrag        # zod-Schemata des Ingest gegen den echten MCP prüfen (r
 npm run kontrast       # Kontrasttabelle in docs/BARRIEREFREIHEIT.md aus theme.css neu schreiben
 npm run abdruck        # Hash über core/ neu schreiben, nach einer KERN_VERSION-Erhöhung
 npm run backup         # Sicherung der Datenbank
+npm run leak-pruefung  # Depotwerte, Token, Pfade im Repository suchen — vor jedem Release, nur der Nutzer
 npm run audit          # Schwachstellen in den Laufzeitabhängigkeiten — nicht Teil von check, aber Pflicht vor jedem Push
 ```
 
