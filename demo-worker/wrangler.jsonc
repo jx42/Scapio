@@ -2,7 +2,7 @@
 // Ordner `npx wrangler@4.147.0 deploy`. Jede Anfrage geht durch den Worker, damit auch die
 // Assets die Kopfzeilen des Servers tragen.
 {
-  "name": "scapio-demo",
+  "name": "demo",
   "main": "index.ts",
   "compatibility_date": "2026-10-01",
   "assets": {
