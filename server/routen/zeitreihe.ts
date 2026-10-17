@@ -10,16 +10,16 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { baueBenchmarkreihe, risikofreiesRaster } from '../../core/benchmark.ts';
 import type { Tag } from '../../core/kalender.ts';
-import { tageZwischen, vergleiche } from '../../core/kalender.ts';
+import { frueher, spaeter, tageZwischen, vergleiche } from '../../core/kalender.ts';
 import { kursgewinnFenster, vergleichImFenster } from '../../core/kursgewinn.ts';
 import type { VergleichPunkt } from '../../core/kursgewinn.ts';
 import { rasterFuer, verschmelzeKurse } from '../../core/kursraster.ts';
 import * as repository from '../../db/repository/index.ts';
-import { nurDieseParameter } from '../fehler.ts';
+import { nurDieseParameter, parameterAbgelehnt } from '../fehler.ts';
 import { centAlsZahl, objektSchema, oderNull, tagAlsText, umschlagAus, umschlagSchemaEigenschaften } from '../json.ts';
 import { baueLesemodell } from '../lesemodell.ts';
 import { markenAus } from '../marken.ts';
-import { alsZeitraum, beginnVon, minusMonate } from '../zeitraum.ts';
+import { alsTagParameter, alsZeitraum, beginnVon, minusMonate } from '../zeitraum.ts';
 import type { Kontext } from '../server.ts';
 import { BENCHMARKS, RISIKOFREI, RISIKOFREI_ISIN } from '../vertrag.ts';
 import type { Marke, MarkenVorgang, Zeitpunkt, Zeitreihe } from '../vertrag.ts';
@@ -38,8 +38,8 @@ function alsBenchmarkIsin(wert: unknown): string | null {
  * damit er immer dabei ist; der erste Tag und jeder Tag mit Marke bleiben ebenfalls,
  * weil Linie und Tooltip die Marke ueber genau diesen Punkt finden.
  */
-function bleibtImFenster(tag: Tag, von: Tag, letzter: Tag, markenTage: ReadonlySet<Tag>): boolean {
-  return tag === von || markenTage.has(tag) || tageZwischen(tag, letzter) % 7 === 0;
+function bleibtImFenster(tag: Tag, von: Tag, bis: Tag, markenTage: ReadonlySet<Tag>): boolean {
+  return tag === von || markenTage.has(tag) || tageZwischen(tag, bis) % 7 === 0;
 }
 
 const ANTWORT_SCHEMA = objektSchema<Zeitreihe>({
@@ -94,7 +94,14 @@ const ANTWORT_SCHEMA = objektSchema<Zeitreihe>({
    * nicht mehr herausklicken kann.
    */
   reiheLeer: { type: 'boolean' },
-  zeitraum: { type: 'string' },
+  zeitraum: { type: ['string', 'null'] },
+  ausschnitt: oderNull(
+    objektSchema<NonNullable<Zeitreihe['ausschnitt']>>({
+      von: { type: 'string' },
+      bis: { type: 'string' },
+    }),
+  ),
+  tage: { type: 'array', items: { type: 'string' } },
   fensterGewinnCent: { type: 'number' },
   fensterGewinnProzent: { type: 'number' },
   benchmark: oderNull(
@@ -108,8 +115,14 @@ const ANTWORT_SCHEMA = objektSchema<Zeitreihe>({
 
 export function registriereZeitreihe(app: FastifyInstance, ctx: Kontext): void {
   app.get('/api/zeitreihe', { schema: { response: { 200: ANTWORT_SCHEMA } } }, (anfrage: FastifyRequest): Zeitreihe => {
-    const query = nurDieseParameter(anfrage.query, ['zeitraum', 'benchmark']);
-    const zeitraum = alsZeitraum(query.zeitraum);
+    const query = nurDieseParameter(anfrage.query, ['zeitraum', 'benchmark', 'von', 'bis']);
+    // Frei gewaehlt (Zeitraumregler) oder ein fester Zeitraum — nie beides zugleich.
+    const frei = query.von !== undefined || query.bis !== undefined;
+    if (frei && query.zeitraum !== undefined) throw parameterAbgelehnt('zeitraum');
+    const zeitraum = frei ? null : alsZeitraum(query.zeitraum);
+    const freiVon = frei ? alsTagParameter(query.von, 'von') : null;
+    const freiBis = frei ? alsTagParameter(query.bis, 'bis') : null;
+    if (freiVon !== null && freiBis !== null && vergleiche(freiVon, freiBis) > 0) throw parameterAbgelehnt('von');
     const benchmarkIsin = alsBenchmarkIsin(query.benchmark);
 
     const lm = baueLesemodell(ctx.db, ctx.konfiguration, ctx.heute);
@@ -125,6 +138,8 @@ export function registriereZeitreihe(app: FastifyInstance, ctx: Kontext): void {
         grob: false,
         reiheLeer: true,
         zeitraum,
+        ausschnitt: null,
+        tage: [],
         fensterGewinnCent: 0,
         fensterGewinnProzent: 0,
         benchmark: null,
@@ -134,10 +149,10 @@ export function registriereZeitreihe(app: FastifyInstance, ctx: Kontext): void {
 
     const erster = reihe[0]!.tag;
     const letzter = reihe[reihe.length - 1]!.tag;
-    const roh = beginnVon(zeitraum, lm.heute, erster);
-    const von = vergleiche(roh, erster) < 0 ? erster : roh;
+    const von = spaeter(zeitraum === null ? freiVon! : beginnVon(zeitraum, lm.heute, erster), erster);
+    const bis = freiBis === null ? letzter : frueher(freiBis, letzter);
 
-    const kursgewinnErgebnis = kursgewinnFenster(reihe, von, letzter);
+    const kursgewinnErgebnis = kursgewinnFenster(reihe, von, bis);
     const kursgewinn = new Map(kursgewinnErgebnis.punkte.map((p) => [p.tag, p]));
 
     // Vergleichsdepot: dieselben externen Fluesse, am selben Tag in die gewaehlte
@@ -150,8 +165,8 @@ export function registriereZeitreihe(app: FastifyInstance, ctx: Kontext): void {
       benchmarkInfo = RISIKOFREI;
       const raster = risikofreiesRaster(repository.zins.alsKarte(ctx.db), erster, letzter);
       if (raster.size > 0) {
-        const benchmarkReihe = baueBenchmarkreihe({ fluesse: lm.externeFluesse(), raster, von, bis: letzter });
-        vergleich = new Map(vergleichImFenster(reihe, benchmarkReihe, von, letzter).map((p) => [p.tag, p]));
+        const benchmarkReihe = baueBenchmarkreihe({ fluesse: lm.externeFluesse(), raster, von, bis });
+        vergleich = new Map(vergleichImFenster(reihe, benchmarkReihe, von, bis).map((p) => [p.tag, p]));
       }
     } else if (benchmarkIsin !== null) {
       const eintrag = BENCHMARKS.find((b) => b.isin === benchmarkIsin);
@@ -160,22 +175,22 @@ export function registriereZeitreihe(app: FastifyInstance, ctx: Kontext): void {
         const kurspunkte = repository.kurs.fuerIsin(ctx.db, benchmarkIsin);
         if (kurspunkte.length > 0) {
           const raster = rasterFuer(verschmelzeKurse(kurspunkte), erster, letzter);
-          const benchmarkReihe = baueBenchmarkreihe({ fluesse: lm.externeFluesse(), raster, von, bis: letzter });
-          vergleich = new Map(vergleichImFenster(reihe, benchmarkReihe, von, letzter).map((p) => [p.tag, p]));
+          const benchmarkReihe = baueBenchmarkreihe({ fluesse: lm.externeFluesse(), raster, von, bis });
+          vergleich = new Map(vergleichImFenster(reihe, benchmarkReihe, von, bis).map((p) => [p.tag, p]));
         }
       }
     }
 
-    const marken = markenAus(lm.transaktionen(), von, letzter);
-    const woechentlich = vergleiche(von, minusMonate(letzter, 36)) < 0;
+    const marken = markenAus(lm.transaktionen(), von, bis);
+    const woechentlich = vergleiche(von, minusMonate(bis, 36)) < 0;
     const markenTage = new Set(marken.map((m) => m.tag));
 
     let lueckenhaft = false;
     const punkte = [];
     for (const t of reihe) {
-      if (vergleiche(t.tag, von) < 0 || vergleiche(t.tag, letzter) > 0) continue;
+      if (vergleiche(t.tag, von) < 0 || vergleiche(t.tag, bis) > 0) continue;
       if (t.lueckenhaft) lueckenhaft = true;
-      if (woechentlich && !bleibtImFenster(t.tag, von, letzter, markenTage)) continue;
+      if (woechentlich && !bleibtImFenster(t.tag, von, bis, markenTage)) continue;
       const p = kursgewinn.get(t.tag)!;
       const v = vergleich?.get(t.tag);
       punkte.push({
@@ -211,6 +226,8 @@ export function registriereZeitreihe(app: FastifyInstance, ctx: Kontext): void {
       grob: lm.twr().grob || lueckenhaft,
       reiheLeer: false,
       zeitraum,
+      ausschnitt: { von: tagAlsText(von), bis: tagAlsText(bis) },
+      tage: reihe.map((t) => tagAlsText(t.tag)),
       fensterGewinnCent: centAlsZahl(kursgewinnErgebnis.fensterGewinnCent),
       fensterGewinnProzent: kursgewinnErgebnis.fensterGewinnProzent,
       benchmark: benchmarkInfo,

@@ -183,6 +183,11 @@
      steht mit `fixed` auf `body`, nicht auf `html` — so bleibt es beim Scrollen
      stehen, waehrend nur der Inhalt (die Kacheln) sich bewegt. Blau, Tuerkis, Gruen:
      die Farben der Oberflaeche, nichts Fremdes. */
+  /* Das Demo-Band klebt oben: Sprungziele und Fokus duerfen nicht darunter landen. [WCAG 2.4.11] */
+  html:has([data-demo-band]) {
+    scroll-padding-top: 3rem;
+  }
+
   html {
     scroll-behavior: smooth;
     overscroll-behavior: none;
@@ -258,14 +263,29 @@
   }
 
   /*
-   * INV-05, Ausnahme 2: <ChartRahmen> setzt --chart-hoehe. Recharts braucht ein
-   * Pixelmass am Container, sonst zeichnet es in eine Flaeche der Hoehe null.
+   * INV-05, Ausnahme 2: <ChartRahmen> setzt --chart-hoehe und --chart-links. Recharts
+   * braucht ein Pixelmass am Container, sonst zeichnet es in eine Flaeche der Hoehe null;
+   * der Fuss beginnt dort, wo die Zeichenflaeche hinter der Y-Achse beginnt.
    */
   .chart-flaeche {
+    position: relative;
     width: 100%;
     height: var(--chart-hoehe, 16rem);
     user-select: none;
     -webkit-user-select: none;
+  }
+
+  .chart-fuss {
+    padding-left: var(--chart-links, 0);
+  }
+
+  /* Griffe und Spanne gleiten an eine von aussen gesetzte Stelle (Segmentleiste). Die Lage
+     setzt Radix per style am Wrapper um den Griff, den <SliderThumb> nicht erreicht. Beim
+     Ziehen kein Uebergang, sonst hinkten die Griffe dem Zeiger nach. */
+  [data-slot='slider']:not([data-ziehen]) :is([data-slot='slider-range'], span:has(> [data-slot='slider-thumb'])) {
+    transition-property: left, right;
+    transition-duration: 300ms;
+    transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   /* Leuchten der Chartlinien in ihrer eigenen Farbe, auch beim Verlaufsstrich der
@@ -273,6 +293,22 @@
      unter der Linie (leuchtLinie), die Linie selbst bleibt ungefiltert scharf. */
   .chart-flaeche .linie-schein .recharts-line-curve {
     filter: url(#linie-leuchten);
+  }
+
+  /* Beim Ziehen des Zeitraumreglers: die Vorschau als eigenes SVG deckungsgleich ueber dem
+     Chart, und solange sie steht, was wegfallen wird unscharf — der Filter kommt aus
+     <VerlaufVorschau>. Auf den Gruppen, nicht den Pfaden, damit #linie-leuchten bleibt. */
+  .verlauf-vorschau {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+  }
+
+  .chart-flaeche:has(> .verlauf-vorschau) :is(.recharts-line, .recharts-area, .recharts-reference-line) {
+    filter: url(#verlauf-vorschau-unschaerfe);
   }
 
   /*

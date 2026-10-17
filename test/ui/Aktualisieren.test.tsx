@@ -246,7 +246,7 @@ describe('Aktualisieren — der Lauf, auf den der Klick wartet', () => {
     expect(refreshAbrufe).toBe(0);
   });
 
-  it('nennt den Schritt, den der Server meldet, im Knopf und in der Statusregion', async () => {
+  it('nennt den Schritt, den der Server meldet, nur in der Statusregion', async () => {
     nachDemStart = laufAntwort(8, 'laufend', 'kurse');
     falscheUhr();
     rendern(<Aktualisieren />);
@@ -255,17 +255,15 @@ describe('Aktualisieren — der Lauf, auf den der Klick wartet', () => {
     await userEvent.click(screen.getByRole('button', { name: de.aktualisieren.knopf }));
     const kurse = de.aktualisieren.schritte.kurse;
     await waitFor(() =>
-      expect(screen.getByRole('button', { name: de.aktualisieren.schritt(kurse) })).toBeDisabled(),
+      expect(screen.getByRole('button', { name: de.aktualisieren.laeuft })).toBeDisabled(),
     );
     expect(screen.getByRole('status')).toHaveTextContent(de.aktualisieren.laeuftSchrittStatus(kurse));
 
     laufJetzt = laufAntwort(8, 'laufend', 'inflation');
     await vi.advanceTimersByTimeAsync(ABFRAGETAKT_MS);
-    await waitFor(() =>
-      expect(
-        screen.getByRole('button', { name: de.aktualisieren.schritt(de.aktualisieren.schritte.inflation) }),
-      ).toBeInTheDocument(),
-    );
+    const inflation = de.aktualisieren.schritte.inflation;
+    await waitFor(() => expect(screen.getByRole('status')).toHaveTextContent(de.aktualisieren.laeuftSchrittStatus(inflation)));
+    expect(screen.getByRole('button', { name: de.aktualisieren.laeuft })).toBeInTheDocument();
   });
 
   it('rendert im Leerlauf nicht endlos, obwohl der Status nach oben in den State geht', async () => {

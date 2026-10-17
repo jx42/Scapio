@@ -18,7 +18,7 @@
 
 import { useRef, useState } from 'react';
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
-import { ChartLine, RefreshCw } from 'lucide-react';
+import { ArrowUpRight, ChartLine, RefreshCw } from 'lucide-react';
 
 import { de } from '@/i18n/de';
 import { api, schluessel } from '@/lib/api';
@@ -28,6 +28,7 @@ import { zeitpunktKurz } from '@/lib/format';
 import { linkVariants } from '@/lib/linkStil';
 import { cn } from '@/lib/utils';
 import { useElementHoehe } from '@/hooks/useElementHoehe';
+import { useMedienAbfrage } from '@/hooks/useMedienAbfrage';
 import { Aktualisieren, type McpAnmeldungStatus } from '@/components/Aktualisieren';
 import { AktualisierenHinweise } from '@/components/AktualisierenHinweise';
 import { Driftbanner } from '@/components/Driftbanner';
@@ -91,6 +92,8 @@ function Seite() {
   const kennzahlenRef = useRef<HTMLDivElement>(null);
   const kennzahlenHoehe = useElementHoehe(kennzahlenRef);
   const [kennzahlenAusgeklappt, setKennzahlenAusgeklappt] = useState(false);
+  // Entspricht `xl:` im Grid unten: erst ab dort stehen die beiden nebeneinander.
+  const nebeneinander = useMedienAbfrage('(width >= 80rem)');
   // Ohne `erfolg` und `fehler`: deren Alerts bieten schon selbst die naechste Aktion an.
   const willkommen =
     health.data?.drift.stufe === 'leer' &&
@@ -117,9 +120,11 @@ function Seite() {
         {de.seite.skip}
       </a>
 
+      {istDemoModus() && <DemoBand />}
+
       <header className="mx-auto flex max-w-8xl flex-wrap items-end justify-between gap-4 px-4 pt-6 pb-4">
         <div>
-          <h1 className="font-heading text-3xl font-semibold text-text">
+          <h1 className="font-heading text-2xl font-semibold text-balance text-text sm:text-3xl">
             {de.seite.titel}
             {istDemoModus() && de.seite.titelDemoZusatz}
           </h1>
@@ -162,11 +167,11 @@ function Seite() {
             <VerlaufKachel />
           </div>
           <div ref={aufteilungRef}>
-            <AufteilungKachel hoehe={kennzahlenAusgeklappt ? kennzahlenHoehe : null} />
+            <AufteilungKachel hoehe={nebeneinander && kennzahlenAusgeklappt ? kennzahlenHoehe : null} />
           </div>
           <div ref={kennzahlenRef}>
             <KennzahlenKachel
-              hoehe={aufteilungHoehe}
+              hoehe={nebeneinander ? aufteilungHoehe : null}
               onAusgeklapptAendern={setKennzahlenAusgeklappt}
               top25Aus={health.data?.top25 === false}
             />
@@ -246,6 +251,33 @@ function Seite() {
         </p>
       </footer>
     </div>
+  );
+}
+
+/**
+ * Nur in der Demo: wer sie öffnet, kommt meist von außen und sucht das Projekt dahinter. [ADR-052]
+ * Sticky, damit der Hinweis bei jeder Zahl mitläuft; unter `sm` die Kurzfassung in einer Zeile,
+ * sonst fräße das Band ein Viertel des Bildschirms.
+ */
+function DemoBand() {
+  return (
+    <aside aria-label={de.seite.demoBand} data-demo-band className="sticky top-0 z-40 border-b border-rand bg-flaeche">
+      <p className="mx-auto flex max-w-8xl flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2 text-sm text-text-leise">
+        <span className="sm:hidden">{de.seite.demoBandTextKurz}</span>
+        <span className="max-sm:hidden">{de.seite.demoBandText}</span>
+        <a
+          href="https://github.com/jx42/Scapio" /* INV-AUSNAHME: feste Adresse, kein Wert — ADR-052 */
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={de.seite.demoBandLinkOeffnen}
+          className={cn(linkVariants(), 'inline-flex min-h-6 items-center gap-1 font-medium text-text')}
+        >
+          <span className="sm:hidden">{de.seite.demoBandLinkKurz}</span>
+          <span className="max-sm:hidden">{de.seite.demoBandLink}</span>
+          <ArrowUpRight aria-hidden="true" className="size-3.5" />
+        </a>
+      </p>
+    </aside>
   );
 }
 

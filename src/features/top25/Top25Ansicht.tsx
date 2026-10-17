@@ -2,7 +2,8 @@
  * Kachel 4, Ansicht: der Blick durch die ETFs auf die Unternehmen dahinter.
  *
  * Eine Tabelle, alle 25 Zeilen untereinander. Die Spalte "Enthalten in" zeigt direkt,
- * aus welchen Fonds das Exposure stammt.
+ * aus welchen Fonds das Exposure stammt. Unter `sm` bliebe ihr neben den festen Spalten
+ * keine Breite — dort steht die Fondsliste klein unter dem Namen.
  */
 
 import { ChevronDown } from 'lucide-react';
@@ -59,19 +60,19 @@ export function Top25Ansicht({ zeilen }: Top25AnsichtProps) {
           <TableCaption className="sr-only">{beschriftung}</TableCaption>
           <TableHeader>
             <TableRow>
-              <TableHead scope="col" className="h-auto w-12 py-1 pr-1 font-normal">
+              <TableHead scope="col" className="h-auto w-10 py-1 pr-1 font-normal sm:w-12">
                 {de.top25.spalteRang}
               </TableHead>
-              <TableHead scope="col" className="h-auto w-32 py-1 pr-2 font-normal sm:w-80">
+              <TableHead scope="col" className="h-auto py-1 pr-2 font-normal sm:w-80">
                 {de.top25.spalteName}
               </TableHead>
               <TableHead scope="col" className="h-auto w-20 py-1 px-1 text-right font-normal sm:w-28">
                 {de.top25.spalteExposure}
               </TableHead>
-              <TableHead scope="col" className="h-auto w-16 py-1 px-1 text-right font-normal sm:w-20">
+              <TableHead scope="col" className="h-auto w-20 py-1 px-1 text-right font-normal">
                 {de.top25.spalteAnteil}
               </TableHead>
-              <TableHead scope="col" className="h-auto py-1 px-1 font-normal">
+              <TableHead scope="col" className="hidden h-auto py-1 px-1 font-normal sm:table-cell">
                 {de.top25.spalteEtfs}
               </TableHead>
             </TableRow>
@@ -110,6 +111,7 @@ function Top25Zeile({ zeile }: { readonly zeile: UnternehmenZeile }) {
         <span className="block max-w-full break-words text-text">
           {zeile.name}
         </span>
+        <span className="block break-words text-xs text-text-leise sm:hidden">{fonds}</span>
       </TableHead>
       <TableCell className="py-1 px-1 text-right tabular-nums text-text">
         {angezeigtesExposure}
@@ -117,7 +119,7 @@ function Top25Zeile({ zeile }: { readonly zeile: UnternehmenZeile }) {
       <TableCell className="py-1 px-1 text-right tabular-nums text-text-leise">
         {angezeigterAnteil}
       </TableCell>
-      <TableCell className="py-1 px-1 text-text-leise">
+      <TableCell className="hidden py-1 px-1 text-text-leise sm:table-cell">
         <span className="block break-words">
           {fonds}
         </span>

@@ -21,6 +21,8 @@ const FIXTURE: Zeitreihe = {
   grob: false,
   reiheLeer: false,
   zeitraum: 'max',
+  ausschnitt: { von: '2024-01-01', bis: '2026-08-26' },
+  tage: ['2024-01-01', '2024-01-15', '2025-06-01', '2026-08-26'],
   // Gesamtgewinn im Fenster: (37_805_537 - 28_759_296) - (30_000_000 - 28_000_000),
   // siehe `core/kursgewinn.ts`. Die Punkte zaehlen ab dem ersten Tag des Fensters; der
   // letzte stimmt deshalb mit dem Fenstergewinn ueberein.
@@ -140,6 +142,81 @@ describe('VerlaufKachel', () => {
     expect(localStorage.getItem('portfolio.zeitraum')).toBe('max');
   });
 
+  it('fragt nach dem Verschieben des Reglers den freien Zeitraum ab, ohne Segment', async () => {
+    const pfade: string[] = [];
+    const antworten = mitKennzahlen(FIXTURE);
+    wiederherstellen = fetchErsatz((pfad: string) => {
+      pfade.push(pfad);
+      return antworten(pfad);
+    });
+    rendern(<VerlaufKachel />);
+    await screen.findByText(de.verlauf.tabelleVermoegen);
+
+    const beginn = screen.getByRole('slider', { name: de.verlauf.reglerBeginn });
+    expect(beginn).toHaveAttribute('aria-valuetext', '01.01.2024');
+    fokussieren(beginn);
+    await userEvent.keyboard('{ArrowRight}');
+
+    await waitFor(() => {
+      expect(pfade).toContain('/api/zeitreihe?von=2024-01-15&bis=2026-08-26&benchmark=IE00B4L5Y983');
+    });
+    for (const radio of screen.getAllByRole('radio')) expect(radio).toHaveAttribute('aria-checked', 'false');
+    // Der freie Zeitraum ueberlebt kein Neuladen, der gemerkte feste bleibt unberuehrt.
+    expect(localStorage.getItem('portfolio.zeitraum')).toBeNull();
+  });
+
+  it('faellt auf den festen Zeitraum zurueck, wenn der freie scheitert', async () => {
+    const antworten = mitKennzahlen(FIXTURE);
+    let frei = 0;
+    wiederherstellen = fetchErsatz((pfad: string) => {
+      if (!pfad.includes('von=')) return antworten(pfad);
+      frei += 1;
+      return { status: 400, body: { code: 'E_PARAMETER' } };
+    });
+    rendern(<VerlaufKachel />);
+    await screen.findByText(de.verlauf.tabelleVermoegen);
+
+    const beginn = screen.getByRole('slider', { name: de.verlauf.reglerBeginn });
+    fokussieren(beginn);
+    await userEvent.keyboard('{ArrowRight}');
+
+    await waitFor(() => {
+      expect(frei).toBe(1);
+    });
+    await waitFor(() => {
+      expect(screen.getByRole('slider', { name: de.verlauf.reglerBeginn })).toHaveAttribute('aria-valuetext', '01.01.2024');
+    });
+    expect(screen.getByRole('radio', { name: de.verlauf.zeitraeume.max })).toHaveAttribute('aria-checked', 'true');
+    expect(screen.queryByRole('alert')).toBeNull();
+  });
+
+  it('zeigt den Regler in der Demo gesperrt, den Grund im Popover', async () => {
+    const meta = document.createElement('meta');
+    meta.name = 'demo-modus';
+    meta.content = 'true';
+    document.head.append(meta);
+    // jsdom kennt kein Pointer-Capture; Radix ruft es auch am gesperrten Regler.
+    Element.prototype.setPointerCapture = () => undefined;
+    Element.prototype.releasePointerCapture = () => undefined;
+    Element.prototype.hasPointerCapture = () => false;
+    try {
+      wiederherstellen = fetchErsatz(mitKennzahlen(FIXTURE));
+      rendern(<VerlaufKachel />);
+      await screen.findByText(de.verlauf.tabelleVermoegen);
+
+      const griffe = screen.getAllByRole('slider');
+      for (const griff of griffe) {
+        expect(griff).toHaveAttribute('data-disabled');
+        expect(griff).toHaveAccessibleDescription(de.verlauf.reglerDemo);
+      }
+      expect(screen.queryByRole('dialog')).toBeNull();
+      await userEvent.click(griffe[0]!);
+      expect(await screen.findByRole('dialog')).toHaveTextContent(de.verlauf.reglerDemo);
+    } finally {
+      meta.remove();
+    }
+  });
+
   it('zeigt den Fehlerzustand, ohne die Anwendung zu reissen, wenn der Server ablehnt', async () => {
     wiederherstellen = fetchErsatz(() => ({
       status: 500,
@@ -224,7 +301,7 @@ describe('VerlaufKachel', () => {
     expect(screen.getByText(prozentText(KENNZAHLEN_FIXTURE.kursgewinnProzent))).toBeInTheDocument();
     expect(screen.getByText(de.kennzahlen.sublineTwrGesamt(prozentText(KENNZAHLEN_FIXTURE.twr!)))).toBeInTheDocument();
     expect(screen.getByText(de.kennzahlen.sublineXirr('5,80 %'))).toBeInTheDocument();
-    expect(screen.getByText('15.02.2026 – 20.03.2026')).toBeInTheDocument();
+    expect(screen.getByText('15.02.26 – 20.03.26')).toBeInTheDocument();
     expect(screen.getByText(de.kennzahlen.sharpeBewertung.gut)).toBeInTheDocument();
 
     // Die Richtung tragen Lucide-Icons, nur an den Kopfwerten: Kursgewinn, TWR, Real; die

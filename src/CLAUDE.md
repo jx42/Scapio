@@ -9,8 +9,8 @@ Sechs Kacheln, eine Seite, dunkel, dicht. Rendert nur — gerechnet wird in `cor
 - Kein Hex-Wert, keine Farbe, kein px-Literal in einer Komponente. Tokens aus
   `styles/theme.css`, Utilities aus Tailwind.
 - Kein `dangerouslySetInnerHTML`, kein Fremdtext in `href`. [INV-06] Ausnahme: geprüfte ISIN
-  zu onvista, feste Adressen im Footer (EZB, Eurostat, Scalable Capital, Repository) —
-  geschlossene Liste, siehe ADR-021 und ADR-022.
+  zu onvista, feste Adressen im Footer (EZB, Eurostat, Scalable Capital, Repository) und im Demo-Band —
+  geschlossene Liste, siehe ADR-021, ADR-022 und ADR-052.
 - Formatierung ausschließlich über `lib/format.ts`, Texte aus `i18n/de.ts`.
 - Ansichtskomponenten holen keine Daten. Container holen sie, rechnen aber ebenfalls
   nicht — jede Summe kommt fertig aus `core/` bzw. der API.

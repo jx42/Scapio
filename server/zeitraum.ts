@@ -16,6 +16,19 @@ export function alsZeitraum(roh: unknown): Zeitraum {
   throw parameterAbgelehnt('zeitraum');
 }
 
+/**
+ * Ein Tag aus der Adresszeile, fuer den frei gewaehlten Zeitraum. Ungueltig heisst
+ * `E_PARAMETER` — der `KalenderFehler` traegt den Fremdtext und bleibt deshalb hier.
+ */
+export function alsTagParameter(roh: unknown, name: string): Tag {
+  if (typeof roh !== 'string') throw parameterAbgelehnt(name);
+  try {
+    return alsTag(roh);
+  } catch {
+    throw parameterAbgelehnt(name);
+  }
+}
+
 export function alsFenster(roh: unknown): Fenster {
   if (typeof roh === 'string' && (FENSTER as readonly string[]).includes(roh)) return roh as Fenster;
   if (roh === undefined) return '12m';

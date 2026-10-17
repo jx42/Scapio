@@ -25,6 +25,12 @@ export const de = {
   seite: {
     titel: 'Scapio: Dein Scalable Capital Depot',
     titelDemoZusatz: ' (Demo)',
+    demoBand: 'Hinweis zur Demo',
+    demoBandText: 'Das ist die Demo von Scapio, mit erfundenen Daten. Die echte Anwendung läuft lokal auf deinem Rechner.',
+    demoBandTextKurz: 'Scapio-Demo mit erfundenen Daten.',
+    demoBandLink: 'Scapio auf GitHub',
+    demoBandLinkKurz: 'GitHub',
+    demoBandLinkOeffnen: 'Scapio auf GitHub öffnen, neuer Tab',
     skip: 'Direkt zu den Kacheln',
     haupt: 'Kacheln',
     standUnbekannt: 'noch kein abgeschlossener Lauf',
@@ -70,8 +76,6 @@ export const de = {
     knopf: 'Aktualisieren',
     laeuft: 'Aktualisieren…',
     laeuftStatus: 'Die Daten werden aktualisiert.',
-    /** Knopftext waehrend eines Laufs, sobald der Server den Schritt meldet. */
-    schritt: (schritt: string) => `${schritt}…`,
     laeuftSchrittStatus: (schritt: string) => `Die Daten werden aktualisiert: ${schritt}.`,
     schritte: {
       depot: 'Depot abrufen',
@@ -459,6 +463,11 @@ export const de = {
       '5j': 'fünf Jahre',
       max: 'gesamte Historie',
     },
+    zeitraumFrei: (von: string, bis: string) => `vom ${von} bis ${bis}`,
+    reglerBezeichnung: 'Zeitraum frei wählen',
+    reglerBeginn: 'Beginn des Zeitraums',
+    reglerEnde: 'Ende des Zeitraums',
+    reglerDemo: 'In der Demo nicht verfügbar',
     depotwert: 'Depotwert',
     einzahlung: 'Eingezahltes Kapital',
     /**

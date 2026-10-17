@@ -1,4 +1,4 @@
-# Scapio: Privates Dashboard für dein Depot bei Scalable Capital (Community-Project)
+# Scapio: Privates Dashboard für dein Depot bei Scalable Capital (Community-Projekt)
 
 [![Prüfung](https://github.com/jx42/Scapio/actions/workflows/pruefung.yml/badge.svg)](https://github.com/jx42/Scapio/actions/workflows/pruefung.yml)&nbsp;&nbsp;[![Version](https://img.shields.io/github/v/release/jx42/Scapio?label=Version)](https://github.com/jx42/Scapio/releases)&nbsp;&nbsp;![Lizenz: MIT](https://img.shields.io/badge/Lizenz-MIT-blue)&nbsp;&nbsp;![Node.js ≥ 24](https://img.shields.io/badge/Node.js-%E2%89%A5%2024-339933?logo=nodedotjs&logoColor=white)&nbsp;&nbsp;![macOS | Windows](https://img.shields.io/badge/macOS%20%7C%20Windows-lightgrey)
 
@@ -31,18 +31,18 @@ Auf einem Windows-Rechner mit mehreren Benutzerkonten sind die lokalen Daten wen
 
 ## ⬇️ Installation
 
-Du brauchst einen Mac oder Windows-PC, Zugang zu deinem Scalable-Depot und etwa 10-15 Minuten.
+Du brauchst einen Mac oder Windows-PC, Zugang zu deinem Scalable-Depot und etwa 10–15 Minuten.
 
 1. **"Agentic Investing" bei Scalable aktivieren:** Im Scalable-Konto den **[MCP-Zugriff aktivieren](https://de.scalable.capital/agentic-investing)** (die Schnittstelle für KI-Assistenten) und als Zugriffsstufe „Leserechte“ wählen.
 2. **Node.js installieren**, falls noch nicht vorhanden. Auf **[nodejs.org/de/download](https://nodejs.org/de/download)** den Installer für dein System laden, öffnen und mit „Weiter“ bzw. „Fortfahren“ durchklicken.
 3. **[Scapio als ZIP herunterladen](https://github.com/jx42/Scapio/releases/latest/download/Scapio.zip)** und entpacken:
-  - **macOS:** Safari entpackt das ZIP meist selbst. Den Ordner `Scapio` aus „Downloads“ an einen festen Ort ziehen, z. B. in deinen Benutzerordner (im Finder: „Gehe zu“ → „Benutzerordner“).
-  - **Windows:** Rechtsklick auf das ZIP → „Alle extrahieren…“. Nicht die Dateien direkt in der ZIP-Ansicht doppelklicken, das funktioniert nicht.
+   - **macOS:** Safari entpackt das ZIP meist selbst. Den Ordner `Scapio` aus „Downloads“ an einen festen Ort ziehen, z. B. in deinen Benutzerordner (im Finder: „Gehe zu“ → „Benutzerordner“).
+   - **Windows:** Rechtsklick auf das ZIP → „Alle extrahieren…“. Nicht die Dateien direkt in der ZIP-Ansicht doppelklicken, das funktioniert nicht.
 4. **Im entpackten Ordner doppelklicken:** [Start.command](Start.command) (macOS) bzw. [Start.bat](Start.bat) (Windows). Beim ersten Mal erscheint eine Sicherheitswarnung, siehe unten.
-5. Es öffnet sich unter macOS das **Terminal**, unter Windows die **Eingabeaufforderung** (unter Windows 11 ebenfalls „Terminal“ genannt). Lass es offen, solange du Scapio benutzt, denn darin läuft Scapio. Beim ersten Start dauert die Einrichtung einige Minuten.
-6. Im Browser öffnet sich die Anmeldung von Scalable. Mit deinem gewohnten **Scalable-Capital-Login** anmelden und in der App bestätigen.
+5. Es öffnet sich unter macOS das **Terminal**, unter Windows die **Eingabeaufforderung** (unter Windows 11 ebenfalls „Terminal“ genannt). Lass es offen, solange du Scapio benutzt, denn darin läuft Scapio. Beim ersten Start lädt Scapio seine Softwarebausteine, das dauert einige Minuten.
+6. Im Browser öffnet sich die Anmeldung von Scalable. Mit deinem gewohnten **Scalable-Capital-Login** anmelden und in der App bestätigen. Öffnet sich der Browser nicht, steht die Adresse zum Kopieren im Fenster aus Schritt 5.
 
-Das war's. Scapio holt deine Depotdaten und öffnet sich danach im Browser. Ab jetzt genügt ein Doppelklick auf Start.
+Das war's. Danach öffnet sich Scapio im Browser, baut beim ersten Mal seine Oberfläche und holt deine Depotdaten. Ab jetzt genügt ein Doppelklick auf Start.
 
 > [!TIP]
 > **Warnung beim ersten Start?** Die Startdateien sind nicht signiert, deshalb fragt das System einmal nach.

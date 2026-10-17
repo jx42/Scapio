@@ -4,9 +4,9 @@
  * Ablauf: POST /api/refresh, bei 202 wird /api/lauf alle 1,5 s
  * abgefragt, bis der Lauf endet; danach werden alle Queries verworfen. Bei 409 laeuft
  * schon einer — dann wird er angezeigt und kein zweiter gestartet. Einen laufenden Lauf
- * zeigt nur der Knopf: Spinner und der Schritt, den `/api/lauf` meldet.
- * Ein Schritt kommt nur aus dem Lauf, auf den dieser Klick wartet — der Cache haelt anfangs
- * noch den vorigen.
+ * zeigt nur der Knopf: Spinner und „Aktualisieren…“. Den Schritt, den `/api/lauf` meldet,
+ * nennt nur die Statusregion. Er kommt nur aus dem Lauf, auf den dieser Klick wartet — der
+ * Cache haelt anfangs noch den vorigen.
  *
  * Einen eigenen Anmeldeknopf zeigt dieser Container nicht mehr: den stellt die Alert-Reihe
  * in App.tsx (`McpAnmeldungHinweise`), die bei jedem Stand der Anmeldung sichtbar ist —
@@ -44,7 +44,7 @@ import { Loader2, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { de } from '@/i18n/de';
-import { ApiFehler, api, schluessel, type Lauf, type LaufSchritt } from '@/lib/api';
+import { ApiFehler, api, schluessel, type Lauf } from '@/lib/api';
 import { istDemoModus } from '@/lib/demoModus';
 import { tokenVorhanden } from '@/lib/token';
 import { cn } from '@/lib/utils';
@@ -62,8 +62,6 @@ export type AktualisierenAnsichtProps = {
   /** Zeigt die Seite das synthetische Demo-Depot? Dann veraendert hier nichts mehr etwas. */
   readonly demo: boolean;
   readonly laeuft: boolean;
-  /** Schritt des laufenden Laufs; `null`, solange der Server keinen meldet. */
-  readonly schritt?: LaufSchritt | null;
   /** Faellig nach `E_MCP_ANMELDUNG` oder vor der ersten Anmeldung — sperrt den Knopf. */
   readonly anmeldungNoetig: boolean;
   /** Laeuft gerade ein Anmeldeversuch im Browser? Steuert nur noch den Knopf selbst —
@@ -77,7 +75,6 @@ export function AktualisierenAnsicht({
   kannAktualisieren,
   demo,
   laeuft,
-  schritt = null,
   anmeldungNoetig,
   anmeldungLaeuft,
   onKlick,
@@ -104,18 +101,13 @@ export function AktualisierenAnsicht({
     >
       <span className={cn('inline-flex items-center gap-2', demo && 'opacity-50')}>
         {laeuft ? <Loader2 className="animate-spin" aria-hidden="true" /> : <RefreshCw aria-hidden="true" />}
-        {laufttext(laeuft, schritt)}
+        {laeuft ? de.aktualisieren.laeuft : de.aktualisieren.knopf}
       </span>
     </Button>
   );
 
   // Das fehlende Token steht als Alert in App.tsx (`AktualisierenHinweise`).
   return demo ? <MitDemoGrund>{aktualisieren}</MitDemoGrund> : aktualisieren;
-}
-
-function laufttext(laeuft: boolean, schritt: LaufSchritt | null): string {
-  if (!laeuft) return de.aktualisieren.knopf;
-  return schritt === null ? de.aktualisieren.laeuft : de.aktualisieren.schritt(de.aktualisieren.schritte[schritt]);
 }
 
 /** Haengt den Demo-Grund als Popover an den Knopf, der ihn erklaert. */
@@ -330,7 +322,6 @@ export function Aktualisieren({ onAnmeldungStatus, verborgen = false }: Aktualis
           kannAktualisieren={kannAktualisieren}
           demo={demo}
           laeuft={laeuft}
-          schritt={schritt}
           anmeldungNoetig={anmeldungNoetig}
           anmeldungLaeuft={anmeldungLaeuft}
           onKlick={() => {

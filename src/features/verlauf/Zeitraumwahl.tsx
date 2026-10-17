@@ -15,7 +15,8 @@ import { ZEITRAEUME, type Zeitraum } from '@/lib/api';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 export type ZeitraumwahlProps = {
-  readonly gewaehlt: Zeitraum;
+  /** `null`: frei gewaehlt ueber den Zeitraumregler, kein Segment aktiv. */
+  readonly gewaehlt: Zeitraum | null;
   readonly onWahl: (zeitraum: Zeitraum) => void;
 };
 
@@ -24,13 +25,14 @@ export function Zeitraumwahl({ gewaehlt, onWahl }: ZeitraumwahlProps) {
     <ToggleGroup
       type="single"
       aria-label={de.verlauf.zeitraum}
-      value={gewaehlt}
+      className="max-sm:w-full max-sm:flex-nowrap"
+      value={gewaehlt ?? ''}
       onValueChange={(wert) => {
         if (wert !== '') onWahl(wert as Zeitraum);
       }}
     >
       {ZEITRAEUME.map((zeitraum) => (
-        <ToggleGroupItem key={zeitraum} value={zeitraum}>
+        <ToggleGroupItem className="max-sm:min-w-0 max-sm:flex-1 max-sm:px-1" key={zeitraum} value={zeitraum}>
           {de.verlauf.zeitraeume[zeitraum]}
         </ToggleGroupItem>
       ))}

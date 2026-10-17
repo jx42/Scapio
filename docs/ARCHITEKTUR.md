@@ -101,7 +101,7 @@ aktuelle Drift-Stufe, unabhängig vom eigentlichen Inhalt der Route.
 |---|---|---|
 | `GET /api/health` | — | Version, `KERN_VERSION`, Schalter `top25`, Status des letzten Laufs |
 | `GET /api/kennzahlen` | — | Investiert, Kursgewinn, Realisiertes, TWR, IZF (Feld `xirr`), Realrendite, Volatilität, Max. Drawdown, Sharpe-Ratio |
-| `GET /api/zeitreihe` | `zeitraum`, `benchmark` | Depotwert- und Gesamtgewinnreihe (€/%) für ein Fenster, gezählt ab Fensterbeginn, mit Vergleichsdepot; über drei Jahre ein Punkt je Woche (plus Fensterbeginn und Markentage) |
+| `GET /api/zeitreihe` | `zeitraum` oder `von` + `bis` (`YYYY-MM-DD`, Zeitraumregler), `benchmark` | Depotwert- und Gesamtgewinnreihe (€/%) für ein Fenster, gezählt ab Fensterbeginn, mit Vergleichsdepot; über drei Jahre ein Punkt je Woche (plus Fensterbeginn und Markentage); dazu der begrenzte `ausschnitt` und alle Tage der Reihe als Reglerstufen. Der Demo-Abzug kennt nur `zeitraum` |
 | `GET /api/aufteilung` | — | Positionen mit Art ([ADR-025](entscheidungen/ADR-025-wertpapierart-per-get-security-quote.md)), Einstand, Buchgewinn, Positions-IZF (Feld `xirr`) |
 | `GET /api/top25` | — | Look-Through auf Unternehmen, mit `abdeckung` |
 | `GET /api/fluesse` | `fenster` | Nettoinvestition in Wertpapiere je Monat, Schnitt, 12-Monats-Schnitt, Median |

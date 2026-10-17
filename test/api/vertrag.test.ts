@@ -167,6 +167,8 @@ describe('Vertragstest: server/vertrag.ts gegen die tatsaechliche Antwort', () =
       'grob',
       'reiheLeer',
       'zeitraum',
+      'ausschnitt',
+      'tage',
       'fensterGewinnCent',
       'fensterGewinnProzent',
       'benchmark',

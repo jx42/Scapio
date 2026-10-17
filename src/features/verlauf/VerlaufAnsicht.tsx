@@ -22,16 +22,18 @@ import { ArrowUpRight } from 'lucide-react';
 
 import { de } from '@/i18n/de';
 import { RISIKOFREI_ISIN, type Marke, type Zeitpunkt, type Zeitraum } from '@/lib/api';
-import { betragOhneVorzeichen, euroAusCent, prozent } from '@/lib/format';
+import { betragOhneVorzeichen, datumKurz, euroAusCent, prozent } from '@/lib/format';
 import { linkVariants } from '@/lib/linkStil';
 import { cn } from '@/lib/utils';
 import { OnvistaLink } from '@/components/OnvistaLink';
 import { LeerZustand } from '@/components/Zustaende';
 import { TabsContent } from '@/components/ui/tabs';
+import { Zeitraumregler } from '@/features/verlauf/Zeitraumregler';
 import { Zeitraumwahl } from '@/features/verlauf/Zeitraumwahl';
 import { Gewinnwert } from '@/features/verlauf/VerlaufGewinnwert';
 import { VerlaufRenditeChart } from '@/features/verlauf/VerlaufRenditeChart';
 import { VerlaufVermoegenChart } from '@/features/verlauf/VerlaufVermoegenChart';
+import { useZeitraumVorschau } from '@/features/verlauf/useZeitraumVorschau';
 
 export type VerlaufAnsichtModus = 'vermoegen' | 'rendite';
 
@@ -40,7 +42,20 @@ export const VERLAUF_MODI: readonly VerlaufAnsichtModus[] = ['vermoegen', 'rendi
 export type VerlaufAnsichtProps = {
   readonly punkte: readonly Zeitpunkt[];
   readonly marken: readonly Marke[];
-  readonly zeitraum: Zeitraum;
+  /** `null`, solange der Zeitraumregler einen freien Zeitraum haelt. */
+  readonly zeitraum: Zeitraum | null;
+  /** Das tatsaechlich gezeigte Fenster, wie der Server es begrenzt hat. */
+  readonly ausschnitt: { readonly von: string; readonly bis: string } | null;
+  /** Stufen des Zeitraumreglers; leer heisst: kein Regler. */
+  readonly tage: readonly string[];
+  /** Sichtbar, aber nicht bedienbar — in der Demo. */
+  readonly reglerGesperrt: boolean;
+  /**
+   * Zaehlt jede von aussen gesetzte Auswahl (Segmentleiste, Rueckfall nach einem Fehler): auch
+   * wenn danach dasselbe Fenster aus dem Cache kommt, muessen Griffe und Vorschau eines
+   * Ziehens weg.
+   */
+  readonly auswahlRunde: number;
   /** Bestimmt die Kopfzeile: Betrag vor Prozent bei "vermoegen", Prozent vor Betrag bei "rendite", wie im Tooltip. */
   readonly modus: VerlaufAnsichtModus;
   /**
@@ -57,6 +72,7 @@ export type VerlaufAnsichtProps = {
   /** Warum nicht gezeichnet wird. Kommt fertig formuliert aus `sperrtext()`. */
   readonly sperrgrund?: string | null;
   readonly onZeitraum: (zeitraum: Zeitraum) => void;
+  readonly onFreierZeitraum: (von: string, bis: string) => void;
   /** Der aktiv verglichene Benchmark, oder `null` — bestimmt Namen in Legende/Tooltip/Tabelle. */
   readonly benchmark: { readonly isin: string; readonly name: string } | null;
   /** Aus Linienwahl, per Default aus: nur im Vermoegen-Chart gezeichnet. */
@@ -70,17 +86,27 @@ export function VerlaufAnsicht({
   punkte,
   marken,
   zeitraum,
+  ausschnitt,
+  tage,
+  reglerGesperrt,
+  auswahlRunde,
   modus,
   fensterGewinnCent,
   fensterGewinnProzent,
   gesperrt,
   sperrgrund,
   onZeitraum,
+  onFreierZeitraum,
   benchmark,
   zeigeEinzahlung,
   zeigeZufluesse,
 }: VerlaufAnsichtProps) {
-  const zeitraumLang = de.verlauf.zeitraumLang[zeitraum];
+  const zeitraumLang =
+    zeitraum !== null
+      ? de.verlauf.zeitraumLang[zeitraum]
+      : ausschnitt === null
+        ? ''
+        : de.verlauf.zeitraumFrei(datumKurz(ausschnitt.von), datumKurz(ausschnitt.bis));
   const daten = punkte as Zeitpunkt[];
   // Nur ausgewaehlt, nicht gerechnet: der letzte Punkt der Reihe ist der Kopfwert.
   const letzter = punkte.at(-1);
@@ -89,6 +115,21 @@ export function VerlaufAnsicht({
   const differenzCent = letzter?.differenzCent;
   const differenzProzent = letzter?.differenzProzent;
   const benchmarkName = benchmark?.name ?? null;
+
+  const { fenster, anschluss, melde } = useZeitraumVorschau(ausschnitt, tage, auswahlRunde);
+
+  const regler =
+    ausschnitt === null || tage.length < 2 ? undefined : (
+      <Zeitraumregler
+        tage={tage}
+        fenster={fenster}
+        von={ausschnitt.von}
+        bis={ausschnitt.bis}
+        gesperrt={reglerGesperrt}
+        onWahl={onFreierZeitraum}
+        onVorschau={melde}
+      />
+    );
 
   // Gesperrt und leer sind unabhaengig vom Modus — dieselbe Meldung fuer beide Tabs,
   // sonst zeigt <TabsContent> des inaktiven Modus nichts und aria-controls liefe ins Leere.
@@ -150,6 +191,8 @@ export function VerlaufAnsicht({
             benchmarkName={benchmarkName}
             zeigeEinzahlung={zeigeEinzahlung}
             zeigeZufluesse={zeigeZufluesse}
+            fuss={regler}
+            vorschau={regler === undefined ? undefined : anschluss}
           />
         )}
       </TabsContent>
@@ -159,6 +202,8 @@ export function VerlaufAnsicht({
             punkte={daten}
             label={de.verlauf.chartRendite(zeitraumLang, benchmarkName)}
             benchmarkName={benchmarkName}
+            fuss={regler}
+            vorschau={regler === undefined ? undefined : anschluss}
           />
         )}
       </TabsContent>

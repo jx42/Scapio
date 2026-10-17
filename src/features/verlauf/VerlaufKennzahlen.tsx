@@ -22,9 +22,10 @@
  * (zeit- bzw. geldgewichtet) steht im Erklaertext — sonst wirkt eine Realrendite ueber der
  * Marktrendite wie ein Fehler, obwohl beide anders gewichten. So sind beide Kopfzahlen der Karten untereinander vergleichbar
  * (beide p.a.), waehrend die jeweils andere Zahl nicht verloren geht.
- * Die Realrendite-Subline nennt zusaetzlich die Inflation, gegen die sie gerechnet ist,
- * damit die Karte fuer sich verstaendlich bleibt, ohne die Tabelle darunter erst
- * aufzuklappen.
+ *
+ * Auch unter `sm` bleiben alle sechs Karten gross, zwei je Reihe. Damit das bei 390 px
+ * traegt, ist jede Subline einzeilig und so kurz gehalten, dass sie in die halbe Breite
+ * passt: Stand ohne Uhrzeit, Drawdown-Zeitraum mit zweistelligem Jahr.
  */
 
 import { de } from '@/i18n/de';
@@ -40,7 +41,7 @@ import {
   richtungTon,
   sharpeAnzeige,
   xirrAnzeige,
-  zeitpunktKurz,
+  zeitpunktNurTag,
   type Richtung,
 } from '@/lib/format';
 import { cn } from '@/lib/utils';
@@ -84,7 +85,7 @@ function karten(daten: KennzahlenAntwort): readonly Karte[] {
   const maxDrawdown = maxDrawdownAnzeige(daten.maxDrawdown);
   const sharpe = sharpeAnzeige(daten.sharpe);
 
-  const stand = zeitpunktKurz(daten.stand);
+  const standTag = zeitpunktNurTag(daten.stand);
 
   return [
     {
@@ -92,7 +93,7 @@ function karten(daten: KennzahlenAntwort): readonly Karte[] {
       wert: euroAusCent(daten.gesamtCent),
       richtung: 'neutral',
       pfeil: '',
-      subline: stand === null ? de.seite.standUnbekannt : de.seite.stand(stand),
+      subline: standTag === null ? de.seite.standUnbekannt : de.seite.stand(standTag),
       sublineAnimiert: false,
       erklaerung: de.kennzahlen.erklaerung.gesamt,
     },
@@ -119,7 +120,7 @@ function karten(daten: KennzahlenAntwort): readonly Karte[] {
       wert: maxDrawdown.wert,
       richtung: daten.maxDrawdown.art === 'ok' ? 'ab' : 'neutral',
       pfeil: daten.maxDrawdown.art === 'ok' ? richtungPfeil(daten.maxDrawdown.anteil) : '',
-      subline: maxDrawdown.zeitraum,
+      subline: maxDrawdown.zeitraumKurz,
       sublineAnimiert: false,
       erklaerung: de.kennzahlen.erklaerung.maxDrawdown,
     },
@@ -157,35 +158,24 @@ export function VerlaufKennzahlen({ daten, laedt }: VerlaufKennzahlenProps) {
     <section aria-labelledby="kennzahlen-ueberblick">
       <h3 id="kennzahlen-ueberblick" className="sr-only">{de.kennzahlen.ueberblick}</h3>
       <div className={cn('grid grid-cols-2 gap-3 sm:grid-cols-3', alleKarten.length === 6 ? 'lg:grid-cols-6' : 'lg:grid-cols-5')}>
-        {alleKarten.map((karte, index) => (
-          <Kennzahlkarte key={karte.bezeichnung} karte={karte} kompakt={index >= GROSSE_KARTEN} />
+        {alleKarten.map((karte) => (
+          <Kennzahlkarte key={karte.bezeichnung} karte={karte} />
         ))}
       </div>
     </section>
   );
 }
 
-/**
- * Unter `sm` bleiben Depotwert und Kursgewinn gross, die uebrigen stehen einzeilig ohne
- * Unterzeile — sonst beginnt der Chart bei 390 px erst nach einer Bildschirmhoehe Karten.
- */
-const GROSSE_KARTEN = 2;
-
 /** Eigene Komponente, weil `useZahlZaehler` als Hook nicht in einer `.map()`-Schleife stehen darf. */
-function Kennzahlkarte({ karte, kompakt }: { readonly karte: Karte; readonly kompakt: boolean }) {
+function Kennzahlkarte({ karte }: { readonly karte: Karte }) {
   const angezeigterWert = useZahlZaehler(karte.wert);
   const gezaehlteSubline = useZahlZaehler(karte.subline ?? '');
   const angezeigteSubline =
     karte.sublineAnimiert === false ? (karte.subline ?? '') : gezaehlteSubline;
 
   return (
-    <Card
-      className={cn(
-        GLAS_TON[karte.richtung],
-        kompakt && 'max-sm:col-span-2 max-sm:flex max-sm:items-center max-sm:justify-between',
-      )}
-    >
-      <CardHeader className={cn(kompakt && 'max-sm:py-2 max-sm:pr-0 max-sm:pl-4')}>
+    <Card className={cn('min-w-0', GLAS_TON[karte.richtung])}>
+      <CardHeader className="max-sm:px-4">
         <CardTitle>
           <span className="inline-flex items-center gap-1.5">
             {karte.bezeichnung}
@@ -195,15 +185,13 @@ function Kennzahlkarte({ karte, kompakt }: { readonly karte: Karte; readonly kom
           </span>
         </CardTitle>
       </CardHeader>
-      <CardContent className={cn(kompakt && 'max-sm:py-2 max-sm:pr-4 max-sm:pl-2 max-sm:text-right')}>
-        <span
-          className={cn('text-2xl font-bold leuchten-zahl', kompakt && 'max-sm:text-base', richtungTon[karte.richtung])}
-        >
+      <CardContent className="max-sm:px-4">
+        <span className={cn('text-2xl font-bold whitespace-nowrap leuchten-zahl', richtungTon[karte.richtung])}>
           <RichtungsPfeil pfeil={karte.pfeil} className="mr-1" />
           {angezeigterWert}
         </span>
         {karte.subline === null ? null : (
-          <CardDescription className={cn('mt-1', kompakt && 'max-sm:hidden')}>
+          <CardDescription className="mt-1 truncate">
             <TextMitPfeil text={angezeigteSubline} />
           </CardDescription>
         )}

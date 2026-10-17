@@ -12,12 +12,18 @@
  * Zeitraumwahl stehen und zeigt ihren eigenen Hinweis. Sonst verschwaende mit dem
  * Diagramm auch die Bedienung, mit der man das leere Fenster wieder verlassen koennte —
  * der gespeicherte Zeitraum haelt die Kachel dann ueber jedes Neuladen hinweg leer.
+ *
+ * Der frei gewaehlte Zeitraum des Reglers wird nicht gespeichert: er haengt an den Tagen
+ * der Reihe, die mit jedem Lauf weiterwandert. In der Demo steht der Regler gesperrt da —
+ * der statische Abzug kennt nur die festen Zeitraeume. [ADR-048]
  */
 
+import { useState } from 'react';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
 import { de } from '@/i18n/de';
-import { BENCHMARKS, RISIKOFREI, STANDARD_BENCHMARK, ZEITRAEUME, api, kachelZustand, schluessel, type Zeitraum } from '@/lib/api';
+import { BENCHMARKS, RISIKOFREI, STANDARD_BENCHMARK, ZEITRAEUME, api, kachelZustand, schluessel, type Zeitraum, type ZeitraumAuswahl } from '@/lib/api';
+import { istDemoModus } from '@/lib/demoModus';
 import { AN_AUS, useGespeichert, type AnAus } from '@/lib/speicher';
 import { Kachel } from '@/components/Kachel';
 import { InfoKnopf } from '@/components/InfoKnopf';
@@ -46,6 +52,9 @@ type BenchmarkAuswahl = (typeof BENCHMARK_AUSWAHL)[number];
 
 export function VerlaufKachel() {
   const [zeitraum, setZeitraum] = useGespeichert<Zeitraum>('zeitraum', 'max', ZEITRAEUME);
+  const [frei, setFrei] = useState<{ readonly von: string; readonly bis: string } | null>(null);
+  const [auswahlRunde, setAuswahlRunde] = useState(0);
+  const auswahl: ZeitraumAuswahl = frei ?? zeitraum;
   const [modus, setModus] = useGespeichert<VerlaufAnsichtModus>(
     'verlaufModus',
     'vermoegen',
@@ -76,13 +85,20 @@ export function VerlaufKachel() {
   );
 
   const abfrage = useQuery({
-    queryKey: schluessel.zeitreihe(zeitraum, benchmark),
-    queryFn: () => api.zeitreihe(zeitraum, benchmark),
+    queryKey: schluessel.zeitreihe(auswahl, benchmark),
+    queryFn: () => api.zeitreihe(auswahl, benchmark),
     // Ohne das waere jeder neue Schluessel `isPending`: Skeleton statt Chart, dann
     // Neuaufbau — das Flackern beim Umschalten.
     placeholderData: keepPreviousData,
   });
   const kennzahlenAbfrage = useQuery({ queryKey: schluessel.kennzahlen, queryFn: api.kennzahlen });
+
+  // Scheitert der freie Zeitraum, zurueck auf den festen: die Fehlerkachel zeigte weder
+  // Regler noch Segmentleiste, und ohne Neuladen kaeme man nicht mehr heraus.
+  if (frei !== null && abfrage.isError) {
+    setFrei(null);
+    setAuswahlRunde((n) => n + 1);
+  }
 
   const daten = abfrage.data;
 
@@ -148,13 +164,24 @@ export function VerlaufKachel() {
             <VerlaufAnsicht
               punkte={daten.punkte}
               marken={daten.marken}
-              zeitraum={zeitraum}
+              zeitraum={frei === null ? zeitraum : null}
+              ausschnitt={daten.ausschnitt}
+              tage={daten.tage}
+              reglerGesperrt={istDemoModus()}
+              auswahlRunde={auswahlRunde}
               modus={modus}
               fensterGewinnCent={daten.fensterGewinnCent}
               fensterGewinnProzent={daten.fensterGewinnProzent}
               gesperrt={chartGesperrt(daten.drift)}
               sperrgrund={sperrtext(daten.drift)}
-              onZeitraum={setZeitraum}
+              onZeitraum={(neu) => {
+                setFrei(null);
+                setAuswahlRunde((n) => n + 1);
+                setZeitraum(neu);
+              }}
+              onFreierZeitraum={(von, bis) => {
+                setFrei({ von, bis });
+              }}
               benchmark={daten.benchmark}
               zeigeEinzahlung={zeigeEinzahlungAuswahl === 'an'}
               zeigeZufluesse={zeigeZufluesseAuswahl === 'an'}

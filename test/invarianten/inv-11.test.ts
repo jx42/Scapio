@@ -17,7 +17,7 @@ import { WURZEL, alsListe, dateien, sucheImCode } from './quellen.ts';
  * fuehrt zu einem bewussten Klick, keine zu automatischem Netzverkehr beim Oeffnen der
  * Seite. Geschlossene Liste; ein weiterer Eintrag braucht eine eigene ADR. [ADR-021]
  */
-const ERLAUBTE_AUSGEHENDE_LINKS = [/^https:\/\/www\.onvista\.de\//, /^https:\/\/ec\.europa\.eu\//, /^https:\/\/data\.ecb\.europa\.eu\//, /^https:\/\/scalable\.capital/, /^https:\/\/github\.com\/jx42\/Scapio\/releases/, /^https:\/\/github\.com\/jx42\/Scapio#readme$/];
+const ERLAUBTE_AUSGEHENDE_LINKS = [/^https:\/\/www\.onvista\.de\//, /^https:\/\/ec\.europa\.eu\//, /^https:\/\/data\.ecb\.europa\.eu\//, /^https:\/\/scalable\.capital/, /^https:\/\/github\.com\/jx42\/Scapio\/releases/, /^https:\/\/github\.com\/jx42\/Scapio#readme$/, /^https:\/\/github\.com\/jx42\/Scapio$/];
 
 function istErlaubterAusgehenderLink(adresse: string): boolean {
   return ERLAUBTE_AUSGEHENDE_LINKS.some((muster) => muster.test(adresse));

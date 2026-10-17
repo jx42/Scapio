@@ -94,7 +94,12 @@ export type Zeitreihe = MitStand & {
   readonly marken: readonly Marke[];
   readonly grob: boolean;
   readonly reiheLeer: boolean;
-  readonly zeitraum: Zeitraum;
+  /** `null` beim frei gewaehlten Zeitraum (`von`/`bis`). */
+  readonly zeitraum: Zeitraum | null;
+  /** Tatsaechlich gezeigtes Fenster, auf die Reihe begrenzt; `null` ohne Reihe. */
+  readonly ausschnitt: { readonly von: string; readonly bis: string } | null;
+  /** Jeder Tag der gesamten Reihe — die Stufen des Zeitraumreglers. */
+  readonly tage: readonly string[];
   readonly fensterGewinnCent: number;
   readonly fensterGewinnProzent: number;
   readonly benchmark: { readonly isin: string; readonly name: string } | null;
