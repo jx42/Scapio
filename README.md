@@ -4,9 +4,7 @@
 
 **[Live-Demo ansehen](https://demo.scapio.workers.dev)** — mit erfundenem Depot, ohne Anmeldung.
 
-<video src="https://github.com/jx42/Scapio/raw/main/docs/bilder/scapio-intro.mp4" poster="docs/bilder/scapio-demo.png" controls muted playsinline width="100%">
-  <a href="docs/bilder/scapio-intro.mp4">Intro-Video ansehen</a>
-</video>
+[![Scapio-Dashboard mit Demodaten: Depotwert, Rendite, Drawdown, Verlauf und Aufteilung](docs/bilder/scapio-demo.png)](https://demo.scapio.workers.dev)
 
 > [!IMPORTANT]
 > **Scapio ist kein offizielles Produkt von Scalable Capital!**

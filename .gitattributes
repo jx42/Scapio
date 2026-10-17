@@ -27,5 +27,3 @@
 /DESIGN.md   export-ignore
 /PRODUCT.md  export-ignore
 CLAUDE.md    export-ignore
-# Das Intro-Video ist nur fuer die README auf GitHub, nicht fuer den Download.
-/docs/bilder/*.mp4 export-ignore
