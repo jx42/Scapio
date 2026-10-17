@@ -77,6 +77,13 @@ const tagFormat = new Intl.DateTimeFormat('de-DE', {
   timeZone: 'UTC',
 });
 
+const tagZweistelligFormat = new Intl.DateTimeFormat('de-DE', {
+  day: '2-digit',
+  month: '2-digit',
+  year: '2-digit',
+  timeZone: 'UTC',
+});
+
 const monatFormat = new Intl.DateTimeFormat('de-DE', {
   month: 'long',
   year: 'numeric',
@@ -98,6 +105,13 @@ const tagMonatFormat = new Intl.DateTimeFormat('de-DE', {
 const jahrFormat = new Intl.DateTimeFormat('de-DE', {
   year: 'numeric',
   timeZone: 'UTC',
+});
+
+const zeitpunktTagFormat = new Intl.DateTimeFormat('de-DE', {
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+  timeZone: ZEITZONE,
 });
 
 const zeitpunktFormat = new Intl.DateTimeFormat('de-DE', {
@@ -255,6 +269,11 @@ export function datumKurz(tag: string): string {
   return datum === null ? String(tag ?? '') : tagFormat.format(datum);
 }
 
+function datumZweistellig(tag: string): string {
+  const datum = tagAlsDatum(tag);
+  return datum === null ? String(tag ?? '') : tagZweistelligFormat.format(datum);
+}
+
 /** "2026-08-26" wird zu "08.26" — fuer Chart-Achsen, wo der volle Tag nicht hinpasst. */
 export function datumAlsMonatJahr(tag: string): string {
   const datum = tagAlsDatum(tag);
@@ -309,6 +328,13 @@ export function zeitpunktKurz(iso: string | null | undefined): string | null {
   if (typeof iso !== 'string' || iso === '') return null;
   const datum = new Date(iso);
   return Number.isNaN(datum.getTime()) ? null : zeitpunktFormat.format(datum);
+}
+
+/** Wie `zeitpunktKurz`, aber nur der Tag — fuer Stellen, an denen die Uhrzeit nicht hinpasst. */
+export function zeitpunktNurTag(iso: string | null | undefined): string | null {
+  if (typeof iso !== 'string' || iso === '') return null;
+  const datum = new Date(iso);
+  return Number.isNaN(datum.getTime()) ? null : zeitpunktTagFormat.format(datum);
 }
 
 /** Tag im Monat als Ordnungszahl: 4 wird zu "4." */
@@ -366,16 +392,19 @@ export type MaxDrawdownAnzeige = {
   readonly wert: string;
   readonly satz: string | null;
   readonly zeitraum: string | null;
+  /** Derselbe Zeitraum mit zweistelligem Jahr, fuer die halbe Kartenbreite auf dem Handy. */
+  readonly zeitraumKurz: string | null;
 };
 
 export function maxDrawdownAnzeige(ergebnis: MaxDrawdownErgebnis | null | undefined): MaxDrawdownAnzeige {
   if (ergebnis === null || ergebnis === undefined || ergebnis.art !== 'ok') {
-    return { wert: de.xirr.nichtBerechenbar, satz: de.kennzahlen.maxDrawdownZuWenigDaten, zeitraum: null };
+    return { wert: de.xirr.nichtBerechenbar, satz: de.kennzahlen.maxDrawdownZuWenigDaten, zeitraum: null, zeitraumKurz: null };
   }
   return {
     wert: prozent(Math.abs(ergebnis.anteil)),
     satz: null,
     zeitraum: de.kennzahlen.maxDrawdownZeitraum(datumKurz(ergebnis.tagHoch), datumKurz(ergebnis.tagTief)),
+    zeitraumKurz: de.kennzahlen.maxDrawdownZeitraum(datumZweistellig(ergebnis.tagHoch), datumZweistellig(ergebnis.tagTief)),
   };
 }
 

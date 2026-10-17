@@ -17,13 +17,14 @@ export function Fensterwahl({ gewaehlt, onWahl }: FensterwahlProps) {
     <ToggleGroup
       type="single"
       aria-label={de.fluesse.fenster}
+      className="max-sm:w-full max-sm:flex-nowrap"
       value={gewaehlt}
       onValueChange={(wert) => {
         if (wert !== '') onWahl(wert as Fenster);
       }}
     >
       {FENSTER.map((f) => (
-        <ToggleGroupItem key={f} value={f}>
+        <ToggleGroupItem className="max-sm:min-w-0 max-sm:flex-1 max-sm:px-1" key={f} value={f}>
           {de.fluesse.fensterKurz[f]}
         </ToggleGroupItem>
       ))}

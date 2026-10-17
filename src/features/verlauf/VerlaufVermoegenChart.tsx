@@ -4,7 +4,7 @@
  * `VerlaufChartGeruest`, diese Datei liefert nur, was die Ansicht unterscheidet.
  */
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import { Area, Line } from 'recharts';
 
 import { de } from '@/i18n/de';
@@ -14,6 +14,7 @@ import { euroKompaktAusCent } from '@/lib/format';
 import { serienAnimation } from '@/lib/bewegung';
 import { FARBE } from '@/lib/farben';
 import { VerlaufChartGeruest } from '@/features/verlauf/VerlaufChartGeruest';
+import type { VorschauAnschluss } from '@/features/verlauf/VerlaufVorschau';
 import { VerlaufTooltip } from '@/features/verlauf/VerlaufTooltip';
 import { AktivPunktMitLinie, leuchtLinie, markenLinien, yAchseImRaster, zeichenflaecheLinks } from '@/features/verlauf/verlaufAchsen';
 import { tabelleVermoegen } from '@/features/verlauf/verlaufTabellen';
@@ -26,6 +27,9 @@ export type VerlaufVermoegenChartProps = {
   readonly benchmarkName: string | null;
   readonly zeigeEinzahlung: boolean;
   readonly zeigeZufluesse: boolean;
+  /** Unter der Zeichenflaeche: der Zeitraumregler. */
+  readonly fuss?: ReactNode;
+  readonly vorschau?: VorschauAnschluss;
 };
 
 export function VerlaufVermoegenChart({
@@ -35,6 +39,8 @@ export function VerlaufVermoegenChart({
   benchmarkName,
   zeigeEinzahlung,
   zeigeZufluesse,
+  fuss,
+  vorschau,
 }: VerlaufVermoegenChartProps) {
   const [hoverMarke, setHoverMarke] = useState<string | null>(null);
 
@@ -62,6 +68,8 @@ export function VerlaufVermoegenChart({
   return (
     <VerlaufChartGeruest
       label={label}
+      fuss={fuss}
+      vorschau={vorschau}
       tabelle={tabelle}
       daten={punkte}
       defs={

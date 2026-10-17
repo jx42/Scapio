@@ -78,7 +78,8 @@ describe('Top25Kachel', () => {
     expect(within(tabelle).getByText(euro(APPLE.exposureCent))).toBeInTheDocument();
     expect(within(tabelle).getByText('Apple Inc.')).toBeInTheDocument();
     expect(within(tabelle).queryByText('Firma 15')).not.toBeInTheDocument();
-    expect(within(tabelle).getByText('iShares Core MSCI World, IE00BKM4GZ66')).toBeInTheDocument();
+    // Zweimal: als eigene Spalte ab `sm`, darunter unter dem Namen — jsdom kennt kein CSS.
+    expect(within(tabelle).getAllByText('iShares Core MSCI World, IE00BKM4GZ66')).toHaveLength(2);
     const mehr = screen.getByRole('button', { name: de.top25.mehrZeigen });
     await userEvent.click(mehr);
     expect(await screen.findByRole('table', { name: de.top25.tabelle(zahl(1), zahl(15)) })).toBeInTheDocument();

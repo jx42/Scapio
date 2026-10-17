@@ -96,6 +96,15 @@ export type {
   ErtragsZeile,
 };
 
+/** Ein fester Zeitraum aus der Segmentleiste oder ein frei gewaehlter aus dem Zeitraumregler. */
+export type ZeitraumAuswahl = Zeitraum | { readonly von: string; readonly bis: string };
+
+function zeitraumParameter(auswahl: ZeitraumAuswahl): string {
+  return typeof auswahl === 'string'
+    ? `zeitraum=${encodeURIComponent(auswahl)}`
+    : `von=${encodeURIComponent(auswahl.von)}&bis=${encodeURIComponent(auswahl.bis)}`;
+}
+
 export type RefreshGestartet = { readonly art: 'gestartet'; readonly laufId: number };
 export type RefreshBelegt = {
   readonly art: 'belegt';
@@ -230,9 +239,9 @@ async function postMitToken(pfad: string): Promise<Response> {
 export const api = {
   health: () => holen<Health>('/api/health'),
 
-  zeitreihe: (zeitraum: Zeitraum, benchmark: string | null) =>
+  zeitreihe: (auswahl: ZeitraumAuswahl, benchmark: string | null) =>
     holen<Zeitreihe>(
-      `/api/zeitreihe?zeitraum=${encodeURIComponent(zeitraum)}` +
+      `/api/zeitreihe?${zeitraumParameter(auswahl)}` +
         (benchmark === null ? '' : `&benchmark=${encodeURIComponent(benchmark)}`),
     ),
 
@@ -309,7 +318,7 @@ export const api = {
 /** Query-Schluessel an einer Stelle, damit `invalidateQueries` nichts uebersieht. */
 export const schluessel = {
   health: ['health'] as const,
-  zeitreihe: (zeitraum: Zeitraum, benchmark: string | null) => ['zeitreihe', zeitraum, benchmark] as const,
+  zeitreihe: (auswahl: ZeitraumAuswahl, benchmark: string | null) => ['zeitreihe', auswahl, benchmark] as const,
   kennzahlen: ['kennzahlen'] as const,
   aufteilung: ['aufteilung'] as const,
   top25: ['top25'] as const,

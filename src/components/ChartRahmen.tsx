@@ -8,8 +8,12 @@
  * ist nicht fokussierbar — kein `accessibilityLayer`, nichts Bedienbares in role="img".
  *
  * Zweite und letzte Stelle mit einem style-Attribut: Recharts braucht ein Pixelmass am
- * Container, sonst zeichnet es in eine Flaeche der Hoehe null. Gesetzt wird
- * ausschliesslich --chart-hoehe. [INV-05]
+ * Container, sonst zeichnet es in eine Flaeche der Hoehe null. Gesetzt werden
+ * ausschliesslich --chart-hoehe und --chart-links, der Einzug des Fusses bis zur
+ * Zeichenflaeche — die Breite der Y-Achse steht erst mit ihren Beschriftungen fest. [INV-05]
+ *
+ * Der Fuss (etwa ein Regler) steht ausserhalb von role="img", denn dort darf nichts
+ * Bedienbares liegen.
  *
  * Vertrag: <ChartRahmen hoehe={320} label="Depotwert seit 2019" tabelle={…}>…</ChartRahmen>
  */
@@ -33,21 +37,24 @@ export type ChartRahmenProps = {
   readonly label: string;
   readonly tabelle: ChartTabelle;
   readonly children: ReactNode;
+  /** Unter der Zeichenflaeche, links buendig mit ihr. */
+  readonly fuss?: ReactNode;
+  /** Abstand der Zeichenflaeche vom linken Rand in Pixeln (Rand plus Y-Achse). */
+  readonly fussEinzug?: number;
 };
 
-export function ChartRahmen({ hoehe, label, tabelle, children }: ChartRahmenProps) {
+export function ChartRahmen({ hoehe, label, tabelle, children, fuss, fussEinzug = 0 }: ChartRahmenProps) {
   const hinweisId = useId();
   return (
-    <figure className="m-0">
-      <div
-        className="chart-flaeche"
-        role="img"
-        aria-label={label}
-        // eslint-disable-next-line react/forbid-dom-props -- INV-05, Ausnahme 2: Recharts braucht ein Pixelmass am Container; gesetzt wird hier nur die Variable --chart-hoehe, die Hoehe selbst steht in theme.css.
-        style={{ '--chart-hoehe': `${hoehe}px` } as CSSProperties}
-      >
+    <figure
+      className="m-0"
+      // eslint-disable-next-line react/forbid-dom-props -- INV-05, Ausnahme 2: Recharts braucht ein Pixelmass am Container, der Fuss den gemessenen Einzug; gesetzt werden nur die Variablen, Hoehe und Einzug selbst stehen in theme.css.
+      style={{ '--chart-hoehe': `${hoehe}px`, '--chart-links': `${fussEinzug}px` } as CSSProperties}
+    >
+      <div className="chart-flaeche" role="img" aria-label={label}>
         {children}
       </div>
+      {fuss === undefined ? null : <div className="chart-fuss">{fuss}</div>}
 
       {/* sr-only auf dem div, nicht auf der table: Tabellen ignorieren beim Layout ihre
           eigene height/overflow-Beschraenkung und wachsen auf die Zeilenzahl, egal wie

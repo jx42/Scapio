@@ -231,12 +231,15 @@ export function KennzahlenAnsicht({
     if (rahmen === null) return undefined;
 
     const anpassen = () => {
-      const verfuegbar = rahmen.clientHeight;
+      // Unterkanten als Bruchzahlen statt `offsetTop`: das ist ganzzahlig gerundet und
+      // bezieht sich auf die Tabelle, nicht den Rahmen — eine passende letzte Zeile lag
+      // so ein Pixel "darueber" und wurde abgeschnitten.
+      const unterkante = rahmen.getBoundingClientRect().bottom + 0.5;
       const zeilenKnoten = rahmen.querySelectorAll<HTMLElement>('tbody tr');
       let passend = zeilenKnoten.length;
       for (let i = 0; i < zeilenKnoten.length; i++) {
         const zeile = zeilenKnoten[i]!;
-        if (zeile.offsetTop + zeile.offsetHeight > verfuegbar) {
+        if (zeile.getBoundingClientRect().bottom > unterkante) {
           passend = i;
           break;
         }

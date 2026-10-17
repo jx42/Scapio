@@ -11,6 +11,7 @@ export const FARBE = {
   chart3: 'var(--color-chart-3)',
   chart4: 'var(--color-chart-4)',
   chart5: 'var(--color-chart-5)',
+  grund: 'var(--color-grund)',
   flaeche: 'var(--color-flaeche)',
   rand: 'var(--color-rand)',
   text: 'var(--color-text)',

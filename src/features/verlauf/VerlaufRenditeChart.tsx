@@ -4,7 +4,7 @@
  * `VerlaufChartGeruest`, diese Datei liefert nur, was die Ansicht unterscheidet.
  */
 
-import { useMemo } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { Area, Line } from 'recharts';
 
 import { de } from '@/i18n/de';
@@ -14,6 +14,7 @@ import { prozent, richtungFarbe, vorzeichen } from '@/lib/format';
 import { serienAnimation } from '@/lib/bewegung';
 import { FARBE } from '@/lib/farben';
 import { VerlaufChartGeruest } from '@/features/verlauf/VerlaufChartGeruest';
+import type { VorschauAnschluss } from '@/features/verlauf/VerlaufVorschau';
 import { VerlaufTooltip } from '@/features/verlauf/VerlaufTooltip';
 import { AktivPunktMitLinie, leuchtLinie, yAchseImRaster, zeichenflaecheLinks } from '@/features/verlauf/verlaufAchsen';
 import { tabelleRendite } from '@/features/verlauf/verlaufTabellen';
@@ -44,9 +45,12 @@ export type VerlaufRenditeChartProps = {
   /** Beschriftung des Charts, fertig aus `de.verlauf.chartRendite`. */
   readonly label: string;
   readonly benchmarkName: string | null;
+  /** Unter der Zeichenflaeche: der Zeitraumregler. */
+  readonly fuss?: ReactNode;
+  readonly vorschau?: VorschauAnschluss;
 };
 
-export function VerlaufRenditeChart({ punkte, label, benchmarkName }: VerlaufRenditeChartProps) {
+export function VerlaufRenditeChart({ punkte, label, benchmarkName, fuss, vorschau }: VerlaufRenditeChartProps) {
   const tabelle = useMemo(() => tabelleRendite(punkte, benchmarkName), [punkte, benchmarkName]);
 
   // Y-Achse: siehe yAchseImRaster. Die 0 gehoert immer dazu, damit die Nulllinie
@@ -87,6 +91,8 @@ export function VerlaufRenditeChart({ punkte, label, benchmarkName }: VerlaufRen
   return (
     <VerlaufChartGeruest
       label={label}
+      fuss={fuss}
+      vorschau={vorschau}
       tabelle={tabelle}
       daten={punkte}
       defs={

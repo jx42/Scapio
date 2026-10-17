@@ -87,7 +87,7 @@ export function Kachel({
               <p className="text-sm text-text-leise">{untertitel}</p>
             )}
           </div>
-          {werkzeuge === undefined ? null : <div className="flex flex-wrap items-center gap-2">{werkzeuge}</div>}
+          {werkzeuge === undefined ? null : <div className="flex flex-wrap items-center gap-2 max-sm:w-full">{werkzeuge}</div>}
         </header>
 
         <div

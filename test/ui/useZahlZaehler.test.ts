@@ -7,9 +7,9 @@
  */
 
 import { renderHook, waitFor } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { useZahlZaehler, zaehlerAnzeige } from '@/hooks/useZahlZaehler';
+import { useStufenZaehler, useZahlZaehler, zaehlerAnzeige } from '@/hooks/useZahlZaehler';
 
 describe('zaehlerAnzeige', () => {
   it('zeigt bei fortschritt 0 den Startbetrag in Vorzeichen und Form des Zielwerts', () => {
@@ -70,5 +70,30 @@ describe('useZahlZaehler', () => {
     expect(result.current).not.toBe('120 €');
 
     await waitFor(() => expect(result.current).toBe('120 €'), { timeout: 5000 });
+  });
+});
+
+describe('useStufenZaehler', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('zaehlt durch die Stufen, statt zu springen', async () => {
+    const { result, rerender } = renderHook(({ ziel }) => useStufenZaehler(ziel), { initialProps: { ziel: 0 } });
+
+    rerender({ ziel: 100 });
+
+    await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    expect(result.current).toBeLessThan(100);
+    await waitFor(() => expect(result.current).toBe(100), { timeout: 5000 });
+  });
+
+  it('springt bei reduzierter Bewegung sofort aufs Ziel', () => {
+    vi.stubGlobal('matchMedia', (abfrage: string) => ({ matches: abfrage.includes('reduce'), media: abfrage }));
+    const { result, rerender } = renderHook(({ ziel }) => useStufenZaehler(ziel), { initialProps: { ziel: 0 } });
+
+    rerender({ ziel: 100 });
+
+    expect(result.current).toBe(100);
   });
 });

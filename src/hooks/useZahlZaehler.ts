@@ -121,3 +121,35 @@ export function useZahlZaehler(wert: string): string {
 
   return anzeige;
 }
+
+/**
+ * Zaehlt eine Stufe (einen Index) statt einer Zahl im Text, etwa durch die Tage einer Reihe.
+ * Beginnt beim gerade angezeigten Wert, nicht beim letzten Ziel: beim Ziehen kommt alle
+ * paar Millisekunden ein neues Ziel, und die Anzeige soll weiterlaufen statt zurueckzuspringen.
+ */
+export function useStufenZaehler(ziel: number): number {
+  const angezeigt = useRef(ziel);
+  const [anzeige, setAnzeige] = useState(ziel);
+
+  useEffect(() => {
+    const start = angezeigt.current;
+    if (start === ziel || bevorzugtWenigerBewegung()) {
+      angezeigt.current = ziel;
+      setAnzeige(ziel);
+      return undefined;
+    }
+
+    const beginn = performance.now();
+
+    const abmelden = anFrameTakt((jetzt) => {
+      const fortschritt = Math.min(1, (jetzt - beginn) / DAUER_MS);
+      angezeigt.current = Math.round(start + (ziel - start) * easeOutQuad(fortschritt));
+      setAnzeige(angezeigt.current);
+      if (fortschritt >= 1) abmelden();
+    });
+
+    return abmelden;
+  }, [ziel]);
+
+  return anzeige;
+}

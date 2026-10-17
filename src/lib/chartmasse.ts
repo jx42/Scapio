@@ -30,7 +30,19 @@ export function yAchsenBreite(beschriftungen: readonly string[]): number {
   return Math.ceil(laengste * CHART_ACHSEN_SCHRIFTGROESSE * ACHSEN_ZEICHENBREITE_EM) + ACHSEN_BESCHRIFTUNG_ABSTAND;
 }
 
+/** Breite einer Zeile in Achsenschrift, geschaetzt wie bei `yAchsenBreite`. */
+export function achsenTextBreite(text: string): number {
+  return Math.ceil(text.length * CHART_ACHSEN_SCHRIFTGROESSE * ACHSEN_ZEICHENBREITE_EM);
+}
+
 export const VERLAUF_CHART_HOEHE = 320;
+/** Abstand der Datumsbeschriftung von ihrer Vorschaulinie und vom oberen Rand. */
+export const VORSCHAU_BESCHRIFTUNG_ABSTAND = 8;
+export const VORSCHAU_BESCHRIFTUNG_OBEN = 6;
+/** Deckkraft der Abdunkelung ausserhalb des gezogenen Zeitraums. */
+export const VORSCHAU_ABDUNKELUNG = 0.45;
+/** Unschaerfe (stdDeviation) der Reihen ausserhalb des gezogenen Zeitraums. */
+export const VORSCHAU_UNSCHAERFE = 2.5;
 export const VERLAUF_X_ACHSE_TICK_ABSTAND = 48;
 export const VERLAUF_MARGIN = { top: 8, right: 0, bottom: 0, left: 0 } as const;
 /** Rand ueber Datenspanne hinaus, als Anteil davon, damit die Y-Achse sich dem
