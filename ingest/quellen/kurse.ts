@@ -20,7 +20,7 @@ import { pruefeKurs, tagIstBrauchbar } from '../plausibilitaet.ts';
 import type { Zeitfenster } from '../schema.ts';
 import { ChartAntwort, pruefe } from '../schema.ts';
 
-const TOOL = 'mcp__claude_ai_Scalable_Capital__get_security_chart';
+const TOOL = 'get_security_chart';
 
 /** Fenster und die Herkunft, die daraus wird. Die Reihenfolge ist die des Rangs, aufsteigend. */
 export const KURSFENSTER_JE_HERKUNFT: readonly (readonly [Zeitfenster, Herkunft])[] = [

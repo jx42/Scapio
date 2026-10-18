@@ -13,6 +13,7 @@ import type { Hochwassermarke } from '../../core/depotreihe.ts';
 import { ausgeglicheneUebertraege } from '../../core/uebertraege.ts';
 import type { Kurspunkt, Rasterwert } from '../../core/kursraster.ts';
 import type { Tag } from '../../core/kalender.ts';
+import { spanne } from '../../core/kalender.ts';
 import type { Isin } from '../../core/typen.ts';
 import {
   EUROPA,
@@ -230,6 +231,18 @@ describe('baueDepotreihe', () => {
       gesamtCent: zuCent('1050'),
       nettoEinzahlungKumCent: zuCent('1000'),
     });
+  });
+
+  it('liefert jeden Kalendertag, auch Wochenenden und den Zeitumstellungstag', () => {
+    // Die TWR haengt Fluesse an Tage der Reihe; ein fehlender Tag verloere seinen Fluss.
+    const reihe = baueDepotreihe({
+      transaktionen: [...transaktionen, einzahlung('2026-03-29', '50')],
+      raster: kurse,
+      punkteJeIsin: OHNE_PUNKTE,
+      von: T('2026-01-01'),
+      bis: T('2026-04-02'),
+    });
+    expect(reihe.map((z) => z.tag)).toEqual(spanne(T('2026-01-01'), T('2026-04-02')));
   });
 
   it('nennt den Positionswert je ISIN', () => {

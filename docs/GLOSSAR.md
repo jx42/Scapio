@@ -13,7 +13,7 @@ unterschiedlich entschieden werden.
 | **Kurs** | Preis eines Wertpapiers an einem Kalendertag, als `kurs_e6` (EUR × 1e6). |
 | **Menge** | Stückzahl eines Wertpapiers, als `menge_e8` (Stück × 1e8). |
 | **Einstand** | Der nach FIFO ermittelte Anschaffungswert der noch gehaltenen Anteile einer Position. In der Oberfläche **Investiertes Kapital**; im Code und in den Docs bleibt es `einstand`. |
-| **Einzahlung** / **Auszahlung** | Eine externe Zahlung *ins* bzw. *aus* dem Depot über das Verrechnungskonto (`istExtern = true`). Im Code `Zufluss`/`Abfluss`, zusammen die `Fluesse`, die in IZF und TWR eingehen — in der Oberfläche nie „Zufluss“. |
+| **Einzahlung** / **Auszahlung** | Eine externe Zahlung *ins* bzw. *aus* dem Depot über das Verrechnungskonto — ein Transaktionstyp, den `einordnen(typ)` in `core/typen.ts` als `'extern'` einordnet. Im Code `Zufluss`/`Abfluss`, zusammen die `Fluesse`, die in IZF und TWR eingehen — in der Oberfläche nie „Zufluss“. |
 | **Eingezahltes Kapital** | Einzahlungen minus Auszahlungen von außen, kumuliert (`nettoEinzahlungKumCent`); früher „Netto-Einzahlung“. Depotüberträge von einer anderen Bank zählen mit. Gegenstück zum **Gesamtgewinn**. Auch das „Ø eingezahlte Kapital pro Monat“ in den Kennzahlen (Code: `sparrate`). Nicht verwechseln mit **Investiertes Kapital** (Einstand). |
 | **Nettokäufe** | Wertpapierkäufe minus -verkäufe eines Monats — die Balken der Kachel „Käufe & Verkäufe“ (Code: `fluesse`, `investitionsFluesse`). Nicht dasselbe wie das **Eingezahlte Kapital**: Geld auf dem Verrechnungskonto ist eingezahlt, aber noch nicht gekauft. |
 | **Sparplan** | Eine wiederkehrende, automatische Order der Bank. Tabelle `sparplan`, Momentaufnahme, wird je Lauf ersetzt. |

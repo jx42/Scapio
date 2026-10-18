@@ -27,12 +27,12 @@ export const MIN_MONATE = 12;
 
 /**
  * Letzter Indexwert je Monat, Rendite zwischen zwei aufeinanderfolgenden Monatsenden.
- * Der laufende Monat fehlt, bis er vorbei ist: als Teilmonat wuerde er wie ein voller
+ * Der Monat des Stichtags fehlt, bis er vorbei ist: als Teilmonat wuerde er wie ein voller
  * zaehlen, und Sharpe zoege dafuer den vollen Monatszins ab. [ADR-043]
  */
-export function monatsrenditen(index: TwrErgebnis['index'], heute: Tag): Monatsrendite[] {
-  const laufend = monatVon(heute);
-  const bisVormonat = istVor(heute, monatsEnde(laufend)) ? index.filter((p) => monatVon(p.tag) !== laufend) : index;
+export function monatsrenditen(index: TwrErgebnis['index'], stichtag: Tag): Monatsrendite[] {
+  const laufend = monatVon(stichtag);
+  const bisVormonat = istVor(stichtag, monatsEnde(laufend)) ? index.filter((p) => monatVon(p.tag) !== laufend) : index;
   if (bisVormonat.length === 0) return [];
 
   const letzterWertJeMonat = new Map<string, number>();

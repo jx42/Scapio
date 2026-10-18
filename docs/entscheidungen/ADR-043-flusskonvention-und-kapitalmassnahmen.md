@@ -35,7 +35,8 @@ weichen die Ergebnisse ab:
   - Geht der ganze Bestand ab, wandert der Einstand in einen Topf.
   - Ein Zugang ohne Bestand übernimmt den Topf; bei mehreren Zugängen anteilig nach Menge.
   - Was nach `PAAR_HOECHSTENS_TAGE` noch im Topf liegt, wird als realisierter Verlust
-    gebucht.
+    gebucht. *Abgelöst durch [ADR-053](ADR-053-stichtag-und-isin-wechsel-im-kern.md): nur
+    Zugänge desselben Tags, sonst sofort Verlust.*
 
   Erkannt wird das generisch, ohne Wissen über Bank oder Buchungstyp.
 - **Unverpaarter Übertrag ohne Wert.** Der Ausgang wird zum letzten Kurs bis zu seinem Tag
@@ -48,7 +49,7 @@ weichen die Ergebnisse ab:
   - Bei mehreren Vorzeichenwechseln trägt ein `ok` das Flag `mehrdeutig`. Es fehlt, wenn
     die kumulierte Summe nur einmal wechselt (Norström): ein Sparplan mit gelegentlicher
     Entnahme bleibt eindeutig. Die Oberfläche zeigt bei `mehrdeutig` einen Satz.
-- **Risiko:** `monatsrenditen` lässt den Monat von `heute` weg, solange er nicht vorbei ist.
+- **Risiko:** `monatsrenditen` lässt den Monat des Stichtags (ADR-053) weg, solange er nicht vorbei ist.
 - **Teuerung:** Gerechnet wird ab max(erster Fluss, ältester VPI-Monat).
 - **IZF unter einem Jahr** bleibt annualisiert. Die Erklärtexte sagen das jetzt, ebenso
   bei der Realrendite und der TWR p. a.
@@ -75,7 +76,9 @@ weichen die Ergebnisse ab:
   mit Betrag 0 und zwei verschiedenen ISINs, wird der Ausgang bewertet und der Eingang nur
   gemeldet. Die Rendite stimmt dann nicht, ist aber sichtbar markiert.
 - Ein Zugang mit Betrag 0 in eine schon gehaltene ISIN, während der Topf voll ist, gilt als
-  Split. Der Topf verfällt dann nach 30 Tagen als Verlust.
+  Split. Der Topf verfällt dann nach 30 Tagen als Verlust. *Seit ADR-053 noch am selben Tag.*
+- **Nachtrag [ADR-053](ADR-053-stichtag-und-isin-wechsel-im-kern.md):** Endwert auf dem letzten
+  Reihentag statt `heute`; Positions-IZF nimmt die Flüsse der Vorgänger-ISIN auf.
 - `ausserhalb_bereich` deckt bei mehreren Vorzeichenwechseln auch Reihen ohne jede reelle
   Lösung ab.
 - Der tote Code `durchschnittlicheSparrate` ist entfernt; die Sparrate kommt aus `monatsFluesse`. In

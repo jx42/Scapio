@@ -167,13 +167,13 @@ function loese(punkte: readonly Punkt[]): Loesung {
 
 /**
  * Cashflow-Reihe fuer den XIRR eines Gesamtdepots: alle externen Zahlungen,
- * dazu der heutige Depotwert als abschliessender Fluss mit umgekehrtem Vorzeichen.
+ * dazu der Depotwert am Stichtag als abschliessender Fluss mit umgekehrtem Vorzeichen.
  *
  * Externe Zufluesse sind aus Depotsicht positiv; aus Anlegersicht sind sie Ausgaben.
  * Deshalb wird das Vorzeichen hier einmal gedreht, und der Endwert kommt positiv dazu.
  */
-export function renditeFluesse(externe: readonly Fluss[], endwert: bigint, heute: Tag): Fluss[] {
+export function renditeFluesse(externe: readonly Fluss[], endwert: bigint, stichtag: Tag): Fluss[] {
   const fluesse: Fluss[] = externe.map((f) => ({ tag: f.tag, betrag: -f.betrag }));
-  fluesse.push({ tag: heute, betrag: endwert });
+  fluesse.push({ tag: stichtag, betrag: endwert });
   return fluesse.sort((a, b) => vergleiche(a.tag, b.tag));
 }

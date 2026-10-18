@@ -16,7 +16,7 @@ import type { Ernte, Kontext } from '../importieren.ts';
 import { GRENZE, pruefe, SparplaeneAntwort } from '../schema.ts';
 
 export const QUELLE = 'sparplaene';
-const TOOL = 'mcp__claude_ai_Scalable_Capital__list_savings_plans';
+const TOOL = 'list_savings_plans';
 
 export async function holeSparplaene(ctx: Kontext): Promise<Ernte<readonly Sparplan[]>> {
   const roh = await mcpAufrufRoh(TOOL, {

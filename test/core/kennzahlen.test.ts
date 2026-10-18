@@ -316,6 +316,28 @@ describe('berechneKennzahlen — Renditen', () => {
     expect(k.real.fisher).not.toBeNull();
   });
 
+  it('datiert den Endwert auf den letzten Reihentag, nicht auf heute [ADR-053]', () => {
+    const vpi: Vpi = new Map([['2025-08', 100], ['2026-08', 102]]);
+    const amStichtag = berechneKennzahlen(standard({ vpi }));
+    const spaeter = berechneKennzahlen(standard({ vpi, heute: T('2026-11-24') }));
+    expect(spaeter.xirr).toEqual(amStichtag.xirr);
+    expect(spaeter.real).toEqual(amStichtag.real);
+    expect(spaeter.positionen[0]!.xirr).toEqual(amStichtag.positionen[0]!.xirr);
+  });
+
+  it('zaehlt den Monat des letzten Reihentags nicht als vollen, auch wenn heute spaeter liegt', () => {
+    const monatsenden = ['2025-07-31', '2025-08-31', '2025-09-30', '2025-10-31', '2025-11-30', '2025-12-31',
+      '2026-01-31', '2026-02-28', '2026-03-31', '2026-04-30', '2026-05-31', '2026-06-30', '2026-07-31'];
+    const reihe = [
+      ...monatsenden.map((tag, i) => depotTag(tag, String(1000 + (i % 3) * 40 + i * 10))),
+      depotTag('2026-08-15', '700'),
+    ];
+    const amStichtag = berechneKennzahlen(standard({ transaktionen: [], reihe }));
+    const spaeter = berechneKennzahlen(standard({ transaktionen: [], reihe, heute: T('2026-10-01') }));
+    expect(amStichtag.volatilitaetProJahr.art).toBe('ok');
+    expect(spaeter.volatilitaetProJahr).toEqual(amStichtag.volatilitaetProJahr);
+  });
+
   it('gibt bei leerer Historie kein NaN aus', () => {
     const k = berechneKennzahlen(standard({ transaktionen: [], reihe: [], positionswerte: new Map() }));
     expect(k.xirr.art).toBe('zu_wenige_fluesse');
@@ -394,6 +416,15 @@ describe('berechneKennzahlen — Hinweise', () => {
     const k = berechneKennzahlen(standard({ drift: ausgesetztOhneGrund }));
     const hinweis = k.hinweise.find((h) => h.code === 'H_DRIFT_AUSGESETZT');
     expect(hinweis?.text).toBe('Selbstkontrolle ausgesetzt.');
+  });
+
+  it('meldet einen Abgang ohne Betrag, der als Totalverlust gilt', () => {
+    const transaktionen = [
+      ...standard().transaktionen,
+      kauf('2026-01-05', EUROPA, '1', '100'),
+      tx({ tag: '2026-02-02', typ: 'CORPORATE_ACTION', art: 'WERTPAPIER', isin: EUROPA, mengeE8: -100_000_000n, betragCent: 0n }),
+    ];
+    expect(codes(standard({ transaktionen }))).toContain('H_AUSBUCHUNG');
   });
 
   it('schweigt, wenn nichts zu melden ist', () => {

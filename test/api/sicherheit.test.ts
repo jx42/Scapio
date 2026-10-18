@@ -300,13 +300,18 @@ describe('POST /api/refresh: Sperre gegen doppelten Lauf [§9, INV-08]', () => {
 // --- INV-01 als Systemtest: alle MCP-Toolnamen im Repo sind lesend ----------
 
 describe('MCP-Toolnamen sind eine Teilmenge der lesenden [INV-01]', () => {
-  it('kein im Quelltext vorkommender mcp__claude_ai_Scalable_Capital__-Name faellt aus der Allowlist', async () => {
+  it('kein im Quelltext vorkommender Toolname faellt aus der Allowlist', async () => {
     const { execSync } = await import('node:child_process');
     const treffer = execSync(
-      String.raw`grep -rhoE "mcp__claude_ai_Scalable_Capital__[a-zA-Z_]+" ingest server core start db --include="*.ts" || true`,
+      String.raw`grep -rhoE "'(get|list)_[a-z_]+'" ingest server core start db --include="*.ts" || true`,
       { cwd: process.cwd(), encoding: 'utf8' },
     );
-    const gefunden = new Set(treffer.split('\n').filter((z) => z.length > 0));
+    const gefunden = new Set(
+      treffer
+        .split('\n')
+        .filter((z) => z.length > 0)
+        .map((z) => z.slice(1, -1)),
+    );
     expect(gefunden.size).toBeGreaterThan(0);
     for (const name of gefunden) {
       expect(LESENDE_TOOLS as readonly string[]).toContain(name);

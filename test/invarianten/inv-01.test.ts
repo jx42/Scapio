@@ -31,15 +31,18 @@ describe('INV-01 — nur lesende Tools', () => {
   });
 
   it('nennt jedes Tool der Allowlist mit lesendem Verb', () => {
-    // Positivliste auf das letzte Segment: ein neues Verb (`set_`, `place_`) faellt hier
-    // durch, auch wenn es in HANDELNDE_VERBEN fehlt.
+    // Positivliste: ein neues Verb (`set_`, `place_`) faellt hier durch, auch wenn es in
+    // HANDELNDE_VERBEN fehlt. Ohne `mcp__`-Praefix [ADR-054].
     for (const tool of LESENDE_TOOLS) {
-      expect(tool.split('__').at(-1), tool).toMatch(/^(get|list)_[a-z_]+$/);
+      expect(tool).toMatch(/^(get|list)_[a-z_]+$/);
     }
   });
 
   it('erwaehnt kein handelndes Tool irgendwo im ausgelieferten Quelltext', () => {
-    const treffer = suche(QUELLEN, /mcp__[A-Za-z0-9_]*__(submit|cancel|create|remove|add|upsert|delete|update|preview)_/);
+    const treffer = suche(
+      QUELLEN,
+      /(mcp__[A-Za-z0-9_]*__|')(submit|cancel|create|remove|add|upsert|delete|update|preview)_[a-z_]+/,
+    );
     expect(treffer, `Handelndes Tool im Quelltext:\n${alsListe(treffer)}`).toEqual([]);
   });
 
@@ -59,21 +62,28 @@ describe('INV-01 — nur lesende Tools', () => {
   });
 
   it('kennt kein Tool ausserhalb der Allowlist', () => {
+    // Toolnamen stehen als Literal in einfachen Anfuehrungszeichen; Kommentare nennen sie in
+    // Backticks und zaehlen nicht.
     const erlaubt = new Set<string>(LESENDE_TOOLS);
     const gefunden = new Set<string>();
     for (const q of QUELLEN) {
-      for (const t of q.inhalt.match(/mcp__[A-Za-z0-9_]+/g) ?? []) gefunden.add(t);
+      for (const t of q.inhalt.match(/'(get|list)_[a-z_]+'/g) ?? []) gefunden.add(t.slice(1, -1));
     }
     const fremd = [...gefunden].filter((t) => !erlaubt.has(t));
     expect(fremd, `Tool ausserhalb der Allowlist: ${fremd.join(', ')}`).toEqual([]);
     expect(gefunden.size).toBeGreaterThan(0);
+  });
+
+  it('fuehrt keinen Toolnamen mit Claude-Code-Praefix [ADR-054]', () => {
+    const treffer = suche(QUELLEN, /mcp__/);
+    expect(treffer, `mcp__ im Quelltext:\n${alsListe(treffer)}`).toEqual([]);
   });
 });
 
 describe('INV-01 — die Laufzeitsperre vor jedem MCP-Aufruf', () => {
   // Kein echtes Tool — steht bewusst nicht in LESENDE_TOOLS. Der Typ verbietet das beim
   // Kompilieren; der `as`-Wurf simuliert, was andernorts ein Programmierfehler waere.
-  const FREMDES_TOOL = 'mcp__claude_ai_Scalable_Capital__submit_buy_order' as LesendesTool;
+  const FREMDES_TOOL = 'submit_buy_order' as LesendesTool;
 
   // Zeigt absichtlich auf ein nicht vorhandenes Datenverzeichnis: selbst wenn die
   // Allowlist-Pruefung in `mcpAufrufRoh` einmal wegfiele, faende `zugriffstoken` hier

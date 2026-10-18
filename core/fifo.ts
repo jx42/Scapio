@@ -9,10 +9,10 @@
 import type { Cent, MengeE8 } from './dezimal.ts';
 import { rundeAufCent } from './dezimal.ts';
 import type { Tag } from './kalender.ts';
-import { tageZwischen, vergleiche } from './kalender.ts';
+import { istVor, vergleiche } from './kalender.ts';
 import type { Isin, Tx } from './typen.ts';
 import { einordnen, istSteuer, zaehlt } from './typen.ts';
-import { istWertpapieruebertrag, PAAR_HOECHSTENS_TAGE } from './uebertraege.ts';
+import { istWertpapieruebertrag } from './uebertraege.ts';
 
 export type Tranche = {
   readonly tag: Tag;
@@ -36,10 +36,25 @@ export type RealisierteVerkaufszeile = {
   readonly gewinnCent: Cent;
 };
 
+/**
+ * Eine Vorgaenger-ISIN, deren Einstand per Kapitalmassnahme in diese ISIN gewandert ist:
+ * ihre Fluesse bis `bis` gehoeren anteilig (`zaehler / nenner`) zum Positions-IZF der neuen.
+ */
+export type Herkunft = {
+  readonly isin: Isin;
+  readonly bis: Tag;
+  readonly zaehler: bigint;
+  readonly nenner: bigint;
+};
+
 export type FifoErgebnis = {
   readonly einstaende: ReadonlyMap<Isin, Positionseinstand>;
   /** Ein Eintrag je Verkaufstransaktion, aelteste zuerst — die Quelle fuer "Realisierte Gewinne" im Detail. */
   readonly verkaeufe: readonly RealisierteVerkaufszeile[];
+  /** Vorgaenger je ISIN nach ISIN-Wechseln, transitiv aufgeloest. */
+  readonly herkunft: ReadonlyMap<Isin, readonly Herkunft[]>;
+  /** Abgaenge des ganzen Bestands ohne Betrag und ohne Zugang am selben Tag, als Verlust gebucht. */
+  readonly ausbuchungen: number;
 };
 
 /**
@@ -80,7 +95,7 @@ export function fifo(transaktionen: readonly Tx[], ausgeglichen: ReadonlySet<str
   }
   relevant.sort((a, b) => vergleiche(a.tag, b.tag) || vergleiche(a.ts, b.ts));
 
-  const buch: Buch = { offen: new Map(), realisiert: new Map(), verkaeufe: [], topf: [] };
+  const buch: Buch = { offen: new Map(), realisiert: new Map(), verkaeufe: [], herkunft: new Map(), ausbuchungen: 0 };
   for (const tx of relevant) if (!buch.offen.has(tx.isin!)) buch.offen.set(tx.isin!, []);
 
   let i = 0;
@@ -89,12 +104,10 @@ export function fifo(transaktionen: readonly Tx[], ausgeglichen: ReadonlySet<str
     const tagesTx: Tx[] = [];
     while (i < relevant.length && relevant[i]!.tag === tag) tagesTx.push(relevant[i++]!);
 
-    verfalle(buch, tag);
     // Kapitalmassnahmen wirken zum Tagesbeginn: ein Kauf am Ex-Tag ist schon in neuen Stuecken.
     bucheUm(buch, tagesTx.filter(istKapitalmassnahme), tag);
     for (const tx of tagesTx) if (!istKapitalmassnahme(tx)) bucheHandel(buch, tx);
   }
-  verfalle(buch, null);
 
   const ergebnis = new Map<Isin, Positionseinstand>();
   for (const [isin, offen] of buch.offen) {
@@ -113,19 +126,20 @@ export function fifo(transaktionen: readonly Tx[], ausgeglichen: ReadonlySet<str
   }
 
   buch.verkaeufe.sort((a, b) => vergleiche(a.tag, b.tag));
-  return { einstaende: ergebnis, verkaeufe: buch.verkaeufe };
+  return { einstaende: ergebnis, verkaeufe: buch.verkaeufe, herkunft: buch.herkunft, ausbuchungen: buch.ausbuchungen };
 }
 
 type OffeneTranche = { tag: Tag; menge: MengeE8; kosten: Cent };
 
-/** Einstand einer abgegangenen Position, der auf den Zugang einer anderen ISIN wartet. */
-type Umbuchung = { readonly txId: string; readonly tag: Tag; readonly isin: Isin; readonly kosten: Cent };
+/** Einstand einer abgegangenen Position, der auf den Zugang einer anderen ISIN am selben Tag wartet. */
+type Umbuchung = { readonly txId: string; readonly isin: Isin; readonly kosten: Cent };
 
 type Buch = {
   readonly offen: Map<Isin, OffeneTranche[]>;
   readonly realisiert: Map<Isin, Cent>;
   readonly verkaeufe: RealisierteVerkaufszeile[];
-  topf: Umbuchung[];
+  readonly herkunft: Map<Isin, Herkunft[]>;
+  ausbuchungen: number;
 };
 
 /**
@@ -158,10 +172,11 @@ function skaliere(offen: OffeneTranche[], neu: MengeE8, alt: MengeE8): void {
  * Bucht die Kapitalmassnahmen eines Tages, saldiert je ISIN:
  * - Zugang zu einem Bestand: Split, die Stuecke werden mehr, der Einstand bleibt.
  * - Abgang, nach dem Bestand bleibt: Zusammenlegung, die Stuecke werden weniger, der Einstand bleibt.
- * - Abgang des ganzen Bestands: der Einstand wartet auf einen Zugang ohne Vorbestand
- *   (ISIN-Wechsel) und geht dorthin; bei mehreren Zugaengen anteilig nach Menge.
- *   Kommt binnen `PAAR_HOECHSTENS_TAGE` keiner, ist es ein Verlust (`verfalle`).
- * - Zugang ohne Vorbestand und ohne wartenden Einstand: Gratisstuecke, Einstand 0.
+ * - Abgang des ganzen Bestands: der Einstand geht an einen Zugang ohne Vorbestand am selben
+ *   Tag (ISIN-Wechsel), bei mehreren Zugaengen anteilig nach Menge. Ohne einen solchen
+ *   Zugang ist es ein realisierter Verlust — ueber Tage gepaart, landete ein Delisting in
+ *   fremden Gratisstuecken. [ADR-053]
+ * - Zugang ohne Vorbestand und ohne Abgang am selben Tag: Gratisstuecke, Einstand 0.
  */
 function bucheUm(buch: Buch, massnahmen: readonly Tx[], tag: Tag): void {
   if (massnahmen.length === 0) return;
@@ -172,6 +187,7 @@ function bucheUm(buch: Buch, massnahmen: readonly Tx[], tag: Tag): void {
     saldo.set(tx.isin!, { menge: (s?.menge ?? 0n) + tx.mengeE8!, txId: s?.txId ?? tx.id });
   }
 
+  const topf: Umbuchung[] = [];
   const neueIsins: { isin: Isin; menge: MengeE8 }[] = [];
   for (const [isin, { menge, txId }] of saldo) {
     if (menge === 0n) continue;
@@ -185,14 +201,21 @@ function bucheUm(buch: Buch, massnahmen: readonly Tx[], tag: Tag): void {
       let kosten = 0n;
       for (const t of offen) kosten += t.kosten;
       offen.length = 0;
-      buch.topf.push({ txId, tag, isin, kosten });
+      topf.push({ txId, isin, kosten });
     }
   }
-  if (neueIsins.length === 0) return;
+
+  if (neueIsins.length === 0) {
+    for (const u of topf) {
+      buch.realisiert.set(u.isin, (buch.realisiert.get(u.isin) ?? 0n) - u.kosten);
+      buch.verkaeufe.push({ txId: u.txId, tag, isin: u.isin, gewinnCent: -u.kosten });
+      buch.ausbuchungen += 1;
+    }
+    return;
+  }
 
   let kosten = 0n;
-  for (const u of buch.topf) kosten += u.kosten;
-  buch.topf = [];
+  for (const u of topf) kosten += u.kosten;
 
   let gesamtMenge = 0n;
   for (const n of neueIsins) gesamtMenge += n.menge;
@@ -201,16 +224,16 @@ function bucheUm(buch: Buch, massnahmen: readonly Tx[], tag: Tag): void {
     const anteil = k === neueIsins.length - 1 ? rest : rundeAufCent(kosten * n.menge, gesamtMenge);
     rest -= anteil;
     buch.offen.get(n.isin)!.push({ tag, menge: n.menge, kosten: anteil });
-  });
-}
 
-/** Wartender Einstand ohne Zugang wird nach `PAAR_HOECHSTENS_TAGE` als Verlust realisiert; `bis = null` raeumt alles. */
-function verfalle(buch: Buch, bis: Tag | null): void {
-  buch.topf = buch.topf.filter((u) => {
-    if (bis !== null && tageZwischen(u.tag, bis) <= PAAR_HOECHSTENS_TAGE) return true;
-    buch.realisiert.set(u.isin, (buch.realisiert.get(u.isin) ?? 0n) - u.kosten);
-    buch.verkaeufe.push({ txId: u.txId, tag: u.tag, isin: u.isin, gewinnCent: -u.kosten });
-    return false;
+    if (topf.length === 0) return;
+    const herkunft = buch.herkunft.get(n.isin) ?? [];
+    for (const u of topf) {
+      herkunft.push({ isin: u.isin, bis: tag, zaehler: n.menge, nenner: gesamtMenge });
+      for (const h of buch.herkunft.get(u.isin) ?? []) {
+        herkunft.push({ isin: h.isin, bis: h.bis, zaehler: h.zaehler * n.menge, nenner: h.nenner * gesamtMenge });
+      }
+    }
+    buch.herkunft.set(n.isin, herkunft);
   });
 }
 
@@ -268,7 +291,7 @@ function bucheHandel(buch: Buch, tx: Tx): void {
 /**
  * Cashflows einer einzelnen Position fuer den positionseigenen XIRR, aus Anlegersicht:
  * Kaeufe und Uebertraege herein negativ, Verkaeufe und Uebertraege hinaus positiv,
- * Ausschuettungen positiv, heutiger Positionswert als Abschluss.
+ * Ausschuettungen positiv, Positionswert am Stichtag als Abschluss.
  *
  * Das Vorzeichen folgt der Menge, nicht dem Betrag: ein `TRANSFER_IN` traegt seinen
  * Uebertragswert positiv, obwohl er aus Anlegersicht ein Einsatz ist wie ein Kauf.
@@ -277,12 +300,36 @@ function bucheHandel(buch: Buch, tx: Tx): void {
  *
  * Ein ausgeglichenes Uebertragspaar (siehe `fifo()` oben) ist auch hier kein Kauf und
  * kein Verkauf — sonst verzerrt der erfundene Cashflow genau den XIRR dieser Position.
+ *
+ * Nach einem ISIN-Wechsel gehoeren die Fluesse der Vorgaenger bis zum Wechseltag anteilig
+ * dazu (`herkunft` aus `fifo()`). Ohne sie stuende am Anfang nur die Umbuchung zu 0, und
+ * der IZF der neuen ISIN waere ein Vielfaches des echten. [ADR-053]
+ *
+ * `stichtag` ist der Tag, zu dem `wertCent` gilt — der letzte Tag der Depotreihe.
  */
 export function positionsFluesse(
   transaktionen: readonly Tx[],
   isin: Isin,
-  heutigerWert: Cent,
-  heute: Tag,
+  wertCent: Cent,
+  stichtag: Tag,
+  ausgeglichen: ReadonlySet<string>,
+  herkunft: readonly Herkunft[] = [],
+): { tag: Tag; betrag: Cent }[] {
+  const fluesse = eigeneFluesse(transaktionen, isin, null, ausgeglichen);
+  for (const h of herkunft) {
+    for (const f of eigeneFluesse(transaktionen, h.isin, h.bis, ausgeglichen)) {
+      fluesse.push({ tag: f.tag, betrag: rundeAufCent(f.betrag * h.zaehler, h.nenner) });
+    }
+  }
+
+  fluesse.push({ tag: stichtag, betrag: wertCent });
+  return fluesse.sort((a, b) => vergleiche(a.tag, b.tag));
+}
+
+function eigeneFluesse(
+  transaktionen: readonly Tx[],
+  isin: Isin,
+  bis: Tag | null,
   ausgeglichen: ReadonlySet<string>,
 ): { tag: Tag; betrag: Cent }[] {
   const fluesse: { tag: Tag; betrag: Cent }[] = [];
@@ -290,6 +337,7 @@ export function positionsFluesse(
   for (const tx of transaktionen) {
     if (!zaehlt(tx)) continue;
     if (ausgeglichen.has(tx.id)) continue;
+    if (bis !== null && istVor(bis, tx.tag)) continue;
 
     if (tx.art === 'WERTPAPIER' && tx.isin === isin && tx.mengeE8 !== null && tx.mengeE8 !== 0n) {
       const betrag = tx.betragCent < 0n ? -tx.betragCent : tx.betragCent;
@@ -302,6 +350,5 @@ export function positionsFluesse(
     }
   }
 
-  fluesse.push({ tag: heute, betrag: heutigerWert });
-  return fluesse.sort((a, b) => vergleiche(a.tag, b.tag));
+  return fluesse;
 }

@@ -14,7 +14,7 @@ der Geschichte stehen. Eine neue ADR bekommt die nächste freie Nummer und eine 
 | [007](ADR-007-ausgeglichene-uebertragspaare.md) | Ausgeglichene Übertragspaare als Nicht-Vorgang | gilt |
 | [008](ADR-008-fluesse-kachel-zeigt-investition-statt-einzahlung.md) | Kachel 5 zeigt Investition in Wertpapiere statt externer Ein-/Auszahlung | gilt |
 | [009](ADR-009-risikokennzahlen.md) | Risikokennzahlen auf Monatsbasis, mit echtem risikofreiem Zins | gilt |
-| [010](ADR-010-direkte-mcp-anmeldung-ohne-claude-code.md) | Direkte OAuth/PKCE-Anmeldung am Scalable-MCP statt Claude-Code-Kindprozess | gilt |
+| [010](ADR-010-direkte-mcp-anmeldung-ohne-claude-code.md) | Direkte OAuth/PKCE-Anmeldung am Scalable-MCP statt Claude-Code-Kindprozess | Nachtrag: 054 |
 | [011](ADR-011-kursgewinn-statt-twr-in-kachel-1.md) | Verlaufs-Rendite zeigt Kursgewinn, nicht TWR | Name präzisiert durch 016, Zählweise durch 023 |
 | [012](ADR-012-anmeldeknopf-als-zweite-mutierende-route.md) | Der Anmeldeknopf als zweite mutierende Route | gilt |
 | [013](ADR-013-update-nur-auf-knopfdruck.md) | Ein Update-Befehl, der nur auf Knopfdruck läuft | teilweise abgelöst durch 037 |
@@ -40,14 +40,14 @@ der Geschichte stehen. Eine neue ADR bekommt die nächste freie Nummer und eine 
 | [033](ADR-033-summenprobe-ohne-live-bewertung.md) | Summenprobe nicht gegen eine Live-Bewertung | gilt |
 | [034](ADR-034-kachel-ausblenden-im-browser.md) | Kachel ausblenden im Browser, einblenden nur über die Adresse | abgelöst durch 038 |
 | [035](ADR-035-zip-als-standardweg-der-installation.md) | ZIP als Standardweg der Installation, Git als Alternative | gilt |
-| [036](ADR-036-kennzahlen-korrekturen-nach-pruefung.md) | Kennzahlen-Korrekturen nach der Prüfung vom Oktober 2026 | Nachtrag: 043 |
+| [036](ADR-036-kennzahlen-korrekturen-nach-pruefung.md) | Kennzahlen-Korrekturen nach der Prüfung vom Oktober 2026 | Nachtrag: 043, 053 |
 | [037](ADR-037-eigene-dateien-im-datenverzeichnis.md) | Eigene Dateien im Datenverzeichnis, ZIP-Update ohne Kopieren | Nachtrag: 041 |
 | [038](ADR-038-top25-nur-auf-wunsch.md) | Top 25 nur auf Wunsch, Schalter in `einstellungen.json` | gilt |
 | [039](ADR-039-server-vor-dem-bau.md) | Server vor dem Bau, Browser sofort, Fortschritt auf der Anmeldeseite | gilt |
 | [040](ADR-040-aufgeraeumte-projektwurzel.md) | Aufgeräumte Projektwurzel | gilt |
 | [041](ADR-041-seed-im-datenverzeichnis.md) | `seed.json` im Datenverzeichnis | gilt |
-| [042](ADR-042-agenten-lesen-keine-depotwerte.md) | Agenten lesen keine Depotwerte | gilt |
-| [043](ADR-043-flusskonvention-und-kapitalmassnahmen.md) | Flusskonvention, Kapitalmaßnahmen und Randfälle im Rechenkern | gilt |
+| [042](ADR-042-agenten-lesen-keine-depotwerte.md) | Agenten lesen keine Depotwerte | Nachtrag: 054 |
+| [043](ADR-043-flusskonvention-und-kapitalmassnahmen.md) | Flusskonvention, Kapitalmaßnahmen und Randfälle im Rechenkern | Nachtrag: 053 |
 | 044 | — | nicht vergeben |
 | [045](ADR-045-woechentliche-sicherung-beim-start.md) | Wöchentliche Sicherung beim Start | gilt |
 | [046](ADR-046-footer-link-zur-readme.md) | Footer-Link zur Readme | gilt |
@@ -57,3 +57,5 @@ der Geschichte stehen. Eine neue ADR bekommt die nächste freie Nummer und eine 
 | [050](ADR-050-zeitzonen-in-der-ci-nur-unter-linux.md) | Zeitzonen in der CI nur unter Linux, ohne UTC | gilt |
 | [051](ADR-051-main-nur-ueber-pull-requests.md) | `main` nur über Pull Requests, ohne Bypass | gilt |
 | [052](ADR-052-demo-band-mit-repository-link.md) | Demo-Band mit Link zum Repository | gilt |
+| [053](ADR-053-stichtag-und-isin-wechsel-im-kern.md) | Stichtag der Kennzahlen, ISIN-Wechsel und Selbstkontrolle ohne Cash | gilt |
+| [054](ADR-054-agentensperre-in-den-einstellungen.md) | Agentensperre in den Einstellungen, Toolnamen ohne Präfix | gilt |

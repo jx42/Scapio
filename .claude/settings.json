@@ -20,6 +20,17 @@
       "Bash(git diff*)",
       "Bash(git log*)",
       "Bash(git show*)"
+    ],
+    "deny": [
+      "mcp__claude_ai_Scalable_Capital__*",
+      "Read(~/Library/Application Support/scapio/**)",
+      "Read(~/AppData/Local/scapio/**)",
+      "Read(**/lauf.log)",
+      "Bash(sqlite3 *)",
+      "Bash(npm start*)",
+      "Bash(npm run ingest*)",
+      "Bash(npm run verify)",
+      "Bash(npm run verify -- *)"
     ]
   }
 }

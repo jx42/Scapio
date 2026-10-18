@@ -219,12 +219,18 @@ function importiereUndRechne(lauf: Lauf): LaufErgebnis | null {
 // gescheiterten Plausibilitaetspruefung, die vor der Neuberechnung liegt.
 function selbstkontrolle(lauf: Lauf): LaufErgebnis | null {
   try {
+    // Ohne Cash verglichen, laege das berechnete Gesamt (mit Cash) gegen die gemeldeten
+    // Wertpapiere allein — ein Drift in Hoehe des Cash-Anteils, den es nicht gibt.
+    if (lauf.cashCent === null) {
+      lauf.protokoll('Selbstkontrolle: ausgesetzt (Cash fehlt)');
+      return null;
+    }
     const letzter = repo.depotTag.letzter(lauf.db);
     // Ohne 5. Argument `positionen`, anders als der zweite Aufrufer
     // (`server/lesemodell.ts`, dort mit `positionswerte()`): der ist ein Lesemodell fuer
     // die Oberflaeche und haelt die Aufschluesselung je Position ohnehin schon vor, hier
     // dient `drift()` nur der Selbstkontrolle des Laufs und braucht keine Aufschluesselung.
-    const kontrolle = drift(letzter, lauf.bestaende ?? [], lauf.cashCent ?? 0n, lauf.konfiguration.driftSchwellen);
+    const kontrolle = drift(letzter, lauf.bestaende ?? [], lauf.cashCent, lauf.konfiguration.driftSchwellen);
     if (kontrolle.stufe !== 'ok' && kontrolle.stufe !== 'ausgesetzt' && kontrolle.stufe !== 'leer') {
       lauf.befunde.hinweis('selbstkontrolle', { stufe: kontrolle.stufe, abweichungProzent: kontrolle.abweichung * 100 });
     }

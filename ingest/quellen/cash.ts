@@ -14,7 +14,7 @@ import type { Ernte, Kontext } from '../importieren.ts';
 import { CashBreakdownAntwort, pruefe } from '../schema.ts';
 
 export const QUELLE = 'cash';
-const TOOL = 'mcp__claude_ai_Scalable_Capital__get_portfolio_cash_breakdown';
+const TOOL = 'get_portfolio_cash_breakdown';
 
 export async function holeCash(ctx: Kontext): Promise<Ernte<Cent>> {
   const roh = await mcpAufrufRoh(TOOL, {

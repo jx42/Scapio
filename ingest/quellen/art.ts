@@ -13,7 +13,7 @@ import type { Kontext } from '../importieren.ts';
 import { pruefe, Wertpapierantwort } from '../schema.ts';
 
 export const quelleFuer = (isin: Isin): string => `art:${isin}`;
-const TOOL = 'mcp__claude_ai_Scalable_Capital__get_security_quote';
+const TOOL = 'get_security_quote';
 
 /** `null`, wenn die Bank keine Art kennt — dann gibt es nichts zu speichern. */
 export async function holeArt(ctx: Kontext, isin: Isin): Promise<Wertpapierart | null> {
