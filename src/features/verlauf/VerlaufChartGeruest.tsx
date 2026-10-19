@@ -25,6 +25,7 @@ import type { Zeitpunkt } from '@/lib/api';
 import { beobachtbar } from '@/lib/beobachtbar';
 import {
   CHART_ACHSEN_SCHRIFTGROESSE,
+  GITTER_STRICHELUNG,
   VERLAUF_CHART_HOEHE,
   VERLAUF_MARGIN,
   VERLAUF_X_ACHSE_TICK_ABSTAND,
@@ -91,7 +92,7 @@ export function VerlaufChartGeruest({
       <ResponsiveContainer width="100%" height="100%">
         <ComposedChart data={daten} margin={VERLAUF_MARGIN}>
           {defs}
-          <CartesianGrid stroke={FARBE.rand} strokeDasharray="2 4" vertical={false} />
+          <CartesianGrid stroke={FARBE.rand} strokeDasharray={GITTER_STRICHELUNG} vertical={false} />
           <XAxis
             dataKey="tag"
             ticks={xTicks}

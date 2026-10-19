@@ -24,9 +24,11 @@ import { de } from '@/i18n/de';
 import type { Fenster, Monatsfluss } from '@/lib/api';
 import {
   CHART_ACHSEN_SCHRIFTGROESSE,
+  FLUESSE_BALKEN_RUNDUNG,
   FLUESSE_CHART_HOEHE,
   FLUESSE_MARGIN,
   FLUESSE_X_ACHSE_TICK_ABSTAND,
+  GITTER_STRICHELUNG,
   LINIE_NEBEN,
   yAchsenBreite,
 } from '@/lib/chartmasse';
@@ -94,7 +96,7 @@ export function FluesseAnsicht({ monate, schnittCent, fenster }: FluesseAnsichtP
               onMouseMove={behandleMausBewegung}
               onMouseLeave={behandleMausVerlassen}
             >
-              <CartesianGrid stroke={FARBE.rand} strokeDasharray="2 4" vertical={false} />
+              <CartesianGrid stroke={FARBE.rand} strokeDasharray={GITTER_STRICHELUNG} vertical={false} />
               <XAxis
                 dataKey="monat"
                 tickFormatter={monatKurz}
@@ -115,7 +117,7 @@ export function FluesseAnsicht({ monate, schnittCent, fenster }: FluesseAnsichtP
                 dataKey="nettoCent"
                 name={de.fluesse.netto}
                 fill={FARBE.chart1}
-                radius={[4, 4, 0, 0]}
+                radius={FLUESSE_BALKEN_RUNDUNG}
                 isAnimationActive={false}
               >
                 {daten.map((entry) => (
@@ -156,7 +158,7 @@ function FlussTooltip(props: {
     <ChartTooltipFlaeche>
       <p className="mb-1 font-medium">{monat === '' ? '' : monatLang(monat)}</p>
       {netto === undefined ? null : (
-        <p>{`${de.fluesse.netto}: ${euroAusCent(netto)}`}</p>
+        <p>{de.satz.beschriftet(de.fluesse.netto, euroAusCent(netto))}</p>
       )}
     </ChartTooltipFlaeche>
   );

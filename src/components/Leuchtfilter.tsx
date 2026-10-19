@@ -11,6 +11,7 @@
  * Einheiten statt Prozent: Prozente beziehen sich auf einen Viewport, und Edge unter
  * Windows nahm dafuer dieses 0×0-SVG — Bereich null, keine Linie.
  */
+import { LEUCHTEN } from '@/lib/chartmasse';
 
 export function Leuchtfilter() {
   return (
@@ -18,15 +19,15 @@ export function Leuchtfilter() {
       <filter
         id="linie-leuchten"
         filterUnits="userSpaceOnUse"
-        x="-100"
-        y="-100"
-        width="10000"
-        height="5000"
+        x={LEUCHTEN.x}
+        y={LEUCHTEN.y}
+        width={LEUCHTEN.breite}
+        height={LEUCHTEN.hoehe}
         colorInterpolationFilters="sRGB"
       >
-        <feGaussianBlur in="SourceGraphic" stdDeviation="1" result="weich" />
+        <feGaussianBlur in="SourceGraphic" stdDeviation={LEUCHTEN.unschaerfe} result="weich" />
         <feComponentTransfer in="weich">
-          <feFuncA type="linear" slope="0.25" />
+          <feFuncA type="linear" slope={LEUCHTEN.deckkraft} />
         </feComponentTransfer>
       </filter>
     </svg>

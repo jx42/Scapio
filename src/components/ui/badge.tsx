@@ -11,8 +11,6 @@ const badgeVariants = cva(
     variants: {
       variant: {
         default: 'bg-flaeche text-text',
-        warnung: 'bg-warnung text-grund',
-        verlust: 'bg-verlust text-grund',
         gewinnLeise: 'bg-gewinn/15 text-gewinn',
         verlustLeise: 'bg-verlust/15 text-verlust',
         link: 'bg-rand-licht text-text underline-offset-4 [a&]:hover:bg-rand-licht/80 [a&]:hover:underline',

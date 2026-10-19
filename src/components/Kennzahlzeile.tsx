@@ -20,7 +20,8 @@
  */
 
 import { de } from '@/i18n/de';
-import { richtungTon, type Richtung } from '@/lib/format';
+import { type Richtung } from '@/lib/format';
+import { richtungTon } from '@/lib/farben';
 import { linkVariants } from '@/lib/linkStil';
 import { cn } from '@/lib/utils';
 import { useZahlZaehler } from '@/hooks/useZahlZaehler';

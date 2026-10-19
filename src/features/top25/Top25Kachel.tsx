@@ -9,14 +9,13 @@ import { Info, TriangleAlert } from 'lucide-react';
 import { de } from '@/i18n/de';
 import { api, kachelZustand, schluessel } from '@/lib/api';
 import { Kachel } from '@/components/Kachel';
+import { Button } from '@/components/ui/button';
 import { Driftfussnote } from '@/components/Driftbanner';
 import { FehlendeFondsListe } from '@/features/top25/FehlendeFondsListe';
 import { Top25Ansicht } from '@/features/top25/Top25Ansicht';
 import { Top25Dialog } from '@/features/top25/Top25Dialog';
 import { Top25FondsAnleitung } from '@/features/top25/Top25FondsAnleitung';
 import { prozent, zahl } from '@/lib/format';
-import { linkVariants } from '@/lib/linkStil';
-import { cn } from '@/lib/utils';
 
 const ID = 'top25';
 
@@ -34,10 +33,11 @@ export function Top25Kachel() {
 
   const detailKnopf =
     fehlendeFonds.length > 0 || zeigeAnleitung ? (
-      <button
+      <Button
         type="button"
+        variant="link"
         onClick={() => setDialogOffen(true)}
-        className={cn(linkVariants({ abstand: 'weit' }), 'inline-flex cursor-pointer items-center gap-1')}
+        className="h-auto gap-1 p-0 font-normal whitespace-normal"
       >
         {zeigeAnleitung ? (
           <>
@@ -50,7 +50,7 @@ export function Top25Kachel() {
             {de.top25.fehlendeFondsUntertitel(zahl(fehlendeFonds.length))}
           </>
         )}
-      </button>
+      </Button>
     ) : null;
 
   // Leer: der Knopf steht im Kasten statt des Satzes, sonst im Untertitel.
