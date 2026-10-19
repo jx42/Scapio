@@ -27,7 +27,7 @@ const EINSTIEGE = {
 export type Werkzeug = keyof typeof EINSTIEGE;
 
 /** Absoluter Pfad der Einstiegsdatei — das erste Argument fuer `process.execPath`. */
-export function werkzeugPfad(name: Werkzeug): string {
+function werkzeugPfad(name: Werkzeug): string {
   return join(PROJEKTWURZEL, 'node_modules', ...EINSTIEGE[name]);
 }
 

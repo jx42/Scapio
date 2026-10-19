@@ -12,7 +12,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { FastifyInstance } from 'fastify';
 import { testDatenbank } from '../../db/verbindung.ts';
-import type { Konfiguration } from '../../shared/konfiguration.ts';
+import { konfigurationFuer, type Konfiguration } from '../../shared/konfiguration.ts';
 import { baueServer } from '../../server/server.ts';
 import type { Sperre } from '../../server/sperre.ts';
 
@@ -24,21 +24,7 @@ const verzeichnisse: string[] = [];
 export function konfiguration(teil: Partial<Konfiguration> = {}): Konfiguration {
   const datenpfad = mkdtempSync(join(tmpdir(), 'portfolio-api-test-'));
   verzeichnisse.push(datenpfad);
-  return {
-    port: PORT,
-    datenverzeichnis: datenpfad,
-    datenpfad,
-    mcpZeitlimitMs: 120_000,
-    csvZeitlimitMs: 30_000,
-    csvGroesstMb: 32,
-    erlaubteHosts: ['www.ishares.com', 'ec.europa.eu', 'data-api.ecb.europa.eu'],
-    fondsKatalogFrischeTage: 5,
-    inflationsquelle: 'eurostat',
-    zinsquelle: 'ecb',
-    driftSchwellen: { hinweis: 0.001, banner: 0.005, abbruch: 0.02 },
-    top25: true,
-    ...teil,
-  };
+  return konfigurationFuer(datenpfad, { port: PORT, erlaubteHosts: ['www.ishares.com', 'ec.europa.eu', 'data-api.ecb.europa.eu'], ...teil });
 }
 
 export function aufraeumen(): void {

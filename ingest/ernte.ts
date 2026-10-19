@@ -17,6 +17,7 @@ import * as repo from '../db/repository/index.ts';
 import { fondsPfad } from '../shared/konfiguration.ts';
 import { BENCHMARKS } from '../shared/benchmarks.ts';
 import type { Hinweis } from '../shared/hinweise.ts';
+import type { QuellenSchluessel } from '../shared/quellen.ts';
 import { ANBIETER } from './anbieter.ts';
 import type { KatalogIndex } from './fondsaufloesung.ts';
 import { aufloese, istAbgelaufen, katalogeAbrufen } from './fondsaufloesung.ts';
@@ -73,7 +74,7 @@ async function mitHoechstens<E, T>(n: number, eingaben: readonly E[], arbeit: (e
  */
 async function ernte<T>(
   lauf: Lauf,
-  quelleName: string,
+  quelleName: QuellenSchluessel,
   hole: () => Promise<Ernte<T>>,
   uebernehme: (daten: T) => QuellenStatus,
   sonder?: {
@@ -343,7 +344,7 @@ async function loeseFondsAuf(lauf: Lauf, manuelleIsins: ReadonlySet<Isin>): Prom
     const ohneKatalog = new Set<Anbietername>();
     if (abgelaufen.length > 0) {
       index = await katalogeAbrufen(ctx, ANBIETER, (name, ergebnis) => {
-        const quelle = `fondskatalog:${name}`;
+        const quelle: QuellenSchluessel = `fondskatalog:${name}`;
         if (ergebnis.art === 'erfolg') {
           setzeStatus(lauf, quelle, 'erfolg');
           return;

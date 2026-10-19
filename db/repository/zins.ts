@@ -9,7 +9,8 @@ import type { DatabaseSync } from 'node:sqlite';
 import type { Tag } from '../../core/kalender.ts';
 import { alsTag } from '../../core/kalender.ts';
 import type { Zinsreihe } from '../../core/risiko.ts';
-import { stmt } from './hilfen.ts';
+import { platzhalter, spaltenliste, stmt, ueberschreibe } from './hilfen.ts';
+import type { Bindung, Spalten } from './hilfen.ts';
 
 export type Zinswert = {
   /** YYYY-MM-DD */
@@ -20,17 +21,22 @@ export type Zinswert = {
 
 type Zeile = { tag: string; zins_pro_jahr: number; quelle: string };
 
-const EINFUEGEN = `INSERT INTO zins (tag, zins_pro_jahr, quelle) VALUES (?, ?, ?)
-  ON CONFLICT(tag) DO UPDATE SET zins_pro_jahr = excluded.zins_pro_jahr, quelle = excluded.quelle`;
+const SPALTEN = { tag: true, zins_pro_jahr: true, quelle: true } satisfies Spalten<Zeile>;
+
+const EINFUEGEN = `INSERT INTO zins (${spaltenliste(SPALTEN)}) VALUES (${platzhalter(SPALTEN)})
+  ON CONFLICT(tag) DO UPDATE SET ${ueberschreibe(SPALTEN, ['tag'])}`;
 
 export function schreibeViele(db: DatabaseSync, werte: readonly Zinswert[]): number {
   const s = stmt(db, EINFUEGEN);
-  for (const w of werte) s.run(w.tag, w.zinsProJahr, w.quelle);
+  for (const w of werte) {
+    const bindung: Bindung<Zeile> = { tag: w.tag, zins_pro_jahr: w.zinsProJahr, quelle: w.quelle };
+    s.run(bindung);
+  }
   return werte.length;
 }
 
 export function alle(db: DatabaseSync): Zinswert[] {
-  const zeilen = stmt(db, 'SELECT tag, zins_pro_jahr, quelle FROM zins ORDER BY tag').all() as Zeile[];
+  const zeilen = stmt(db, `SELECT ${spaltenliste(SPALTEN)} FROM zins ORDER BY tag`).all() as Zeile[];
   return zeilen.map((z) => ({ tag: z.tag, zinsProJahr: z.zins_pro_jahr, quelle: z.quelle }));
 }
 

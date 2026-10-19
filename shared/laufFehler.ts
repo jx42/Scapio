@@ -5,7 +5,7 @@
  * `docs/RUNBOOK.md`. Die Codes der API-Fehlerform stehen in `server/fehler.ts`.
  */
 
-export const MCP_FEHLER = [
+const MCP_FEHLER = [
   'E_MCP_ANMELDUNG',
   'E_MCP_DROSSEL',
   'E_MCP_ZEIT',
@@ -18,7 +18,7 @@ export const MCP_FEHLER = [
 ] as const;
 export type McpFehlerCode = (typeof MCP_FEHLER)[number];
 
-export const NETZ_FEHLER = [
+const NETZ_FEHLER = [
   'E_NETZ',
   'E_NETZ_ADRESSE',
   'E_NETZ_DNS',

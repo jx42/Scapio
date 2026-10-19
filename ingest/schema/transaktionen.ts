@@ -5,8 +5,6 @@ import { Fremdtext, GRENZE, Geld, ISIN_MUSTER, Kurs, Menge, Zeitstempel } from '
 // list_portfolio_transactions
 // ---------------------------------------------------------------------------
 
-export const TRANSAKTIONSSTATUS = ['EXECUTED', 'PENDING', 'CANCELED'] as const;
-
 const SecurityZweig = z
   .object({
     isin: z.string().regex(ISIN_MUSTER),

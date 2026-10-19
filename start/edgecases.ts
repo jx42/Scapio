@@ -22,20 +22,17 @@ import { createServer as httpServer } from 'node:http';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { createServer as viteServer } from 'vite';
-import { BENCHMARKS, RISIKOFREI_ISIN } from '../shared/benchmarks.ts';
 import { oeffneImBrowser } from '../shared/browser.ts';
+import { abzugAnfragen } from '../shared/demoAbzug.ts';
 import { tagAus } from '../core/kalender.ts';
 import type { Tag } from '../core/kalender.ts';
 import { testDatenbank } from '../db/verbindung.ts';
-import { vorgabeErlaubteHosts } from '../shared/hosts.ts';
-import { PROJEKTWURZEL } from '../shared/konfiguration.ts';
-import type { Konfiguration } from '../shared/konfiguration.ts';
+import { PROJEKTWURZEL, konfigurationFuer, type Konfiguration } from '../shared/konfiguration.ts';
 import { anmeldungAbgeschlossenHtml } from '../ingest/mcpAnmeldung.ts';
 import { HOST, baueServer, hinweisseite } from '../server/server.ts';
 import { seedeDatenbank } from '../test/e2e/seed.ts';
-import { FENSTER, ZEITRAEUME } from '../shared/zeitfenster.ts';
 
-export const EDGECASES_PORT = 4793;
+const EDGECASES_PORT = 4793;
 /** Nur Kennung im Host-Kopf der `inject`-Anfragen; gebunden wird dieser Port nie. */
 const API_PORT = 4794;
 const SEITE = '/test/edgecases/index.html';
@@ -47,25 +44,6 @@ const STATUSSEITEN: Record<string, () => string> = {
   '/__edgecases/anmeldung-weiter.html': () => anmeldungAbgeschlossenHtml(true),
 };
 
-function pfade(): string[] {
-  const benchmarks: (string | null)[] = [null, ...BENCHMARKS.map((b) => b.isin), RISIKOFREI_ISIN];
-  return [
-    '/api/health',
-    '/api/kennzahlen',
-    '/api/aufteilung',
-    '/api/top25',
-    '/api/sparplaene',
-    '/api/lauf',
-    '/api/mcp-anmeldung',
-    ...ZEITRAEUME.flatMap((z) =>
-      benchmarks.map(
-        (b) => `/api/zeitreihe?zeitraum=${encodeURIComponent(z)}` + (b === null ? '' : `&benchmark=${encodeURIComponent(b)}`),
-      ),
-    ),
-    ...FENSTER.map((f) => `/api/fluesse?fenster=${encodeURIComponent(f)}`),
-  ];
-}
-
 async function sammle(mitDepot: boolean, konfiguration: Konfiguration): Promise<Record<string, unknown>> {
   const db = await testDatenbank();
   const jetzt = new Date().toISOString();
@@ -76,7 +54,7 @@ async function sammle(mitDepot: boolean, konfiguration: Konfiguration): Promise<
   await app.ready();
   const basis: Record<string, unknown> = {};
   try {
-    for (const pfad of pfade()) {
+    for (const pfad of abzugAnfragen()) {
       const antwort = await app.inject({
         method: 'GET',
         url: pfad,
@@ -95,20 +73,7 @@ async function sammle(mitDepot: boolean, konfiguration: Konfiguration): Promise<
 async function haupt(): Promise<void> {
   const datenpfad = join(tmpdir(), 'scapio-edgecases');
   mkdirSync(datenpfad, { recursive: true });
-  const konfiguration: Konfiguration = {
-    port: API_PORT,
-    datenverzeichnis: datenpfad,
-    datenpfad,
-    mcpZeitlimitMs: 120_000,
-    csvZeitlimitMs: 30_000,
-    csvGroesstMb: 32,
-    erlaubteHosts: vorgabeErlaubteHosts(),
-    fondsKatalogFrischeTage: 5,
-    inflationsquelle: 'eurostat',
-    zinsquelle: 'ecb',
-    driftSchwellen: { hinweis: 0.001, banner: 0.005, abbruch: 0.02 },
-    top25: true,
-  };
+  const konfiguration = konfigurationFuer(datenpfad, { port: API_PORT });
 
   const basis = JSON.stringify({ demo: await sammle(true, konfiguration), leer: await sammle(false, konfiguration) });
 

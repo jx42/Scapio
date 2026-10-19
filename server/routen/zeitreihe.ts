@@ -20,6 +20,7 @@ import { centAlsZahl, objektSchema, oderNull, tagAlsText, umschlagAus, umschlagS
 import { baueLesemodell } from '../lesemodell.ts';
 import { markenAus } from '../marken.ts';
 import { alsTagParameter, alsZeitraum, beginnVon, minusMonate } from '../zeitraum.ts';
+import { LESENDE_ROUTEN } from '../../shared/routen.ts';
 import type { Kontext } from '../server.ts';
 import { BENCHMARKS, RISIKOFREI, RISIKOFREI_ISIN } from '../vertrag.ts';
 import type { Marke, MarkenVorgang, Zeitpunkt, Zeitreihe } from '../vertrag.ts';
@@ -115,7 +116,7 @@ const ANTWORT_SCHEMA = objektSchema<Zeitreihe>({
 
 export function registriereZeitreihe(app: FastifyInstance, ctx: Kontext): void {
   app.get('/api/zeitreihe', { schema: { response: { 200: ANTWORT_SCHEMA } } }, (anfrage: FastifyRequest): Zeitreihe => {
-    const query = nurDieseParameter(anfrage.query, ['zeitraum', 'benchmark', 'von', 'bis']);
+    const query = nurDieseParameter(anfrage.query, LESENDE_ROUTEN.zeitreihe.parameter);
     // Frei gewaehlt (Zeitraumregler) oder ein fester Zeitraum — nie beides zugleich.
     const frei = query.von !== undefined || query.bis !== undefined;
     if (frei && query.zeitraum !== undefined) throw parameterAbgelehnt('zeitraum');

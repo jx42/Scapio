@@ -5,7 +5,7 @@
  * PKCE (Autorisierungscode + lokaler Redirect-Listener auf `127.0.0.1`) einen
  * access_token/refresh_token und legt beide unter `<datenpfad>/mcp/` ab — Verzeichnis
  * `0700`, Datei `0600`, dasselbe Vertrauensmodell wie `db/verbindung.ts` fuer die
- * Datenbank.
+ * Datenbank. Die Ablage selbst steht in `mcpToken.ts`.
  *
  * Zwei Einstiege:
  *   - `registrieren()` + `anmelden()`: einmalig, interaktiv, oeffnet den Browser
@@ -25,17 +25,25 @@
  */
 
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
-import { existsSync, readFileSync } from 'node:fs';
 import http from 'node:http';
-import { join } from 'node:path';
-import { z } from 'zod';
 import type { Konfiguration } from '../shared/konfiguration.ts';
-import { mcpPfad, mcpTokenPfad } from '../shared/konfiguration.ts';
-import { atomarSchreiben, eigeneDatei, verzeichnisAnlegen } from '../shared/dateirechte.ts';
 import { oeffneImBrowser } from '../shared/browser.ts';
 import { HAKEN, statusseite } from '../shared/statusseite.ts';
 import { McpFehler, mcpSitzungVergessen } from './mcp.ts';
+import {
+  clientSchreiben,
+  gespeicherterClient,
+  gespeicherterToken,
+  RegistrierungSchema,
+  TokenAntwortSchema,
+  tokenDatei,
+  tokenSchreiben,
+  type Client,
+  type TokenSatz,
+} from './mcpToken.ts';
 import { holeMitZeitlimit, NetzFehler, type GeleseneAntwort } from './netz.ts';
+
+export { mcpTokenVorhanden } from './mcpToken.ts';
 
 const BASIS = 'https://mcp.scalable.capital';
 const REGISTER_URL = `${BASIS}/register`;
@@ -68,7 +76,7 @@ export function anmeldungAbgeschlossenHtml(dashboardFolgt = false): string {
  * Die einzige HTML-Antwort ausserhalb von `server/sicherheit.ts`. Die Seite hat kein Skript;
  * Stil und Schrift stehen inline, deshalb nur diese beiden Ausnahmen.
  */
-export const RUECKRUF_KOPFZEILEN: Readonly<Record<string, string>> = {
+const RUECKRUF_KOPFZEILEN: Readonly<Record<string, string>> = {
   'content-type': 'text/html; charset=utf-8',
   'content-security-policy': "default-src 'none'; style-src 'unsafe-inline'; font-src data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
   'referrer-policy': 'no-referrer',
@@ -87,58 +95,6 @@ function b64url(puffer: Buffer): string {
   return puffer.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
-// Registrierungsantwort (RFC 7591) bringt weitere Felder mit, `client.json` nur diese. [INV-12]
-// `client_name` fehlt in Dateien von vor seiner Einfuehrung — die gelten fuer den Refresh weiter.
-const RegistrierungSchema = z.object({ client_id: z.string().min(1).max(512) });
-const ClientDateiSchema = RegistrierungSchema.extend({ client_name: z.string().min(1).max(200).optional() }).strict();
-type Client = z.infer<typeof ClientDateiSchema>;
-
-// Fremde Antwort (Scalables Token-Endpunkt), deshalb zod statt eines blossen Typs. [INV-12]
-// Obergrenzen sind grosszuegig, aber real: ein Token ist kein mehrseitiges Dokument, und
-// `expires_in` ist eine Lebensdauer in Sekunden, keine Kalenderspanne.
-//
-// Bewusst NICHT `.strict()`: der angeforderte Scope enthaelt `openid`, also liefert die
-// Gegenstelle OIDC-typisch zusaetzliche Felder wie `id_token` oder `scope` mit, die hier
-// niemand braucht. `.strict()` liess deswegen jede echte Anmeldung an einem Feld scheitern,
-// das kein Test kennt (Tests mocken nur die vier bekannten Felder). Unbekannte Felder werden
-// von zod ohne `.strict()` stillschweigend verworfen, nicht durchgereicht — das reicht fuer
-// INV-12: die bekannten Felder werden weiterhin geprueft.
-const TokenFelder = {
-  access_token: z.string().min(1).max(8192),
-  refresh_token: z.string().min(1).max(8192).optional(),
-  expires_in: z
-    .number()
-    .int()
-    .positive()
-    .max(2_592_000) // 30 Tage — ueblich sind Stunden, das ist bereits grosszuegig.
-    .optional(),
-  token_type: z.string().min(1).max(64).optional(),
-};
-
-const TokenAntwortSchema = z.object(TokenFelder);
-const GespeicherterTokenSchema = z.object({ ...TokenFelder, geholtUm: z.number().int().nonnegative() });
-
-type TokenSatz = z.infer<typeof TokenAntwortSchema>;
-type GespeicherterToken = z.infer<typeof GespeicherterTokenSchema>;
-
-function clientDatei(k: Konfiguration): string {
-  return join(mcpPfad(k), 'client.json');
-}
-
-function tokenDatei(k: Konfiguration): string {
-  return mcpTokenPfad(k);
-}
-
-/**
- * Existiert bereits ein gespeicherter Token? Reine Dateipruefung ohne Netzwerkzugriff —
- * fuer `npm run mcp-login -- --nur-wenn-noetig`, mit dem `Start.command`/`.bat` die
- * Anmeldung vorschalten, ohne selbst den Datenpfad zu kennen (der ist ueber `config.json`
- * konfigurierbar).
- */
-export function mcpTokenVorhanden(k: Konfiguration): boolean {
-  return existsSync(tokenDatei(k));
-}
-
 // Registrierungs- und Token-Antworten sind kurze JSON-Objekte (ein Client oder ein Token
 // samt OIDC-Beiwerk wie `id_token`) — 64 KiB ist grosszuegig. Ohne Grenze puffert `text()`
 // jede Antwortgroesse unbegrenzt im Speicher, bevor ueberhaupt geparst wird.
@@ -148,18 +104,6 @@ function alsJson({ text }: GeleseneAntwort): unknown {
   if (text.length === 0) return {};
   try {
     return JSON.parse(text);
-  } catch {
-    return null;
-  }
-}
-
-/** Der abgelegte Client, oder `null`, wenn `client.json` fehlt, kaputt ist oder nicht passt. */
-function gespeicherterClient(k: Konfiguration): Client | null {
-  const datei = clientDatei(k);
-  if (!eigeneDatei(datei)) return null;
-  try {
-    const ergebnis = ClientDateiSchema.safeParse(JSON.parse(readFileSync(datei, 'utf8')));
-    return ergebnis.success ? ergebnis.data : null;
   } catch {
     return null;
   }
@@ -176,8 +120,6 @@ export async function registrieren(k: Konfiguration): Promise<Client> {
   // Namen ebenso — der Name auf der Zustimmungsseite steht in Scalables Registrierung fest.
   const vorhanden = gespeicherterClient(k);
   if (vorhanden?.client_name === CLIENT_NAME) return vorhanden;
-
-  verzeichnisAnlegen(mcpPfad(k));
 
   let antwort: GeleseneAntwort;
   try {
@@ -225,13 +167,8 @@ export async function registrieren(k: Konfiguration): Promise<Client> {
   }
 
   const client: Client = { client_id: ergebnis.data.client_id, client_name: CLIENT_NAME };
-  atomarSchreiben(clientDatei(k), JSON.stringify(client, null, 2));
+  clientSchreiben(k, client);
   return client;
-}
-
-function tokenSchreiben(k: Konfiguration, token: GespeicherterToken): void {
-  verzeichnisAnlegen(mcpPfad(k));
-  atomarSchreiben(tokenDatei(k), JSON.stringify(token, null, 2));
 }
 
 async function codeGegenToken(client: Client, code: string, verifier: string, zeitlimitMs: number): Promise<TokenSatz> {
@@ -413,22 +350,9 @@ export function zugriffstoken(k: Konfiguration): Promise<string> {
 const laufendeTokenabrufe = new Map<string, Promise<string>>();
 
 async function tokenAbrufen(k: Konfiguration): Promise<string> {
-  const datei = tokenDatei(k);
-  const keinToken = (): McpFehler =>
-    new McpFehler('E_MCP_ANMELDUNG', '-', 'Kein gespeicherter Token vorhanden — einmalig `npm run mcp-login` ausfuehren.');
-  // Ausserhalb des try: eine fremde Datei ist E_DATEI_FREMD, nicht "neu anmelden".
-  if (!eigeneDatei(datei)) throw keinToken();
-  let gespeichert: GespeicherterToken;
-  try {
-    const roh: unknown = JSON.parse(readFileSync(datei, 'utf8'));
-    // Die Datei koennte durch ein Backup-Werkzeug, ein manuelles Bearbeiten oder einen
-    // frueheren Fehler beschaedigt sein — dann gilt sie wie eine fehlende: neu anmelden,
-    // statt mit einem rohen Parse-/Schemafehler abzubrechen.
-    const ergebnis = GespeicherterTokenSchema.safeParse(roh);
-    if (!ergebnis.success) throw new Error('ungueltiges Tokenschema');
-    gespeichert = ergebnis.data;
-  } catch {
-    throw keinToken();
+  const gespeichert = gespeicherterToken(k);
+  if (gespeichert === null) {
+    throw new McpFehler('E_MCP_ANMELDUNG', '-', 'Kein gespeicherter Token vorhanden — einmalig `npm run mcp-login` ausfuehren.');
   }
 
   const ablaufMs = gespeichert.geholtUm + (gespeichert.expires_in ?? 0) * 1000;
@@ -496,7 +420,7 @@ async function tokenAbrufen(k: Konfiguration): Promise<string> {
   }
   const neuerToken = ergebnis.data;
 
-  const neu: GespeicherterToken = {
+  const neu = {
     ...neuerToken,
     // Ein Server, der beim Refresh keinen neuen refresh_token mitschickt, meint: der alte gilt weiter.
     refresh_token: neuerToken.refresh_token ?? gespeichert.refresh_token,

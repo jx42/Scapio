@@ -7,7 +7,8 @@
 
 import type { DatabaseSync } from 'node:sqlite';
 import type { Cent } from '../../core/dezimal.ts';
-import { stmt } from './hilfen.ts';
+import { platzhalter, spaltenliste, stmt } from './hilfen.ts';
+import type { Bindung, Spalten } from './hilfen.ts';
 
 export type Sparplan = {
   readonly isin: string;
@@ -31,7 +32,16 @@ type Zeile = {
   stand: string;
 };
 
-const SPALTEN = 'isin, name, betrag_cent, frequenz, tag_im_monat, naechste_ausfuehrung, stand';
+const SPALTEN = {
+  isin: true,
+  name: true,
+  betrag_cent: true,
+  frequenz: true,
+  tag_im_monat: true,
+  naechste_ausfuehrung: true,
+  stand: true,
+} satisfies Spalten<Zeile>;
+const SPALTENLISTE = spaltenliste(SPALTEN);
 
 const zu = (z: Zeile): Sparplan => ({
   isin: z.isin,
@@ -46,15 +56,24 @@ const zu = (z: Zeile): Sparplan => ({
 /** Aufrufer haelt die Transaktion. [INV-09] */
 export function ersetze(db: DatabaseSync, plaene: readonly Sparplan[]): number {
   stmt(db, 'DELETE FROM sparplan').run();
-  const s = stmt(db, `INSERT INTO sparplan (${SPALTEN}) VALUES (?, ?, ?, ?, ?, ?, ?)`);
+  const s = stmt(db, `INSERT INTO sparplan (${SPALTENLISTE}) VALUES (${platzhalter(SPALTEN)})`);
   for (const p of plaene) {
-    s.run(p.isin, p.name, p.betragCent, p.frequenz, p.tagImMonat, p.naechsteAusfuehrung, p.stand);
+    const bindung: Bindung<Zeile> = {
+      isin: p.isin,
+      name: p.name,
+      betrag_cent: p.betragCent,
+      frequenz: p.frequenz,
+      tag_im_monat: p.tagImMonat,
+      naechste_ausfuehrung: p.naechsteAusfuehrung,
+      stand: p.stand,
+    };
+    s.run(bindung);
   }
   return plaene.length;
 }
 
 export function alle(db: DatabaseSync): Sparplan[] {
-  const zeilen = stmt(db, `SELECT ${SPALTEN} FROM sparplan ORDER BY isin`, true).all() as Zeile[];
+  const zeilen = stmt(db, `SELECT ${SPALTENLISTE} FROM sparplan ORDER BY isin`, true).all() as Zeile[];
   return zeilen.map(zu);
 }
 

@@ -5,9 +5,12 @@
  */
 
 import { BENCHMARKS, RISIKOFREI_ISIN } from './benchmarks.ts';
+import { LESENDE_ROUTEN } from './routen.ts';
 import { FENSTER, ZEITRAEUME } from './zeitfenster.ts';
 
-const OHNE_PARAMETER = ['health', 'kennzahlen', 'aufteilung', 'top25', 'sparplaene', 'lauf', 'mcp-anmeldung'] as const;
+const OHNE_PARAMETER: readonly string[] = Object.values(LESENDE_ROUTEN)
+  .filter((r) => r.parameter.length === 0)
+  .map((r) => r.pfad.slice('/api/'.length));
 const BENCHMARK_WAHL: readonly string[] = [...BENCHMARKS.map((b) => b.isin), RISIKOFREI_ISIN];
 const OHNE_BENCHMARK = 'ohne';
 
@@ -32,10 +35,11 @@ export function abzugPfad(pfad: string, parameter: URLSearchParams): string | nu
   const name = pfad.startsWith('/api/') ? pfad.slice('/api/'.length) : null;
   if (name === null) return null;
 
-  if ((OHNE_PARAMETER as readonly string[]).includes(name)) {
+  if (OHNE_PARAMETER.includes(name)) {
     return [...parameter.keys()].length === 0 ? `/api/${name}.json` : null;
   }
-  if (name === 'zeitreihe') {
+  // Der freie Zeitraum (`von`/`bis`) ist in der Demo gesperrt und fehlt im Abzug.
+  if (`/api/${name}` === LESENDE_ROUTEN.zeitreihe.pfad) {
     if (!nurErlaubte(parameter, ['zeitraum', 'benchmark'])) return null;
     const zeitraum = einzeln(parameter, 'zeitraum', ZEITRAEUME, 'max');
     const benchmarke = parameter.getAll('benchmark');
@@ -43,7 +47,7 @@ export function abzugPfad(pfad: string, parameter: URLSearchParams): string | nu
     const benchmark = benchmarke[0] !== undefined && BENCHMARK_WAHL.includes(benchmarke[0]) ? benchmarke[0] : OHNE_BENCHMARK;
     return `/api/zeitreihe/${zeitraum}/${benchmark}.json`;
   }
-  if (name === 'fluesse') {
+  if (`/api/${name}` === LESENDE_ROUTEN.fluesse.pfad) {
     if (!nurErlaubte(parameter, ['fenster'])) return null;
     const fenster = einzeln(parameter, 'fenster', FENSTER, '12m');
     return fenster === null ? null : `/api/fluesse/${fenster}.json`;
@@ -55,9 +59,11 @@ export function abzugPfad(pfad: string, parameter: URLSearchParams): string | nu
 export function abzugAnfragen(): string[] {
   const anfragen = OHNE_PARAMETER.map((n) => `/api/${n}`);
   for (const z of ZEITRAEUME) {
-    anfragen.push(`/api/zeitreihe?zeitraum=${z}`);
-    for (const b of BENCHMARK_WAHL) anfragen.push(`/api/zeitreihe?zeitraum=${z}&benchmark=${encodeURIComponent(b)}`);
+    anfragen.push(`${LESENDE_ROUTEN.zeitreihe.pfad}?zeitraum=${z}`);
+    for (const b of BENCHMARK_WAHL) {
+      anfragen.push(`${LESENDE_ROUTEN.zeitreihe.pfad}?zeitraum=${z}&benchmark=${encodeURIComponent(b)}`);
+    }
   }
-  for (const f of FENSTER) anfragen.push(`/api/fluesse?fenster=${f}`);
+  for (const f of FENSTER) anfragen.push(`${LESENDE_ROUTEN.fluesse.pfad}?fenster=${f}`);
   return anfragen;
 }

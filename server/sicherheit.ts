@@ -48,7 +48,7 @@ export function neuerToken(): string {
 }
 
 /** Zeitkonstanter Vergleich. Ungleiche Laenge zaehlt als ungleich, ohne Vergleich. */
-export function tokenStimmt(erwartet: string, gegeben: unknown): boolean {
+function tokenStimmt(erwartet: string, gegeben: unknown): boolean {
   if (typeof gegeben !== 'string') return false;
   const a = Buffer.from(erwartet, 'utf8');
   const b = Buffer.from(gegeben, 'utf8');

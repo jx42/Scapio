@@ -4,9 +4,11 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { fileURLToPath } from 'node:url';
+import { ladeKonfiguration } from './shared/konfiguration.ts';
 
 // INV-07: auch der Entwicklungsserver bindet ausschliesslich an 127.0.0.1.
-export default defineConfig({
+// Der Port nur fuer `npm run dev`: Bau und vitest sollen keine `einstellungen.json` lesen.
+export default defineConfig(({ command, mode }) => ({
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
@@ -15,7 +17,10 @@ export default defineConfig({
     host: '127.0.0.1',
     port: 5173,
     strictPort: true,
-    proxy: { '/api': { target: 'http://127.0.0.1:4732', changeOrigin: false } },
+    proxy:
+      command === 'serve' && mode !== 'test'
+        ? { '/api': { target: `http://127.0.0.1:${String(ladeKonfiguration().port)}`, changeOrigin: false } }
+        : undefined,
   },
   build: {
     outDir: 'dist',
@@ -47,4 +52,4 @@ export default defineConfig({
       reporter: ['text', 'json-summary'],
     },
   },
-});
+}));

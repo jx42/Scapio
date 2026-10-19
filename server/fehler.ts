@@ -85,7 +85,7 @@ export const parameterAbgelehnt = (was: string): ApiFehler =>
  * Unbekannter Parameter. Der Name wird ABSICHTLICH nicht zurueckgegeben — er stammt aus
  * der Adresszeile und ist damit Fremdtext, der nichts in einer Antwort zu suchen hat.
  */
-export const unbekannterParameter = (): ApiFehler =>
+const unbekannterParameter = (): ApiFehler =>
   new ApiFehler(
     'E_PARAMETER',
     400,

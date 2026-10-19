@@ -8,7 +8,8 @@
 
 import type { DatabaseSync } from 'node:sqlite';
 import type { Hinweis } from '../../shared/hinweise.ts';
-import { stmt } from './hilfen.ts';
+import { spaltenliste, stmt } from './hilfen.ts';
+import type { Bindung, Spalten } from './hilfen.ts';
 
 export type LaufStatus = 'laufend' | 'erfolg' | 'teilweise' | 'fehler';
 export type QuellenStatus = 'erfolg' | 'fehler' | 'übersprungen';
@@ -49,7 +50,17 @@ type Zeile = {
   schritt: string | null;
 };
 
-const SPALTEN = 'id, gestartet, beendet, status, fehler_code, fehler_text, quellen_json, hinweise_json, schritt';
+const SPALTEN = spaltenliste({
+  id: true,
+  gestartet: true,
+  beendet: true,
+  status: true,
+  fehler_code: true,
+  fehler_text: true,
+  quellen_json: true,
+  hinweise_json: true,
+  schritt: true,
+} satisfies Spalten<Zeile>);
 
 function zu(z: Zeile): Lauf {
   return {
@@ -111,19 +122,20 @@ export type Abschluss = {
 };
 
 export function beende(db: DatabaseSync, id: number, a: Abschluss): void {
+  const bindung: Bindung<Omit<Zeile, 'gestartet' | 'schritt'>> = {
+    id,
+    beendet: a.beendet,
+    status: a.status,
+    fehler_code: a.fehlerCode ?? null,
+    fehler_text: a.fehlerText ?? null,
+    quellen_json: JSON.stringify(a.quellen),
+    hinweise_json: JSON.stringify(a.hinweise ?? []),
+  };
   stmt(
     db,
-    `UPDATE lauf SET beendet = ?, status = ?, fehler_code = ?, fehler_text = ?,
-       quellen_json = ?, hinweise_json = ?, schritt = NULL WHERE id = ?`,
-  ).run(
-    a.beendet,
-    a.status,
-    a.fehlerCode ?? null,
-    a.fehlerText ?? null,
-    JSON.stringify(a.quellen),
-    JSON.stringify(a.hinweise ?? []),
-    id,
-  );
+    `UPDATE lauf SET beendet = $beendet, status = $status, fehler_code = $fehler_code, fehler_text = $fehler_text,
+       quellen_json = $quellen_json, hinweise_json = $hinweise_json, schritt = NULL WHERE id = $id`,
+  ).run(bindung);
 }
 
 export function letzter(db: DatabaseSync): Lauf | null {

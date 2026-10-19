@@ -147,7 +147,7 @@ function scheitere(text: string): void {
 }
 
 /** Die Doppelklick-Dateien und die Warnung beim ersten Start — je Plattform die, die es dort gibt. */
-export function einstiege(plattform: NodeJS.Platform = process.platform): {
+function einstiege(plattform: NodeJS.Platform = process.platform): {
   readonly start: string;
   readonly update: string;
   readonly warnung: string;

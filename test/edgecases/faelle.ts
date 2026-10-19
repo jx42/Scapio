@@ -20,6 +20,7 @@ import type {
   Top25,
   Zeitreihe,
 } from '../../server/vertrag.ts';
+import { ROUTEN_NAMEN, type LesendeRoute } from '../../shared/routen.ts';
 import {
   drift,
   maxDrawdownOhne,
@@ -29,30 +30,7 @@ import {
   xirrOhne,
 } from '../ui/fixtures.ts';
 
-export type Route =
-  | 'health'
-  | 'zeitreihe'
-  | 'kennzahlen'
-  | 'aufteilung'
-  | 'top25'
-  | 'fluesse'
-  | 'sparplaene'
-  | 'lauf'
-  | 'mcpAnmeldung'
-  | 'refresh'
-  | 'anmelden';
-
-export const LESENDE_ROUTEN = [
-  'health',
-  'zeitreihe',
-  'kennzahlen',
-  'aufteilung',
-  'top25',
-  'fluesse',
-  'sparplaene',
-  'lauf',
-  'mcpAnmeldung',
-] as const satisfies readonly Route[];
+export type Route = LesendeRoute | 'refresh' | 'anmelden';
 
 export type Antwort =
   | { readonly art: 'json'; readonly status: number; readonly rumpf: unknown }
@@ -99,7 +77,7 @@ const anmeldung = (teil: Partial<McpAnmeldung>): Antwort =>
   aendern<McpAnmeldung>((b) => ({ ...b, angemeldet: true, laeuft: false, fehler: null, ...teil }));
 
 const alleLesenden = (a: Antwort): Partial<Record<Route, Antwort>> =>
-  Object.fromEntries(LESENDE_ROUTEN.map((r) => [r, a]));
+  Object.fromEntries(ROUTEN_NAMEN.map((r) => [r, a]));
 
 const JETZT = '2026-09-23T08:15:00.000Z';
 const LAUF_ID = 9001;

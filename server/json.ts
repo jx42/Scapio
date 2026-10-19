@@ -26,7 +26,7 @@ import type { Tag } from '../core/kalender.ts';
 import type { MaxDrawdownErgebnis, SharpeErgebnis, VolatilitaetErgebnis } from '../core/risiko.ts';
 import type { XirrErgebnis } from '../core/xirr.ts';
 
-export class SerialisierungsFehler extends Error {
+class SerialisierungsFehler extends Error {
   constructor(wert: bigint) {
     super(`Cent-Betrag ausserhalb des sicheren Ganzzahlbereichs: ${wert.toString(10)}`);
     this.name = 'SerialisierungsFehler';
@@ -220,7 +220,7 @@ export const sharpeJsonSchema = objektSchema<Vereinigt<SharpeJson>>({
   zinsProJahr: { type: ['number', 'null'] },
 });
 
-export const driftJsonSchema = objektSchema<DriftJson>({
+const driftJsonSchema = objektSchema<DriftJson>({
   stufe: { type: 'string' },
   abweichung: { type: 'number' },
   cashAbweichung: { type: 'number' },

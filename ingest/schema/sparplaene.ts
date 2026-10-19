@@ -5,7 +5,7 @@ import { Fremdtext, GRENZE, Geld, ISIN_MUSTER, Zeitstempel } from './grundlagen.
 // list_savings_plans
 // ---------------------------------------------------------------------------
 
-export const Sparplanzeile = z
+const Sparplanzeile = z
   .object({
     kind: z.string().max(GRENZE.typ),
     instrument: z

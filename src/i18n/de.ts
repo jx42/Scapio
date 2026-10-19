@@ -10,7 +10,8 @@
  */
 
 import type { LaufFehlerCode } from '../../shared/laufFehler.ts';
-import type { LaufSchritt } from '#server/vertrag';
+import type { QuellenArt } from '../../shared/quellen.ts';
+import type { LaufSchritt } from '../../server/vertrag.ts';
 
 /** Prueft die Schluessel gegen die Codes; nachgeschlagen wird mit beliebigem String und Rueckfall auf `sonst`. */
 type CodeTexte<T> = Partial<Record<LaufFehlerCode | 'E_SPERRE', T>>;
@@ -173,7 +174,7 @@ export const de = {
         titel: 'Eine Datenquelle wurde nicht abgerufen',
         folge: (quelle: string) => `Betroffen: ${quelle}. Die Zahlen daraus zeigen den Stand des letzten erfolgreichen Abrufs.`,
       },
-    },
+    } satisfies Record<Exclude<QuellenArt, 'transaktionen'> | 'sonst', unknown>,
     /** Was bei einer gescheiterten Quelle passiert ist und was hilft — je Fehlercode. */
     quelleCode: {
       E_MCP_DROSSEL: {

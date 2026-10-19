@@ -50,6 +50,4 @@ export const FIXTURE = {
   ezb: 'ezb.json',
   ezbZweiSerien: 'kaputt/ezb-zwei-serien.json',
   ezbFeld: 'kaputt/ezb-feld.json',
-  strom: 'strom.ndjson',
-  stromFremdesTool: 'kaputt/strom-fremdes-tool.ndjson',
 } as const;

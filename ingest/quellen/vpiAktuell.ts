@@ -40,8 +40,9 @@ import { holeText } from '../netz.ts';
 import { EurostatAntwort, GRENZE, pruefe } from '../schema.ts';
 import { hinweis, hinweisKurz, type Hinweis } from '../../shared/hinweise.ts';
 import type { LaufFehlerCode } from '../../shared/laufFehler.ts';
+import type { QuellenArt } from '../../shared/quellen.ts';
 
-export const QUELLE = 'vpi-aktuell';
+export const QUELLE = 'vpi-aktuell' satisfies QuellenArt;
 
 /** Steht so in `vpi.quelle` und unterscheidet die nachgefuellten Monate von den amtlichen. */
 export const HERKUNFT = 'eurostat:ei_cphi_m';
@@ -57,14 +58,14 @@ const EUROSTAT =
  * So viele gemeinsame Monate muessen die beiden Reihen haben, damit der Umrechnungsfaktor
  * mehr ist als ein Zufall aus zwei Zahlen.
  */
-export const MINDEST_UEBERLAPPUNG = 6;
+const MINDEST_UEBERLAPPUNG = 6;
 
 /**
  * So weit duerfen die monatlichen Quotienten hoechstens auseinanderliegen. Gemessen am
  * 2026-09-07 waren es 0,08 ‰ ueber 24 Monate — die Schwelle ist also grosszuegig und
  * schlaegt erst an, wenn die Reihen methodisch nicht mehr zueinander passen.
  */
-export const HOECHSTE_STREUUNG = 0.005;
+const HOECHSTE_STREUUNG = 0.005;
 
 export class VpiAktuellUebersprungen extends Error {
   readonly code = 'E_VPI_AKTUELL_QUELLE' satisfies LaufFehlerCode;
@@ -94,7 +95,7 @@ function median(zahlen: readonly number[]): number {
  *
  * @throws wenn die Ueberlappung zu duenn oder die Quotienten zu uneinheitlich sind.
  */
-export function umrechnungsfaktor(kurz: readonly Monatswert[], basis: readonly Vpiwert[]): number {
+function umrechnungsfaktor(kurz: readonly Monatswert[], basis: readonly Vpiwert[]): number {
   const basisNach = new Map(basis.map((b) => [b.monat, b.indexWert]));
 
   const quotienten: number[] = [];

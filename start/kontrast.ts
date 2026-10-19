@@ -17,8 +17,8 @@ import { fileURLToPath } from 'node:url';
 const WURZEL = fileURLToPath(new URL('../', import.meta.url)).replace(/[/\\]$/, '');
 export const THEME_DATEI = join(WURZEL, 'src', 'styles', 'theme.css');
 export const DOKUMENT_DATEI = join(WURZEL, 'docs', 'BARRIEREFREIHEIT.md');
-export const TABELLE_ANFANG = '<!-- kontrast:anfang — erzeugt von `npm run kontrast` -->';
-export const TABELLE_ENDE = '<!-- kontrast:ende -->';
+const TABELLE_ANFANG = '<!-- kontrast:anfang — erzeugt von `npm run kontrast` -->';
+const TABELLE_ENDE = '<!-- kontrast:ende -->';
 
 type Rgba = { r: number; g: number; b: number; a: number };
 
@@ -119,7 +119,7 @@ export type Paarung = {
   readonly wofuer: string;
 };
 
-export const PAARUNGEN: readonly Paarung[] = [
+const PAARUNGEN: readonly Paarung[] = [
   ...(['grund', 'glas', 'flaeche', 'glas-hoch', 'bedien-aktiv'] as const).map(
     (hinten): Paarung => ({ vorne: 'text', hinten, mindestens: 4.5, wofuer: 'Text' }),
   ),

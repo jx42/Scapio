@@ -6,8 +6,7 @@ import { GRENZE, ISIN_MUSTER, Kurs, Zeitstempel } from './grundlagen.ts';
 // ---------------------------------------------------------------------------
 
 /** Die vier Fenster aus Abschnitt 7.3. Die Enum ist die des MCP, nicht unsere. */
-export const ZEITFENSTER = ['one_month', 'three_months', 'one_year', 'max'] as const;
-export type Zeitfenster = (typeof ZEITFENSTER)[number];
+export type Zeitfenster = 'one_month' | 'three_months' | 'one_year' | 'max';
 
 export const Chartpunkt = z
   .object({

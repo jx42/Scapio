@@ -41,6 +41,7 @@ import { registriereRefresh } from './routen/refresh.ts';
 import { registriereSparplaene } from './routen/sparplaene.ts';
 import { registriereTop25 } from './routen/top25.ts';
 import { registriereZeitreihe } from './routen/zeitreihe.ts';
+import { LESENDE_ROUTEN, MUTIERENDE_ROUTEN } from '../shared/routen.ts';
 
 /** Nicht konfigurierbar. [INV-07] */
 export const HOST = '127.0.0.1';
@@ -220,9 +221,11 @@ export function baueServer(optionen: ServerOptionen): { app: FastifyInstance; to
   // verweigert sich selbst, wenn irgendwo eine dritte mutierende Route entstehen
   // wuerde — auch wenn ein spaeteres Plugin sie unter einem Pfad registriert, den kein
   // Quelltext-Grep mehr findet.
-  const ERLAUBTE_MUTATION = new Set(['POST /api/refresh', 'POST /api/mcp-anmeldung']);
+  const ERLAUBTE_MUTATION = new Set(Object.values(MUTIERENDE_ROUTEN).map((pfad) => `POST ${pfad}`));
+  const lesend = new Set<string>();
   app.addHook('onRoute', (route) => {
     for (const methode of Array.isArray(route.method) ? route.method : [route.method]) {
+      if (methode === 'GET') lesend.add(route.url);
       if (methode === 'GET' || methode === 'HEAD') continue;
       const kennung = `${methode} ${route.url}`;
       if (!ERLAUBTE_MUTATION.has(kennung)) {
@@ -246,6 +249,10 @@ export function baueServer(optionen: ServerOptionen): { app: FastifyInstance; to
   registriereLauf(app, ctx);
   registriereRefresh(app, ctx);
   registriereMcpAnmeldung(app, ctx);
+
+  // Fehlt ein `registriere…`-Aufruf, antwortete die Route sonst still mit 404.
+  const fehlend = Object.values(LESENDE_ROUTEN).filter((r) => !lesend.has(r.pfad));
+  if (fehlend.length > 0) throw new Error(`Nicht registriert: ${fehlend.map((r) => r.pfad).join(', ')}`);
 
   if (neuladen === true) registriereEntwicklungReload(app, distPfad);
 

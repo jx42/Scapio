@@ -36,5 +36,3 @@ weil man nicht sieht, welcher davon den Test rot gemacht hat.
 | `kaputt/amundi-prozent.json` | `www.amundietf.de` | Gewichte in Prozent statt als Anteil (Summe 9600 %) |
 | `eurostat.json` | ec.europa.eu | — |
 | `kaputt/eurostat-zwei-laender.json` | | `geo` mit zwei Ausprägungen |
-| `strom.ndjson` | `claude -p --output-format stream-json` | — |
-| `kaputt/strom-fremdes-tool.ndjson` | | `tool_result` eines anderen Tools |

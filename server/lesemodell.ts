@@ -30,7 +30,7 @@ import type { TwrErgebnis } from '../core/twr.ts';
 import { twr } from '../core/twr.ts';
 import type { Bestand, Fluss, Isin, Tx } from '../core/typen.ts';
 import { ausgeglicheneUebertraege, bewerteAusgaenge } from '../core/uebertraege.ts';
-import type { GespeicherterTag } from '../db/repository/depotTag.ts';
+import type { GespeicherterTag, Tagessumme } from '../db/repository/depotTag.ts';
 import type { Anbietername } from '../db/repository/fondsAufloesung.ts';
 import { FUNDS_JSON_ANBIETER } from '../db/repository/fondsAufloesung.ts';
 import type { Lauf } from '../db/repository/lauf.ts';
@@ -74,7 +74,7 @@ export type Lesemodell = {
   readonly letzterLauf: () => Lauf | null;
   readonly transaktionen: () => readonly Tx[];
   /** Die ganze Reihe — nur fuer Kennzahlen und Verlauf; alles andere braucht `letzterTag`. */
-  readonly reihe: () => readonly GespeicherterTag[];
+  readonly reihe: () => readonly Tagessumme[];
   readonly letzterTag: () => GespeicherterTag | null;
   readonly externeFluesse: () => readonly Fluss[];
   readonly twr: () => TwrErgebnis;
@@ -123,7 +123,7 @@ export function baueLesemodell(
       letzterKursBis(verschmelzeKurse(repository.kurs.fuerIsin(db, isin)), tag),
     );
   });
-  const reihe = einmal<readonly GespeicherterTag[]>(() => repository.depotTag.alle(db));
+  const reihe = einmal<readonly Tagessumme[]>(() => repository.depotTag.summen(db));
   const letzterTag = einmal(() => repository.depotTag.letzter(db));
   const externe = einmal<readonly Fluss[]>(() =>
     externeFluesse(transaktionen(), ausgeglicheneUebertraege(transaktionen())),

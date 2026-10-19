@@ -20,8 +20,7 @@ import { mkdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { tagAus, type Tag } from '../core/kalender.ts';
-import { vorgabeErlaubteHosts } from '../shared/hosts.ts';
-import type { Konfiguration } from '../shared/konfiguration.ts';
+import { konfigurationFuer, type Konfiguration } from '../shared/konfiguration.ts';
 import { testDatenbank, type Datenbank } from '../db/verbindung.ts';
 import { starteServer } from '../server/server.ts';
 import { seedeDatenbank } from '../test/e2e/seed.ts';
@@ -32,20 +31,7 @@ export const DEMO_PORT = 4791;
 export async function baueDemo(): Promise<{ db: Datenbank; konfiguration: Konfiguration; heute: Tag }> {
   const datenpfad = join(tmpdir(), 'scapio-demo');
   mkdirSync(datenpfad, { recursive: true });
-  const konfiguration: Konfiguration = {
-    port: DEMO_PORT,
-    datenverzeichnis: datenpfad,
-    datenpfad,
-    mcpZeitlimitMs: 120_000,
-    csvZeitlimitMs: 30_000,
-    csvGroesstMb: 32,
-    erlaubteHosts: vorgabeErlaubteHosts(),
-    fondsKatalogFrischeTage: 5,
-    inflationsquelle: 'eurostat',
-    zinsquelle: 'ecb',
-    driftSchwellen: { hinweis: 0.001, banner: 0.005, abbruch: 0.02 },
-    top25: true,
-  };
+  const konfiguration = konfigurationFuer(datenpfad, { port: DEMO_PORT });
 
   const db = await testDatenbank();
   // Das Szenario endet am letzten Tag der echten Kurshistorie, nicht heute. Der Server

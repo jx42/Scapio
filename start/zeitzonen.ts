@@ -30,7 +30,7 @@ import { resolve } from 'node:path';
 import { PROJEKTWURZEL } from '../shared/konfiguration.ts';
 import { werkzeugArgumente } from './werkzeuge.ts';
 
-export const ZONEN: readonly string[] = ['UTC', 'America/Los_Angeles', 'Pacific/Kiritimati'];
+const ZONEN: readonly string[] = ['UTC', 'America/Los_Angeles', 'Pacific/Kiritimati'];
 
 function istZone(zone: string): boolean {
   try {

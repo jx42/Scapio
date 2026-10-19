@@ -23,6 +23,7 @@ import type { Konfiguration } from '../shared/konfiguration.ts';
 import { logPfad } from '../shared/konfiguration.ts';
 import type { Hinweis } from '../shared/hinweise.ts';
 import { istLaufFehlerCode, type LaufFehlerCode } from '../shared/laufFehler.ts';
+import type { QuellenSchluessel } from '../shared/quellen.ts';
 import type { EtfStand, Kontext, Schnappschuss } from './importieren.ts';
 import type { Befunde } from './plausibilitaet.ts';
 
@@ -118,7 +119,7 @@ export function setzeSchritt(lauf: Lauf, schritt: LaufSchritt): void {
 }
 
 /** Der Hinweis traegt den Code bis in die Oberflaeche — `quellenFehler` endet mit dem Lauf. */
-export function setzeGescheitert(lauf: Lauf, quelle: string, fehler: unknown): void {
+export function setzeGescheitert(lauf: Lauf, quelle: QuellenSchluessel, fehler: unknown): void {
   const code = codeVon(fehler);
   lauf.quellenFehler.set(quelle, code);
   setzeStatus(lauf, quelle, 'fehler');

@@ -17,7 +17,7 @@
 
 import { vi } from 'vitest';
 import type { Tag } from '../../../core/kalender.ts';
-import type { Konfiguration } from '../../../shared/konfiguration.ts';
+import { konfigurationFuer, type Konfiguration } from '../../../shared/konfiguration.ts';
 import { Befunde } from '../../../ingest/plausibilitaet.ts';
 import type { Kontext } from '../../../ingest/importieren.ts';
 import { mcpAufrufRoh } from '../../../ingest/mcp.ts';
@@ -33,27 +33,11 @@ export const mcp = vi.mocked(mcpAufrufRoh);
 export const netz = vi.mocked(holeText);
 
 export function konfiguration(teil: Partial<Konfiguration> = {}): Konfiguration {
-  return {
+  return konfigurationFuer('/tmp/nicht-verwendet', {
     port: 4732,
-    datenverzeichnis: '/tmp/nicht-verwendet',
-    datenpfad: '/tmp/nicht-verwendet',
-    mcpZeitlimitMs: 120_000,
-    csvZeitlimitMs: 30_000,
-    csvGroesstMb: 32,
-    erlaubteHosts: [
-      'www.ishares.com',
-      'etf.dws.com',
-      'www.amundietf.de',
-      'ec.europa.eu',
-      'data-api.ecb.europa.eu',
-    ],
-    fondsKatalogFrischeTage: 5,
-    inflationsquelle: 'eurostat',
-    zinsquelle: 'ecb',
-    driftSchwellen: { hinweis: 0.001, banner: 0.005, abbruch: 0.02 },
-    top25: true,
+    erlaubteHosts: ['www.ishares.com', 'etf.dws.com', 'www.amundietf.de', 'ec.europa.eu', 'data-api.ecb.europa.eu'],
     ...teil,
-  };
+  });
 }
 
 export function kontext(teil: Partial<Kontext> = {}): Kontext {

@@ -44,10 +44,11 @@ import type {
   Zeitraum,
   Zeitreihe,
   ErtragsZeile,
-} from '#server/vertrag';
+} from '../../server/vertrag.ts';
 
 import { BENCHMARKS, RISIKOFREI, RISIKOFREI_ISIN, STANDARD_BENCHMARK } from '../../shared/benchmarks.ts';
 import type { BenchmarkIsin } from '../../shared/benchmarks.ts';
+import { LESENDE_ROUTEN, MUTIERENDE_ROUTEN } from '../../shared/routen.ts';
 import { FENSTER, ZEITRAEUME } from '../../shared/zeitfenster.ts';
 
 import type { ReactNode } from 'react';
@@ -237,28 +238,28 @@ async function postMitToken(pfad: string): Promise<Response> {
 }
 
 export const api = {
-  health: () => holen<Health>('/api/health'),
+  health: () => holen<Health>(LESENDE_ROUTEN.health.pfad),
 
   zeitreihe: (auswahl: ZeitraumAuswahl, benchmark: string | null) =>
     holen<Zeitreihe>(
-      `/api/zeitreihe?${zeitraumParameter(auswahl)}` +
+      `${LESENDE_ROUTEN.zeitreihe.pfad}?${zeitraumParameter(auswahl)}` +
         (benchmark === null ? '' : `&benchmark=${encodeURIComponent(benchmark)}`),
     ),
 
-  kennzahlen: () => holen<KennzahlenAntwort>('/api/kennzahlen'),
+  kennzahlen: () => holen<KennzahlenAntwort>(LESENDE_ROUTEN.kennzahlen.pfad),
 
-  aufteilung: () => holen<Aufteilung>('/api/aufteilung'),
+  aufteilung: () => holen<Aufteilung>(LESENDE_ROUTEN.aufteilung.pfad),
 
-  top25: () => holen<Top25>('/api/top25'),
+  top25: () => holen<Top25>(LESENDE_ROUTEN.top25.pfad),
 
   fluesse: (fenster: Fenster) =>
-    holen<Fluesse>(`/api/fluesse?fenster=${encodeURIComponent(fenster)}`),
+    holen<Fluesse>(`${LESENDE_ROUTEN.fluesse.pfad}?fenster=${encodeURIComponent(fenster)}`),
 
-  sparplaene: () => holen<Sparplaene>('/api/sparplaene'),
+  sparplaene: () => holen<Sparplaene>(LESENDE_ROUTEN.sparplaene.pfad),
 
-  lauf: () => holen<Lauf>('/api/lauf'),
+  lauf: () => holen<Lauf>(LESENDE_ROUTEN.lauf.pfad),
 
-  mcpAnmeldung: () => holen<McpAnmeldung>('/api/mcp-anmeldung'),
+  mcpAnmeldung: () => holen<McpAnmeldung>(LESENDE_ROUTEN.mcpAnmeldung.pfad),
 
   /**
    * Die erste der beiden mutierenden Routen. Kein Rumpf, keine Parameter, Token
@@ -269,7 +270,7 @@ export const api = {
    * keinen zweiten.
    */
   refresh: async (): Promise<RefreshErgebnis> => {
-    const antwort = await postMitToken('/api/refresh');
+    const antwort = await postMitToken(MUTIERENDE_ROUTEN.refresh);
 
     if (antwort.status === 409) {
       const rumpf = (await antwort.json().catch(() => ({}))) as {
@@ -299,7 +300,7 @@ export const api = {
    * Anmeldung". Den Ausgang liefert erst der spaetere GET auf dieselbe Adresse.
    */
   mcpAnmeldenStarten: async (): Promise<McpAnmeldung> => {
-    const antwort = await postMitToken('/api/mcp-anmeldung');
+    const antwort = await postMitToken(MUTIERENDE_ROUTEN.mcpAnmeldung);
 
     // 409 ist kein Fehler, sondern eine Antwort: es laeuft bereits eine Anmeldung.
     if (antwort.status !== 409 && !antwort.ok) throw await fehlerAus(antwort);

@@ -52,7 +52,7 @@ export type Schalter = {
   readonly neuladen: boolean;
 };
 
-export function leseSchalter(argv: readonly string[]): Schalter {
+function leseSchalter(argv: readonly string[]): Schalter {
   return {
     bauen: !argv.includes('--ohne-bau'),
     browser: !argv.includes('--ohne-browser'),
@@ -94,7 +94,7 @@ function juengsteAenderung(pfad: string): number {
 }
 
 /** Juengste Aenderungszeit ueber alle Bauquellen — der Vergleichswert fuer den Bau. */
-export function juengsteQuelle(): number {
+function juengsteQuelle(): number {
   return Math.max(...BAU_QUELLEN.map((quelle) => juengsteAenderung(join(PROJEKTWURZEL, quelle))));
 }
 

@@ -52,7 +52,7 @@ export function abdruckVonCore(): string {
   return h.digest('hex');
 }
 
-export function schreibeAbdruck(): Abdruckdatei {
+function schreibeAbdruck(): Abdruckdatei {
   const datei: Abdruckdatei = { kernVersion: KERN_VERSION, abdruck: abdruckVonCore() };
   writeFileSync(ABDRUCK_DATEI, `${JSON.stringify(datei, null, 2)}\n`, { mode: 0o644 });
   return datei;
