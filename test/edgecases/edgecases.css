@@ -1,0 +1,3 @@
+/* theme.css scannt nur src/; die Randfallseite bringt eigene Klassen mit (Geräterahmen). */
+@import '../../src/styles/theme.css';
+@source '.';

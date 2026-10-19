@@ -10,7 +10,7 @@
 
 import { de } from '@/i18n/de';
 import type { Marke, Zeitpunkt } from '@/lib/api';
-import { datumKurz, euroAusCent, prozent } from '@/lib/format';
+import { datumKurz, euroAusCent, monatSchluessel, prozent } from '@/lib/format';
 import type { ChartTabelle } from '@/components/ChartRahmen';
 
 /** Bis hierhin (Punkte, das sind Tage) bleibt die Tabelle taeglich: 1W, 1M, ein junges YTD. */
@@ -39,7 +39,8 @@ export function tabellenPunkte(punkte: readonly Zeitpunkt[]): { punkte: Zeitpunk
   const behalten = punkte.filter((punkt, index) => {
     if (index === 0 || index === letzterIndex) return true;
     if (aufloesung === 'woechentlich') return (letzterIndex - index) % TAGE_JE_WOCHE === 0;
-    return punkte[index + 1]?.tag.slice(0, 7) !== punkt.tag.slice(0, 7);
+    const naechster = punkte[index + 1];
+    return naechster === undefined || monatSchluessel(naechster.tag) !== monatSchluessel(punkt.tag);
   });
   return { punkte: behalten, aufloesung };
 }

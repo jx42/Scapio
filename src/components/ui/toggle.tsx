@@ -7,7 +7,6 @@ const toggleVariants = cva(
     variants: {
       variant: {
         default: '',
-        outline: 'lichtkante lichtkante-hover bg-bedien',
       },
     },
     defaultVariants: {

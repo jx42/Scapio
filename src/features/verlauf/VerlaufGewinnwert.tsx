@@ -5,6 +5,7 @@
 import type { ReactNode } from 'react';
 
 import { useZahlZaehler } from '@/hooks/useZahlZaehler';
+import { de } from '@/i18n/de';
 import { InfoKnopf } from '@/components/InfoKnopf';
 import { RichtungsBadge } from '@/components/RichtungsBadge';
 
@@ -46,13 +47,13 @@ export function Gewinnwert({
   const angezeigterProzentwert = useZahlZaehler(prozentwert ?? '');
   return (
     <span className="flex flex-wrap items-center gap-1.5">
-      <span className="text-sm text-text-leise">{`${bezeichnung}:`}</span>
+      <span className="text-sm text-text-leise">{de.satz.beschriftung(bezeichnung)}</span>
       <RichtungsBadge wert={wert}>
         {prozentwert === null
           ? angezeigterBetrag
           : prozentVorn
-            ? `${angezeigterProzentwert} (${angezeigterBetrag})`
-            : `${angezeigterBetrag} (${angezeigterProzentwert})`}
+            ? de.satz.mitNebenwert(angezeigterProzentwert, angezeigterBetrag)
+            : de.satz.mitNebenwert(angezeigterBetrag, angezeigterProzentwert)}
       </RichtungsBadge>
       <InfoKnopf bezeichnung={bezeichnung}>
         <p>{erklaerung}</p>

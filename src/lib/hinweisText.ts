@@ -60,7 +60,7 @@ export function hinweisText(h: LaufHinweis): string {
       return t.summenAbweichung(typeof w.zehnerpotenz === 'number' ? t.zehnerpotenzEuro(zahl(w.zehnerpotenz)) : '—');
     case 'tagessprung': {
       const isin = text(w.isin);
-      const bezeichnung = typeof w.name === 'string' ? `${w.name} (${isin})` : isin;
+      const bezeichnung = typeof w.name === 'string' ? de.satz.mitNebenwert(w.name, isin) : isin;
       const von = datumKurz(text(w.von));
       const bis = datumKurz(text(w.bis));
       const n = typeof w.anzahl === 'number' ? w.anzahl : 0;

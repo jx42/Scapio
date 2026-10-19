@@ -10,11 +10,10 @@ import {
   datumKurz,
   euroAusCent,
   prozent,
-  richtungBgTon,
   richtungPfeil,
-  richtungTon,
   vorzeichen,
 } from '@/lib/format';
+import { richtungBgTon, richtungTon } from '@/lib/farben';
 import { cn } from '@/lib/utils';
 import { ChartTooltipFlaeche } from '@/components/ChartTooltipFlaeche';
 import { RichtungsPfeil } from '@/components/RichtungsPfeil';
@@ -67,18 +66,18 @@ function DifferenzZeile({
   const { richtung, pfeil } = vorzeichen(euroDiff);
   return (
     <>
-      <span className="text-text">{`${de.verlauf.differenz}:`}</span>
+      <span className="text-text">{de.satz.beschriftung(de.verlauf.differenz)}</span>
       <span className={cn('flex flex-wrap items-center gap-1 font-bold', richtungTon[richtung])}>
         <RichtungsPfeil pfeil={pfeil} />
         {modus === 'vermoegen' ? (
           <>
             <span>{betragOhneVorzeichen(euroDiff, euroAusCent)}</span>
-            <span>{`(${betragOhneVorzeichen(prozentDiff, prozent)})`}</span>
+            <span>{de.satz.inKlammern(betragOhneVorzeichen(prozentDiff, prozent))}</span>
           </>
         ) : (
           <>
             <span>{betragOhneVorzeichen(prozentDiff, prozent)}</span>
-            <span>{`(${betragOhneVorzeichen(euroDiff, euroAusCent)})`}</span>
+            <span>{de.satz.inKlammern(betragOhneVorzeichen(euroDiff, euroAusCent))}</span>
           </>
         )}
       </span>
@@ -116,7 +115,7 @@ export function VerlaufTooltip({
           <>
             <span className="flex items-center gap-1.5 text-text">
               <TooltipPunkt farbe="bg-chart-2" />
-              {`${de.verlauf.einzahlung}:`}
+              {de.satz.beschriftung(de.verlauf.einzahlung)}
             </span>
             <span className="text-text">{euroAusCent(punkt.einzahlungKumCent)}</span>
           </>
@@ -125,26 +124,26 @@ export function VerlaufTooltip({
           <>
             <span className="flex items-center gap-1.5 text-text">
               <TooltipPunkt farbe="bg-chart-1" />
-              {`${de.verlauf.depotwert}:`}
+              {de.satz.beschriftung(de.verlauf.depotwert)}
             </span>
             <span className="text-text">{euroAusCent(punkt.gesamtCent)}</span>
           </>
         )}
         <span className="flex items-center gap-1.5 text-text">
           {modus !== 'rendite' ? null : <TooltipPunkt farbe={richtungBgTon[gewinnRichtung]} />}
-          {`${de.verlauf.gesamtgewinnDepot}:`}
+          {de.satz.beschriftung(de.verlauf.gesamtgewinnDepot)}
         </span>
         <span className={cn('flex flex-wrap items-center gap-1', richtungTon[gewinnRichtung])}>
           <RichtungsPfeil pfeil={gewinnPfeil} />
           {modus === 'vermoegen' ? (
             <>
               <span>{betragOhneVorzeichen(punkt.gewinnCent, euroAusCent)}</span>
-              <span>{`(${betragOhneVorzeichen(punkt.gewinnProzent, prozent)})`}</span>
+              <span>{de.satz.inKlammern(betragOhneVorzeichen(punkt.gewinnProzent, prozent))}</span>
             </>
           ) : (
             <>
               <span>{betragOhneVorzeichen(punkt.gewinnProzent, prozent)}</span>
-              <span>{`(${betragOhneVorzeichen(punkt.gewinnCent, euroAusCent)})`}</span>
+              <span>{de.satz.inKlammern(betragOhneVorzeichen(punkt.gewinnCent, euroAusCent))}</span>
             </>
           )}
         </span>
@@ -156,7 +155,7 @@ export function VerlaufTooltip({
           <>
             <span className="flex items-center gap-1.5 text-text">
               <TooltipPunkt farbe="bg-chart-4" />
-              {`${benchmarkName}:`}
+              {de.satz.beschriftung(benchmarkName)}
             </span>
             <span
               className={cn(
@@ -168,12 +167,12 @@ export function VerlaufTooltip({
               {modus === 'vermoegen' ? (
                 <>
                   <span>{betragOhneVorzeichen(punkt.benchmarkGewinnCent, euroAusCent)}</span>
-                  <span>{`(${betragOhneVorzeichen(punkt.benchmarkProzent, prozent)})`}</span>
+                  <span>{de.satz.inKlammern(betragOhneVorzeichen(punkt.benchmarkProzent, prozent))}</span>
                 </>
               ) : (
                 <>
                   <span>{betragOhneVorzeichen(punkt.benchmarkProzent, prozent)}</span>
-                  <span>{`(${betragOhneVorzeichen(punkt.benchmarkGewinnCent, euroAusCent)})`}</span>
+                  <span>{de.satz.inKlammern(betragOhneVorzeichen(punkt.benchmarkGewinnCent, euroAusCent))}</span>
                 </>
               )}
             </span>

@@ -85,3 +85,13 @@ nicht geplant ist — ein einziger, unbedingter Alias-Block reicht.
 - Neuer Anwendungscode benutzt weiterhin die fachlichen Utilities (`bg-flaeche`, nicht
   `bg-card`) — die Aliase sind eine Kompatibilitätsschicht fuer fremden/generierten Code,
   keine zweite erlaubte Schreibweise fuer eigenen.
+
+## Nachtrag: ohne shadcn-CSS und ohne Standardpalette
+
+Die Kopie von `shadcn/tailwind.css` ist entfernt: keine ihrer Utilities, Keyframes und
+`data-*`-Varianten wurde benutzt. `@theme` beginnt mit `--color-*: initial`, damit Tailwind
+seine Standardpalette (`bg-red-500`, `text-white`, …) gar nicht erst erzeugt; Farbe gibt es
+nur noch über die fachlichen Tokens und die Aliase oben. `@import 'tailwindcss' source("..")`
+begrenzt die Klassensuche auf `src/`; die Randfallseite holt ihren Ordner in
+`test/edgecases/edgecases.css` dazu. Lint verbietet Palettenklassen und px-Werte in
+Klassen zusätzlich, damit ein Verstoß im Editor auffällt und nicht erst als fehlende Farbe.

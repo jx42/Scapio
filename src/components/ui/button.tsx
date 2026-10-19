@@ -3,6 +3,7 @@ import * as React from 'react';
 import { Slot } from 'radix-ui';
 import { cva, type VariantProps } from 'class-variance-authority';
 
+import { linkVariants } from '@/lib/linkStil';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
@@ -14,12 +15,12 @@ const buttonVariants = cva(
         default: 'bg-chart-1 text-grund shadow-primaer hover:bg-chart-1/90',
         outline: 'lichtkante lichtkante-hover bg-bedien text-text hover:bg-bedien-aktiv',
         ghost: 'text-text-leise hover:bg-rand/60 hover:text-text',
-        link: 'text-chart-1 underline-offset-4 hover:underline',
+        // Der eine Linkstil aus lib/linkStil.ts, nicht der der Registry.
+        link: linkVariants({ abstand: 'weit' }),
       },
       size: {
         default: 'h-9 px-4 py-2',
         sm: 'h-8 rounded-md px-3 text-xs',
-        lg: 'h-10 rounded-md px-6',
         icon: 'size-9',
       },
     },

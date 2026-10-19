@@ -13,7 +13,6 @@
 
 import { de } from '@/i18n/de';
 import type { MaxDrawdownErgebnis, SharpeErgebnis, VolatilitaetErgebnis, XirrErgebnis } from '@/lib/api';
-import { FARBE } from '@/lib/farben';
 
 const ZEITZONE = 'Europe/Berlin';
 
@@ -205,17 +204,6 @@ export function vorzeichen(wert: number): Vorzeichen {
     : { richtung: 'ab', pfeil: richtungPfeil(wert), zeichen: '-' };
 }
 
-/**
- * Textfarbe je Richtung — die eine Stelle, die `Richtung` auf ein Tailwind-Utility
- * abbildet. `neutral` ist ausdruecklich NICHT gruen: eine binaere Ternary auf
- * `richtung === 'ab'` faerbt neutrale Werte faelschlich als Gewinn.
- */
-export const richtungTon: Record<Richtung, string> = {
-  auf: 'text-gewinn',
-  ab: 'text-verlust',
-  neutral: 'text-text',
-};
-
 /** Ein Wert fuer die Anzeige: Betrag ohne Vorzeichen, dazu Richtung und Pfeil. */
 export type Richtungswert = { readonly wert: string; readonly richtung: Richtung; readonly pfeil: string };
 
@@ -235,20 +223,6 @@ export function richtungswert(wert: number | null, formatieren: (betrag: number)
 export function betragOhneVorzeichen(wert: number, formatieren: (betrag: number) => string): string {
   return formatieren(Math.abs(wert));
 }
-
-/** Farb-Variable je Richtung, fuer SVG-Attribute, die kein Tailwind-Utility nehmen. */
-export const richtungFarbe: Record<Richtung, string> = {
-  auf: FARBE.gewinn,
-  ab: FARBE.verlust,
-  neutral: FARBE.textLeise,
-};
-
-/** Punktfarbe je Richtung — Pendant zu `richtungTon` fuer einen Hintergrund statt Text. */
-export const richtungBgTon: Record<Richtung, string> = {
-  auf: 'bg-gewinn',
-  ab: 'bg-verlust',
-  neutral: 'bg-text-leise',
-};
 
 /** Liest "YYYY-MM-DD" ohne Zeitzonenumrechnung. Gibt null bei allem anderen. */
 function tagAlsDatum(tag: string): Date | null {
@@ -315,6 +289,16 @@ export function monatLang(monat: string): string {
 export function monatKurz(monat: string): string {
   const datum = monatAlsDatum(monat);
   return datum === null ? String(monat ?? '') : monatKurzFormat.format(datum);
+}
+
+/** "2026-08-15" wird zu "2026-08" — Schluessel fuer den Monatswechsel, ohne Date. */
+export function monatSchluessel(tag: string): string {
+  return tag.slice(0, 7);
+}
+
+/** "2026-08-15" wird zu 8. */
+export function monatsnummer(tag: string): number {
+  return Number(tag.slice(5, 7));
 }
 
 /** "2026-08" wird zu "2026". */

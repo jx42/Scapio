@@ -6,18 +6,20 @@ Sechs Kacheln, eine Seite, dunkel, dicht. Rendert nur — gerechnet wird in `cor
 - Kein `style`-Attribut. Ausnahmen: `<Balken>` (`--anteil`), `<ChartRahmen>`
   (`--chart-hoehe`) und `<Kachel>` (`--kachel-hoehe`), alle mit begründetem
   eslint-disable. [INV-05]
-- Kein Hex-Wert, keine Farbe, kein px-Literal in einer Komponente. Tokens aus
-  `styles/theme.css`, Utilities aus Tailwind.
+- Kein Hex-Wert, keine Farbe, kein px-Literal in einer Komponente, keine Tailwind-Standardpalette
+  (sie ist abgeschaltet). Tokens aus `styles/theme.css`, Maße der Charts aus `lib/chartmasse.ts`.
 - Kein `dangerouslySetInnerHTML`, kein Fremdtext in `href`. [INV-06] Ausnahme: geprüfte ISIN
   zu onvista, feste Adressen im Footer (EZB, Eurostat, Scalable Capital, Repository) und im Demo-Band —
   geschlossene Liste, siehe ADR-021, ADR-022 und ADR-052.
-- Formatierung ausschließlich über `lib/format.ts`, Texte aus `i18n/de.ts`.
-- Ansichtskomponenten holen keine Daten. Container holen sie, rechnen aber ebenfalls
+- Formatierung ausschließlich über `lib/format.ts`, Texte aus `i18n/de.ts` — auch Doppelpunkt
+  und Klammern (`de.satz`).
+- Ansichtskomponenten holen keine Daten. Container (`*Kachel.tsx`) holen sie, rechnen aber ebenfalls
   nicht — jede Summe kommt fertig aus `core/` bzw. der API.
 - Jede Kachel benutzt `<Kachel>` und erbt damit ihre drei Zustände (`kachelZustand` in `lib/api.ts`) und die ErrorBoundary.
 - Charts nur über `<ChartRahmen>` — sonst fehlt die Alternative für Screenreader.
 - Gewinn und Verlust nie allein über Farbe: Vorzeichen und Pfeil dazu, über `richtungswert()`
-  aus `lib/format.ts`. Chartfarben aus `lib/farben.ts`, Links über `linkVariants`.
+  aus `lib/format.ts`. Chart- und Richtungsfarben aus `lib/farben.ts`, Links über `linkVariants`
+  bzw. `Button variant="link"`.
 
 ## Barrierefreiheit
 - Nie `aria-hidden` über Fokussierbarem; ein `aria-hidden`-SVG bekommt `rootTabIndex={-1}`.

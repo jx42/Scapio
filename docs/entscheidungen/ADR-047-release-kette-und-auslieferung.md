@@ -58,8 +58,8 @@ tatsächlich laufen, deckt das Audit damit nicht ab.
   `@vitejs/plugin-react`, `@tailwindcss/vite` und `tailwindcss`. `vite.config.ts` holt
   `defineConfig` aus `vite` und die `test`-Typen nur per `/// <reference types="vitest/config" />`.
   Ein Laufzeit-Import aus `vitest/config` zöge `vitest` in den Bau-Pfad. `shadcn` ist keine
-  Abhängigkeit mehr und läuft bei Bedarf als `npx shadcn@<fest>`. Die eine Datei, die der Bau
-  daraus braucht (`tailwind.css`), liegt als Kopie unter `src/styles/shadcn-tailwind.css`. Damit deckt
+  Abhängigkeit mehr und läuft bei Bedarf als `npx shadcn@<fest>`; der Bau braucht nichts
+  daraus (ADR-019, Nachtrag). Damit deckt
   `audit --omit=dev` den Bau-Pfad beim Nutzer ab, und eine eigene Audit-ADR ist nicht nötig.
 
 ## Verworfene Alternativen

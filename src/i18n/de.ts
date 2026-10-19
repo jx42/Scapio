@@ -54,6 +54,13 @@ export const de = {
     fussEzbOeffnen: 'Statistical Data Warehouse der EZB öffnen, neuer Tab',
   },
 
+  /** Zeichensetzung um fertige Werte — Bezeichnung mit Doppelpunkt, Nebenwert in Klammern. */
+  satz: {
+    beschriftung: (bezeichnung: string) => `${bezeichnung}:`,
+    beschriftet: (bezeichnung: string, wert: string) => `${bezeichnung}: ${wert}`,
+    inKlammern: (wert: string) => `(${wert})`,
+    mitNebenwert: (hauptwert: string, nebenwert: string) => `${hauptwert} (${nebenwert})`,
+  },
 
   pfeil: {
     auf: '',
