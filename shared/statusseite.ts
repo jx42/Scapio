@@ -19,7 +19,7 @@ export type Statusseite = {
   readonly text: string;
   /** Zusätzliches CSS, etwa eine Animation für das Symbol. */
   readonly stil?: string;
-  /** HTML vor `</body>`, etwa ein Skript mit Nonce. */
+  /** HTML vor `</body>`, etwa ein Skript mit Nonce. Es findet den Inhalt unter `#statusseite`. */
   readonly fuss?: string;
   /** Unbestimmter Fortschrittsbalken unter dem Text: es passiert noch etwas, Dauer unbekannt. */
   readonly fortschritt?: string;
@@ -99,6 +99,12 @@ export function statusseite(seite: Statusseite): string {
       oklch(1 0 0 / 0.035) padding-box;
     box-shadow: 0 1px 1px oklch(0 0 0 / 0.1), 0 12px 32px -18px oklch(0 0 0 / 0.5);
   }
+  #statusseite {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+  }
   main::before {
     content: '';
     position: absolute;
@@ -172,10 +178,12 @@ ${seite.stil ?? ''}
 </head>
 <body>
 <main>
+<div id="statusseite" role="status">
   <div class="symbol">${seite.symbol}</div>
   <h1>${seite.ueberschrift}</h1>
   <p>${seite.text}</p>
-${seite.fortschritt === undefined ? '' : `  <div class="fortschritt" role="progressbar" aria-label="${seite.fortschritt}"></div>\n`}${seite.nachsatz === undefined ? '' : `  <p>${seite.nachsatz}</p>\n`}</main>
+${seite.fortschritt === undefined ? '' : `  <div class="fortschritt" role="progressbar" aria-label="${seite.fortschritt}"></div>\n`}${seite.nachsatz === undefined ? '' : `  <p>${seite.nachsatz}</p>\n`}</div>
+</main>
 ${seite.fuss ?? ''}
 </body>
 </html>`;

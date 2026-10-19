@@ -70,9 +70,10 @@ export function LeerZustand({
   );
 }
 
-export function FehlerZustand({ text, hinweis }: { text?: string; hinweis?: string | null }) {
+/** `still`: ohne `role="alert"`, weil die Seite denselben Fehler schon einmal meldet. */
+export function FehlerZustand({ text, hinweis, still }: { text?: string; hinweis?: string | null; still?: boolean }) {
   return (
-    <Alert variant="verlust" className="rounded-md px-4 py-4">
+    <Alert variant="verlust" role={still === true ? undefined : 'alert'} className="rounded-md px-4 py-4">
       <AlertTitle>{de.zustand.fehler}</AlertTitle>
       {/* Fremdtext? Nein: der Server schickt Code und einen eigenen Satz, nie einen Stacktrace. */}
       <AlertDescription className="text-xs">{text ?? de.zustand.fehlerUnbekannt}</AlertDescription>

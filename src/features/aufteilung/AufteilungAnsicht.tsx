@@ -41,8 +41,8 @@ function farbe(index: number): string {
   return CHART_REIHE[index % CHART_REIHE.length] ?? FARBE.chart1;
 }
 
-/** Die Art-Spalte: feste Breite, kürzt Unbekanntes ab und entfällt auf schmalen Bildschirmen, damit der Name Platz behält. */
-const ART_SPALTE = 'hidden w-16 shrink-0 truncate sm:block';
+/** Die Art-Spalte: feste Breite, bricht Langes um statt es zu kürzen (WCAG 1.4.10) und entfällt auf schmalen Bildschirmen, damit der Name Platz behält. */
+const ART_SPALTE = 'hidden w-16 shrink-0 break-words sm:block';
 
 type Stueck = {
   readonly schluessel: string;
@@ -164,7 +164,7 @@ export function AufteilungAnsicht({
           aria-hidden="true"
           className="flex items-baseline gap-x-3 border-b border-rand/60 pb-2 text-xs font-medium text-text-leise"
         >
-          <span className="min-w-0 flex-1 truncate">{de.aufteilung.spaltePosition}</span>
+          <span className="min-w-0 flex-1 break-words">{de.aufteilung.spaltePosition}</span>
           <span className={ART_SPALTE}>{de.aufteilung.spalteArt}</span>
           <span className="min-w-16 shrink-0 text-right">{de.aufteilung.spalteAnteil}</span>
           <span className="min-w-24 shrink-0 text-right">{de.aufteilung.spalteWert}</span>
@@ -207,6 +207,7 @@ export function AufteilungAnsicht({
                 </button>
                 {s.position === null ? null : (
                   // Der Link ist ein Geschwister des Knopfs, nicht sein Kind: `<a>` in `<button>` ist ungueltig.
+                  // eslint-disable-next-line jsx-a11y/no-static-element-interactions -- nur Zeiger-Hervorhebung; per Tastatur hebt der Knopf darueber hervor.
                   <div
                     onMouseEnter={() => onHover(s.schluessel)}
                     onMouseLeave={() => onHover(null)}

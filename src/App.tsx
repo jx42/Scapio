@@ -21,7 +21,7 @@ import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-quer
 import { ArrowUpRight, ChartLine, RefreshCw } from 'lucide-react';
 
 import { de } from '@/i18n/de';
-import { api, schluessel } from '@/lib/api';
+import { api, istNetzFehler, schluessel } from '@/lib/api';
 import { istDemoModus } from '@/lib/demoModus';
 import { tokenVorhanden } from '@/lib/token';
 import { zeitpunktKurz } from '@/lib/format';
@@ -115,10 +115,15 @@ function Seite() {
 
       <a
         href="#kacheln"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:rounded-md focus:border focus:border-rand focus:bg-flaeche focus:px-3 focus:py-2"
+        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-2 focus:left-2 focus:rounded-md focus:border focus:border-rand focus:bg-flaeche focus:px-3 focus:py-2"
       >
         {de.seite.skip}
       </a>
+
+      {/* Fehlt der Server, scheitert jede Kachel gleich; gemeldet wird das nur hier, einmal. */}
+      {istNetzFehler(health.error) ? (
+        <p role="alert" className="sr-only">{de.fehler.netz}</p>
+      ) : null}
 
       {istDemoModus() && <DemoBand />}
 

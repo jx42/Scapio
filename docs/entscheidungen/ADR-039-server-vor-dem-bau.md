@@ -40,3 +40,10 @@ noch etwas kommt. Das Terminal lag im Hintergrund.
   (AGENTS.md).
 - **Ein Wartebildschirm im Prozess der Anmeldung.** Dann gäbe es zwei Server mit zwei
   Seiten für denselben Start.
+
+## Nachtrag: Nachfragen statt Neuladen
+
+Die Hinweisseite lädt sich nicht mehr alle drei Sekunden neu. Ihr Skript fragt stattdessen `/`
+ab und lädt erst, wenn dort die gebaute Oberfläche oder ein anderer Zustand steht; ein neuer
+Schritt desselben Laufs ersetzt nur den Inhalt der Live-Region. Zoom, Leseposition und
+Screenreader bleiben so stehen (WCAG 2.2.1).

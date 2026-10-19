@@ -146,12 +146,18 @@ type FehlerRumpf = {
   fehler?: { code?: unknown; text?: unknown; hinweis?: unknown };
 };
 
+/** Ob der lokale Server fehlt. Das meldet die Seite einmal (`App.tsx`), nicht jede Kachel. */
+export function istNetzFehler(fehler: Error | null): boolean {
+  return fehler instanceof ApiFehler && fehler.code === 'E_NETZ';
+}
+
 /** Kachelzustand zu einer Abfrage, die gescheitert ist — mit Hinweis, wenn die API einen mitgibt. */
-export function fehlerZustand(fehler: Error): { art: 'fehler'; text: string; hinweis: string | null } {
+export function fehlerZustand(fehler: Error): { art: 'fehler'; text: string; hinweis: string | null; still: boolean } {
   return {
     art: 'fehler',
     text: fehler.message,
     hinweis: fehler instanceof ApiFehler ? fehler.hinweis : null,
+    still: istNetzFehler(fehler),
   };
 }
 

@@ -95,12 +95,12 @@ function projektVersion(): string {
 
 /**
  * Nur diese Seite braucht gelockerte Direktiven — Inline-`<style>` (`style-src`), die
- * Schrift als `data:`-URL (`font-src`) und das Neulade-Skript (`script-src`). Fuer das
+ * Schrift als `data:`-URL (`font-src`) und das Nachfrage-Skript (`script-src`). Fuer das
  * Skript kein pauschales `'unsafe-inline'`: ein frischer Nonce pro Antwort, den nur
  * dieses eine `<script>`-Tag traegt. Die echte, gebaute Oberflaeche bekommt weiterhin
  * das strenge `CSP` aus `sicherheit.ts` unveraendert.
  */
-function hinweisseiteCsp(nonce: string): string {
+export function hinweisseiteCsp(nonce: string): string {
   return CSP.replace("script-src 'self'", `script-src 'nonce-${nonce}'`)
     // Ganze Direktive ersetzen, nicht nur "'self'": ein `sha256-…` aus der
     // strengen CSP (fuer sonner, siehe sicherheit.ts) neben 'unsafe-inline'
@@ -118,22 +118,47 @@ const SCHRITTE = {
   inflation: 'Inflation abrufen',
 } satisfies Record<LaufSchritt, string>;
 
+// Ohne eigene Rolle: die Seite ist als Ganzes `role="status"`, siehe `shared/statusseite.ts`.
 const SPINNER =
-  '<svg class="spinner" role="status" aria-label="Lädt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>';
+  '<svg class="spinner" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-6.219-8.56" /></svg>';
 
 const SPINNER_STIL = `  .spinner { animation: drehen 1s linear infinite; }
   @keyframes drehen { to { transform: rotate(360deg); } }`;
 
 /**
- * Laedt sich nach ein paar Sekunden von selbst neu — der Bau im Hintergrund
- * (`npm start`) braucht ein paar Sekunden, und wer wartet, soll nicht selbst
- * neu laden muessen. `nonce` erlaubt genau dieses eine Skript, siehe `hinweisseiteCsp`.
- *
- * Laeuft dabei der erste Lauf, sagt die Seite das statt "wird gebaut": er dauert laenger
+ * Fragt alle drei Sekunden `/` ab, statt sich neu zu laden: ein Neuladen setzte Zoom,
+ * Leseposition und Screenreader jedes Mal an den Anfang. Neu geladen wird erst, wenn `/`
+ * etwas anderes liefert — die gebaute Oberflaeche oder einen anderen Zustand dieser Seite.
+ * Ein neuer Schritt desselben Laufs ersetzt nur den Inhalt der Live-Region.
+ * `nonce` erlaubt genau dieses eine Skript, siehe `hinweisseiteCsp`.
+ */
+function nachfrageSkript(nonce: string): string {
+  return `<script nonce="${nonce}">
+const nachfragen = async () => {
+  try {
+    const antwort = await fetch('/', { cache: 'no-store' });
+    if (antwort.ok) {
+      const neu = new DOMParser().parseFromString(await antwort.text(), 'text/html').getElementById('statusseite');
+      const hier = document.getElementById('statusseite');
+      if (neu === null || neu.querySelector('h1')?.textContent !== hier.querySelector('h1')?.textContent) {
+        window.location.reload();
+        return;
+      }
+      if (neu.innerHTML !== hier.innerHTML) hier.replaceChildren(...Array.from(neu.childNodes, (k) => document.importNode(k, true)));
+    }
+  } catch {}
+  setTimeout(nachfragen, 3000);
+};
+setTimeout(nachfragen, 3000);
+</script>`;
+}
+
+/**
+ * Laeuft beim Aufruf der erste Lauf, sagt die Seite das statt "wird gebaut": er dauert laenger
  * als der Bau, und das Terminal liegt hinter dem Browser [ADR-039].
  */
 export function hinweisseite(nonce: string, lauf: Pick<Lauf, 'status' | 'schritt'> | null = null): string {
-  const fuss = `<script nonce="${nonce}">setTimeout(() => { window.location.reload(); }, 3000);</script>`;
+  const fuss = nachfrageSkript(nonce);
   if (lauf?.status === 'laufend') {
     const schritt = lauf.schritt === null ? '' : `<br />${SCHRITTE[lauf.schritt]} …`;
     return statusseite({
@@ -153,7 +178,7 @@ export function hinweisseite(nonce: string, lauf: Pick<Lauf, 'status' | 'schritt
     symbol: SPINNER,
     stil: SPINNER_STIL,
     ueberschrift: 'Scapio wird gebaut...',
-    text: 'Die Seite lädt sich gleich von selbst neu.<br />Hilft das nicht, starte Scapio neu.',
+    text: 'Scapio erscheint hier von selbst, sobald der Bau fertig ist.<br />Hilft das nicht, starte Scapio neu.',
     fuss,
   });
 }

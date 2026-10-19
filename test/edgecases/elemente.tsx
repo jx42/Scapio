@@ -145,7 +145,7 @@ const STATUSSEITEN = [
   { titel: 'Anmeldung abgeschlossen, Dashboard folgt', code: 'ingest/mcpAnmeldung.ts', adresse: '/__edgecases/anmeldung-weiter.html' },
 ] as const;
 
-/** `sandbox` ohne Skripte: der Bau-Hinweis laedt sich sonst alle drei Sekunden neu. */
+/** `sandbox` ohne Skripte: der Bau-Hinweis fragte sonst nach `/` und ersetzte sich durch die Uebersicht. */
 export function StatusseitenElemente() {
   return (
     <Abschnitt titel="Seiten außerhalb der Oberfläche">
