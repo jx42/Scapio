@@ -43,6 +43,8 @@ export const de = {
     fussReadmeOeffnen: 'Readme von Scapio auf GitHub öffnen, neuer Tab',
     fussVersionen: 'Versionen',
     fussVersionenOeffnen: 'Versionen von Scapio auf GitHub öffnen, neuer Tab',
+    fussLizenzen: 'Lizenzen',
+    fussLizenzenOeffnen: 'Lizenzen der verwendeten Pakete öffnen, neuer Tab',
     fussHinweis:
       'Kein Angebot von Scalable Capital und keine Anlageberatung. Maßgeblich sind allein die Abrechnungen der Bank.',
     fussQuellen: 'Quellen:',

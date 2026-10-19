@@ -24,9 +24,10 @@
  *     Satz, was jetzt kommt.
  *
  * Was dieses Skript ausdruecklich NICHT tut: Code aus dem Netz laden. Das macht `git`,
- * mit der Gegenstelle, die der Nutzer selbst geklont hat. Die Anwendung aktualisiert sich
+ * und nur von `main` dieses Repositorys: Gegenstelle und Branch werden vorher geprueft,
+ * denn was hier ankommt, fuehrt `Start.*` gleich danach aus. Die Anwendung aktualisiert sich
  * auch nicht von selbst beim Start — dieser Befehl laeuft nur, wenn jemand ihn ausloest.
- * Begruendung in [ADR-013].
+ * Begruendung in [ADR-013, ADR-055].
  *
  * Jeder Unterprozess laeuft ueber `execFile` mit Argument-Array, nie ueber eine Shell.
  */
@@ -171,6 +172,20 @@ export function einstiege(plattform: NodeJS.Platform = process.platform): {
  */
 export const ZIP_ADRESSE = 'https://github.com/jx42/Scapio/releases/latest/download/Scapio.zip';
 
+/** Woher ein Update kommen darf: `origin` muss eine dieser Adressen sein, ausgecheckt `branch`. [ADR-055] */
+export type Gegenstelle = { readonly adressen: readonly string[]; readonly branch: string };
+
+export const GEGENSTELLE: Gegenstelle = {
+  adressen: ['https://github.com/jx42/Scapio', 'git@github.com:jx42/Scapio', 'ssh://git@github.com/jx42/Scapio'],
+  branch: 'main',
+};
+
+/** `.git` und Schraegstrich am Ende sind dieselbe Gegenstelle, GitHub unterscheidet keine Gross-/Kleinschreibung. */
+export function gleicheAdresse(adresse: string, erlaubt: string): boolean {
+  const ohneEnde = (a: string): string => a.trim().replace(/\/+$/, '').replace(/\.git$/, '').toLowerCase();
+  return ohneEnde(adresse) === ohneEnde(erlaubt);
+}
+
 export function zipHinweis(plattform: NodeJS.Platform = process.platform): string {
   const { start, update, warnung } = einstiege(plattform);
   return `Dieser Ordner ist kein Git-Checkout — die Anwendung wurde als ZIP heruntergeladen.
@@ -197,9 +212,11 @@ Danach genuegt fuer jedes weitere Update ein Doppelklick auf ${update}.`;
  */
 export function schlusssaetze(mitNeustart: boolean, plattform: NodeJS.Platform = process.platform): string[] {
   if (mitNeustart) return ['Neue Abhaengigkeiten und Schemaaenderungen erledigt der Neustart von selbst.'];
+  // Nur der Doppelklick installiert neue Abhaengigkeiten; `npm start` baut nur. [ADR-055]
   return [
-    `Jetzt ${einstiege(plattform).start} doppelklicken — oder "npm start".`,
-    'Neue Abhaengigkeiten und Schemaaenderungen erledigt der Start von selbst.',
+    `Jetzt ${einstiege(plattform).start} doppelklicken — neue Abhaengigkeiten und`,
+    'Schemaaenderungen erledigt der Start von selbst.',
+    'Wer im Terminal startet: erst "npm ci --ignore-scripts", dann "npm start".',
   ];
 }
 
@@ -230,11 +247,39 @@ export async function haupt(argv: readonly string[] = process.argv.slice(2)): Pr
 }
 
 /**
+ * Ein `git pull` ohne Ziel zoege vom Upstream des ausgecheckten Branches, ueber jede
+ * Adresse. Deshalb vor allem anderen: `origin` ist dieses Repository, ausgecheckt ist
+ * `main`. `get-url` loest `insteadOf` auf, prueft also die Adresse, die git wirklich nimmt.
+ */
+async function gegenstelleStimmt(wurzel: string, gegenstelle: Gegenstelle): Promise<boolean> {
+  const adresse = await git(wurzel, 'remote', 'get-url', 'origin');
+  if (!adresse.ok || !gegenstelle.adressen.some((erlaubt) => gleicheAdresse(adresse.ausgabe, erlaubt))) {
+    scheitere(
+      `Dieser Ordner holt Updates nicht von ${gegenstelle.adressen[0] ?? ''}, sondern von:\n` +
+        `  ${adresse.ok ? adresse.ausgabe : '(keine Gegenstelle "origin")'}\n` +
+        'Aktualisiert wird nur aus dem eigenen Repository. Siehe docs/RUNBOOK.md, Abschnitt "Update verweigert".',
+    );
+    return false;
+  }
+  const zweig = await git(wurzel, 'symbolic-ref', '--quiet', '--short', 'HEAD');
+  if (!zweig.ok || zweig.ausgabe !== gegenstelle.branch) {
+    scheitere(
+      `Ausgecheckt ist ${zweig.ok ? `der Branch "${zweig.ausgabe}"` : 'kein Branch'}, aktualisiert wird nur "${gegenstelle.branch}".\n` +
+        `Zurueck mit: git switch ${gegenstelle.branch}. Siehe docs/RUNBOOK.md, Abschnitt "Update verweigert".`,
+    );
+    return false;
+  }
+  return true;
+}
+
+/**
  * Stash, Pull, Pop und `dist/` wegraeumen in einem Git-Checkout. `false`: gescheitert, der
  * Grund steht schon auf stderr. Eigene Funktion, damit der Test ein temporaeres Repository
  * statt dieses Ordners benutzen kann.
  */
-export async function holeNeueVersion(wurzel: string): Promise<boolean> {
+export async function holeNeueVersion(wurzel: string, gegenstelle: Gegenstelle = GEGENSTELLE): Promise<boolean> {
+  if (!(await gegenstelleStimmt(wurzel, gegenstelle))) return false;
+
   const vorherKopf = await git(wurzel, 'rev-parse', '--short', 'HEAD');
   if (!vorherKopf.ok) {
     scheitere(`Der aktuelle Stand liess sich nicht lesen — git meldet:\n${vorherKopf.ausgabe}`);
@@ -265,7 +310,7 @@ export async function holeNeueVersion(wurzel: string): Promise<boolean> {
   }
 
   sage('3/4  Hole die neue Version …');
-  const pull = await git(wurzel, 'pull', '--ff-only');
+  const pull = await git(wurzel, 'pull', '--ff-only', 'origin', gegenstelle.branch);
   if (!pull.ok) {
     process.stderr.write(`Das Update ist gescheitert — git meldet:\n\n${pull.ausgabe}\n\n`);
     if (gestasht) {

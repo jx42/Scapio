@@ -96,12 +96,22 @@ rem --- 2. Abhaengigkeiten -----------------------------------------------------
 
 if not exist "%MARKE%" mkdir "%MARKE%" || exit /b 1
 
+rem Ein ZIP braucht nur, was Start und Bau brauchen; Testwerkzeuge gibt es nur im Git-Checkout.
+rem Der Modus steht mit in der Marke, damit ein Wechsel neu installiert. [ADR-055]
+set "MODUS=ohne-dev"
+set "CI_SCHALTER=--omit=dev"
+if exist ".git" (
+  set "MODUS=voll"
+  set "CI_SCHALTER="
+)
+
 set "HASH_NEU="
 for /f "usebackq skip=1 tokens=*" %%h in (`certutil -hashfile package-lock.json SHA256 2^>nul`) do (
   if not defined HASH_NEU set "HASH_NEU=%%h"
 )
 rem Aeltere certutil-Fassungen setzen Leerzeichen zwischen die Bytes.
 if defined HASH_NEU set "HASH_NEU=!HASH_NEU: =!"
+if defined HASH_NEU set "HASH_NEU=!MODUS!:!HASH_NEU!"
 
 set "HASH_ALT="
 if exist "%HASHDATEI%" set /p HASH_ALT=<"%HASHDATEI%"
@@ -119,7 +129,7 @@ if "!INSTALLIEREN!"=="0" (
   ) else (
     echo ⏬  1/3  Softwarebausteine werden installiert - das dauert beim ersten Mal einige Minuten ...
   )
-  call npm ci --ignore-scripts >"%PROTOKOLL%" 2>&1
+  call npm ci --ignore-scripts !CI_SCHALTER! >"%PROTOKOLL%" 2>&1
   if errorlevel 1 (
     echo.
     echo ❌  Die Softwarebausteine liessen sich nicht installieren.

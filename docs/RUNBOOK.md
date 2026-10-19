@@ -185,6 +185,17 @@ nicht mehr stimmt, und eine Origin-Regel, die nicht mehr greift. Ist der konfigu
    `server/sicherheit.ts` automatisch mit, da beide aus derselben Konfiguration gelesen
    werden.
 
+## Update verweigert
+
+`npm run update` (und damit `Aktualisieren.*`) zieht nur `main` von `github.com/jx42/Scapio`
+([ADR-055](entscheidungen/ADR-055-update-und-release-kette.md)). Was ankommt, führt der nächste
+Start aus; eine fremde Gegenstelle oder ein eigener Branch wird deshalb nicht still übernommen.
+
+- **„… holt Updates nicht von …“:** `git remote -v` zeigt, wohin `origin` zeigt. Ein eigener Fork
+  wird von Hand aktualisiert (`git pull`). Sonst zurück: `git remote set-url origin https://github.com/jx42/Scapio.git`.
+- **„Ausgecheckt ist …“:** `git switch main`, danach erneut aktualisieren. Eigene Commits auf
+  einem anderen Branch bleiben dort liegen.
+
 ## Schema geändert
 
 Migrationen liegen unter `db/migrationen/00N-*.sql`, streng vorwärts — eine bestehende
