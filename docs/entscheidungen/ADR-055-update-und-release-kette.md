@@ -42,7 +42,7 @@ aber fremden Code ausführen können:
 - **Demo.** `demo-worker/` hat ein eigenes `package.json` mit fest gepinntem `wrangler` und
   Lockfile. Angemeldet wird per API-Token mit nur „Workers Scripts: Edit“, gesetzt für eine
   Shell. Der Bau schreibt `assets/drittlizenzen.txt` (`shared/drittlizenzen.ts`) aus den Modulen,
-  die Rollup eingebunden hat, plus der Schrift; das Demo-Band verlinkt die Datei.
+  die Rollup eingebunden hat, plus der Schrift; der Footer verlinkt die Datei, in der Demo wie lokal.
 - **Voller Audit zur Kenntnis.** `pruefung.yml` führt nach dem Pflicht-Audit ein volles
   `npm audit` aus, das nicht blockiert.
 

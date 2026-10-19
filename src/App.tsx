@@ -213,6 +213,16 @@ function Seite() {
               className={FUSS_LINK}
             >
               {de.seite.fussVersionen}
+            </a>{' '}
+            ·{' '}
+            <a
+              href="/assets/drittlizenzen.txt" /* INV-AUSNAHME: feste Adresse, kein Wert; gleich DRITTLIZENZEN_DATEI — ADR-055 */
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={de.seite.fussLizenzenOeffnen}
+              className={FUSS_LINK}
+            >
+              {de.seite.fussLizenzen}
             </a>
           </p>
         )}
@@ -275,15 +285,6 @@ function DemoBand() {
           <span className="sm:hidden">{de.seite.demoBandLinkKurz}</span>
           <span className="max-sm:hidden">{de.seite.demoBandLink}</span>
           <ArrowUpRight aria-hidden="true" className="size-3.5" />
-        </a>
-        <a
-          href="/assets/drittlizenzen.txt" /* INV-AUSNAHME: feste Adresse, kein Wert; gleich DRITTLIZENZEN_DATEI — ADR-055 */
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label={de.seite.demoBandLizenzenOeffnen}
-          className={cn(linkVariants(), 'inline-flex min-h-6 items-center font-medium text-text')}
-        >
-          {de.seite.demoBandLizenzen}
         </a>
       </p>
     </aside>

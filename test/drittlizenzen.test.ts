@@ -65,6 +65,6 @@ describe('lizenztext', () => {
   });
 });
 
-it('die Demo verlinkt genau die Datei, die der Bau schreibt', () => {
+it('der Footer verlinkt genau die Datei, die der Bau schreibt', () => {
   expect(readFileSync(join(import.meta.dirname, '../src/App.tsx'), 'utf8')).toContain(`href="/${DRITTLIZENZEN_DATEI}"`);
 });
