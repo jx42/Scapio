@@ -74,7 +74,16 @@ fi
 
 mkdir -p "$MARKE" || exit 1
 
+# Ein ZIP braucht nur, was Start und Bau brauchen; Testwerkzeuge gibt es nur im Git-Checkout.
+# Der Modus steht mit in der Marke, damit ein Wechsel neu installiert. [ADR-055]
+if [[ -e .git ]]; then
+  modus="voll"; ci_schalter=()
+else
+  modus="ohne-dev"; ci_schalter=(--omit=dev)
+fi
+
 hash_neu="$(shasum -a 256 package-lock.json 2>/dev/null | cut -d' ' -f1)"
+[[ -n "$hash_neu" ]] && hash_neu="$modus:$hash_neu"
 hash_alt=""
 [[ -r "$HASHDATEI" ]] && hash_alt="$(<"$HASHDATEI")"
 
@@ -86,7 +95,7 @@ else
   else
     print -r -- "⏬  1/3  Softwarebausteine werden installiert — das dauert beim ersten Mal einige Minuten …"
   fi
-  if ! npm ci --ignore-scripts >"$PROTOKOLL" 2>&1; then
+  if ! npm ci --ignore-scripts "${ci_schalter[@]}" >"$PROTOKOLL" 2>&1; then
     abbruch "❌  Die Softwarebausteine liessen sich nicht installieren.
 
 Was genau schiefging, steht in dieser Datei:

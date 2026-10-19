@@ -27,8 +27,10 @@ Monat und hat einen Kaltstart.
 - **Daten:** ausschließlich synthetisch. Kein echtes Depot gelangt in den Abzug, denn der
   Export öffnet nie das Datenverzeichnis.
 - **INV-11:** gilt auch für die Demo. Cloudflare Web Analytics bleibt aus.
-- **Deploy:** von Hand mit `npx wrangler@4.147.0 deploy`. Im Repository liegt dafür kein
-  Secret, und `wrangler` ist keine Abhängigkeit.
+- **Deploy:** von Hand mit `wrangler deploy`. Im Repository liegt dafür kein
+  Secret, und `wrangler` ist keine Abhängigkeit der Anwendung — seit
+  [ADR-055](ADR-055-update-und-release-kette.md) eine von `demo-worker/` mit eigenem
+  Lockfile, angemeldet per eng begrenztem API-Token statt `wrangler login`.
 
 ## Verworfene Alternativen
 
