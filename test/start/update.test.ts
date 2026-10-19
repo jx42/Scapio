@@ -20,8 +20,10 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   ersterTreffer,
+  GEGENSTELLE,
   geaenderteDateien,
   gitLocator,
+  gleicheAdresse,
   holeNeueVersion,
   schlusssaetze,
   ZIP_ADRESSE,
@@ -131,6 +133,38 @@ describe('schlusssaetze', () => {
     expect(schlusssaetze(false, 'win32')[0]).toContain('Start.bat');
     expect(schlusssaetze(false, 'darwin')[0]).toContain('Start.command');
   });
+
+  it('verspricht nicht, dass "npm start" neue Abhaengigkeiten installiert [ADR-055]', () => {
+    const text = schlusssaetze(false, 'darwin').join('\n');
+    expect(text).toContain('npm ci --ignore-scripts');
+    expect(text.indexOf('npm ci')).toBeLessThan(text.indexOf('npm start'));
+  });
+});
+
+describe('gleicheAdresse [ADR-055]', () => {
+  it('nimmt jede Schreibweise des eigenen Repositorys', () => {
+    for (const adresse of [
+      'https://github.com/jx42/Scapio.git',
+      'https://github.com/jx42/Scapio',
+      'https://github.com/jx42/scapio/',
+      'git@github.com:jx42/Scapio.git',
+      'ssh://git@github.com/jx42/Scapio.git',
+    ]) {
+      expect(GEGENSTELLE.adressen.some((erlaubt) => gleicheAdresse(adresse, erlaubt))).toBe(true);
+    }
+  });
+
+  it('lehnt einen Fork, einen anderen Host und eine verlaengerte Adresse ab', () => {
+    for (const adresse of [
+      'https://github.com/fremd/Scapio.git',
+      'https://gitlab.com/jx42/Scapio.git',
+      'https://github.com/jx42/Scapio-boese.git',
+      'https://github.com/jx42/Scapio.git.evil.example',
+      'git@github.com:jx42/Scapio/../fremd',
+    ]) {
+      expect(GEGENSTELLE.adressen.some((erlaubt) => gleicheAdresse(adresse, erlaubt))).toBe(false);
+    }
+  });
 });
 
 describe('portBelegt [ADR-013]', () => {
@@ -162,12 +196,17 @@ describe('holeNeueVersion [ADR-013]', { timeout: 30_000 }, () => {
     g(cwd, 'commit', '--quiet', '--message', datei);
   }
 
+  /** Im Test ist `origin` der Nachbarordner; geprueft wird wie beim echten Repository. */
+  function eigene(): { adressen: readonly string[]; branch: string } {
+    return { adressen: [quelle], branch: 'main' };
+  }
+
   beforeEach(() => {
     ordner = mkdtempSync(join(tmpdir(), 'scapio-update-'));
     quelle = join(ordner, 'quelle');
     klon = join(ordner, 'klon');
     mkdirSync(quelle);
-    g(quelle, 'init', '--quiet');
+    g(quelle, 'init', '--quiet', '--initial-branch', 'main');
     identitaet(quelle);
     committe(quelle, 'a.txt', 'eins\n');
     // Windows-Runner stehen auf core.autocrlf=true; der Pull schriebe sonst CRLF.
@@ -189,7 +228,7 @@ describe('holeNeueVersion [ADR-013]', { timeout: 30_000 }, () => {
     committe(quelle, 'b.txt', 'neu\n');
     writeFileSync(join(klon, 'a.txt'), 'eins\nmeins\n');
 
-    expect(await holeNeueVersion(klon)).toBe(true);
+    expect(await holeNeueVersion(klon, eigene())).toBe(true);
     expect(readFileSync(join(klon, 'b.txt'), 'utf8')).toBe('neu\n');
     expect(readFileSync(join(klon, 'a.txt'), 'utf8')).toBe('eins\nmeins\n');
     expect(g(klon, 'stash', 'list')).toBe('');
@@ -198,7 +237,7 @@ describe('holeNeueVersion [ADR-013]', { timeout: 30_000 }, () => {
   });
 
   it('laesst den Bau stehen, wenn nichts Neues kam', async () => {
-    expect(await holeNeueVersion(klon)).toBe(true);
+    expect(await holeNeueVersion(klon, eigene())).toBe(true);
     expect(existsSync(join(klon, 'dist', 'index.html'))).toBe(true);
   });
 
@@ -206,7 +245,7 @@ describe('holeNeueVersion [ADR-013]', { timeout: 30_000 }, () => {
     committe(quelle, 'a.txt', 'zwei\n');
     writeFileSync(join(klon, 'a.txt'), 'meins\n');
 
-    expect(await holeNeueVersion(klon)).toBe(false);
+    expect(await holeNeueVersion(klon, eigene())).toBe(false);
     expect(process.exitCode).toBe(1);
     expect(g(klon, 'stash', 'list')).toContain('eigene Aenderungen vor dem Pull');
     expect(g(klon, 'log', '-1', '--format=%s')).toBe('a.txt');
@@ -219,10 +258,43 @@ describe('holeNeueVersion [ADR-013]', { timeout: 30_000 }, () => {
     const kopf = g(klon, 'rev-parse', 'HEAD');
     writeFileSync(join(klon, '.git', 'index'), 'kein index');
 
-    expect(await holeNeueVersion(klon)).toBe(false);
+    expect(await holeNeueVersion(klon, eigene())).toBe(false);
     expect(process.exitCode).toBe(1);
     expect(g(klon, 'rev-parse', 'HEAD')).toBe(kopf);
     expect(existsSync(join(klon, 'b.txt'))).toBe(false);
     expect(existsSync(join(klon, 'dist', 'index.html'))).toBe(true);
+  });
+
+  it('zieht nicht von einer fremden Gegenstelle [ADR-055]', async () => {
+    committe(quelle, 'b.txt', 'neu\n');
+    const kopf = g(klon, 'rev-parse', 'HEAD');
+
+    expect(await holeNeueVersion(klon, { adressen: ['https://github.com/jx42/Scapio'], branch: 'main' })).toBe(false);
+    expect(process.exitCode).toBe(1);
+    expect(g(klon, 'rev-parse', 'HEAD')).toBe(kopf);
+    expect(existsSync(join(klon, 'dist', 'index.html'))).toBe(true);
+  });
+
+  it('zieht nicht auf einen anderen Branch [ADR-055]', async () => {
+    committe(quelle, 'b.txt', 'neu\n');
+    g(klon, 'switch', '--quiet', '-c', 'eigener');
+    const kopf = g(klon, 'rev-parse', 'HEAD');
+
+    expect(await holeNeueVersion(klon, eigene())).toBe(false);
+    expect(process.exitCode).toBe(1);
+    expect(g(klon, 'rev-parse', 'HEAD')).toBe(kopf);
+  });
+
+  it('zieht main, auch wenn der Upstream woanders hin zeigt [ADR-055]', async () => {
+    g(quelle, 'switch', '--quiet', '-c', 'fremd');
+    committe(quelle, 'fremd.txt', 'fremd\n');
+    g(quelle, 'switch', '--quiet', 'main');
+    committe(quelle, 'b.txt', 'neu\n');
+    g(klon, 'fetch', '--quiet', 'origin');
+    g(klon, 'branch', '--quiet', '--set-upstream-to', 'origin/fremd');
+
+    expect(await holeNeueVersion(klon, eigene())).toBe(true);
+    expect(existsSync(join(klon, 'b.txt'))).toBe(true);
+    expect(existsSync(join(klon, 'fremd.txt'))).toBe(false);
   });
 });
