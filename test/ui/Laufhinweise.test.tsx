@@ -133,6 +133,25 @@ describe('Laufhinweise', () => {
     expect(screen.getByText(erster)).toBeInTheDocument();
   });
 
+  it('merkt sich einen weggeklickten Hinweis ohne Name und ISIN im Klartext [ADR-056]', () => {
+    const sprung: LaufHinweis = {
+      art: 'tagessprung',
+      werte: { isin: 'DE000TEST0001', name: 'Testfonds Welt', anzahl: 3, von: '2026-01-02', bis: '2026-01-05' },
+    };
+    const andererSprung: LaufHinweis = { art: 'tagessprung', werte: { ...sprung.werte, isin: 'DE000TEST0002' } };
+    rendern(
+      <Laufhinweise laufId={3} hinweise={[sprung, andererSprung]} quellen={{}} fehler={null} onAktualisieren={() => {}} />,
+    );
+    const [ersterKnopf] = screen.getAllByRole('button', { name: de.laufhinweise.ausblenden });
+    fireEvent.click(ersterKnopf!);
+
+    const gespeichert = Object.keys(window.localStorage).map((k) => window.localStorage.getItem(k)).join('');
+    expect(gespeichert).toContain('tagessprung');
+    expect(gespeichert).not.toContain('DE000TEST');
+    expect(gespeichert).not.toContain('Testfonds');
+    expect(screen.getAllByRole('button', { name: de.laufhinweise.ausblenden })).toHaveLength(1);
+  });
+
   it('fasst gescheiterte Quellen je Art zusammen, mit Ursache, Folge, Abhilfe und Code', () => {
     const onAktualisieren = vi.fn();
     rendern(

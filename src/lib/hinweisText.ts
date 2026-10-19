@@ -119,7 +119,15 @@ export function hinweisTun(h: LaufHinweis): string {
   return de.laufhinweise.artTun[h.art] ?? de.laufhinweise.artTun.unbekannt;
 }
 
-/** Stabil ueber Neuladen hinweg — dient als React-Key und zum Merken weggeklickter Hinweise. */
+/**
+ * Stabil ueber Neuladen hinweg — dient als React-Key und zum Merken weggeklickter Hinweise.
+ * Die Werte nur als FNV-1a-Pruefsumme: der Schluessel landet in `localStorage`, und dort
+ * sollen weder Wertpapiername noch ISIN im Klartext stehen [ADR-056].
+ */
 export function hinweisSchluessel(h: LaufHinweis): string {
-  return `${h.art} ${JSON.stringify(h.werte)}`;
+  let summe = 0x811c9dc5;
+  for (const zeichen of JSON.stringify(h.werte)) {
+    summe = Math.imul(summe ^ (zeichen.codePointAt(0) ?? 0), 0x01000193) >>> 0;
+  }
+  return `${h.art} ${summe.toString(36)}`;
 }

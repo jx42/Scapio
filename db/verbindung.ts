@@ -7,9 +7,11 @@
  * wirkungslos, siehe docs/SICHERHEIT.md, Restrisiko 2).
  */
 
-import { chmodSync, existsSync, mkdirSync, readFileSync, readdirSync, renameSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, renameSync, rmSync, statSync, unlinkSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { DatabaseSync, backup } from 'node:sqlite';
+import { tagAus } from '../core/kalender.ts';
+import { eigeneDatei, nurFuerMich, verzeichnisAnlegen } from '../shared/dateirechte.ts';
 import type { Konfiguration } from '../shared/konfiguration.ts';
 import { dbPfad, ladeKonfiguration, sicherungsPfad } from '../shared/konfiguration.ts';
 
@@ -51,23 +53,6 @@ export function pruefeIntegritaet(db: DatabaseSync, pfad: string): void {
   }
   const befunde = zeilen.map((z) => String(z.quick_check));
   if (befunde.length !== 1 || befunde[0] !== 'ok') throw new DatenbankBeschaedigt(pfad, befunde.slice(0, 3).join('; '));
-}
-
-function verzeichnisAnlegen(pfad: string): void {
-  mkdirSync(pfad, { recursive: true, mode: 0o700 });
-  try {
-    chmodSync(pfad, 0o700);
-  } catch {
-    // Ein bereits bestehendes Verzeichnis mit anderem Eigentuemer ist kein Grund abzubrechen.
-  }
-}
-
-function dateirechte(pfad: string): void {
-  try {
-    chmodSync(pfad, 0o600);
-  } catch {
-    // Datei existiert noch nicht oder gehoert jemand anderem — nicht toedlich.
-  }
 }
 
 type Migration = { readonly nummer: number; readonly datei: string; readonly sql: string };
@@ -139,21 +124,19 @@ export async function sichern(
   writeFileSync(temp, '', { mode: 0o600, flag: 'wx' });
   try {
     await backup(db, temp);
-    dateirechte(temp);
+    nurFuerMich(temp);
     // Eine ungepruefte Sicherung wuerde in der Rotation eine gute verdraengen.
     const kopie = new DatabaseSync(temp, { readOnly: true });
     try {
       pruefeIntegritaet(kopie, ziel);
     } finally {
       kopie.close();
+      // Die Pruefkopie oeffnet WAL unter dem Temp-Namen; `rename` nimmt nur die `.db` mit.
+      for (const rest of [`${temp}-wal`, `${temp}-shm`]) rmSync(rest, { force: true });
     }
     renameSync(temp, ziel);
   } catch (fehler) {
-    try {
-      unlinkSync(temp);
-    } catch {
-      // schon weg
-    }
+    rmSync(temp, { force: true });
     throw fehler;
   }
   alteSicherungenLoeschen(verzeichnis);
@@ -182,7 +165,14 @@ export async function sichereWennFaellig(
   return sichern(db, verzeichnis, schemaVersion(db), 'automatisch');
 }
 
-/** Die letzten fuenf je Anlass bleiben liegen — jeder Anlass zaehlt fuer sich. */
+/** Juengste Sicherung je Monat, so viele Monate zurueck, zusaetzlich zu den letzten fuenf [ADR-056]. */
+const MONATE_BEHALTEN = 12;
+
+/**
+ * Je Anlass bleiben die letzten fuenf, dazu die juengste je Monat (zwoelf Monate) und je Jahr:
+ * ein spaet bemerkter logischer Fehler soll sich auch nach Wochen noch zurueckholen lassen.
+ * Jeder Anlass zaehlt fuer sich. [ADR-045, ADR-056]
+ */
 export function alteSicherungenLoeschen(verzeichnis: string, behalten = SICHERUNGEN_BEHALTEN): string[] {
   if (!existsSync(verzeichnis)) return [];
 
@@ -195,7 +185,23 @@ export function alteSicherungenLoeschen(verzeichnis: string, behalten = SICHERUN
       .map((d) => ({ datei: d, zeit: statSync(join(verzeichnis, d)).mtimeMs }))
       .sort((a, b) => b.zeit - a.zeit);
 
-    for (const { datei } of dateien.slice(behalten)) {
+    const bleibt = new Set(dateien.slice(0, behalten).map((d) => d.datei));
+    const monate = new Set<string>();
+    const jahre = new Set<string>();
+    for (const { datei, zeit } of dateien) {
+      const monat = tagAus(new Date(zeit).toISOString()).slice(0, 7);
+      if (!monate.has(monat) && monate.size < MONATE_BEHALTEN) {
+        monate.add(monat);
+        bleibt.add(datei);
+      }
+      if (!jahre.has(monat.slice(0, 4))) {
+        jahre.add(monat.slice(0, 4));
+        bleibt.add(datei);
+      }
+    }
+
+    for (const { datei } of dateien) {
+      if (bleibt.has(datei)) continue;
       unlinkSync(join(verzeichnis, datei));
       geloescht.push(datei);
     }
@@ -269,7 +275,10 @@ export async function oeffneDatenbank(optionen: OeffnenOptionen = {}): Promise<D
   const k = optionen.konfiguration ?? ladeKonfiguration();
   const pfad = optionen.pfad ?? dbPfad(k);
 
-  if (pfad !== ':memory:') verzeichnisAnlegen(k.datenpfad);
+  if (pfad !== ':memory:') {
+    verzeichnisAnlegen(k.datenpfad);
+    eigeneDatei(pfad);
+  }
 
   const db = new DatabaseSync(pfad);
   // Unter Windows haelt ein offenes Handle die Datei fest: wirft etwas nach dem Oeffnen,
@@ -280,10 +289,10 @@ export async function oeffneDatenbank(optionen: OeffnenOptionen = {}): Promise<D
     pruefeIntegritaet(db, pfad);
     setzePragmas(db);
 
-    if (pfad !== ':memory:') dateirechte(pfad);
+    if (pfad !== ':memory:') nurFuerMich(pfad);
     if (optionen.migrieren !== false) await migriere(db, sicherungsPfad(k));
     // `-wal` und `-shm` entstehen erst beim ersten Schreiben und tragen dieselben Daten.
-    if (pfad !== ':memory:') for (const p of [`${pfad}-wal`, `${pfad}-shm`]) dateirechte(p);
+    if (pfad !== ':memory:') for (const p of [`${pfad}-wal`, `${pfad}-shm`]) nurFuerMich(p);
   } catch (fehler) {
     db.close();
     throw fehler;

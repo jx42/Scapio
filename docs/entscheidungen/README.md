@@ -9,7 +9,7 @@ der Geschichte stehen. Eine neue ADR bekommt die nächste freie Nummer und eine 
 | [002](ADR-002-node-sqlite-statt-better-sqlite3.md) | `node:sqlite` statt `better-sqlite3` | gilt |
 | [003](ADR-003-eurostat-statt-destatis.md) | Eurostat statt Destatis als Quelle für den Verbraucherpreisindex | gilt |
 | [004](ADR-004-fixpunkt-arithmetik-statt-float.md) | Fixpunkt-Arithmetik in `bigint` statt Gleitkomma | gilt |
-| [005](ADR-005-datenbank-ausserhalb-des-projekts.md) | Datenbank außerhalb des Projektordners | gilt |
+| [005](ADR-005-datenbank-ausserhalb-des-projekts.md) | Datenbank außerhalb des Projektordners | Nachtrag: 056 |
 | [006](ADR-006-deutsches-fachvokabular.md) | Deutsches Fachvokabular, englisches Technikvokabular | gilt |
 | [007](ADR-007-ausgeglichene-uebertragspaare.md) | Ausgeglichene Übertragspaare als Nicht-Vorgang | gilt |
 | [008](ADR-008-fluesse-kachel-zeigt-investition-statt-einzahlung.md) | Kachel 5 zeigt Investition in Wertpapiere statt externer Ein-/Auszahlung | gilt |
@@ -49,14 +49,15 @@ der Geschichte stehen. Eine neue ADR bekommt die nächste freie Nummer und eine 
 | [042](ADR-042-agenten-lesen-keine-depotwerte.md) | Agenten lesen keine Depotwerte | Nachtrag: 054 |
 | [043](ADR-043-flusskonvention-und-kapitalmassnahmen.md) | Flusskonvention, Kapitalmaßnahmen und Randfälle im Rechenkern | Nachtrag: 053 |
 | 044 | — | nicht vergeben |
-| [045](ADR-045-woechentliche-sicherung-beim-start.md) | Wöchentliche Sicherung beim Start | gilt |
+| [045](ADR-045-woechentliche-sicherung-beim-start.md) | Wöchentliche Sicherung beim Start | Nachtrag: 056 |
 | [046](ADR-046-footer-link-zur-readme.md) | Footer-Link zur Readme | gilt |
 | [047](ADR-047-release-kette-und-auslieferung.md) | Release-Kette und Auslieferung: ZIP aus Releases, Audit über den Bau-Pfad | Nachtrag: 055 |
 | [048](ADR-048-demo-als-statischer-abzug.md) | Demo als statischer Abzug | Nachtrag: 055 |
-| [049](ADR-049-deinstallation-loescht-nur-den-datenordner.md) | Deinstallation löscht nur den Datenordner | gilt |
+| [049](ADR-049-deinstallation-loescht-nur-den-datenordner.md) | Deinstallation löscht nur den Datenordner | Nachtrag: 056 |
 | [050](ADR-050-zeitzonen-in-der-ci-nur-unter-linux.md) | Zeitzonen in der CI nur unter Linux, ohne UTC | gilt |
 | [051](ADR-051-main-nur-ueber-pull-requests.md) | `main` nur über Pull Requests, ohne Bypass | Nachtrag: 055 |
 | [052](ADR-052-demo-band-mit-repository-link.md) | Demo-Band mit Link zum Repository | gilt |
 | [053](ADR-053-stichtag-und-isin-wechsel-im-kern.md) | Stichtag der Kennzahlen, ISIN-Wechsel und Selbstkontrolle ohne Cash | gilt |
 | [054](ADR-054-agentensperre-in-den-einstellungen.md) | Agentensperre in den Einstellungen, Toolnamen ohne Präfix | gilt |
 | [055](ADR-055-update-und-release-kette.md) | Update- und Release-Kette geschlossen | gilt |
+| [056](ADR-056-datenverzeichnis-und-dateirechte-aus-einer-hand.md) | Datenverzeichnis und Dateirechte aus einer Hand | gilt |

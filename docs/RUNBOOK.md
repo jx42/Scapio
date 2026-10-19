@@ -111,6 +111,7 @@ kennt vier Werte: `laufend`, `erfolg`, `teilweise`, `fehler`.
     `lauf.log` nennt die Prüfung.
   - `E_SEED_KAPUTT`: `seed.json` im Datenverzeichnis ist kein gültiges JSON (meist ein Komma zu viel).
     Datei korrigieren oder auf `{"anfangsbestand": []}` zurücksetzen.
+  - `E_DATEI_FREMD`: siehe [Datei im Datenverzeichnis abgelehnt](#datei-im-datenverzeichnis-abgelehnt).
   - Fonds-Holdings nicht erreichbar — iShares, Xtrackers oder Amundi, je nach `anbieter`
     in `funds.json` im Datenverzeichnis (Host-Allowlist in `erlaubteHosts`, Zeitlimit `csvZeitlimitMs`).
     Abgerufen wird nur mit `"top25": true` in `einstellungen.json` [ADR-038].
@@ -207,7 +208,8 @@ welchen Anlasses älter als sieben Tage ist
 ([ADR-045](entscheidungen/ADR-045-woechentliche-sicherung-beim-start.md)). Alle drei
 Arten — Migration, automatisch und `npm run backup` (`portfolio-<version>-…`) — landen im
 selben Verzeichnis, werden von `alteSicherungenLoeschen` aber getrennt gezählt: je Anlass
-bleiben die **letzten fünf** Dateien stehen. Mehrfaches manuelles Sichern kurz vor einer
+bleiben die **letzten fünf** Dateien stehen, dazu die neueste je Monat der letzten zwölf Monate
+und die neueste je Jahr ([ADR-056](entscheidungen/ADR-056-datenverzeichnis-und-dateirechte-aus-einer-hand.md)). Mehrfaches manuelles Sichern kurz vor einer
 Migration kann die automatische Migrationssicherung also nicht mehr aus der Rotation drängen.
 
 Nach einer Schemaänderung:
@@ -244,6 +246,34 @@ Datei dort ist also lesbar. Wer regelmäßig startet, hat dort eine höchstens e
    `portfolio.db` zurückkopieren.
 4. Neu starten. Liegt die Sicherung zurück, holt der nächste Lauf die fehlenden Tage nach.
    Stammt sie von einem älteren Schema, migriert der Start sie von selbst.
+
+## Datenverzeichnis abgelehnt
+
+Der Start bricht mit „datenverzeichnis darf nicht …" ab, bevor etwas geöffnet wird. Abgelehnt
+werden ein relativer Pfad, das Benutzerverzeichnis selbst, alles im Projektordner und jeder
+synchronisierte Ordner [ADR-056]: unter macOS `~/Documents`, `~/Desktop` (beide synchronisiert
+iCloud auf Wunsch), `~/Library/Mobile Documents` (iCloud Drive) und `~/Library/CloudStorage`
+(Dropbox, OneDrive, Google Drive); unter Windows jeder Ordner, den die Variablen `OneDrive`,
+`OneDriveConsumer` oder `OneDriveCommercial` nennen. Ein Synchronisierdienst lädt
+`portfolio.db` und `portfolio.db-wal` getrennt hoch und zerreißt so die Datenbank.
+
+`datenverzeichnis` in `config.json` entfernen (dann gilt die Vorgabe) oder auf einen Ordner
+außerhalb setzen; die Dateien vom alten Ort bei beendetem Scapio dorthin verschieben.
+
+## Datei im Datenverzeichnis abgelehnt
+
+Start, Lauf oder Anmeldung brechen mit `E_DATEI_FREMD` ab: `portfolio.db`, `mcp/token.json`
+oder `mcp/client.json` ist eine Verknüpfung (Symlink), keine gewöhnliche Datei oder gehört
+unter macOS einem anderen Benutzer. Geöffnet wird sie dann nicht — eine Verknüpfung könnte
+Depotdaten oder den Token an einen synchronisierten Ort umleiten [ADR-056].
+
+- Verknüpfung: durch die echte Datei ersetzen (Ziel hineinkopieren, Verknüpfung löschen).
+  Das Datenverzeichnis selbst verlegt `SCAPIO_DATENVERZEICHNIS`, nicht eine Verknüpfung.
+- Fremder Eigentümer (meist nach `sudo npm start`): `sudo chown "$USER" <Datei>`.
+- Token oder Client: Datei löschen und `npm run mcp-login` erneut ausführen.
+
+Unter Windows prüft Scapio keinen Eigentümer; dort gelten die geerbten Rechte von
+`%LOCALAPPDATA%`, die nur dem eigenen Konto Zugriff geben ([SICHERHEIT.md](SICHERHEIT.md)).
 
 ## Zahlen sehen falsch aus
 

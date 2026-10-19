@@ -25,12 +25,13 @@
  */
 
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
-import { chmodSync, existsSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import http from 'node:http';
 import { join } from 'node:path';
 import { z } from 'zod';
 import type { Konfiguration } from '../shared/konfiguration.ts';
 import { mcpPfad, mcpTokenPfad } from '../shared/konfiguration.ts';
+import { atomarSchreiben, eigeneDatei, verzeichnisAnlegen } from '../shared/dateirechte.ts';
 import { oeffneImBrowser } from '../shared/browser.ts';
 import { HAKEN, statusseite } from '../shared/statusseite.ts';
 import { McpFehler, mcpSitzungVergessen } from './mcp.ts';
@@ -138,23 +139,6 @@ export function mcpTokenVorhanden(k: Konfiguration): boolean {
   return existsSync(tokenDatei(k));
 }
 
-function verzeichnisAnlegen(pfad: string): void {
-  mkdirSync(pfad, { recursive: true, mode: 0o700 });
-  try {
-    chmodSync(pfad, 0o700);
-  } catch {
-    // Ein bereits bestehendes Verzeichnis mit anderem Eigentuemer ist kein Grund abzubrechen.
-  }
-}
-
-function dateirechteSetzen(pfad: string): void {
-  try {
-    chmodSync(pfad, 0o600);
-  } catch {
-    // Datei existiert noch nicht oder gehoert jemand anderem — nicht toedlich.
-  }
-}
-
 // Registrierungs- und Token-Antworten sind kurze JSON-Objekte (ein Client oder ein Token
 // samt OIDC-Beiwerk wie `id_token`) — 64 KiB ist grosszuegig. Ohne Grenze puffert `text()`
 // jede Antwortgroesse unbegrenzt im Speicher, bevor ueberhaupt geparst wird.
@@ -172,8 +156,7 @@ function alsJson({ text }: GeleseneAntwort): unknown {
 /** Der abgelegte Client, oder `null`, wenn `client.json` fehlt, kaputt ist oder nicht passt. */
 function gespeicherterClient(k: Konfiguration): Client | null {
   const datei = clientDatei(k);
-  if (!existsSync(datei)) return null;
-  dateirechteSetzen(datei);
+  if (!eigeneDatei(datei)) return null;
   try {
     const ergebnis = ClientDateiSchema.safeParse(JSON.parse(readFileSync(datei, 'utf8')));
     return ergebnis.success ? ergebnis.data : null;
@@ -244,25 +227,6 @@ export async function registrieren(k: Konfiguration): Promise<Client> {
   const client: Client = { client_id: ergebnis.data.client_id, client_name: CLIENT_NAME };
   atomarSchreiben(clientDatei(k), JSON.stringify(client, null, 2));
   return client;
-}
-
-/**
- * Atomar: erst in eine temporaere Datei IM SELBEN Verzeichnis schreiben (Rechte `0600`
- * schon bei der Erstellung, kein nachtraeglicher chmod), dann per `renameSync` an die
- * eigentliche Stelle verschieben. `rename` innerhalb desselben Dateisystems ist auf
- * macOS und Windows atomar — kein Fenster, in dem die Datei unvollstaendig oder mit
- * den falschen Rechten daliegt. `wx` mit zufaelligem Namen: eine vorhandene oder
- * untergeschobene temporaere Datei wird nie beschrieben, sondern ist ein Fehler.
- */
-export function atomarSchreiben(pfad: string, inhalt: string): void {
-  const temp = `${pfad}.${randomBytes(6).toString('hex')}.tmp`;
-  try {
-    writeFileSync(temp, inhalt, { mode: 0o600, flag: 'wx' });
-    renameSync(temp, pfad);
-  } catch (fehler) {
-    rmSync(temp, { force: true });
-    throw fehler;
-  }
 }
 
 function tokenSchreiben(k: Konfiguration, token: GespeicherterToken): void {
@@ -450,9 +414,12 @@ const laufendeTokenabrufe = new Map<string, Promise<string>>();
 
 async function tokenAbrufen(k: Konfiguration): Promise<string> {
   const datei = tokenDatei(k);
+  const keinToken = (): McpFehler =>
+    new McpFehler('E_MCP_ANMELDUNG', '-', 'Kein gespeicherter Token vorhanden — einmalig `npm run mcp-login` ausfuehren.');
+  // Ausserhalb des try: eine fremde Datei ist E_DATEI_FREMD, nicht "neu anmelden".
+  if (!eigeneDatei(datei)) throw keinToken();
   let gespeichert: GespeicherterToken;
   try {
-    dateirechteSetzen(datei);
     const roh: unknown = JSON.parse(readFileSync(datei, 'utf8'));
     // Die Datei koennte durch ein Backup-Werkzeug, ein manuelles Bearbeiten oder einen
     // frueheren Fehler beschaedigt sein — dann gilt sie wie eine fehlende: neu anmelden,
@@ -461,7 +428,7 @@ async function tokenAbrufen(k: Konfiguration): Promise<string> {
     if (!ergebnis.success) throw new Error('ungueltiges Tokenschema');
     gespeichert = ergebnis.data;
   } catch {
-    throw new McpFehler('E_MCP_ANMELDUNG', '-', 'Kein gespeicherter Token vorhanden — einmalig `npm run mcp-login` ausfuehren.');
+    throw keinToken();
   }
 
   const ablaufMs = gespeichert.geholtUm + (gespeichert.expires_in ?? 0) * 1000;
