@@ -48,7 +48,7 @@ Richtung. Die Oberfläche rechnet nicht, der Server rechnet nicht, der Rechenker
 ## Befehle
 
 ```sh
-npm start              # bauen (nur wenn nötig), servieren, Browser öffnen — der normale Weg
+npm start              # bauen (nur wenn nötig), servieren, Browser öffnen — der normale Weg; nicht für Agenten
 npm run build          # typecheck + Vite-Bau nach dist/, ohne zu starten
 npm run update         # neue Version per git holen, alten Bau wegräumen — nur auf Knopfdruck
 npm run deinstallieren # Datenverzeichnis löschen, nach Rückfrage — Projektordner bleibt (ADR-049)
@@ -63,9 +63,9 @@ npm run test:tz        # dieselbe Suite unter drei Zeitzonen
 npm run test:invarianten # nur die zwölf Invariantentests, dazu der Kontrasttest der Farb-Tokens
 npm run test:e2e       # der eine Playwright-Durchstich, echter Chromium
 npm run test:abdeckung # Testabdeckung, nicht Teil von check
-npm run verify         # Historie komplett neu rechnen und mit der gespeicherten vergleichen — mit Beträgen, nur für Menschen
+npm run verify         # Historie komplett neu rechnen und mit der gespeicherten vergleichen — mit Beträgen, nicht für Agenten
 npm run verify:zaehlung # dasselbe, aber nur Tag und Feld — der Weg für Agenten
-npm run ingest         # Ingest einmalig, für die Fehlersuche
+npm run ingest         # Ingest einmalig, für die Fehlersuche — nicht für Agenten
 npm run vertrag        # zod-Schemata des Ingest gegen den echten MCP prüfen (ruft die Bank, nur lesend)
 npm run kontrast       # Kontrasttabelle in docs/BARRIEREFREIHEIT.md aus theme.css neu schreiben
 npm run abdruck        # Hash über core/ neu schreiben, nach einer KERN_VERSION-Erhöhung
@@ -155,6 +155,7 @@ WARUM erklärt, das sonst nicht offensichtlich wäre; niemals das WAS.
 Der Kontext einer Agentensitzung liegt bei einem Cloud-Dienst; echte Depotwerte gehören dort nicht
 hin ([ADR-042](docs/entscheidungen/ADR-042-agenten-lesen-keine-depotwerte.md)). Deshalb:
 
+- `.claude/settings.json` sperrt das Folgende per `deny` ([ADR-054](docs/entscheidungen/ADR-054-agentensperre-in-den-einstellungen.md)); die Regel gilt auch, wo die Sperre nicht greift.
 - Den Scalable-MCP nicht selbst abfragen, auch nicht lesend. `npm run vertrag` ist erlaubt — es
   gibt nur Feldnamen aus.
 - Keine Beträge, Mengen, Wertpapiernamen oder Rohantworten aus Datenbank, Datenverzeichnis oder

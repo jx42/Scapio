@@ -36,3 +36,9 @@ echte Beträge im Kontext, ohne dass jemand das entschieden hätte.
 - `npm run vertrag` bleibt erlaubt; es gibt nur Feldnamen aus (`start/vertrag.ts`).
 - Die Regel ist eine Anweisung, keine technische Grenze. Ein Agent mit Shell kann die
   Datenbank lesen; die Allowlist sorgt nur dafür, dass er dafür fragen muss.
+
+## Nachtrag: technische Sperre
+
+Seit [ADR-054](ADR-054-agentensperre-in-den-einstellungen.md) verbietet `.claude/settings.json`
+MCP-Connector, Datenverzeichnis, `lauf.log`, `sqlite3`, `npm start`, `ingest` und `verify` per
+`deny`. Der letzte Punkt unter „Folgen“ gilt damit nur noch für Wege außerhalb dieser Liste.

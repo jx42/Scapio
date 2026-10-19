@@ -149,6 +149,9 @@ export function berechneKennzahlen(e: KennzahlenEingaben): Kennzahlen {
   const sortierteReihe = [...reihe].sort((a, b) => vergleiche(a.tag, b.tag));
   const letzte = sortierteReihe[sortierteReihe.length - 1] ?? null;
 
+  // Endwert und Kennzahlen gelten zum letzten Reihentag, nicht zur Uhr: auf heute datiert,
+  // unterstellte der IZF jedem Tag ohne Aktualisieren eine Nullrendite. [ADR-053]
+  const stichtag = letzte?.tag ?? heute;
   const gesamt = letzte?.gesamtCent ?? 0n;
   const cash = letzte?.cashCent ?? 0n;
   const nettoEinzahlung = letzte?.nettoEinzahlungKumCent ?? 0n;
@@ -157,7 +160,7 @@ export function berechneKennzahlen(e: KennzahlenEingaben): Kennzahlen {
   // sie braucht, statt je Aufruf (und hier je offener Position) neu.
   const ausgeglichen = ausgeglicheneUebertraege(transaktionen);
 
-  const { einstaende, verkaeufe } = fifo(transaktionen, ausgeglichen);
+  const { einstaende, verkaeufe, herkunft, ausbuchungen } = fifo(transaktionen, ausgeglichen);
   const externe = externeFluesse(transaktionen, ausgeglichen);
 
   let investiert = 0n;
@@ -189,7 +192,7 @@ export function berechneKennzahlen(e: KennzahlenEingaben): Kennzahlen {
       gewinnCent: gewinn,
       gewinnProzent: einstand.einstand === 0n ? 0 : Number(gewinn) / Number(einstand.einstand),
       realisiertCent: einstand.realisiert,
-      xirr: xirr(positionsFluesse(transaktionen, isin, wertCent, heute, ausgeglichen), heute),
+      xirr: xirr(positionsFluesse(transaktionen, isin, wertCent, stichtag, ausgeglichen, herkunft.get(isin))),
     });
   }
 
@@ -252,15 +255,15 @@ export function berechneKennzahlen(e: KennzahlenEingaben): Kennzahlen {
     }))
     .sort((a, b) => vergleiche(b.tag, a.tag));
 
-  const rendite = renditeFluesse(externe, gesamt, heute);
-  const nominal = xirr(rendite, heute);
+  const rendite = renditeFluesse(externe, gesamt, stichtag);
+  const nominal = xirr(rendite);
 
   const uebersicht = monatsFluesse(externe, heute);
 
   const kursgewinn = wertpapiere - investiert;
 
   const twrErgebnis = twr(sortierteReihe, externe);
-  const renditen = monatsrenditen(twrErgebnis.index, heute);
+  const renditen = monatsrenditen(twrErgebnis.index, stichtag);
 
   return {
     investiertCent: investiert,
@@ -276,7 +279,7 @@ export function berechneKennzahlen(e: KennzahlenEingaben): Kennzahlen {
     nettoEinzahlungCent: nettoEinzahlung,
     twr: twrErgebnis,
     xirr: nominal,
-    real: realeRendite(rendite, vpi, heute, nominal),
+    real: realeRendite(rendite, vpi, stichtag, nominal),
     maxDrawdown: maxDrawdown(twrErgebnis.index),
     volatilitaetProJahr: volatilitaetProJahr(renditen),
     sharpe: sharpeRatio(renditen, e.zinsreihe),
@@ -285,7 +288,7 @@ export function berechneKennzahlen(e: KennzahlenEingaben): Kennzahlen {
     medianCent: uebersicht.median,
     positionen,
     fluesse: uebersicht,
-    hinweise: sammleHinweise(e, sortierteReihe),
+    hinweise: sammleHinweise(e, sortierteReihe, ausbuchungen),
     zinsenTransaktionen,
     steuernTransaktionen,
     gebuehrenTransaktionen,
@@ -293,7 +296,7 @@ export function berechneKennzahlen(e: KennzahlenEingaben): Kennzahlen {
   };
 }
 
-function sammleHinweise(e: KennzahlenEingaben, reihe: readonly DepotTag[]): Hinweis[] {
+function sammleHinweise(e: KennzahlenEingaben, reihe: readonly DepotTag[], ausbuchungen: number): Hinweis[] {
   const hinweise: Hinweis[] = [];
 
   const unbekannt = new Set<string>();
@@ -312,6 +315,13 @@ function sammleHinweise(e: KennzahlenEingaben, reihe: readonly DepotTag[]): Hinw
     hinweise.push({
       code: 'H_KURSLUECKE',
       text: `${luecken} Tage ohne vollständige Kurse. Der Verlauf ist dort geschätzt.`,
+    });
+  }
+
+  if (ausbuchungen > 0) {
+    hinweise.push({
+      code: 'H_AUSBUCHUNG',
+      text: `${ausbuchungen} Abgänge ohne Betrag und ohne Zugang am selben Tag gelten als Totalverlust.`,
     });
   }
 

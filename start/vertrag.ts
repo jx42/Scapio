@@ -41,31 +41,31 @@ type Pruefling = {
 };
 
 const PRUEFLINGE: readonly Pruefling[] = [
-  { name: 'holdings', tool: 'mcp__claude_ai_Scalable_Capital__get_portfolio_holdings', schema: HoldingsAntwort },
+  { name: 'holdings', tool: 'get_portfolio_holdings', schema: HoldingsAntwort },
   {
     name: 'transaktionen',
-    tool: 'mcp__claude_ai_Scalable_Capital__list_portfolio_transactions',
+    tool: 'list_portfolio_transactions',
     schema: TransaktionenAntwort,
   },
   {
     name: 'kurse',
-    tool: 'mcp__claude_ai_Scalable_Capital__get_security_chart',
+    tool: 'get_security_chart',
     schema: ChartAntwort,
     brauchtIsin: true,
   },
   {
     name: 'art',
-    tool: 'mcp__claude_ai_Scalable_Capital__get_security_quote',
+    tool: 'get_security_quote',
     schema: Wertpapierantwort,
     brauchtIsin: true,
   },
-  { name: 'sparplaene', tool: 'mcp__claude_ai_Scalable_Capital__list_savings_plans', schema: SparplaeneAntwort },
+  { name: 'sparplaene', tool: 'list_savings_plans', schema: SparplaeneAntwort },
   {
     name: 'cash',
-    tool: 'mcp__claude_ai_Scalable_Capital__get_portfolio_cash_breakdown',
+    tool: 'get_portfolio_cash_breakdown',
     schema: CashBreakdownAntwort,
   },
-  { name: 'gesamtwert', tool: 'mcp__claude_ai_Scalable_Capital__get_portfolio_overview', schema: OverviewAntwort },
+  { name: 'gesamtwert', tool: 'get_portfolio_overview', schema: OverviewAntwort },
 ];
 
 /**

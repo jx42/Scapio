@@ -104,3 +104,9 @@ Doppelklick. Scheitert die Anmeldung, startet die Anwendung trotzdem und zeigt d
 der Aktualisieren-Kachel, statt dass ein Terminalfenster kommentarlos schließt. Warum es die
 Launcher zweimal gibt, steht in [ADR-013](ADR-013-update-nur-auf-knopfdruck.md); die
 Windows-Eigenheiten stehen im Kopf von `Start.bat` und `shared/browser.ts`.
+
+## Nachtrag: Toolnamen ohne Claude-Code-Präfix
+
+`LESENDE_TOOLS` führt seit [ADR-054](ADR-054-agentensperre-in-den-einstellungen.md) die Namen der
+Gegenstelle (`get_portfolio_holdings` statt `mcp__claude_ai_Scalable_Capital__get_portfolio_holdings`);
+`kurz()` entfällt. Das Präfix gibt es nur noch in der `deny`-Liste für Agenten.

@@ -325,20 +325,74 @@ describe('fifo — Kapitalmassnahmen mit Betrag 0 [ADR-043]', () => {
     expect(r.einstaende.get(EUROPA)).toMatchObject({ menge: zuMengeE8('20'), einstand: zuCent('1000'), realisiert: 0n });
   });
 
-  it('ISIN-Wechsel ueber einige Tage: der Einstand wartet auf den Zugang', () => {
+  it('Abgang und Zugang an verschiedenen Tagen: Totalverlust und Gratisstuecke, kein Uebertrag [ADR-053]', () => {
+    // Ueber Tage gepaart, landete ein Delisting im Einstand fremder Gratisstuecke.
     const txe = [
       kauf('2026-01-05', WELT, '10', '1000'),
       massnahme('2026-02-01', WELT, '-10'),
-      massnahme('2026-02-04', EUROPA, '10'),
+      massnahme('2026-02-02', EUROPA, '10'),
     ];
-    expect(fifo(txe, ausgeglicheneUebertraege(txe)).einstaende.get(EUROPA)!.einstand).toBe(zuCent('1000'));
+    const r = fifo(txe, ausgeglicheneUebertraege(txe));
+    expect(r.einstaende.get(WELT)!.realisiert).toBe(zuCent('-1000'));
+    expect(r.einstaende.get(EUROPA)).toMatchObject({ menge: zuMengeE8('10'), einstand: 0n });
+    expect(r.ausbuchungen).toBe(1);
+    expect(r.herkunft.get(EUROPA)).toBeUndefined();
   });
 
-  it('Ausbuchung ohne Zugang: nach der Frist ein realisierter Verlust', () => {
+  it('Ausbuchung ohne Zugang: am selben Tag ein realisierter Verlust', () => {
     const txe = [kauf('2026-01-05', WELT, '10', '1000'), massnahme('2026-02-01', WELT, '-10')];
     const r = fifo(txe, ausgeglicheneUebertraege(txe));
     expect(r.einstaende.get(WELT)!.realisiert).toBe(zuCent('-1000'));
     expect(r.verkaeufe).toEqual([{ txId: txe[1]!.id, tag: '2026-02-01', isin: WELT, gewinnCent: zuCent('-1000') }]);
+    expect(r.ausbuchungen).toBe(1);
+  });
+
+  it('ISIN-Wechsel: die neue ISIN kennt ihre Vorgaengerin, auch ueber zwei Wechsel', () => {
+    const DRITTE = 'ZZ0000000009' as Isin;
+    const txe = [
+      kauf('2026-01-05', WELT, '10', '1000'),
+      massnahme('2026-02-01', WELT, '-10'),
+      massnahme('2026-02-01', EUROPA, '20'),
+      massnahme('2026-03-01', EUROPA, '-20'),
+      massnahme('2026-03-01', DRITTE, '5'),
+    ];
+    const r = fifo(txe, ausgeglicheneUebertraege(txe));
+    expect(r.einstaende.get(DRITTE)!.einstand).toBe(zuCent('1000'));
+    expect(r.herkunft.get(DRITTE)).toEqual([
+      { isin: EUROPA, bis: '2026-03-01', zaehler: zuMengeE8('5'), nenner: zuMengeE8('5') },
+      { isin: WELT, bis: '2026-02-01', zaehler: zuMengeE8('20') * zuMengeE8('5'), nenner: zuMengeE8('20') * zuMengeE8('5') },
+    ]);
+    expect(r.ausbuchungen).toBe(0);
+  });
+
+  it('Positions-IZF nach ISIN-Wechsel: der Kauf der Vorgaengerin ist der Einsatz [ADR-053]', () => {
+    const txe = [
+      kauf('2024-01-02', WELT, '10', '1000'),
+      massnahme('2024-06-03', WELT, '-10'),
+      massnahme('2024-06-03', EUROPA, '10'),
+      kauf('2024-09-02', EUROPA, '5', '500'),
+    ];
+    const ausgeglichen = ausgeglicheneUebertraege(txe);
+    const { herkunft } = fifo(txe, ausgeglichen);
+    const f = positionsFluesse(txe, EUROPA, zuCent('1600'), T('2025-06-03'), ausgeglichen, herkunft.get(EUROPA));
+    expect(f.filter((x) => x.betrag !== 0n)).toEqual([
+      { tag: '2024-01-02', betrag: -zuCent('1000') },
+      { tag: '2024-09-02', betrag: -zuCent('500') },
+      { tag: '2025-06-03', betrag: zuCent('1600') },
+    ]);
+  });
+
+  it('Positions-IZF nach ISIN-Wechsel: spaetere Kaeufe der Vorgaengerin gehoeren nicht dazu', () => {
+    const txe = [
+      kauf('2024-01-02', WELT, '10', '1000'),
+      massnahme('2024-06-03', WELT, '-10'),
+      massnahme('2024-06-03', EUROPA, '10'),
+      kauf('2024-09-02', WELT, '1', '90'),
+    ];
+    const ausgeglichen = ausgeglicheneUebertraege(txe);
+    const { herkunft } = fifo(txe, ausgeglichen);
+    const f = positionsFluesse(txe, EUROPA, zuCent('1100'), T('2025-06-03'), ausgeglichen, herkunft.get(EUROPA));
+    expect(f.filter((x) => x.betrag !== 0n).map((x) => x.tag)).toEqual(['2024-01-02', '2025-06-03']);
   });
 
   it('Gratisstuecke ohne Vorbestand: Einstand 0', () => {

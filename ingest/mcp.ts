@@ -2,7 +2,7 @@
  * Der direkte JSON-RPC-Aufruf gegen den Scalable-MCP — ohne Claude-Code-Kindprozess. [ADR-010]
  *
  * Ersetzt `ingest/claude.ts`. Die Schnittstelle fuer die Quellen ist `mcpAufrufRoh`
- * (dazu `LESENDE_TOOLS`, `LesendesTool`, `McpFehler`, `kurz`); der Transport ist ein `fetch`
+ * (dazu `LESENDE_TOOLS`, `LesendesTool`, `McpFehler`); der Transport ist ein `fetch`
  * gegen `/mcp` mit einem selbst verwalteten `access_token` (siehe `mcpAnmeldung.ts`)
  * statt eines `claude`-Kindprozesses.
  *
@@ -30,25 +30,27 @@ import { hinweis, type Hinweis } from '../shared/hinweise.ts';
 import type { McpFehlerCode } from '../shared/laufFehler.ts';
 
 /**
- * Die Allowlist. Ausschliesslich lesende Tools. [INV-01]
+ * Die Allowlist. Ausschliesslich lesende Tools, mit dem Namen, den die Gegenstelle kennt —
+ * ohne das Praefix, unter dem Claude Code dieselben Tools fuehrt; das bleibt Agenten
+ * gesperrt [ADR-054]. [INV-01]
  * Diese Liste waechst nicht um ein Tool, das Auftraege erteilt, Sparplaene aendert oder
  * irgendetwas beim Broker anlegt oder entfernt — die Anwendung ist ein Beobachter.
  */
 export const LESENDE_TOOLS = [
-  'mcp__claude_ai_Scalable_Capital__get_portfolio_holdings',
-  'mcp__claude_ai_Scalable_Capital__list_portfolio_transactions',
-  'mcp__claude_ai_Scalable_Capital__get_security_chart',
-  'mcp__claude_ai_Scalable_Capital__list_savings_plans',
-  'mcp__claude_ai_Scalable_Capital__get_portfolio_cash_breakdown',
-  'mcp__claude_ai_Scalable_Capital__get_portfolio_overview',
-  'mcp__claude_ai_Scalable_Capital__get_security_quote',
+  'get_portfolio_holdings',
+  'list_portfolio_transactions',
+  'get_security_chart',
+  'list_savings_plans',
+  'get_portfolio_cash_breakdown',
+  'get_portfolio_overview',
+  'get_security_quote',
 ] as const;
 
 export type LesendesTool = (typeof LESENDE_TOOLS)[number];
 
-const TRANSAKTIONEN_TOOL: LesendesTool = 'mcp__claude_ai_Scalable_Capital__list_portfolio_transactions';
-const CHART_TOOL: LesendesTool = 'mcp__claude_ai_Scalable_Capital__get_security_chart';
-const QUOTE_TOOL: LesendesTool = 'mcp__claude_ai_Scalable_Capital__get_security_quote';
+const TRANSAKTIONEN_TOOL: LesendesTool = 'list_portfolio_transactions';
+const CHART_TOOL: LesendesTool = 'get_security_chart';
+const QUOTE_TOOL: LesendesTool = 'get_security_quote';
 
 export class McpFehler extends Error {
   readonly code: McpFehlerCode;
@@ -133,12 +135,6 @@ export type McpAntwort = {
   /** Die Rohnutzlast fuer `raw_snapshot`, kanonisch als JSON-Array. */
   readonly rohJson: string;
 };
-
-/** Der Toolname ohne Praefix — fuer Meldungen und als JSON-RPC-`params.name`. */
-export function kurz(tool: string): string {
-  const teile = tool.split('__');
-  return teile[teile.length - 1] ?? tool;
-}
 
 // ---------------------------------------------------------------------------
 // JSON-RPC-Transport: eine Sitzung je Prozess.
@@ -403,7 +399,7 @@ async function werkzeugAufruf(
       jsonrpc: '2.0',
       id: jsonRpcId,
       method: 'tools/call',
-      params: { name: kurz(tool), arguments: argumente },
+      params: { name: tool, arguments: argumente },
     },
     zeitlimitMs,
     melde,
@@ -548,7 +544,7 @@ async function mitWiederholung(tool: LesendesTool, optionen: McpOptionen): Promi
 
   // Zeitlimit und Drosselung behalten ihren Code: der Kurzschluss zaehlt sie.
   if (letzter instanceof McpFehler && (letzter.code === 'E_MCP_ZEIT' || letzter.code === 'E_MCP_DROSSEL')) {
-    throw new McpFehler(letzter.code, tool, `${kurz(tool)}: ${letzter.message}`);
+    throw new McpFehler(letzter.code, tool, `${tool}: ${letzter.message}`);
   }
-  throw new McpFehler('E_MCP_ABGELEHNT', tool, `${kurz(tool)}: ${(letzter as Error).message}.`);
+  throw new McpFehler('E_MCP_ABGELEHNT', tool, `${tool}: ${(letzter as Error).message}.`);
 }

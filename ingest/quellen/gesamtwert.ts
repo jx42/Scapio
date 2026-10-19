@@ -15,7 +15,7 @@ import type { Ernte, Kontext } from '../importieren.ts';
 import { OverviewAntwort, pruefe } from '../schema.ts';
 
 export const QUELLE = 'gesamtwert';
-const TOOL = 'mcp__claude_ai_Scalable_Capital__get_portfolio_overview';
+const TOOL = 'get_portfolio_overview';
 
 export type Gesamtwerternte = {
   /** Wertpapiere + Krypto + Kontostand laut Bank. */

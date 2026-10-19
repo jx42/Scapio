@@ -88,6 +88,13 @@ describe('xirr', () => {
     if (e.art === 'ok') expect(e.mehrdeutig).toBe(false);
   });
 
+  it('haelt eine Verlustreihe mit genau einem Vorzeichenwechsel fuer eindeutig', () => {
+    // Die kumulierte Summe wechselt hier nie — erst ab zwei Wechseln darf Norstrom entscheiden.
+    const e = xirr([fluss('2024-01-01', '-1000'), fluss('2025-01-01', '500')]);
+    expect(e.art).toBe('ok');
+    if (e.art === 'ok') expect(e.mehrdeutig).toBe(false);
+  });
+
   it('bleibt innerhalb der Grenzen, wenn es konvergiert', () => {
     const proben: Fluss[][] = [
       [fluss('2025-01-01', '-1000'), fluss('2026-01-01', '1'), fluss('2026-06-01', '1')],

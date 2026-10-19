@@ -25,8 +25,8 @@ const { zugriffstoken } = await import('../../ingest/mcpAnmeldung.ts');
 
 // Zwei Tools aus der Allowlist in `mcp.ts`, hier als Vertrag nachgebildet (nicht exportiert
 // mit eigenem Namen, den man importieren koennte, ohne die ganze Liste mitzunehmen).
-const HOLDINGS_TOOL: LesendesTool = 'mcp__claude_ai_Scalable_Capital__get_portfolio_holdings';
-const TRANSAKTIONEN_TOOL: LesendesTool = 'mcp__claude_ai_Scalable_Capital__list_portfolio_transactions';
+const HOLDINGS_TOOL: LesendesTool = 'get_portfolio_holdings';
+const TRANSAKTIONEN_TOOL: LesendesTool = 'list_portfolio_transactions';
 
 const sofort = (_ms: number): Promise<void> => Promise.resolve();
 

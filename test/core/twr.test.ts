@@ -205,4 +205,11 @@ describe('twr — Abfluss zum Tagesende [ADR-043]', () => {
     expect(e.gesamt).toBe(0);
     expect(e.grob).toBe(true);
   });
+
+  it('markiert eine Basis von genau 0 mit Fluss als grob, statt durch null zu teilen', () => {
+    // Abfluss aus einem leeren Depot: Gewicht 0 am Tagesende, die Basis ist exakt 0.
+    const e = twr([depotTag('2026-01-01', '0'), depotTag('2026-01-02', '0')], [fluss('2026-01-02', '-100')]);
+    expect(e.teilperioden).toBe(0);
+    expect(e.grob).toBe(true);
+  });
 });

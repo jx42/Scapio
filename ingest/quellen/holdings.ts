@@ -23,7 +23,7 @@ import { pruefeKurs, pruefeMenge } from '../plausibilitaet.ts';
 import { GRENZE, HoldingsAntwort, pruefe } from '../schema.ts';
 
 export const QUELLE = 'holdings';
-const TOOL = 'mcp__claude_ai_Scalable_Capital__get_portfolio_holdings';
+const TOOL = 'get_portfolio_holdings';
 
 export type Holdingsernte = {
   readonly bestaende: readonly Bestand[];

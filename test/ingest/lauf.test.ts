@@ -14,6 +14,7 @@
  * 4. `fuehreLaufAus` ohne `top25`: kein Abruf bei einem Fondsanbieter [ADR-038].
  * 5. `fuehreLaufAus`: gescheiterte Transaktionen und eine als Ganzes gescheiterte
  *    Fondsaufloesung hinterlassen `quelleGescheitert` mit Code.
+ * 6. `fuehreLaufAus` ohne Cash: keine Selbstkontrolle gegen ein Gesamt ohne Cash.
  *
  * Die Storno-Bremse (dritter Bug-1-Baustein) ist an ihrer eigentlichen Grenze getestet —
  * `test/invarianten/inv-09.test.ts`, `describe('INV-09 — atomar')`. Ein Test hier muesste
@@ -348,6 +349,25 @@ describe('fuehreLaufAus — Fehlercode je Quelle', () => {
 
     expect(ergebnis.status).toBe('fehler');
     expect(repository.lauf.letzter(db)?.status).toBe('fehler');
+  });
+});
+
+describe('fuehreLaufAus — Selbstkontrolle ohne Cash [ADR-053]', () => {
+  it('setzt aus, statt das Gesamt mit Cash gegen die Wertpapiere allein zu vergleichen', async () => {
+    fetchMock((rpc) => {
+      if (rpc.method === 'initialize') return initOk();
+      if (rpc.method === 'notifications/initialized') return notifOk();
+      const tool = rpc.params?.name ?? '';
+      if (tool.endsWith('get_portfolio_holdings')) return toolOk(json(FIXTURE.holdings));
+      if (tool.endsWith('list_portfolio_transactions')) return toolOk(json(FIXTURE.transaktionen));
+      return toolOk({});
+    });
+    const db = await testDatenbank();
+    const ergebnis = await fuehreLaufAus({ db, konfiguration: konfiguration(), heute: HEUTE });
+
+    expect(ergebnis.quellen.holdings).toBe('erfolg');
+    expect(ergebnis.quellen.cash).toBe('fehler');
+    expect(ergebnis.hinweise.filter((h) => h.art === 'selbstkontrolle')).toEqual([]);
   });
 });
 

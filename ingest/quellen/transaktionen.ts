@@ -43,7 +43,7 @@ import type { Transaktionszeile } from '../schema.ts';
 import type { LaufFehlerCode } from '../../shared/laufFehler.ts';
 
 export const QUELLE = 'transaktionen';
-const TOOL = 'mcp__claude_ai_Scalable_Capital__list_portfolio_transactions';
+const TOOL = 'list_portfolio_transactions';
 
 /** Typen, bei denen Geld das Depot verlaesst und Stuecke hineinkommen. */
 const KAUF = /(^|_)(BUY|SAVINGS_PLAN|SUBSCRIPTION|PURCHASE)($|_)/;

@@ -115,10 +115,10 @@ export function deflationiere(
 export function realeRendite(
   fluesse: readonly Fluss[],
   vpi: Vpi,
-  heute: Tag,
+  stichtag: Tag,
   nominal?: XirrErgebnis,
 ): RealErgebnis {
-  const basisMonat = monatVon(heute);
+  const basisMonat = monatVon(stichtag);
 
   if (vpi.size === 0) {
     return {
@@ -133,7 +133,7 @@ export function realeRendite(
   }
 
   const { fluesse: real, fortgeschriebeneMonate } = deflationiere(fluesse, vpi, basisMonat);
-  const exakt = xirr(real, heute);
+  const exakt = xirr(real);
 
   const teuerung = teuerungProJahr(fluesse, vpi, basisMonat);
   const teuerungBisMonat = teuerung === null ? null : letzterEchterMonat(vpi, basisMonat);
