@@ -4,10 +4,11 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { fileURLToPath } from 'node:url';
+import { drittlizenzen } from './shared/drittlizenzen.ts';
 
 // INV-07: auch der Entwicklungsserver bindet ausschliesslich an 127.0.0.1.
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss(), drittlizenzen(fileURLToPath(new URL('.', import.meta.url)))],
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },

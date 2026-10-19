@@ -93,10 +93,17 @@ Ein Release ist ein Tag auf einem geprüften Stand von `main`, mit `Scapio.zip` 
    ```sh
    git switch --detach vX.Y.Z
    npm ci --ignore-scripts && npm run demo:export
-   cd demo-worker && npx wrangler@4.147.0 deploy
+   cd demo-worker && npm ci --ignore-scripts && npm audit
+   read -rs CLOUDFLARE_API_TOKEN && export CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID=<konto-id>
+   npx --no-install wrangler deploy; unset CLOUDFLARE_API_TOKEN
    ```
 
-   Einmalig vorher `npx wrangler@4.147.0 login`. Danach die Demo öffnen: Fußzeile zeigt `vX.Y.Z`.
+   `wrangler` kommt aus dem eigenen Lockfile in `demo-worker/`, nicht über `npx` aus dem Netz.
+   Der Token ist ein Cloudflare-API-Token mit genau „Workers Scripts: Edit“ auf dem einen Konto,
+   gilt nur für diese Shell und wird nicht gespeichert; die Konto-ID ist kein Geheimnis.
+   Wer früher `wrangler login` benutzt hat, meldet sich einmal mit
+   `npx --no-install wrangler logout` ab ([ADR-055](entscheidungen/ADR-055-update-und-release-kette.md)).
+   Danach die Demo öffnen: Fußzeile zeigt `vX.Y.Z`.
 
 ## Weiterführende Dokumentation
 

@@ -276,6 +276,15 @@ function DemoBand() {
           <span className="max-sm:hidden">{de.seite.demoBandLink}</span>
           <ArrowUpRight aria-hidden="true" className="size-3.5" />
         </a>
+        <a
+          href="/assets/drittlizenzen.txt" /* INV-AUSNAHME: feste Adresse, kein Wert; gleich DRITTLIZENZEN_DATEI — ADR-055 */
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={de.seite.demoBandLizenzenOeffnen}
+          className={cn(linkVariants(), 'inline-flex min-h-6 items-center font-medium text-text')}
+        >
+          {de.seite.demoBandLizenzen}
+        </a>
       </p>
     </aside>
   );

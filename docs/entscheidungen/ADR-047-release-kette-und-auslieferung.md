@@ -80,6 +80,9 @@ tatsächlich laufen, deckt das Audit damit nicht ab.
 
 - ZIP-Nutzer bekommen nur freigegebene Stände und können sie mit
   `gh attestation verify Scapio.zip --repo jx42/Scapio` prüfen.
+  Der Nachweis belegt die Herkunft, nicht die Reproduzierbarkeit: `git archive` schreibt
+  Zeitstempel ins ZIP, ein Nachbau ist also nicht bytegleich. Wie Nutzer prüfen, steht im
+  README unter „Download prüfen“. [ADR-055]
 - Git-Nutzer können vor dem letzten Release liegen. Die Fußzeile unterscheidet das nicht.
 - Im ZIP laufen `npm run check`, `demo` und `edgecases` nicht, denn die beiden letzten
   importieren `test/e2e/seed.ts`. Dafür braucht es den Klon. `npm start` darf weder

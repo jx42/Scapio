@@ -31,6 +31,8 @@ export const de = {
     demoBandLink: 'Scapio auf GitHub',
     demoBandLinkKurz: 'GitHub',
     demoBandLinkOeffnen: 'Scapio auf GitHub öffnen, neuer Tab',
+    demoBandLizenzen: 'Lizenzen',
+    demoBandLizenzenOeffnen: 'Lizenzen der verwendeten Pakete öffnen, neuer Tab',
     skip: 'Direkt zu den Kacheln',
     haupt: 'Kacheln',
     standUnbekannt: 'noch kein abgeschlossener Lauf',
