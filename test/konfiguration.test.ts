@@ -7,7 +7,14 @@ import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'n
 import { homedir, tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { konfigurationVergessen, ladeKonfiguration, pfadAufloesen, PROJEKTWURZEL } from '../shared/konfiguration.ts';
+import {
+  konfigurationVergessen,
+  ladeKonfiguration,
+  pfadAufloesen,
+  PROJEKTWURZEL,
+  synchronisierteWurzel,
+  vorgabeDatenverzeichnis,
+} from '../shared/konfiguration.ts';
 
 describe('pfadAufloesen', () => {
   it('loest ~/ auf und nimmt absolute Pfade ausserhalb des Projekts an', () => {
@@ -27,7 +34,50 @@ describe('pfadAufloesen', () => {
   });
 
   it('nimmt einen Nachbarordner mit gleichem Namensanfang an', () => {
-    expect(pfadAufloesen(`${PROJEKTWURZEL}-daten`)).toBe(`${PROJEKTWURZEL}-daten`);
+    // Eine erfundene Projektwurzel: die echte kann in ~/Documents liegen, das ADR-056 ablehnt.
+    const wurzel = join(tmpdir(), 'scapio-projekt');
+    expect(pfadAufloesen(`${wurzel}-daten`, wurzel)).toBe(`${wurzel}-daten`);
+  });
+});
+
+describe('synchronisierteWurzel [ADR-056]', () => {
+  const mac = (pfad: string): string | null => synchronisierteWurzel(pfad, 'darwin', {}, '/Users/a');
+  const win = (pfad: string): string | null =>
+    synchronisierteWurzel(pfad, 'win32', { OneDrive: 'C:\\Users\\a\\OneDrive', OneDriveCommercial: 'D:\\Firma' }, 'C:\\Users\\a');
+
+  it.each([
+    '/Users/a/Documents/scapio',
+    '/Users/a/Desktop',
+    '/Users/a/documents/Scapio',
+    '/Users/a/Library/Mobile Documents/com~apple~CloudDocs/scapio',
+    '/Users/a/Library/CloudStorage/Dropbox/scapio',
+  ])('macOS: lehnt %s ab', (pfad) => {
+    expect(mac(pfad)).not.toBeNull();
+  });
+
+  it.each(['/Users/a/Library/Application Support/scapio', '/Users/a/Documents-alt', '/Users/b/Documents/x'])(
+    'macOS: nimmt %s an',
+    (pfad) => {
+      expect(mac(pfad)).toBeNull();
+    },
+  );
+
+  it('Windows: lehnt die OneDrive-Ordner aus der Umgebung ab, ohne Groß-/Kleinschreibung', () => {
+    expect(win('C:\\Users\\a\\onedrive\\scapio')).toBe('C:\\Users\\a\\OneDrive');
+    expect(win('d:\\firma\\x')).toBe('D:\\Firma');
+    expect(win('C:\\Users\\a\\AppData\\Local\\scapio')).toBeNull();
+    expect(win('C:\\Users\\a\\Documents\\scapio')).toBeNull();
+    expect(synchronisierteWurzel('C:\\Users\\a\\OneDrive\\x', 'win32', { OneDrive: '' }, 'C:\\Users\\a')).toBeNull();
+  });
+
+  it('die Vorgaben liegen nie in einer Sync-Wurzel', () => {
+    expect(mac('/Users/a/Library/Application Support/scapio')).toBeNull();
+    expect(win(vorgabeDatenverzeichnis('win32', { LOCALAPPDATA: 'C:\\Users\\a\\AppData\\Local' }))).toBeNull();
+  });
+
+  // Unter Windows gilt nur die OneDrive-Liste, und deren Variablen setzt die CI nicht.
+  it.skipIf(process.platform === 'win32')('pfadAufloesen meldet die Ablehnung mit Runbook-Verweis', () => {
+    expect(() => pfadAufloesen('~/Library/Mobile Documents/scapio')).toThrow(/synchronisierten Ordner.*RUNBOOK/);
   });
 });
 

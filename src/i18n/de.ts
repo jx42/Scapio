@@ -363,6 +363,8 @@ export const de = {
     E_STORNO_BREMSE:
       'Die Bank lieferte deutlich weniger Transaktionen als bekannt. Zur Sicherheit wurde nichts übernommen. Versuche es später erneut.',
     E_SEED_KAPUTT: 'Die Datei seed.json im Datenordner ist kein gültiges JSON. Prüfe sie — meist ist es ein Komma zu viel.',
+    E_DATEI_FREMD:
+      'Eine Datei im Datenordner ist eine Verknüpfung oder gehört einem anderen Benutzer. Zur Sicherheit wurde sie nicht geöffnet — das Runbook beschreibt, wie du sie ersetzt.',
     E_PLAUSIBEL:
       'Die gelieferten Daten waren nicht plausibel und wurden nicht übernommen. Versuche es später erneut; bleibt die Meldung, nennt lauf.log im Datenverzeichnis die Prüfung, die angeschlagen hat.',
     E_SPERRE: 'Ein anderer Abruf lief noch. Warte, bis er fertig ist, und drücke dann erneut „Aktualisieren“.',

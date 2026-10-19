@@ -211,7 +211,8 @@ describe('sichereWennFaellig [ADR-045]', () => {
   it('rotiert automatische Sicherungen getrennt — die manuellen bleiben', async () => {
     const db = await testDatenbank();
     const v = temp();
-    const jetzt = Date.now();
+    // Fest, damit die fuenf alten in einem Monat liegen: die juengste je Monat bliebe sonst.
+    const jetzt = Date.UTC(2026, 5, 20);
     for (let i = 0; i < 5; i += 1) {
       alteSicherung(v, `portfolio-auto-1-2026-01-0${i + 1}T00-00-00-000.db`, 30 - i, jetzt);
       alteSicherung(v, `portfolio-1-2026-01-0${i + 1}T00-00-00-000.db`, 30 - i, jetzt);
@@ -232,7 +233,7 @@ describe('alteSicherungenLoeschen', () => {
       const p = join(v, `portfolio-1-2026-01-0${i + 1}T00-00-00.db`);
       writeFileSync(p, '');
       // Deterministische Zeiten statt Warten: die Reihenfolge ist der Prueffall.
-      utimesSync(p, new Date(2026, 0, i + 1), new Date(2026, 0, i + 1));
+      utimesSync(p, new Date(Date.UTC(2026, 0, i + 1, 12)), new Date(Date.UTC(2026, 0, i + 1, 12)));
     }
     const geloescht = alteSicherungenLoeschen(v);
     expect(geloescht).toHaveLength(3);
@@ -262,11 +263,11 @@ describe('alteSicherungenLoeschen', () => {
     for (let i = 0; i < 8; i += 1) {
       const manuell = join(v, `portfolio-1-2026-01-0${i + 1}T00-00-00.db`);
       writeFileSync(manuell, '');
-      utimesSync(manuell, new Date(2026, 0, i + 1), new Date(2026, 0, i + 1));
+      utimesSync(manuell, new Date(Date.UTC(2026, 0, i + 1, 12)), new Date(Date.UTC(2026, 0, i + 1, 12)));
 
       const migration = join(v, `portfolio-migration-1-2026-02-0${i + 1}T00-00-00.db`);
       writeFileSync(migration, '');
-      utimesSync(migration, new Date(2026, 1, i + 1), new Date(2026, 1, i + 1));
+      utimesSync(migration, new Date(Date.UTC(2026, 1, i + 1, 12)), new Date(Date.UTC(2026, 1, i + 1, 12)));
     }
 
     const geloescht = alteSicherungenLoeschen(v);
@@ -275,6 +276,42 @@ describe('alteSicherungenLoeschen', () => {
     const uebrig = readdirSync(v);
     expect(uebrig.filter((d) => d.startsWith('portfolio-migration-'))).toHaveLength(5);
     expect(uebrig.filter((d) => !d.startsWith('portfolio-migration-'))).toHaveLength(5);
+  });
+});
+
+describe('alteSicherungenLoeschen dünnt aus [ADR-056]', () => {
+  function sicherung(v: string, name: string, zeit: Date): void {
+    writeFileSync(join(v, name), '');
+    utimesSync(join(v, name), zeit, zeit);
+  }
+
+  it('behaelt ueber die fuenf hinaus die juengste je Monat und je Jahr', () => {
+    const v = temp();
+    // Woechentlich ueber drei Jahre, Mittag UTC: kein Monatswechsel durch die Zeitzone.
+    const namen: string[] = [];
+    for (let w = 0; w < 156; w += 1) {
+      const zeit = new Date(Date.UTC(2023, 0, 4 + w * 7, 12));
+      const name = `portfolio-auto-1-${zeit.toISOString().replaceAll(':', '-').replace('.', '-').replace(/Z$/, '')}.db`;
+      sicherung(v, name, zeit);
+      namen.push(name);
+    }
+    alteSicherungenLoeschen(v);
+    const uebrig = new Set(readdirSync(v));
+    // Die letzten fuenf (26.11. bis 24.12.2025) decken November und Dezember; dazu die
+    // Monatsletzten Januar bis Oktober 2025 und die Jahresletzte von 2023 und 2024.
+    for (const name of namen.slice(-5)) expect(uebrig).toContain(name);
+    expect(uebrig.size).toBe(5 + 10 + 2);
+    expect([...uebrig].filter((d) => d.includes('-2023-'))).toEqual(['portfolio-auto-1-2023-12-27T12-00-00-000.db']);
+  });
+});
+
+describe('sichern', () => {
+  it('hinterlaesst nur die .db, keine -wal oder -shm der Pruefkopie', async () => {
+    const db = await testDatenbank();
+    const v = join(temp(), 'sicherung');
+    await sichern(db, v, schemaVersion(db));
+    expect(readdirSync(v).every((d) => d.endsWith('.db'))).toBe(true);
+    db.close();
   });
 });
 

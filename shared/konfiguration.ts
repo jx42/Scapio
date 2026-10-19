@@ -18,7 +18,7 @@
 
 import { readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
-import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
+import { dirname, isAbsolute, join, posix, relative, resolve, win32 } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
 import { vorgabeErlaubteHosts } from './hosts.ts';
@@ -44,7 +44,9 @@ export function vorgabeDatenverzeichnis(
 ): string {
   if (plattform === 'win32') {
     const lokal = umgebung['LOCALAPPDATA'];
-    return join(lokal !== undefined && lokal !== '' ? lokal : homedir(), 'scapio');
+    // Ohne LOCALAPPDATA dorthin, wo es sonst hinzeigt — nicht ins Profil selbst, das
+    // OneDrive in Teilen synchronisiert. [ADR-056]
+    return join(lokal !== undefined && lokal !== '' ? lokal : join(homedir(), 'AppData', 'Local'), 'scapio');
   }
   return '~/Library/Application Support/scapio';
 }
@@ -122,10 +124,40 @@ export type Konfiguration = z.infer<typeof KonfigurationSchema> & {
 };
 
 /**
+ * Die Wurzel eines synchronisierten Ordners, in dem `pfad` liegt, sonst `null`. SQLite mit
+ * WAL verträgt keinen Dienst, der Datei und `-wal` getrennt hochlädt, und Depotdaten
+ * gehören nicht in eine Cloud [ADR-005]. macOS: iCloud (auch Schreibtisch und Dokumente,
+ * wenn „Schreibtisch & Dokumente" an ist) und die File-Provider-Ordner von Dropbox,
+ * OneDrive, Google Drive. Windows: die OneDrive-Ordner, wie OneDrive sie selbst ausweist.
+ * Ohne Groß-/Kleinschreibung, wie beide Dateisysteme in der Vorgabe.
+ */
+export function synchronisierteWurzel(
+  pfad: string,
+  plattform: NodeJS.Platform = process.platform,
+  umgebung: NodeJS.ProcessEnv = process.env,
+  home: string = homedir(),
+): string | null {
+  const p = plattform === 'win32' ? win32 : posix;
+  const wurzeln =
+    plattform === 'win32'
+      ? ['OneDrive', 'OneDriveConsumer', 'OneDriveCommercial'].flatMap((name) => {
+          const wert = umgebung[name];
+          return wert !== undefined && wert !== '' ? [wert] : [];
+        })
+      : ['Documents', 'Desktop', 'Library/Mobile Documents', 'Library/CloudStorage'].map((teil) => p.join(home, teil));
+  const ziel = p.resolve(pfad).toLowerCase();
+  for (const wurzel of wurzeln) {
+    const rest = p.relative(p.resolve(wurzel).toLowerCase(), ziel);
+    if (rest === '' || (!rest.startsWith('..') && !p.isAbsolute(rest))) return wurzel;
+  }
+  return null;
+}
+
+/**
  * Ersetzt ein fuehrendes `~/` durch das Benutzerverzeichnis und verlangt danach einen
  * absoluten Pfad. Abgelehnt: relative Pfade und alles in der Projektwurzel (Daten gehoeren
- * nicht in Git oder iCloud [ADR-005]) sowie das Benutzerverzeichnis selbst, dem
- * `db/verbindung.ts` sonst die Rechte 0700 setzte.
+ * nicht in Git oder iCloud [ADR-005]), synchronisierte Ordner [ADR-056] sowie das
+ * Benutzerverzeichnis selbst, dem `db/verbindung.ts` sonst die Rechte 0700 setzte.
  */
 export function pfadAufloesen(pfad: string, projektwurzel = PROJEKTWURZEL): string {
   const aufgeloest = pfad.startsWith('~/') ? join(homedir(), pfad.slice(2)) : pfad;
@@ -140,6 +172,12 @@ export function pfadAufloesen(pfad: string, projektwurzel = PROJEKTWURZEL): stri
   const imProjekt = relative(wurzel, normiert);
   if (imProjekt === '' || (!imProjekt.startsWith('..') && !isAbsolute(imProjekt))) {
     throw new Error('datenverzeichnis darf nicht im Projektordner liegen.');
+  }
+  const sync = synchronisierteWurzel(normiert);
+  if (sync !== null) {
+    throw new Error(
+      `datenverzeichnis darf nicht in einem synchronisierten Ordner liegen (${sync}). Siehe docs/RUNBOOK.md, „Datenverzeichnis abgelehnt".`,
+    );
   }
   return normiert;
 }

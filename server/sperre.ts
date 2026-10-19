@@ -26,8 +26,9 @@
  */
 
 import { randomBytes } from 'node:crypto';
-import { chmodSync, linkSync, mkdirSync, readFileSync, renameSync, rmSync, statSync, utimesSync, writeFileSync } from 'node:fs';
+import { linkSync, readFileSync, renameSync, rmSync, statSync, utimesSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { verzeichnisAnlegen } from '../shared/dateirechte.ts';
 import { ApiFehler } from './fehler.ts';
 
 /** Laenger als jeder Lauf ohne Lebenszeichen bleiben darf. Danach gilt sie als liegengeblieben. */
@@ -80,12 +81,7 @@ export class Sperre {
 
   constructor(datenpfad: string) {
     this.#pfad = join(datenpfad, SPERRDATEI);
-    mkdirSync(datenpfad, { recursive: true, mode: 0o700 });
-    try {
-      chmodSync(datenpfad, 0o700);
-    } catch {
-      // Ein bereits bestehendes Verzeichnis mit anderem Eigentuemer ist kein Grund abzubrechen.
-    }
+    verzeichnisAnlegen(datenpfad);
   }
 
   get pfad(): string {

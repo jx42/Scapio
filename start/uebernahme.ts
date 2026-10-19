@@ -10,8 +10,9 @@
  * Nie ueberschreiben: liegt im Datenverzeichnis schon eine Datei, gilt sie.
  */
 
-import { chmodSync, constants, copyFileSync, existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { constants, copyFileSync, existsSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { nurFuerMich, verzeichnisAnlegen } from '../shared/dateirechte.ts';
 import type { Konfiguration } from '../shared/konfiguration.ts';
 import {
   EINSTELLUNGSFELDER,
@@ -22,18 +23,6 @@ import {
   seedPfad,
   vorgaben,
 } from '../shared/konfiguration.ts';
-
-function verzeichnisAnlegen(pfad: string): void {
-  mkdirSync(pfad, { recursive: true, mode: 0o700 });
-}
-
-function nurFuerMich(datei: string): void {
-  try {
-    chmodSync(datei, 0o600);
-  } catch {
-    // Unter Windows ohne Wirkung, und eine fremde Datei ist kein Grund abzubrechen.
-  }
-}
 
 /** Die Felder aus `config.json`, die von der Vorgabe abweichen und `einstellungen.json` setzen darf. */
 export function eigeneWerte(roh: unknown): Record<string, unknown> {

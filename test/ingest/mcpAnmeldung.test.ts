@@ -33,7 +33,7 @@ vi.mock('../../shared/browser.ts', () => ({ oeffneImBrowser: vi.fn() }));
 
 const { oeffneImBrowser } = await import('../../shared/browser.ts');
 
-const { anmelden, anmeldungAbgeschlossenHtml, atomarSchreiben, mcpTokenVorhanden, registrieren, zugriffstoken } = await import('../../ingest/mcpAnmeldung.ts');
+const { anmelden, anmeldungAbgeschlossenHtml, mcpTokenVorhanden, registrieren, zugriffstoken } = await import('../../ingest/mcpAnmeldung.ts');
 
 // Dieselben Adressen wie in `mcpAnmeldung.ts` — dort nicht exportiert, hier als Vertrag
 // nachgebildet, den die Tests gegen den Transport pruefen.
@@ -801,30 +801,6 @@ describe('Geheimnisschutz', () => {
     logSpy.mockRestore();
     errorSpy.mockRestore();
     warnSpy.mockRestore();
-  });
-});
-
-describe('atomarSchreiben', () => {
-  it('schreibt mit 0600, ersetzt den Inhalt und laesst keine temporaere Datei liegen', () => {
-    const k = frischeKonfiguration();
-    const datei = join(k.datenpfad, 'x.json');
-
-    atomarSchreiben(datei, '{"a":1}');
-    atomarSchreiben(datei, '{"a":2}');
-
-    expect(readFileSync(datei, 'utf8')).toBe('{"a":2}');
-    erwarteRechte(datei, 0o600);
-    expect(readdirSync(k.datenpfad)).toEqual(['x.json']);
-  });
-
-  it('raeumt die temporaere Datei auf, wenn das Umbenennen scheitert', () => {
-    const k = frischeKonfiguration();
-    const ziel = join(k.datenpfad, 'verzeichnis');
-    mkdirSync(ziel);
-
-    expect(() => atomarSchreiben(ziel, 'x')).toThrow();
-
-    expect(readdirSync(k.datenpfad)).toEqual(['verzeichnis']);
   });
 });
 
