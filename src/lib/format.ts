@@ -170,7 +170,7 @@ export function zahl(wert: number): string {
 }
 
 /** Dimensionslose Verhaeltniszahl mit zwei Nachkommastellen, etwa die Sharpe-Ratio. */
-function verhaeltniszahl(wert: number, mitVorzeichen = true): string {
+export function verhaeltniszahl(wert: number, mitVorzeichen = true): string {
   if (!istZahl(wert)) return '—';
   return (mitVorzeichen ? verhaeltnisFormat : verhaeltnisOhneZeichenFormat).format(wert);
 }
