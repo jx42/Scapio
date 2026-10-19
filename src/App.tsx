@@ -218,6 +218,16 @@ function Seite() {
               className={FUSS_LINK}
             >
               {de.seite.fussVersionen}
+            </a>{' '}
+            ·{' '}
+            <a
+              href="/assets/drittlizenzen.txt" /* INV-AUSNAHME: feste Adresse, kein Wert; gleich DRITTLIZENZEN_DATEI — ADR-055 */
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={de.seite.fussLizenzenOeffnen}
+              className={FUSS_LINK}
+            >
+              {de.seite.fussLizenzen}
             </a>
           </p>
         )}

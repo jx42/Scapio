@@ -50,6 +50,8 @@ Das war's. Danach öffnet sich Scapio im Browser, baut beim ersten Mal seine Obe
 > - **macOS 14 und älter:** Rechtsklick auf die Datei → „Öffnen“ → „Öffnen“.
 > - **Windows** meldet „Der Computer wurde durch Windows geschützt“: „Weitere Informationen“ → „Trotzdem ausführen“.
 
+**Download prüfen** (optional): Jedes Release trägt neben dem ZIP eine Datei [`SHA256SUMS`](https://github.com/jx42/Scapio/releases/latest/download/SHA256SUMS). Die Prüfsumme des ZIPs muss mit der Zahl darin übereinstimmen. Unter macOS liefert sie `shasum -a 256 ~/Downloads/Scapio.zip`, unter Windows `certutil -hashfile %USERPROFILE%\Downloads\Scapio.zip SHA256`. Wer die [GitHub CLI](https://cli.github.com) hat, prüft zusätzlich die Herkunft: `gh attestation verify Scapio.zip --repo jx42/Scapio` bestätigt, dass das ZIP aus diesem Repository gebaut wurde.
+
 **Alternative: Installation mit Git** (für Fortgeschrittene, Updates dann per Doppelklick)
 
 Mit Git ist jedes spätere Update ein Doppelklick auf `Aktualisieren.command` bzw. `Aktualisieren.bat`, statt ein neues ZIP zu laden. Dafür braucht es einmal das Terminal:

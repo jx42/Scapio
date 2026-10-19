@@ -17,7 +17,7 @@ der Geschichte stehen. Eine neue ADR bekommt die nächste freie Nummer und eine 
 | [010](ADR-010-direkte-mcp-anmeldung-ohne-claude-code.md) | Direkte OAuth/PKCE-Anmeldung am Scalable-MCP statt Claude-Code-Kindprozess | Nachtrag: 054 |
 | [011](ADR-011-kursgewinn-statt-twr-in-kachel-1.md) | Verlaufs-Rendite zeigt Kursgewinn, nicht TWR | Name präzisiert durch 016, Zählweise durch 023 |
 | [012](ADR-012-anmeldeknopf-als-zweite-mutierende-route.md) | Der Anmeldeknopf als zweite mutierende Route | gilt |
-| [013](ADR-013-update-nur-auf-knopfdruck.md) | Ein Update-Befehl, der nur auf Knopfdruck läuft | teilweise abgelöst durch 037 |
+| [013](ADR-013-update-nur-auf-knopfdruck.md) | Ein Update-Befehl, der nur auf Knopfdruck läuft | teilweise abgelöst durch 037; Nachtrag: 055 |
 | [014](ADR-014-steuern-nach-typ-statt-nach-vorzeichen.md) | Zinsen und Steuern nach Typ trennen, nicht nach Vorzeichen | gilt |
 | [015](ADR-015-summenprobe-nur-bei-gleichem-stand.md) | Die Summenprobe vergleicht nur, wenn beide Seiten denselben Moment beschreiben | ergänzt durch 033 |
 | [016](ADR-016-gesamtgewinn-statt-kursgewinn-im-verlauf.md) | Die Zahl über dem Verlauf heißt Gesamtgewinn, nicht Kursgewinn | gilt |
@@ -51,12 +51,13 @@ der Geschichte stehen. Eine neue ADR bekommt die nächste freie Nummer und eine 
 | 044 | — | nicht vergeben |
 | [045](ADR-045-woechentliche-sicherung-beim-start.md) | Wöchentliche Sicherung beim Start | Nachtrag: 056 |
 | [046](ADR-046-footer-link-zur-readme.md) | Footer-Link zur Readme | gilt |
-| [047](ADR-047-release-kette-und-auslieferung.md) | Release-Kette und Auslieferung: ZIP aus Releases, Audit über den Bau-Pfad | gilt |
-| [048](ADR-048-demo-als-statischer-abzug.md) | Demo als statischer Abzug | gilt |
+| [047](ADR-047-release-kette-und-auslieferung.md) | Release-Kette und Auslieferung: ZIP aus Releases, Audit über den Bau-Pfad | Nachtrag: 055 |
+| [048](ADR-048-demo-als-statischer-abzug.md) | Demo als statischer Abzug | Nachtrag: 055 |
 | [049](ADR-049-deinstallation-loescht-nur-den-datenordner.md) | Deinstallation löscht nur den Datenordner | Nachtrag: 056 |
 | [050](ADR-050-zeitzonen-in-der-ci-nur-unter-linux.md) | Zeitzonen in der CI nur unter Linux, ohne UTC | gilt |
-| [051](ADR-051-main-nur-ueber-pull-requests.md) | `main` nur über Pull Requests, ohne Bypass | gilt |
+| [051](ADR-051-main-nur-ueber-pull-requests.md) | `main` nur über Pull Requests, ohne Bypass | Nachtrag: 055 |
 | [052](ADR-052-demo-band-mit-repository-link.md) | Demo-Band mit Link zum Repository | gilt |
 | [053](ADR-053-stichtag-und-isin-wechsel-im-kern.md) | Stichtag der Kennzahlen, ISIN-Wechsel und Selbstkontrolle ohne Cash | gilt |
 | [054](ADR-054-agentensperre-in-den-einstellungen.md) | Agentensperre in den Einstellungen, Toolnamen ohne Präfix | gilt |
+| [055](ADR-055-update-und-release-kette.md) | Update- und Release-Kette geschlossen | gilt |
 | [056](ADR-056-datenverzeichnis-und-dateirechte-aus-einer-hand.md) | Datenverzeichnis und Dateirechte aus einer Hand | gilt |

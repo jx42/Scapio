@@ -5,11 +5,12 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { fileURLToPath } from 'node:url';
 import { ladeKonfiguration } from './shared/konfiguration.ts';
+import { drittlizenzen } from './shared/drittlizenzen.ts';
 
 // INV-07: auch der Entwicklungsserver bindet ausschliesslich an 127.0.0.1.
 // Der Port nur fuer `npm run dev`: Bau und vitest sollen keine `einstellungen.json` lesen.
 export default defineConfig(({ command, mode }) => ({
-  plugins: [react(), tailwindcss()],
+  plugins: [react(), tailwindcss(), drittlizenzen(fileURLToPath(new URL('.', import.meta.url)))],
   resolve: {
     alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) },
   },

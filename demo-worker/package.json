@@ -1,0 +1,12 @@
+{
+  "name": "scapio-demo-worker",
+  "private": true,
+  "description": "Nur das Deploy-Werkzeug der Demo, mit eigenem Lockfile. Kein Teil der Anwendung. [ADR-055]",
+  "license": "MIT",
+  "scripts": {
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "4.149.0"
+  }
+}

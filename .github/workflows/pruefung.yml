@@ -36,13 +36,19 @@ concurrency:
 
 jobs:
   check:
-    name: check (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
+    name: check (${{ matrix.system }})
+    runs-on: ${{ matrix.image }}
     strategy:
       # Ein macOS-Fehler soll nicht verdecken, ob Linux gruen war — und umgekehrt.
       fail-fast: false
+      # Feste Images statt `-latest`: ein Wechsel des Runners soll ein eigener Commit sein,
+      # kein stiller Wechsel unter einem gruenen Haken. Der Jobname haengt am System, nicht am
+      # Image — das Ruleset fuer `main` verlangt ihn als Pflicht-Check. [ADR-055]
       matrix:
-        os: [macos-latest, ubuntu-24.04, windows-latest]
+        include:
+          - { system: macos, image: macos-15 }
+          - { system: linux, image: ubuntu-24.04 }
+          - { system: windows, image: windows-2025 }
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -100,3 +106,9 @@ jobs:
       # Eigener Job, nicht Teil von `check`: das hier braucht das Netz, `check` nicht.
       # Ein Fund haelt den Lauf an, aendert aber nichts an der Aussage der Tests.
       - run: npm run audit
+
+      # Dazu der volle Bericht, mit Dev-Paketen und ab `moderate`: zur Kenntnis, nicht als
+      # Sperre. Ein Fund hier steht als Anmerkung am Lauf und wird gemeldet. [ADR-055]
+      - name: npm audit (voll, nicht blockierend)
+        continue-on-error: true
+        run: npm audit
