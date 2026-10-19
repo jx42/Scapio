@@ -31,10 +31,10 @@ describe('vorgabeDatenverzeichnis [ADR-005]', () => {
     expect(pfad).not.toContain('Roaming');
   });
 
-  it('faellt unter Windows ohne LOCALAPPDATA auf das Benutzerverzeichnis zurueck', () => {
+  it('faellt unter Windows ohne LOCALAPPDATA auf AppData\\Local zurueck, nicht ins Profil [ADR-056]', () => {
     // `join` trennt mit dem Zeichen der LAUFENDEN Plattform, nicht der geprueften —
     // deshalb steht hier `join` und kein wortwoertlicher Pfad.
-    expect(vorgabeDatenverzeichnis('win32', {})).toBe(join(homedir(), 'scapio'));
+    expect(vorgabeDatenverzeichnis('win32', {})).toBe(join(homedir(), 'AppData', 'Local', 'scapio'));
   });
 });
 

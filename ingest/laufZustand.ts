@@ -3,7 +3,7 @@
  * brauchen. Eigenes Modul, damit die beiden einander nicht importieren.
  */
 
-import { appendFileSync, chmodSync, mkdirSync } from 'node:fs';
+import { appendFileSync } from 'node:fs';
 import type { DatabaseSync } from 'node:sqlite';
 import type { Cent } from '../core/dezimal.ts';
 import type { Tag } from '../core/kalender.ts';
@@ -18,6 +18,7 @@ import type { Vpiwert } from '../db/repository/vpi.ts';
 import type { Wertpapierart } from '../db/repository/wertpapierArt.ts';
 import type { Zinswert } from '../db/repository/zins.ts';
 import * as repo from '../db/repository/index.ts';
+import { nurFuerMich, verzeichnisAnlegen } from '../shared/dateirechte.ts';
 import type { Konfiguration } from '../shared/konfiguration.ts';
 import { logPfad } from '../shared/konfiguration.ts';
 import type { Hinweis } from '../shared/hinweise.ts';
@@ -142,10 +143,10 @@ export function beendeLauf(lauf: Lauf, status: LaufErgebnis['status'], fehlerCod
 
 export function schreibeProtokoll(k: Konfiguration, zeile: string): void {
   try {
-    mkdirSync(k.datenpfad, { recursive: true, mode: 0o700 });
+    verzeichnisAnlegen(k.datenpfad);
     appendFileSync(logPfad(k), `${new Date().toISOString()} ${zeile}\n`, { mode: 0o600 });
     // `mode` greift nur beim Anlegen; ein aelteres Protokoll behielte sonst seine Rechte.
-    chmodSync(logPfad(k), 0o600);
+    nurFuerMich(logPfad(k));
   } catch {
     // Ein nicht schreibbares Protokoll darf keinen Lauf beenden.
   }
