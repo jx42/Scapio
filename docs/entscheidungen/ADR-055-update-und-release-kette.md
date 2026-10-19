@@ -32,8 +32,10 @@ aber fremden Code ausführen können:
   Plugins sind Laufzeitabhängigkeiten (ADR-047), der Bau läuft also ohne Dev-Pakete — geprüft
   per `git archive` und `npm ci --omit=dev`.
 - **Rulesets.** `main` verlangt einen aktuellen Stand (`strict_required_status_checks_policy`).
-  `Release-Tags` sperrt auch `creation`; einziger Bypass ist die GitHub-Actions-Integration, die
-  der Release-Workflow für `gh release create` braucht.
+  `Release-Tags` sperrt weiter nur Ändern und Löschen, nicht `creation`: Unter einem persönlichen
+  Konto nimmt GitHub die Actions-Integration nicht als Bypass an (HTTP 422), und der
+  Release-Workflow legt den Tag mit `github.token` an. Ein PAT als Secret wäre eine weitere
+  Zugangsdate; Tags anlegen kann ohnehin nur, wer Schreibrecht hat.
 - **Feste Images, stabile Namen.** Die Matrix nennt `macos-15`, `ubuntu-24.04`, `windows-2025`;
   der Jobname ist `check (macos|linux|windows)`. Ein Image-Wechsel ist ein Commit, kein
   Ruleset-Eingriff.
