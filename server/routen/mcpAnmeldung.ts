@@ -23,7 +23,7 @@ import { existsSync } from 'node:fs';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import type { Konfiguration } from '../../shared/konfiguration.ts';
 import { mcpTokenPfad } from '../../shared/konfiguration.ts';
-import { ApiFehler } from '../fehler.ts';
+import { ApiFehler, nurDieseParameter } from '../fehler.ts';
 import { objektSchema, oderNull, umschlagAus, umschlagSchemaEigenschaften } from '../json.ts';
 import { baueLesemodell } from '../lesemodell.ts';
 import type { Kontext } from '../server.ts';
@@ -92,7 +92,8 @@ export function registriereMcpAnmeldung(app: FastifyInstance, ctx: Kontext): voi
   let laeuft = false;
   let letzterFehler: Anmeldefehler | null = null;
 
-  app.get('/api/mcp-anmeldung', { schema: { response: { 200: ANTWORT_SCHEMA } } }, (): McpAnmeldung => {
+  app.get('/api/mcp-anmeldung', { schema: { response: { 200: ANTWORT_SCHEMA } } }, (anfrage: FastifyRequest): McpAnmeldung => {
+    nurDieseParameter(anfrage.query, []);
     const lm = baueLesemodell(ctx.db, ctx.konfiguration, ctx.heute);
     return {
       angemeldet: angemeldet(ctx.konfiguration),

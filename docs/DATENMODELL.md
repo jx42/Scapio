@@ -189,16 +189,18 @@ Primärschlüssel `(fonds_isin, stand, unternehmen_isin)`. Beispiel:
 
 Je gehaltener ISIN, welcher Anbieter sie führt und ob dessen Bestandteile einsehbar sind —
 ersetzt das Durchprobieren gegen `funds.json` durch einen Katalogabruf je Anbieter
-(iShares, Xtrackers, Amundi), siehe
-[ADR-018](entscheidungen/ADR-018-fondskataloge-statt-einzelabfrage.md). `funds.json` hat
+(Xtrackers, Amundi), siehe
+[ADR-018](entscheidungen/ADR-018-fondskataloge-statt-einzelabfrage.md). iShares hat seit
+[ADR-027](entscheidungen/ADR-027-ishares-holdings-per-get-product-data.md) keinen Katalog mehr:
+bekannte iShares-Zeilen bleiben stehen, neue kommen über `funds.json`. `funds.json` hat
 weiterhin Vorrang: eine dort eingetragene ISIN bekommt keine Zeile hier.
 
 | Feld | Typ | Bedeutung |
 |---|---|---|
 | `isin` | `TEXT PK` | gehaltene ISIN |
 | `anbieter` | `TEXT?` | `ishares` \| `xtrackers` \| `amundi` \| `firsttrust` \| `lgim` \| `NULL` (kein Katalog kennt die ISIN) |
-| `durchsicht` | `TEXT` | `moeglich` \| `gesperrt` \| `unbekannt` — eigene Spalte, nicht aus `anbieter IS NOT NULL` abgeleitet: ein Haus, das seinen Katalog führt, aber die Bestandteile nicht freigibt (`gesperrt`), ist etwas anderes als eine ISIN, die kein Katalog kennt (`unbekannt`) |
-| `adresse` | `TEXT?` | nur `ishares`: die Produkt-ID des Fonds (ältere Zeilen tragen noch die alte `.ajax`-Adresse, aus der die ID gelesen wird) |
+| `durchsicht` | `TEXT` | `moeglich` \| `unbekannt` \| `gesperrt` (Altzustand, wird nicht mehr geschrieben) — eigene Spalte, nicht aus `anbieter IS NOT NULL` abgeleitet: ein Haus, das seinen Katalog führt, aber die Bestandteile nicht freigibt (`gesperrt`), ist etwas anderes als eine ISIN, die kein Katalog kennt (`unbekannt`) |
+| `adresse` | `TEXT?` | Name ist Altlast: nur `ishares`, die Produkt-ID des Fonds (ältere Zeilen tragen noch die alte `.ajax`-Adresse, aus der die ID gelesen wird) |
 | `geprueft_am` | `TEXT` | Kalendertag des Katalogabrufs [INV-03] |
 
 Primärschlüssel `isin`. Eine Zeile wird ersetzt (`ON CONFLICT … DO UPDATE`), nie ergänzt.

@@ -59,6 +59,13 @@ describe('GET /api/mcp-anmeldung [ADR-012]', () => {
     const res = await app.inject({ method: 'GET', url: '/api/mcp-anmeldung', headers: eigeneHerkunft() });
     expect(res.statusCode).toBe(200);
   });
+
+  it('lehnt einen Parameter in der Adresse ab', async () => {
+    const { app } = await testServer();
+    const res = await app.inject({ method: 'GET', url: '/api/mcp-anmeldung?x=1', headers: eigeneHerkunft() });
+    expect(res.statusCode).toBe(400);
+    expect(JSON.parse(res.body).fehler.code).toBe('E_PARAMETER');
+  });
 });
 
 describe('POST /api/mcp-anmeldung: dieselben Schranken wie /api/refresh [INV-08, ADR-012]', () => {

@@ -767,6 +767,7 @@ export const de = {
 
   dialog: {
     schliessen: 'Schließen',
+    benachrichtigungen: 'Benachrichtigungen',
   },
 
   fehler: {

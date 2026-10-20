@@ -40,7 +40,7 @@ Jeder Befund aus der ursprünglichen Sicherheitsprüfung, mit dem Test, der ihn 
 | Die Datenbank hat keine Sicherung | mittel | Sicherung über die SQLite-Backup-API vor jeder Migration, beim Start nach sieben Tagen ohne Sicherung [ADR-045] und per `npm run backup`; je Anlass bleiben die letzten fünf liegen, zusammen also bis zu fünfzehn | `test/db/verbindung.test.ts`, `test/db/migration.test.ts` |
 | Refresh-Token (`offline_access`, nicht ablaufend) liegt dauerhaft auf der Platte | mittel | `0700`/`0600` unter `<datenverzeichnis>/mcp/`, außerhalb `~/Documents`/iCloud (wie die Datenbank) und außerhalb der Sicherung (`npm run backup` kopiert gezielt nur die SQLite-Datei, nie ein Verzeichnis); Rechte werden bei jedem Lesen erneut durchgesetzt, nicht nur beim Schreiben (unter Windows wirkungslos, siehe Restrisiko 2); vor dem Lesen `lstat`: keine Verknüpfung, eigene uid, sonst `E_DATEI_FREMD`; Sync-Ordner als Datenverzeichnis abgelehnt; Tokenwert erscheint nie in einer geworfenen Fehlermeldung oder Konsolenausgabe | `test/ingest/mcpAnmeldung.test.ts` (0600-Prüfung auf `client.json`/`token.json`, Abschnitt „Geheimnisschutz“ gegen Konsole/Fehlermeldung), `test/dateirechte.test.ts`, `test/konfiguration.test.ts` |
 | Kein zweiter, prozessunabhängiger Schutz gegen schreibende Tool-Aufrufe mehr, seit der Claude-Code-Kindprozess mit `--allowedTools` wegfällt [ADR-010] | mittel | Laufzeitprüfung `LESENDE_TOOLS.includes(tool)` unmittelbar vor jedem `tools/call`, als allererste Anweisung in `mcpAufrufRoh`, zusätzlich zum Typsystem | `test/invarianten/inv-01.test.ts` |
-| Automatisch befolgte Umleitung könnte den `Authorization`-Kopf an einen fremden Host schicken | niedrig | `redirect: 'manual'` bei allen `fetch`-Aufrufen gegen `/token`, `/authorize` und `/mcp` — dieselbe Haltung, die `ingest/netz.ts` für CSV/VPI schon durchsetzt | `test/ingest/mcpAnmeldung.test.ts` (3xx bei `/register` und beim stillen Refresh), `test/ingest/mcp.test.ts` (3xx bei `/mcp`) |
+| Automatisch befolgte Umleitung könnte den `Authorization`-Kopf an einen fremden Host schicken | niedrig | `redirect: 'manual'` bei allen `fetch`-Aufrufen gegen `/token`, `/register` und `/mcp` — dieselbe Haltung, die `ingest/netz.ts` für CSV/VPI schon durchsetzt | `test/ingest/mcpAnmeldung.test.ts` (3xx bei `/register` und beim stillen Refresh), `test/ingest/mcp.test.ts` (3xx bei `/mcp`) |
 | ISIN-Link zu onvista und feste Footer-Links zu EZB/Eurostat/Scalable Capital/Repository und der Repository-Link im Demo-Band verlassen INV-06/INV-11 wörtlich [ADR-021, ADR-022, ADR-028, ADR-046, ADR-052] | niedrig | `onvistaLink()` prüft das geschlossene ISIN-Muster ein zweites Mal lokal, bevor ein `href` entsteht; alle sieben Ziele als geschlossene Liste, `target="_blank"` mit `rel="noopener noreferrer"` gegen Reverse-Tabnabbing und Referrer-Leck; kein automatischer Netzverkehr, nur ein bewusster Klick | `test/ui/AufteilungKachel.test.tsx` („Link zu onvista … Cash nicht“), `test/invarianten/inv-11.test.ts` (`ERLAUBTE_AUSGEHENDE_LINKS`) |
 
 ## Kopfzeilen und Herkunftsprüfung im Detail
@@ -69,7 +69,7 @@ der ausgelieferten `index.html` steckt — nichts davon darf im Cache landen.
 
 **Die Hinweisseite** (`server/server.ts`, `hinweisseiteCsp`), die erscheint, solange kein
 gebautes `dist/` da ist, bekommt eine abgeleitete CSP: `script-src 'nonce-…'` mit frischem
-Nonce je Antwort für ihr eines Neulade-Skript, `style-src 'unsafe-inline'` für ihr eigenes
+Nonce je Antwort für ihr eines Nachfrage-Skript, `style-src 'unsafe-inline'` für ihr eigenes
 `<style>`, `font-src data:` für die eingebettete Schrift. Die Seite trägt keinen Fremdtext und
 keinen Sitzungsschlüssel.
 
@@ -164,8 +164,8 @@ Abwägung**: dann gehört entweder `icacls` nachgezogen oder der Windows-Einstie
 **3. Mit `top25` erfahren die Fondsanbieter, welche ETFs im Depot liegen.**
 Ist die Kachel eingeschaltet ([ADR-038](entscheidungen/ADR-038-top25-nur-auf-wunsch.md)), fragt
 der Ingest bei iShares, Xtrackers und Amundi die Bestandsliste je gehaltenem Fonds ab: die ISIN
-steht im Pfad (`ingest/quellen/xtrackers.ts`), im Rumpf (`amundi.ts`, `productIds`) oder in der
-Query (`ishares.ts`, `portfolioId`). Zusammen mit IP-Adresse und Abrufzeit ergibt das beim Anbieter
+steht im Pfad (`ingest/quellen/xtrackers.ts`) oder im Rumpf (`amundi.ts`, `productIds`); bei iShares
+steht statt ihrer die Produkt-ID des Fonds in der Query (`ishares.ts`, `portfolioId`). Zusammen mit IP-Adresse und Abrufzeit ergibt das beim Anbieter
 die Liste der gehaltenen ETFs dieses Anschlusses — keine Mengen, keine Beträge, kein Name. Die
 Kataloge, Eurostat und die EZB werden ohne Depotbezug abgefragt und verraten nichts.
 

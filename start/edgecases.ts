@@ -11,7 +11,7 @@
  *
  * Die zwei Seiten ausserhalb von Vite (Bau-Hinweis, Anmeldung abgeschlossen) liefert dieses
  * Skript selbst aus; die Uebersicht zeigt sie in einem Rahmen ohne Skripte, damit der
- * Bau-Hinweis sich nicht alle drei Sekunden neu laedt.
+ * Bau-Hinweis nicht hier nach `/` fragt und sich durch die Uebersicht ersetzt.
  *
  * Vite im Middleware-Modus hinter einem eigenen `http`-Server, damit die Bindung wie ueberall
  * sichtbar an `HOST` haengt. [INV-07]

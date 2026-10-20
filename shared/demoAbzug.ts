@@ -55,7 +55,10 @@ export function abzugPfad(pfad: string, parameter: URLSearchParams): string | nu
   return null;
 }
 
-/** Jede Anfrage, die die Oberfläche stellen kann, so wie `src/lib/api.ts` sie baut. */
+/**
+ * Jede Anfrage, die die Oberfläche stellen kann, so wie `src/lib/api.ts` sie baut — ohne
+ * `von`/`bis`: der Zeitraumregler ist in der Demo gesperrt.
+ */
 export function abzugAnfragen(): string[] {
   const anfragen = OHNE_PARAMETER.map((n) => `/api/${n}`);
   for (const z of ZEITRAEUME) {

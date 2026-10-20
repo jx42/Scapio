@@ -17,10 +17,16 @@ Stelle, an der sie geprüft werden.
 | Das Chart selbst ist nicht fokussierbar (kein `accessibilityLayer`). Im Vermögensmodus trägt die verborgene Tabelle die Vorgänge (Käufe, Sparplan, Erträge) der Marken als eigene Spalte. | WCAG 4.1.2: ein fokussierbares `role="application"` in `role="img"` kostete zwei leere Tabstopps. Die Marken standen sonst nur im Tooltip. | `VerlaufChartGeruest.tsx`, `verlaufTabellen.ts` |
 | Kontrast wird aus den Farb-Tokens gerechnet, nicht gemessen: `test/invarianten/kontrast.test.ts` prüft jede Paarung aus `PAARUNGEN` (`start/kontrast.ts`), `npm run kontrast` schreibt die Tabelle [unten](#kontrast). Ein neues Token gehört in `PAARUNGEN`. Die Toast-Flächen sind `color-mix`; `TOAST_FLAECHEN` in `start/kontrast.ts` muss die Anteile aus `theme.css` mitziehen. | axe meldet Kontrast unter der Glas-Lichtkante (ADR-029) nur als „incomplete“, jsdom layoutet nicht. | `theme.css` |
 | Zustand nicht allein über Fläche: das gewählte Segment trägt den Rand `--color-bedien-rand` (3 : 1). | WCAG 1.4.11: die Fläche allein hebt sich mit 1,19 : 1 ab. | `ui/toggle.tsx` |
-| Fehlerzustände tragen `role="alert"`; Dialoge geben den Fokus an ihren Auslöser zurück; eine Erklärung („i“) und der Demo-Grund am Aktualisieren-Knopf sind Popover; `ui/tooltip.tsx` gibt es nicht (`test/keinTooltip.test.ts`). | WCAG 4.1.3, 2.4.3; ein Tooltip erscheint auf Touch nicht und verschwindet, bevor man ihn liest (1.4.13). | `Kachel`, `ui/dialog.tsx`, `InfoKnopf` |
+| Fehlerzustände tragen `role="alert"` — außer bei `E_NETZ`: dann meldet die Seite den Ausfall einmal (`App.tsx`), die Kacheln zeigen ihn `still`; Dialoge geben den Fokus an ihren Auslöser zurück; eine Erklärung („i“) und der Demo-Grund am Aktualisieren-Knopf sind Popover; `ui/tooltip.tsx` gibt es nicht (`test/keinTooltip.test.ts`). | WCAG 4.1.3, 2.4.3; ein Tooltip erscheint auf Touch nicht und verschwindet, bevor man ihn liest (1.4.13). | `Kachel`, `ui/dialog.tsx`, `InfoKnopf` |
 | Eine überlaufende Tabelle ist eine benannte, fokussierbare Region (`bereich`), damit sie per Tastatur scrollt. | axe `scrollable-region-focusable` bei 375 px. | `ui/table.tsx`, `Top25Ansicht.tsx` |
 | Eine Live-Region steht von Anfang an leer im DOM und bekommt erst dann Text (`Aktualisieren`: `role="status"`). Der Ladezustand einer Kachel ist `aria-busy`, nicht `aria-live`. | Eine bereits gefüllt eingefügte Region wird nicht vorgelesen; sechs ladende Kacheln, die gleichzeitig ansagen, sind Lärm (WCAG 4.1.3). | `Aktualisieren.tsx`, `Zustaende.tsx` |
 | Ausklappzustand („Mehr zeigen“) steht mit `aria-expanded`/`aria-controls` am Knopf und bleibt über ein Neuladen (`useGespeicherterSchalter`). | WCAG 4.1.2; wer aufklappt, will es beim nächsten Mal nicht wieder tun. | `KennzahlenAnsicht.tsx`, `Top25Ansicht.tsx` |
+| Toasts: Region und Schließen-Knopf tragen deutsche Namen aus `de.ts`; ein Fehlertoast bleibt stehen (`duration: Infinity`). Texte fremder Bibliotheken (Sonner, Radix) kommen immer über deren Props aus `de.ts`. | Sonst sagt der Screenreader „Notifications“ und „Close toast“; ein Fehler, der nach vier Sekunden verschwindet, ist für Langsame nie da gewesen (WCAG 2.2.1, 3.1.2). | `ui/sonner.tsx`, `Aktualisieren.tsx` |
+| Vorgelesener Text (`aria-label`, `aria-valuetext`, …) ist nie ein Literal, sondern kommt aus `de.ts` (`ARIA_TEXT_REGEL` in `eslint.config.js`). | `react/jsx-no-literals` prüft Props nicht; so blieben englische oder veraltete Namen unbemerkt. | — |
+| Die Bau- und die Anmeldeseite haben `<main>` und eine Region `role="status"`. Die Bauseite lädt sich nicht neu, sondern fragt `/` ab und ersetzt nur den Inhalt der Region; erst wenn die Anwendung da ist, lädt sie. | Ein Neuladen alle drei Sekunden setzt Fokus und Lesestelle zurück und sagt nichts an (WCAG 2.2.2, 4.1.3). | `shared/statusseite.ts`, `server/server.ts` (`nachfrageSkript`) |
+| Der Sprunglink liegt über dem Demo-Band (`focus:z-50`). | Sonst verdeckt das Band den fokussierten Link (WCAG 2.4.11). | `App.tsx` |
+| Werte, Namen und Bezeichnungen brechen um (`break-words`), statt mit `truncate` abgeschnitten zu werden; `whitespace-nowrap` nur ab `sm`. | Mit vergrößertem Textabstand bei 320 px schnitte `truncate` ab, `nowrap` liefe über (WCAG 1.4.12, 1.4.10). | `AufteilungAnsicht.tsx`, `VerlaufKennzahlen.tsx`, `ui/alert.tsx` |
+| Der Zeitraumregler ist eine benannte `role="group"`; gesperrte Griffe tragen `aria-disabled`. Der Demo-Grund-Popover schließt verzögert (`GRUND_SCHLIESSEN_MS`), damit der Zeiger hinüberwandern kann. | WCAG 4.1.2, 1.4.13 (Inhalt bei Hover bleibt erreichbar). | `Zeitraumregler.tsx` |
 | Unter `sm` sind die Kennzahlkarten ab der dritten einzeilig (Name links, Wert rechts, ohne Unterzeile). | Bei 320 px stünden sonst sechs volle Karten vor dem Chart (WCAG 1.4.10). | `VerlaufKennzahlen.tsx` |
 | Die Zeitachse beschriftet Zeiträume bis 92 Tage mit Tag und Monat, längere mit Monat und Jahr. Entschieden wird nach Spannweite der Daten, nicht nach dem gewählten Zeitraum (YTD kann kurz oder lang sein). | Sonst tragen bei kurzen Zeiträumen alle Ticks dieselbe Beschriftung. | `format.ts` (`achsenDatumFormat`), `VerlaufChartGeruest.tsx` |
 
@@ -33,9 +39,13 @@ Stelle, an der sie geprüft werden.
   unter `aria-hidden` und hinter die Fokusfalle.
 - Daneben stehen dort die Prüfungen, die axe nicht kann: Sprunglink setzt den Fokus,
   bei 375 und 320 px kein waagerechter Überlauf (auch nicht in der Kennzahlenliste), kein fokussierbares
-  Element unter der Blende der Kennzahlen, Fokusrückgabe des Dialogs, fokussierbare Top-25-Region.
-- `eslint-plugin-jsx-a11y` kennt die ui-Komponenten über `settings['jsx-a11y'].components`
-  (`Button` → `button`, `Table*` → `table`/`tr`/`th`/`td`).
+  Element unter der Blende der Kennzahlen, Fokusrückgabe des Dialogs, fokussierbare Top-25-Region,
+  bei 320 px mit Textabstand nach 1.4.12 weder Überlauf noch Abschneiden.
+- Die Randschichten laufen eigens: axe im Demo-Modus (1280 und 375 px), Sprunglink über dem
+  Demo-Band, ohne Server genau ein `alert`, die Bauseite sagt den neuen Schritt an, ohne neu zu laden.
+- `eslint-plugin-jsx-a11y` läuft mit `strict` und kennt die ui-Komponenten über
+  `settings['jsx-a11y'].components` (`Button` und die Radix-Trigger → `button`, `Table*` →
+  `table`/`tr`/`th`/`td`). Slider, Popover-Inhalt und Toasts haben kein DOM-Gegenstück; die prüft axe.
 - Die jsdom-Tests (`test/ui/`) fahren axe zusätzlich je Kachel; sie sehen aber kein Layout.
   Überlauf, Zielgrößen und verdeckten Fokus beweist nur der e2e-Lauf.
 
@@ -84,6 +94,13 @@ stimmt; `npm run kontrast` schreibt sie neu.
 | `--color-chart-3` | `--color-glas` | 9,92 : 1 | Grafik ≥ 3 : 1 |
 | `--color-chart-4` | `--color-glas` | 7,09 : 1 | Grafik ≥ 3 : 1 |
 | `--color-chart-5` | `--color-glas` | 9,92 : 1 | Grafik ≥ 3 : 1 |
+| `--color-chart-1` | `--color-flaeche` | 7,42 : 1 | Ringsegment ≥ 3 : 1 |
+| `--color-chart-2` | `--color-flaeche` | 6,80 : 1 | Ringsegment ≥ 3 : 1 |
+| `--color-chart-3` | `--color-flaeche` | 9,56 : 1 | Ringsegment ≥ 3 : 1 |
+| `--color-chart-4` | `--color-flaeche` | 6,84 : 1 | Ringsegment ≥ 3 : 1 |
+| `--color-chart-5` | `--color-flaeche` | 9,56 : 1 | Ringsegment ≥ 3 : 1 |
+| `--color-chart-1` / 70 % | `--color-bedien-aktiv` | 3,92 : 1 | Reglerspanne ≥ 3 : 1 |
+| `--color-chart-1` / 70 % | `--color-glas` | 4,32 : 1 | Reglerspanne ≥ 3 : 1 |
 | `--color-gewinn` | `--success-bg` | 8,09 : 1 | Toast ≥ 4,5 : 1 |
 | `--color-text` | `--success-bg` | 14,68 : 1 | Toast ≥ 4,5 : 1 |
 | `--color-warnung` | `--warning-bg` | 9,25 : 1 | Toast ≥ 4,5 : 1 |

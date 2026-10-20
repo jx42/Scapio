@@ -155,8 +155,7 @@ export function VerlaufKennzahlen({ daten, laedt }: VerlaufKennzahlenProps) {
 
   const alleKarten = karten(daten);
   return (
-    <section aria-labelledby="kennzahlen-ueberblick">
-      <h3 id="kennzahlen-ueberblick" className="sr-only">{de.kennzahlen.ueberblick}</h3>
+    <section aria-label={de.kennzahlen.ueberblick}>
       <div className={cn('grid grid-cols-2 gap-3 sm:grid-cols-3', alleKarten.length === 6 ? 'lg:grid-cols-6' : 'lg:grid-cols-5')}>
         {alleKarten.map((karte) => (
           <Kennzahlkarte key={karte.bezeichnung} karte={karte} />
@@ -186,12 +185,12 @@ function Kennzahlkarte({ karte }: { readonly karte: Karte }) {
         </CardTitle>
       </CardHeader>
       <CardContent className="max-sm:px-4">
-        <span className={cn('text-2xl font-bold whitespace-nowrap leuchten-zahl', richtungTon[karte.richtung])}>
+        <span className={cn('text-2xl font-bold break-words sm:whitespace-nowrap leuchten-zahl', richtungTon[karte.richtung])}>
           <RichtungsPfeil pfeil={karte.pfeil} className="mr-1" />
           {angezeigterWert}
         </span>
         {karte.subline === null ? null : (
-          <CardDescription className="mt-1 truncate">
+          <CardDescription className="mt-1 break-words">
             <TextMitPfeil text={angezeigteSubline} />
           </CardDescription>
         )}

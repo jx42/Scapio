@@ -47,7 +47,10 @@ describe('INV-08 — genau zwei schreibende Routen', () => {
     const pfade = ['server/routen/refresh.ts', 'server/routen/mcpAnmeldung.ts'];
     const quellen = SERVER.filter((q) => pfade.includes(q.pfad));
     expect(quellen.map((q) => q.pfad).sort(), 'eine mutierende Route fehlt').toEqual([...pfade].sort());
-    const treffer = sucheImCode(quellen, /anfrage\s*\.\s*(body|query|params)/);
+    // Erlaubt ist nur die Abweisung jedes Parameters im GET daneben: `nurDieseParameter(…, [])`.
+    const treffer = sucheImCode(quellen, /anfrage\s*\.\s*(body|query|params)/).filter(
+      (t) => !/nurDieseParameter\(anfrage\.query, \[\]\)/.test(t.text),
+    );
     expect(treffer, `Der Lauf laesst sich steuern:\n${alsListe(treffer)}`).toEqual([]);
   });
 
