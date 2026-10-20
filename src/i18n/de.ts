@@ -11,7 +11,7 @@
 
 import type { LaufFehlerCode } from '../../shared/laufFehler.ts';
 import type { QuellenArt } from '../../shared/quellen.ts';
-import type { LaufSchritt } from '../../server/vertrag.ts';
+import type { HinweisCode, LaufSchritt } from '../../server/vertrag.ts';
 
 /** Prueft die Schluessel gegen die Codes; nachgeschlagen wird mit beliebigem String und Rueckfall auf `sonst`. */
 type CodeTexte<T> = Partial<Record<LaufFehlerCode | 'E_SPERRE', T>>;
@@ -640,7 +640,23 @@ export const de = {
     realFortgeschrieben: (anzahl: string) =>
       `Für ${anzahl} Monate lag kein Indexwert vor; der jeweils letzte bekannte wurde fortgeschrieben.`,
     anmerkungTeile: (teile: readonly string[]) => teile.join(' '),
-    hinweise: 'Hinweise aus der Berechnung',
+    /**
+     * Je Kennzahlen-Hinweis ein Satz für den Hinweis-Dialog. `H_KEIN_VPI` und `H_DRIFT_AUSGESETZT`
+     * fehlen bewusst: die Inflationszeile und das Drift-Banner sagen das schon.
+     */
+    hinweis: {
+      H_UNBEKANNTER_TYP: (anzahl: number, text: string) =>
+        anzahl === 1
+          ? 'Eine unbekannte Buchungsart zählt als interne Umbuchung und ändert die Rendite nicht.'
+          : `${text} unbekannte Buchungsarten zählen als interne Umbuchungen und ändern die Rendite nicht.`,
+      H_KURSLUECKE: (anzahl: number, text: string) =>
+        `${anzahl === 1 ? 'An einem Tag fehlten' : `An ${text} Tagen fehlten`} vollständige Kurse; der Verlauf ist dort geschätzt.`,
+      H_AUSBUCHUNG: (anzahl: number, text: string) =>
+        `${anzahl === 1 ? 'Ein Abgang ohne Betrag und ohne Zugang am selben Tag zählt' : `${text} Abgänge ohne Betrag und ohne Zugang am selben Tag zählen`} als Totalverlust, eine spätere Einbuchung als geschenkte Anteile. Meist steckt ein über mehrere Tage gebuchter ISIN-Wechsel dahinter; Kursgewinn und Rendite der Position sind dann verzerrt.`,
+      H_KEIN_ZINS: 'Die Sharpe-Ratio fehlt: Für den risikofreien Zins (EZB €STR) liegen keine Werte vor.',
+    } satisfies Record<Exclude<HinweisCode, 'H_KEIN_VPI' | 'H_DRIFT_AUSGESETZT'>, unknown>,
+    hinweiseTitel: 'Hinweise aus der Berechnung',
+    hinweiseBeschreibung: 'Was beim Rechnen der Kennzahlen aufgefallen ist.',
     detailsOeffnen: (bezeichnung: string) => `Transaktionen anzeigen: ${bezeichnung}`,
     detailsBeschreibung: (bezeichnung: string) => `Einzelne Buchungen zu „${bezeichnung}“.`,
     detailsSpalteDatum: 'Datum',
@@ -692,7 +708,6 @@ export const de = {
       'Danach oben auf „Aktualisieren“ klicken.',
     ],
 
-    fehlendeFondsUntertitel: (anzahl: string) => `Details von ${anzahl} Fonds konnten nicht abgerufen werden`,
     fehlendeFondsIsin: (isin: string) => `(${isin})`,
     fehlendeFondsTitel: 'Diese Fonds fehlen in der Auswertung',
     fehlendeFondsBeschreibung: 'Liste der Fonds ohne bekannte Bestandteile, mit Grund je Fonds.',
@@ -763,6 +778,10 @@ export const de = {
     WEEKLY: 'wöchentlich',
     BIWEEKLY: 'zweiwöchentlich',
     YEARLY: 'jährlich',
+  },
+
+  hinweisKnopf: {
+    anzahl: (anzahl: number, text: string) => (anzahl === 1 ? '1 Hinweis' : `${text} Hinweise`),
   },
 
   dialog: {

@@ -37,7 +37,7 @@ export default defineConfig(({ command, mode }) => ({
     // Die Umgebung steht als `@vitest-environment`-Kommentar in der jeweiligen Datei.
     // `environmentMatchGlobs` waere kuerzer, ist aber seit Vitest 3.2 abgekuendigt.
     // Worktrees von Agenten unter .claude/ tragen eigene Kopien der Tests.
-    exclude: ['node_modules/**', 'dist/**', 'test/e2e/**', '.claude/**'],
+    exclude: ['**/node_modules/**', 'dist/**', 'test/e2e/**', '.claude/**'],
 
     /*
      * `node:sqlite` ist als experimentell markiert und meldet das bei jedem Import —

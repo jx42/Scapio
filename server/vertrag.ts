@@ -11,6 +11,7 @@
  */
 
 import type { LaufSchritt, LaufStatus, QuellenStatus } from '../db/repository/lauf.ts';
+import type { Hinweis as KennzahlHinweis, HinweisCode as KennzahlHinweisCode } from '../core/kennzahlen.ts';
 import type { Hinweis as LaufHinweis, HinweisArt as LaufHinweisArt } from '../shared/hinweise.ts';
 import type {
   DriftJson,
@@ -36,10 +37,8 @@ export type MaxDrawdownErgebnis = MaxDrawdownJson;
 export type VolatilitaetErgebnis = VolatilitaetJson;
 export type SharpeErgebnis = SharpeJson;
 
-export type Hinweis = {
-  readonly code: string;
-  readonly text: string;
-};
+export type Hinweis = KennzahlHinweis;
+export type HinweisCode = KennzahlHinweisCode;
 
 /* -------------------------------------------------------------------- Endpunkte */
 

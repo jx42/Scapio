@@ -1,6 +1,6 @@
 /*
- * Kachel 4, Detail: der Knopf im Untertitel oeffnet diesen Dialog — mit den fehlenden
- * Fonds oder, wenn gar keiner bekannt ist, mit der Anleitung zu `funds.json`. Derselbe
+ * Kachel 4, Detail: ist gar kein Fonds bekannt, oeffnet der Knopf im leeren Kasten diesen
+ * Dialog mit der Anleitung zu `funds.json`. Die fehlenden Fonds zeigt `HinweisKnopf`. Derselbe
  * Weg wie `KennzahlDetailsDialog` in Kachel 3 — Fokusfalle und Escape kommen von Radix
  * (`src/components/ui/dialog.tsx`).
  */

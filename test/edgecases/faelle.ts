@@ -332,7 +332,7 @@ export const FAELLE: readonly Fall[] = [
     gruppe: 'kennzahlen',
     ansicht: 'kennzahlen',
     titel: 'Übrige Sonderfälle',
-    beschreibung: 'XIRR ohne Vorzeichenwechsel, Real nicht konvergiert, Sharpe ohne Streuung, TWR grob, fortgeschriebene Monate, Hinweise.',
+    beschreibung: 'XIRR ohne Vorzeichenwechsel, Real nicht konvergiert, Sharpe ohne Streuung, TWR grob, fortgeschriebene Monate.',
     routen: {
       kennzahlen: aendern<KennzahlenAntwort>((b) => ({
         ...b,
@@ -341,11 +341,39 @@ export const FAELLE: readonly Fall[] = [
         xirr: xirrOhne('kein_vorzeichenwechsel'),
         real: { ...b.real, exakt: xirrOhne('nicht_konvergiert'), fortgeschriebeneMonate: ['2026-08', '2026-09'], teuerungBisMonat: '2026-07' },
         sharpe: sharpeOhne('keine_streuung'),
+      })),
+    },
+  },
+  {
+    id: 'kennzahlen-hinweise',
+    gruppe: 'kennzahlen',
+    ansicht: 'kennzahlen',
+    titel: 'Hinweise aus der Berechnung',
+    beschreibung:
+      'Alle Codes des Kerns als Fußnoten, je einmal Einzahl und Mehrzahl. H_KEIN_VPI und H_DRIFT_AUSGESETZT bleiben dort still (Inflationszeile, Banner).',
+    routen: {
+      kennzahlen: aendern<KennzahlenAntwort>((b) => ({
+        ...b,
+        sharpe: sharpeOhne('kein_zins'),
         hinweise: [
-          { code: 'K_BEISPIEL', text: 'Ein Hinweis zur Berechnung aus dem Kern.' },
-          { code: 'K_ZWEITER', text: 'Noch ein Hinweis.' },
+          { code: 'H_UNBEKANNTER_TYP', anzahl: 2 },
+          { code: 'H_KURSLUECKE', anzahl: 1 },
+          { code: 'H_AUSBUCHUNG', anzahl: 3 },
+          { code: 'H_KEIN_VPI', anzahl: null },
+          { code: 'H_KEIN_ZINS', anzahl: null },
+          { code: 'H_DRIFT_AUSGESETZT', anzahl: null },
         ],
       })),
+    },
+  },
+  {
+    id: 'kennzahlen-hinweis-ausbuchung',
+    gruppe: 'kennzahlen',
+    ansicht: 'kennzahlen',
+    titel: 'Ausbuchung als Totalverlust',
+    beschreibung: 'Ein über mehrere Tage gebuchter ISIN-Wechsel (H_AUSBUCHUNG, Einzahl).',
+    routen: {
+      kennzahlen: aendern<KennzahlenAntwort>((b) => ({ ...b, hinweise: [{ code: 'H_AUSBUCHUNG', anzahl: 1 }] })),
     },
   },
   {

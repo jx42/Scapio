@@ -113,7 +113,7 @@ wurden umgesetzt; der Rest bleibt aus, bis er gebraucht wird:
 
 ## Verworfene Alternative: der Dialog auch für unbekannte Anbieter
 
-Die Detailansicht der fehlenden Fonds (dritter Untertitelteil der Top-25-Kachel, siehe
+Die Detailansicht der fehlenden Fonds (Hinweis-Knopf in der Titelzeile der Top-25-Kachel, siehe
 Schritt 6 im Bauplan) unterscheidet zwei Fälle: `gesperrt` (der Anbieter führt seinen Katalog,
 zeigt die Bestandteile aber nicht) und `abrufGescheitert` (der letzte Abrufversuch ist
 gescheitert, ein erneutes „Aktualisieren" hilft meistens). Erwogen wurde ein dritter Fall für

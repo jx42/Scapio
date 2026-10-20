@@ -387,7 +387,7 @@ describe('berechneKennzahlen — Hinweise', () => {
       reihe: [depotTag('2026-08-25', '1100', { lueckenhaft: true }), ...e.reihe],
     });
     const hinweis = k.hinweise.find((h) => h.code === 'H_KURSLUECKE');
-    expect(hinweis?.text).toContain('1');
+    expect(hinweis?.anzahl).toBe(1);
   });
 
   it('meldet den fehlenden Preisindex', () => {
@@ -400,22 +400,9 @@ describe('berechneKennzahlen — Hinweise', () => {
     expect(codes(standard({ zinsreihe: new Map([[T('2026-08-01'), 0.03]]) }))).not.toContain('H_KEIN_ZINS');
   });
 
-  it('meldet eine ausgesetzte Selbstkontrolle mit ihrem Grund', () => {
+  it('meldet eine ausgesetzte Selbstkontrolle', () => {
     const ausgesetzt = drift(depotTag('2026-08-26', '1000'), [], 0n);
-    const k = berechneKennzahlen(standard({ drift: ausgesetzt }));
-    const hinweis = k.hinweise.find((h) => h.code === 'H_DRIFT_AUSGESETZT');
-    expect(hinweis).toBeDefined();
-    expect(hinweis!.text.length).toBeGreaterThan(0);
-  });
-
-  it('greift auf einen Standardtext zurueck, wenn die Aussetzung keinen Grund nennt', () => {
-    // Der Typ DriftErgebnis erlaubt stufe: 'ausgesetzt' mit grund: null, auch wenn
-    // die Funktion drift() diese Kombination selbst nie erzeugt — die Oberflaeche
-    // darf trotzdem nie mit leerem Text dastehen.
-    const ausgesetztOhneGrund: DriftErgebnis = { ...OK, stufe: 'ausgesetzt', grund: null };
-    const k = berechneKennzahlen(standard({ drift: ausgesetztOhneGrund }));
-    const hinweis = k.hinweise.find((h) => h.code === 'H_DRIFT_AUSGESETZT');
-    expect(hinweis?.text).toBe('Selbstkontrolle ausgesetzt.');
+    expect(codes(standard({ drift: ausgesetzt }))).toContain('H_DRIFT_AUSGESETZT');
   });
 
   it('meldet einen Abgang ohne Betrag, der als Totalverlust gilt', () => {

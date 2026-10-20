@@ -40,9 +40,20 @@ export type Position = {
   readonly xirr: XirrErgebnis;
 };
 
+export const HINWEIS_CODES = [
+  'H_UNBEKANNTER_TYP',
+  'H_KURSLUECKE',
+  'H_AUSBUCHUNG',
+  'H_KEIN_VPI',
+  'H_KEIN_ZINS',
+  'H_DRIFT_AUSGESETZT',
+] as const;
+export type HinweisCode = (typeof HINWEIS_CODES)[number];
+
+/** Code plus Anzahl, den Satz baut die Oberflaeche — wie bei den Lauf-Hinweisen (`shared/hinweise.ts`). */
 export type Hinweis = {
-  readonly code: string;
-  readonly text: string;
+  readonly code: HinweisCode;
+  readonly anzahl: number | null;
 };
 
 /**
@@ -303,45 +314,15 @@ function sammleHinweise(e: KennzahlenEingaben, reihe: readonly DepotTag[], ausbu
   for (const tx of e.transaktionen) {
     if (!istBekannterTyp(tx.typ)) unbekannt.add(tx.typ);
   }
-  if (unbekannt.size > 0) {
-    hinweise.push({
-      code: 'H_UNBEKANNTER_TYP',
-      text: `${unbekannt.size} unbekannte Transaktionstypen gelten als intern und ändern die Rendite nicht.`,
-    });
-  }
+  if (unbekannt.size > 0) hinweise.push({ code: 'H_UNBEKANNTER_TYP', anzahl: unbekannt.size });
 
   const luecken = reihe.filter((t) => t.lueckenhaft).length;
-  if (luecken > 0) {
-    hinweise.push({
-      code: 'H_KURSLUECKE',
-      text: `${luecken} Tage ohne vollständige Kurse. Der Verlauf ist dort geschätzt.`,
-    });
-  }
+  if (luecken > 0) hinweise.push({ code: 'H_KURSLUECKE', anzahl: luecken });
 
-  if (ausbuchungen > 0) {
-    hinweise.push({
-      code: 'H_AUSBUCHUNG',
-      text: `${ausbuchungen} Abgänge ohne Betrag und ohne Zugang am selben Tag gelten als Totalverlust.`,
-    });
-  }
-
-  if (e.vpi.size === 0) {
-    hinweise.push({
-      code: 'H_KEIN_VPI',
-      text: 'Der Verbraucherpreisindex fehlt. Die Realrendite kann nicht berechnet werden.',
-    });
-  }
-
-  if (e.zinsreihe.size === 0) {
-    hinweise.push({
-      code: 'H_KEIN_ZINS',
-      text: 'Kein risikofreier Zins hinterlegt. Sharpe-Ratio kann nicht berechnet werden.',
-    });
-  }
-
-  if (e.drift.stufe === 'ausgesetzt') {
-    hinweise.push({ code: 'H_DRIFT_AUSGESETZT', text: e.drift.grund ?? 'Selbstkontrolle ausgesetzt.' });
-  }
+  if (ausbuchungen > 0) hinweise.push({ code: 'H_AUSBUCHUNG', anzahl: ausbuchungen });
+  if (e.vpi.size === 0) hinweise.push({ code: 'H_KEIN_VPI', anzahl: null });
+  if (e.zinsreihe.size === 0) hinweise.push({ code: 'H_KEIN_ZINS', anzahl: null });
+  if (e.drift.stufe === 'ausgesetzt') hinweise.push({ code: 'H_DRIFT_AUSGESETZT', anzahl: null });
 
   return hinweise;
 }

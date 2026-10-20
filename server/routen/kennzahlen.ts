@@ -24,6 +24,7 @@ import {
   xirrJsonSchema,
   zahlOderNull,
 } from '../json.ts';
+import { HINWEIS_CODES } from '../../core/kennzahlen.ts';
 import { baueLesemodell } from '../lesemodell.ts';
 import type { Kontext } from '../server.ts';
 import type { ErtragsZeile, Hinweis, KennzahlenAntwort, RealisierteZeile } from '../vertrag.ts';
@@ -75,7 +76,7 @@ const ANTWORT_SCHEMA = objektSchema<KennzahlenAntwort>({
   sparrate12Cent: { type: 'number' },
   hinweise: {
     type: 'array',
-    items: objektSchema<Hinweis>({ code: { type: 'string' }, text: { type: 'string' } }),
+    items: objektSchema<Hinweis>({ code: { type: 'string', enum: [...HINWEIS_CODES] }, anzahl: { type: ['number', 'null'] } }),
   },
   zinsenTransaktionen: { type: 'array', items: ERTRAGS_ZEILE_SCHEMA },
   steuernTransaktionen: { type: 'array', items: ERTRAGS_ZEILE_SCHEMA },
@@ -119,7 +120,7 @@ export function registriereKennzahlen(app: FastifyInstance, ctx: Kontext): void 
       sharpe: sharpeAlsJson(k.sharpe),
       sparrateCent: centAlsZahl(k.sparrateCent),
       sparrate12Cent: centAlsZahl(k.sparrate12Cent),
-      hinweise: k.hinweise.map((h) => ({ code: h.code, text: h.text })),
+      hinweise: k.hinweise.map((h) => ({ code: h.code, anzahl: h.anzahl })),
       zinsenTransaktionen: k.zinsenTransaktionen.map((z) => ({
         txId: z.txId,
         tag: tagAlsText(z.tag),
