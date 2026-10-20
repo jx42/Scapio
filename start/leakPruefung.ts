@@ -151,7 +151,7 @@ const MUSTER: { art: string; re: RegExp; ausser?: RegExp }[] = [
   {
     art: 'E-Mail',
     re: /[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}\b/g,
-    ausser: /noreply|no-reply|@example\.|@users\.noreply\.github\.com|@anthropic\.com/i,
+    ausser: /noreply|no-reply|@example\.|@users\.noreply\.github\.com|@anthropic\.com|^git@github\.com$/i,
   },
 ];
 

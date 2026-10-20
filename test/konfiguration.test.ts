@@ -41,21 +41,21 @@ describe('pfadAufloesen', () => {
 });
 
 describe('synchronisierteWurzel [ADR-056]', () => {
-  const mac = (pfad: string): string | null => synchronisierteWurzel(pfad, 'darwin', {}, '/Users/a');
+  const mac = (pfad: string): string | null => synchronisierteWurzel(pfad, 'darwin', {}, '/Users/nutzer');
   const win = (pfad: string): string | null =>
-    synchronisierteWurzel(pfad, 'win32', { OneDrive: 'C:\\Users\\a\\OneDrive', OneDriveCommercial: 'D:\\Firma' }, 'C:\\Users\\a');
+    synchronisierteWurzel(pfad, 'win32', { OneDrive: 'C:\\Users\\nutzer\\OneDrive', OneDriveCommercial: 'D:\\Firma' }, 'C:\\Users\\nutzer');
 
   it.each([
-    '/Users/a/Documents/scapio',
-    '/Users/a/Desktop',
-    '/Users/a/documents/Scapio',
-    '/Users/a/Library/Mobile Documents/com~apple~CloudDocs/scapio',
-    '/Users/a/Library/CloudStorage/Dropbox/scapio',
+    '/Users/nutzer/Documents/scapio',
+    '/Users/nutzer/Desktop',
+    '/Users/nutzer/documents/Scapio',
+    '/Users/nutzer/Library/Mobile Documents/com~apple~CloudDocs/scapio',
+    '/Users/nutzer/Library/CloudStorage/Dropbox/scapio',
   ])('macOS: lehnt %s ab', (pfad) => {
     expect(mac(pfad)).not.toBeNull();
   });
 
-  it.each(['/Users/a/Library/Application Support/scapio', '/Users/a/Documents-alt', '/Users/b/Documents/x'])(
+  it.each(['/Users/nutzer/Library/Application Support/scapio', '/Users/nutzer/Documents-alt', '/Users/name/Documents/x'])(
     'macOS: nimmt %s an',
     (pfad) => {
       expect(mac(pfad)).toBeNull();
@@ -63,16 +63,16 @@ describe('synchronisierteWurzel [ADR-056]', () => {
   );
 
   it('Windows: lehnt die OneDrive-Ordner aus der Umgebung ab, ohne Groß-/Kleinschreibung', () => {
-    expect(win('C:\\Users\\a\\onedrive\\scapio')).toBe('C:\\Users\\a\\OneDrive');
+    expect(win('C:\\Users\\nutzer\\onedrive\\scapio')).toBe('C:\\Users\\nutzer\\OneDrive');
     expect(win('d:\\firma\\x')).toBe('D:\\Firma');
-    expect(win('C:\\Users\\a\\AppData\\Local\\scapio')).toBeNull();
-    expect(win('C:\\Users\\a\\Documents\\scapio')).toBeNull();
-    expect(synchronisierteWurzel('C:\\Users\\a\\OneDrive\\x', 'win32', { OneDrive: '' }, 'C:\\Users\\a')).toBeNull();
+    expect(win('C:\\Users\\nutzer\\AppData\\Local\\scapio')).toBeNull();
+    expect(win('C:\\Users\\nutzer\\Documents\\scapio')).toBeNull();
+    expect(synchronisierteWurzel('C:\\Users\\nutzer\\OneDrive\\x', 'win32', { OneDrive: '' }, 'C:\\Users\\nutzer')).toBeNull();
   });
 
   it('die Vorgaben liegen nie in einer Sync-Wurzel', () => {
-    expect(mac('/Users/a/Library/Application Support/scapio')).toBeNull();
-    expect(win(vorgabeDatenverzeichnis('win32', { LOCALAPPDATA: 'C:\\Users\\a\\AppData\\Local' }))).toBeNull();
+    expect(mac('/Users/nutzer/Library/Application Support/scapio')).toBeNull();
+    expect(win(vorgabeDatenverzeichnis('win32', { LOCALAPPDATA: 'C:\\Users\\nutzer\\AppData\\Local' }))).toBeNull();
   });
 
   // Unter Windows gilt nur die OneDrive-Liste, und deren Variablen setzt die CI nicht.
