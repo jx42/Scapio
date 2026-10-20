@@ -11,6 +11,14 @@ export const RING_BESCHRIFTUNG_VERSATZ = -8;
 export const RING_WERT_VERSATZ = 14;
 export const RING_BESCHRIFTUNG_GROESSE = 12;
 export const RING_WERT_GROESSE = 18;
+/** Ringbreite als Anteil des Radius und Luecke zwischen zwei Stuecken in Grad. */
+export const RING_INNEN = '70%';
+export const RING_AUSSEN = '88%';
+export const RING_LUECKE_GRAD = 1;
+
+/** Strichelung des Hintergrundgitters und der Vorschau-Linie (Strich, Luecke). */
+export const GITTER_STRICHELUNG = '2 4';
+export const VORSCHAU_STRICHELUNG = '4 3';
 
 /** Tick-Beschriftung der Achsen, an Tailwinds text-sm angeglichen (theme.css: --text-sm). */
 export const CHART_ACHSEN_SCHRIFTGROESSE = 15;
@@ -53,6 +61,8 @@ export const VERLAUF_Y_ACHSE_PUFFER_ANTEIL = 0.08;
 export const FLUESSE_CHART_HOEHE = 200;
 export const FLUESSE_X_ACHSE_TICK_ABSTAND = 16;
 export const FLUESSE_MARGIN = { top: 8, right: 0, bottom: 0, left: 0 } as const;
+/** Oben gerundete Balken (oben links, oben rechts, unten rechts, unten links). */
+export const FLUESSE_BALKEN_RUNDUNG: [number, number, number, number] = [4, 4, 0, 0];
 
 /** Strichstaerken: Hauptlinie (Flaeche, Ringtrenner), Nebenlinie (Einzahlung, Vergleich, Nulllinie),
  *  Markierungslinie normal und hervorgehoben. */
@@ -67,3 +77,6 @@ export const AKTIV_PUNKT_RAND = 2;
 
 /** Farbpunkt vor einem Namen in der Legende (Durchmesser; der Radius folgt daraus). */
 export const FARBTUPFER_GROESSE = 10;
+
+/** Leuchten der Linien: Filterflaeche in Nutzerkoordinaten (groesser als jeder Chart), Unschaerfe und Deckkraft. */
+export const LEUCHTEN = { x: -100, y: -100, breite: 10_000, hoehe: 5_000, unschaerfe: 1, deckkraft: 0.25 } as const;

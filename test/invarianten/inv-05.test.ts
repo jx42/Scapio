@@ -35,8 +35,22 @@ describe('INV-05 — kein Inline-CSS', () => {
   });
 
   it('schreibt nirgends direkt in `element.style`', () => {
-    const treffer = sucheImCode(OBERFLAECHE, /\.style\s*\.\s*\w+\s*=|setAttribute\s*\(\s*['"]style['"]/);
+    const treffer = sucheImCode(
+      OBERFLAECHE,
+      /\.style\s*\.\s*\w+\s*=|\.style\s*\.\s*setProperty\s*\(|\.style\s*\.\s*cssText|Object\.assign\s*\(\s*[\w.]+\.style\b|setAttribute\s*\(\s*['"]style['"]/,
+    );
     expect(treffer, `Stil am DOM vorbei:\n${alsListe(treffer)}`).toEqual([]);
+  });
+
+  it('reicht `style` nicht als Objektschluessel durch (Spread in eine Komponente)', () => {
+    // format.ts: `style` ist dort die Option von Intl.NumberFormat, kein CSS.
+    const treffer = sucheImCode(UEBRIGE.filter((q) => q.pfad !== 'src/lib/format.ts'), /\bstyle\s*:/);
+    expect(treffer, `style im Objekt:\n${alsListe(treffer)}`).toEqual([]);
+  });
+
+  it('setzt keine Stil-Props der Chart-Bibliothek (contentStyle, wrapperStyle …)', () => {
+    const treffer = sucheImCode(OBERFLAECHE, /\b[a-z]\w*Style\s*[=:]/);
+    expect(treffer, `Stil-Prop:\n${alsListe(treffer)}`).toEqual([]);
   });
 
   it('schleust kein CSS ueber `dangerouslySetInnerHTML` ein', () => {

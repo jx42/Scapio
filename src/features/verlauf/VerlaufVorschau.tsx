@@ -30,6 +30,7 @@ import {
   VORSCHAU_ABDUNKELUNG,
   VORSCHAU_BESCHRIFTUNG_ABSTAND,
   VORSCHAU_BESCHRIFTUNG_OBEN,
+  VORSCHAU_STRICHELUNG,
   VORSCHAU_UNSCHAERFE,
   achsenTextBreite,
 } from '@/lib/chartmasse';
@@ -235,7 +236,7 @@ function Linie({
         y2={flaeche.top + flaeche.height}
         stroke={FARBE.chart1}
         strokeWidth={LINIE_MARKE}
-        strokeDasharray="4 3"
+        strokeDasharray={VORSCHAU_STRICHELUNG}
       />
       <text
         x={nachLinks ? x - VORSCHAU_BESCHRIFTUNG_ABSTAND : x + VORSCHAU_BESCHRIFTUNG_ABSTAND}

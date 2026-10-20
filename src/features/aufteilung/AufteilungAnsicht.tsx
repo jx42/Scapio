@@ -17,9 +17,12 @@ import {
   AUFTEILUNG_CHART_HOEHE,
   FARBTUPFER_GROESSE,
   LINIE_HAUPT,
+  RING_AUSSEN,
   RING_BESCHRIFTUNG_GROESSE,
   RING_BESCHRIFTUNG_VERSATZ,
   RING_WERT_GROESSE,
+  RING_INNEN,
+  RING_LUECKE_GRAD,
   RING_WERT_VERSATZ,
 } from '@/lib/chartmasse';
 import { betragOhneVorzeichen, euroAusCent, prozent } from '@/lib/format';
@@ -131,9 +134,9 @@ export function AufteilungAnsicht({
               nameKey="name"
               onMouseEnter={(_, index) => onHover(stuecke[index]?.schluessel ?? null)}
               onMouseLeave={() => onHover(null)}
-              innerRadius="70%"
-              outerRadius="88%"
-              paddingAngle={1}
+              innerRadius={RING_INNEN}
+              outerRadius={RING_AUSSEN}
+              paddingAngle={RING_LUECKE_GRAD}
               stroke={FARBE.flaeche}
               strokeWidth={LINIE_HAUPT}
               isAnimationActive={false}
@@ -258,7 +261,10 @@ function LegendenWerte({ anteil, wertCent }: { readonly anteil: number; readonly
 /** Zweite Zeile einer Legendenzeile: Gewinn (Euro und Prozent) als Badge mit Pfeil statt Vorzeichen. */
 function Positionsdetail({ position }: { position: PositionZeile }) {
   const angezeigterGewinn = useZahlZaehler(
-    `${betragOhneVorzeichen(position.gewinnCent, euroAusCent)} (${betragOhneVorzeichen(position.gewinnProzent, prozent)})`,
+    de.satz.mitNebenwert(
+      betragOhneVorzeichen(position.gewinnCent, euroAusCent),
+      betragOhneVorzeichen(position.gewinnProzent, prozent),
+    ),
   );
   return <RichtungsBadge wert={position.gewinnCent}>{angezeigterGewinn}</RichtungsBadge>;
 }

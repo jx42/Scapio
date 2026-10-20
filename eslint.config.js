@@ -19,18 +19,36 @@ const INV06_SYNTAX_REGELN = [
   },
 ];
 
+// Ein Muster als Selektor fuer String- und Template-Literal zugleich — sonst rutscht
+// derselbe Wert in Backticks an der Regel vorbei.
+const textMuster = (muster) => `:matches(Literal[value=/${muster}/], TemplateElement[value.raw=/${muster}/])`;
+
 // Farben kommen aus den Tokens von styles/theme.css, nie als Literal in einer Komponente.
 const FARB_REGEL = {
-  selector:
-    "Literal[value=/(^|[^\\w&])#[0-9a-fA-F]{3,8}\\b|\\b(rgba?|hsla?|oklch|oklab)\\(/]",
+  selector: textMuster('(^|[^\\w&])#[0-9a-fA-F]{3,8}\\b|\\b(rgba?|hsla?|oklch|oklab)\\('),
   message: 'Farbe als Token aus styles/theme.css, kein Farbliteral in einer Komponente.',
+};
+
+// Tailwinds Standardpalette ist in theme.css abgeschaltet (`--color-*: initial`); die Klasse
+// erzeugte nichts und fiele nur im Browser auf.
+const PALETTEN_REGEL = {
+  selector: textMuster(
+    '\\b(bg|text|border|ring|outline|fill|stroke|from|via|to|divide|shadow|accent|caret|decoration)-((slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-\\d{2,3}|white|black)\\b',
+  ),
+  message: 'Farbe als Token aus styles/theme.css, keine Klasse der Tailwind-Standardpalette.',
 };
 
 // Token-Variablen nur ueber die Map in lib/farben.ts — ein vertippter Name faellt sonst
 // erst im Browser auf.
 const FARB_VARIABLE_REGEL = {
-  selector: "Literal[value=/^var\\(--color-/]",
+  selector: textMuster('var\\(--color-'),
   message: 'Farb-Variable ueber FARBE aus lib/farben.ts.',
+};
+
+// Masse aus der Tailwind-Skala oder als Token, kein willkuerlicher Pixelwert in einer Klasse.
+const PIXEL_KLASSEN_REGEL = {
+  selector: textMuster('\\[-?\\d+(\\.\\d+)?px\\]'),
+  message: 'Mass aus der Tailwind-Skala oder als Token in theme.css, kein [..px] in einer Klasse.',
 };
 
 // Unterstreichung nur ueber linkVariants — sonst wachsen wieder parallele Link-Stile.
@@ -39,10 +57,18 @@ const LINK_REGEL = {
   message: 'Link-Stil ueber linkVariants aus lib/linkStil.ts.',
 };
 
+// Die Ton-Map (auf/ab/neutral -> Klasse) steht einmal in lib/farben.ts, nicht in einer Komponente.
+const TON_MAP_REGEL = {
+  selector: "Property[key.name='ab'] > Literal[value=/^(text|bg)-verlust$/]",
+  message: 'Richtungs-Ton ueber richtungTon/richtungBgTon aus lib/farben.ts.',
+};
+
 const OBERFLAECHEN_SYNTAX_REGELN = [
   ...INV06_SYNTAX_REGELN,
   FARB_REGEL,
+  PALETTEN_REGEL,
   FARB_VARIABLE_REGEL,
+  PIXEL_KLASSEN_REGEL,
   LINK_REGEL,
   {
     // Betrag ohne Vorzeichen braucht den Pfeil aus demselben Wert: richtungswert().
@@ -50,11 +76,7 @@ const OBERFLAECHEN_SYNTAX_REGELN = [
       "CallExpression[callee.name=/^(euroAusCent|prozent)$/] > CallExpression.arguments[callee.object.name='Math'][callee.property.name='abs']",
     message: 'Betrag ohne Vorzeichen ueber richtungswert() oder betragOhneVorzeichen() aus lib/format.ts.',
   },
-  {
-    // Die Ton-Map (auf/ab/gleich -> Klasse) gehoert nach lib/format.ts, nicht in eine Komponente.
-    selector: "Property[key.name='ab'] > Literal[value=/^(text|bg)-verlust$/]",
-    message: 'Richtungs-Ton ueber richtungTon/richtungBgTon aus lib/format.ts.',
-  },
+  TON_MAP_REGEL,
   {
     selector: "NewExpression[callee.object.name='Intl']",
     message: 'Formatierung ausschliesslich ueber lib/format.ts.',
@@ -68,6 +90,10 @@ const OBERFLAECHEN_SYNTAX_REGELN = [
     message: 'Bedingte Klassen ueber cn(), kein Template-Literal in className.',
   },
 ];
+
+const KEINE_DATEN_IMPORT = { name: '@tanstack/react-query', message: 'Ansichten holen keine Daten — das tut die Kachel.' };
+const KEIN_RECHARTS_IMPORT = { name: 'recharts', message: 'Charts nur in src/features/, ueber <ChartRahmen>.' };
+const KEIN_FETCH = { name: 'fetch', message: 'Ansichten holen keine Daten — das tut die Kachel.' };
 
 // jsx-a11y prueft sonst nur rohe DOM-Elemente; die ui-Komponenten rendern diese hier.
 const A11Y_SETTINGS = {
@@ -217,26 +243,26 @@ export default tseslint.config(
     rules: {
       'no-restricted-syntax': [
         'error',
-        ...OBERFLAECHEN_SYNTAX_REGELN.filter((r) => r !== FARB_VARIABLE_REGEL && r !== LINK_REGEL),
+        ...OBERFLAECHEN_SYNTAX_REGELN.filter((r) => ![FARB_VARIABLE_REGEL, LINK_REGEL, TON_MAP_REGEL].includes(r)),
       ],
     },
   },
 
   // Chart-Masse als benannte Konstante, nicht als Pixel-Literal im JSX verstreut.
   {
-    files: ['src/features/**/*.{ts,tsx}'],
+    files: ['src/features/**/*.{ts,tsx}', 'src/components/Leuchtfilter.tsx'],
     rules: {
       'no-restricted-syntax': [
         'error',
         ...OBERFLAECHEN_SYNTAX_REGELN,
         {
           selector:
-            "JSXAttribute[name.name=/^(fontSize|width|height|rx|r|strokeWidth|dx|dy|minTickGap)$/] > JSXExpressionContainer > :matches(Literal[raw=/^\\d/], UnaryExpression[operator='-'][argument.raw=/^\\d/], Literal[value=/^-?\\d+(\\.\\d+)?(px)?$/])",
+            "JSXAttribute[name.name=/^(fontSize|width|height|rx|r|radius|innerRadius|outerRadius|paddingAngle|strokeWidth|strokeDasharray|stdDeviation|slope|dx|dy|minTickGap)$/] > JSXExpressionContainer > :matches(Literal[raw=/^\\d/], UnaryExpression[operator='-'][argument.raw=/^\\d/], ArrayExpression, Literal[value=/^-?\\d+(\\.\\d+)?(px|%)?( -?\\d+(\\.\\d+)?)*$/]:not([value='100%']))",
           message: 'Chart-Masse als Konstante, kein Pixel-Literal direkt im JSX.',
         },
         {
           selector:
-            "JSXAttribute[name.name=/^(fontSize|width|height|rx|r|strokeWidth|dx|dy|minTickGap)$/] > Literal[value=/^-?\\d+(\\.\\d+)?(px)?$/]",
+            "JSXAttribute[name.name=/^(fontSize|width|height|rx|r|radius|innerRadius|outerRadius|paddingAngle|strokeWidth|strokeDasharray|stdDeviation|slope|dx|dy|minTickGap)$/] > Literal[value=/^-?\\d+(\\.\\d+)?(px|%)?( -?\\d+(\\.\\d+)?)*$/]:not([value='100%'])",
           message: 'Chart-Masse als Konstante, kein Pixel-Literal direkt im JSX.',
         },
       ],
@@ -263,9 +289,11 @@ export default tseslint.config(
         'error',
         ...INV06_SYNTAX_REGELN,
         FARB_REGEL,
+        PALETTEN_REGEL,
         {
-          selector: "Literal[value=/\\boutline-none\\b/]:not([value=/focus-visible:/])",
-          message: 'outline-none nur zusammen mit einem focus-visible-Ring in derselben Klasse.',
+          // Menue-Eintraege zeigen den Fokus als Flaeche (`focus:bg-…`), theme.css nimmt sie vom Ring aus.
+          selector: "Literal[value=/\\boutline-(none|hidden)\\b/]:not([value=/focus(-visible)?:/])",
+          message: 'outline-none/-hidden nur zusammen mit einer focus- oder focus-visible-Klasse in derselben Zeichenkette.',
         },
       ],
     },
@@ -278,23 +306,29 @@ export default tseslint.config(
     rules: { 'react/jsx-no-literals': ['error', { noStrings: false, ignoreProps: true }] },
   },
 
-  // Ansichten rendern nur; Daten holen die Kacheln (und Seite und Lauf-Knopf).
+  // Ansichten rendern nur; Daten holen die Kacheln (und Seite, Einstieg, Lauf-Knopf und lib/api.ts).
+  // Recharts bleibt in den Features — eine Chart ausserhalb ginge an <ChartRahmen> vorbei.
+  // Ein Block je Kombination: zwei Bloecke mit derselben Regel ersetzen sich, sie ergaenzen sich nicht.
   {
-    files: ['src/features/**/*.{ts,tsx}', 'src/components/**/*.{ts,tsx}'],
-    ignores: ['src/features/**/*Kachel.tsx', 'src/components/Aktualisieren.tsx'],
+    files: ['src/**/*.{ts,tsx}'],
     rules: {
-      'no-restricted-imports': [
-        'error',
-        {
-          paths: [
-            { name: '@tanstack/react-query', message: 'Ansichten holen keine Daten — das tut die Kachel.' },
-          ],
-        },
-      ],
-      'no-restricted-globals': [
-        'error',
-        { name: 'fetch', message: 'Ansichten holen keine Daten — das tut die Kachel.' },
-      ],
+      'no-restricted-imports': ['error', { paths: [KEINE_DATEN_IMPORT, KEIN_RECHARTS_IMPORT] }],
+      'no-restricted-globals': ['error', KEIN_FETCH],
+    },
+  },
+  {
+    files: ['src/features/**/*.{ts,tsx}'],
+    rules: { 'no-restricted-imports': ['error', { paths: [KEINE_DATEN_IMPORT] }] },
+  },
+  {
+    files: ['src/features/**/*Kachel.tsx'],
+    rules: { 'no-restricted-imports': 'off', 'no-restricted-globals': 'off' },
+  },
+  {
+    files: ['src/App.tsx', 'src/main.tsx', 'src/components/Aktualisieren.tsx', 'src/lib/api.ts'],
+    rules: {
+      'no-restricted-imports': ['error', { paths: [KEIN_RECHARTS_IMPORT] }],
+      'no-restricted-globals': 'off',
     },
   },
 

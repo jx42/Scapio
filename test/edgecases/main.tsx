@@ -9,7 +9,7 @@ import { StrictMode, useEffect, useState, type ComponentType, type ReactNode } f
 import { createRoot } from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-import '@/styles/theme.css';
+import './edgecases.css';
 import { AppMitGrenze } from '@/App';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Toaster } from '@/components/ui/sonner';
