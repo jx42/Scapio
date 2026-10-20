@@ -10,6 +10,7 @@ import { renderHook, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { useStufenZaehler, useZahlZaehler, zaehlerAnzeige } from '@/hooks/useZahlZaehler';
+import { euroAusCent, euroKompaktAusCent, prozent, verhaeltniszahl, zahl } from '@/lib/format';
 
 describe('zaehlerAnzeige', () => {
   it('zeigt bei fortschritt 0 den Startbetrag in Vorzeichen und Form des Zielwerts', () => {
@@ -71,6 +72,31 @@ describe('useZahlZaehler', () => {
 
     await waitFor(() => expect(result.current).toBe('120 €'), { timeout: 5000 });
   });
+});
+
+// Der Zaehler parst die fertige Zeichenkette zurueck. Aendert format.ts Trenner, Zeichen
+// oder Einheit, muss ZAHL_MUSTER weiter die ganze Zahl treffen — sonst zaehlt nur ein Teil.
+describe('zaehlerAnzeige versteht jede Zahl aus lib/format.ts', () => {
+  const FORMATE: [string, (wert: number) => string, readonly number[]][] = [
+    ['euroAusCent', (c) => euroAusCent(c), [0, 5, 199, 123_456, 98_765_432_10, -4_321_00]],
+    ['euroAusCent mit Vorzeichen', (c) => euroAusCent(c, true), [1, 123_456, -98_765_432_10]],
+    ['euroKompaktAusCent', euroKompaktAusCent, [15_000_000, 250_000_000]],
+    ['prozent', (a) => prozent(a), [0, 0.1123, 1.5, -0.0042, 12.3456]],
+    ['prozent mit Vorzeichen', (a) => prozent(a, true), [0.1123, -0.5]],
+    ['zahl', zahl, [0, 7, 1234, 1_234_567]],
+    ['verhaeltniszahl', (w) => verhaeltniszahl(w), [0.42, -1.37, 12]],
+  ];
+
+  for (const [name, formatieren, werte] of FORMATE) {
+    it(`${name}: bei Fortschritt 0 steht der Startwert unveraendert da`, () => {
+      for (const wert of werte) {
+        const start = formatieren(wert);
+        // Gleiche Groessenordnung und Vorzeichen, damit Einheit und Zeichen beider Strings gleich sind.
+        const ziel = formatieren(wert * 1.01 + Math.sign(wert || 1) * 0.01);
+        expect(zaehlerAnzeige(start, ziel, 0), `${start} → ${ziel}`).toBe(start);
+      }
+    });
+  }
 });
 
 describe('useStufenZaehler', () => {

@@ -12,14 +12,17 @@
  * dort in `PAARUNGEN` (start/kontrast.ts).
  */
 
-@import 'tailwindcss';
+/* Gescannt wird nur src/: sonst landen Klassennamen aus docs/ und plans/ im Bau. */
+@import 'tailwindcss' source("..");
 @import "tw-animate-css";
-@import "./shadcn-tailwind.css";
 /* Selbst ausgeliefert: das Paket legt Schriftschnitt und @font-face-Regeln in den Bau,
    die Datei kommt spaeter aus `/assets/` vom eigenen Server. Keine fremde Adresse. [INV-11] */
 @import "@fontsource-variable/geist";
 
 @theme {
+  /* Tailwinds Standardpalette aus: `bg-red-500` erzeugt dann kein CSS, nur Fachtokens gelten. */
+  --color-*: initial;
+
   --color-grund: oklch(0.14 0.012 260);
   --color-flaeche: oklch(0.2 0.012 260);
   --color-rand: oklch(1 0 0 / 0.1);

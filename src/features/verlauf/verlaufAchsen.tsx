@@ -18,6 +18,7 @@ import {
   VERLAUF_Y_ACHSE_PUFFER_ANTEIL,
   yAchsenBreite,
 } from '@/lib/chartmasse';
+import { monatSchluessel, monatsnummer } from '@/lib/format';
 
 /**
  * Schein unter einer Serie: dieselbe Kurve noch einmal, nur sie traegt den Filter aus
@@ -133,11 +134,14 @@ const MONATS_STUFEN = [1, 2, 3, 6, 12] as const;
 export function monatsTicks(daten: readonly { readonly tag: string }[], nachMonat: boolean): string[] | undefined {
   if (!nachMonat) return undefined;
   const monatsanfaenge = daten
-    .filter((punkt, index) => daten[index - 1]?.tag.slice(0, 7) !== punkt.tag.slice(0, 7))
+    .filter((punkt, index) => {
+      const vorheriger = daten[index - 1];
+      return vorheriger === undefined || monatSchluessel(vorheriger.tag) !== monatSchluessel(punkt.tag);
+    })
     .map((punkt) => punkt.tag);
   const stufe =
     MONATS_STUFEN.find((monate) => monatsanfaenge.length / monate <= MONATS_TICKS_HOECHSTENS) ?? MONATS_STUFEN.at(-1);
-  return monatsanfaenge.filter((tag) => (Number(tag.slice(5, 7)) - 1) % (stufe ?? 1) === 0);
+  return monatsanfaenge.filter((tag) => (monatsnummer(tag) - 1) % (stufe ?? 1) === 0);
 }
 
 /** Linker Rand der Zeichenflaeche: Y-Achse plus Aussenrand. */

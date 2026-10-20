@@ -38,12 +38,12 @@ import {
   realRendite,
   richtungPfeil,
   richtungswert,
-  richtungTon,
   sharpeAnzeige,
   xirrAnzeige,
   zeitpunktNurTag,
   type Richtung,
 } from '@/lib/format';
+import { richtungTon } from '@/lib/farben';
 import { cn } from '@/lib/utils';
 import { useZahlZaehler } from '@/hooks/useZahlZaehler';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

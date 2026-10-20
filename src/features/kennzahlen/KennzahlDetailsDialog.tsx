@@ -9,7 +9,8 @@
 
 import { de } from '@/i18n/de';
 import type { ErtragsZeile, RealisierteZeile } from '@/lib/api';
-import { datumKurz, euroAusCent, richtungTon, vorzeichen } from '@/lib/format';
+import { datumKurz, euroAusCent, vorzeichen } from '@/lib/format';
+import { richtungTon } from '@/lib/farben';
 import { cn } from '@/lib/utils';
 import {
   Dialog,

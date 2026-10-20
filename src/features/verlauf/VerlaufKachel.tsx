@@ -22,7 +22,17 @@ import { useState } from 'react';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
 import { de } from '@/i18n/de';
-import { BENCHMARKS, RISIKOFREI, STANDARD_BENCHMARK, ZEITRAEUME, api, kachelZustand, schluessel, type Zeitraum, type ZeitraumAuswahl } from '@/lib/api';
+import {
+  BENCHMARKS,
+  RISIKOFREI,
+  STANDARD_BENCHMARK,
+  ZEITRAEUME,
+  api,
+  kachelZustand,
+  schluessel,
+  type Zeitraum,
+  type ZeitraumAuswahl,
+} from '@/lib/api';
 import { istDemoModus } from '@/lib/demoModus';
 import { AN_AUS, useGespeichert, type AnAus } from '@/lib/speicher';
 import { Kachel } from '@/components/Kachel';
@@ -31,11 +41,7 @@ import { Driftfussnote, chartGesperrt, sperrtext } from '@/components/Driftbanne
 import { Tabs } from '@/components/ui/tabs';
 import { Benchmarkwahl } from '@/features/verlauf/Benchmarkwahl';
 import { Linienwahl } from '@/features/verlauf/Linienwahl';
-import {
-  VERLAUF_MODI,
-  VerlaufAnsicht,
-  type VerlaufAnsichtModus,
-} from '@/features/verlauf/VerlaufAnsicht';
+import { VERLAUF_MODI, VerlaufAnsicht, type VerlaufAnsichtModus } from '@/features/verlauf/VerlaufAnsicht';
 import { VerlaufKennzahlen } from '@/features/verlauf/VerlaufKennzahlen';
 import { Verlaufwahl } from '@/features/verlauf/Verlaufwahl';
 
@@ -55,11 +61,7 @@ export function VerlaufKachel() {
   const [frei, setFrei] = useState<{ readonly von: string; readonly bis: string } | null>(null);
   const [auswahlRunde, setAuswahlRunde] = useState(0);
   const auswahl: ZeitraumAuswahl = frei ?? zeitraum;
-  const [modus, setModus] = useGespeichert<VerlaufAnsichtModus>(
-    'verlaufModus',
-    'vermoegen',
-    VERLAUF_MODI,
-  );
+  const [modus, setModus] = useGespeichert<VerlaufAnsichtModus>('verlaufModus', 'vermoegen', VERLAUF_MODI);
   const [benchmarkAuswahl, setBenchmarkAuswahl] = useGespeichert<BenchmarkAuswahl>(
     'benchmark',
     STANDARD_BENCHMARK,
@@ -73,16 +75,8 @@ export function VerlaufKachel() {
     benchmarkAuswahl === KEIN_BENCHMARK || (!zeigeRisikofrei && benchmarkAuswahl === RISIKOFREI.isin)
       ? null
       : benchmarkAuswahl;
-  const [zeigeEinzahlungAuswahl, setZeigeEinzahlungAuswahl] = useGespeichert<AnAus>(
-    'linieEinzahlung',
-    'an',
-    AN_AUS,
-  );
-  const [zeigeZufluesseAuswahl, setZeigeZufluesseAuswahl] = useGespeichert<AnAus>(
-    'linieZufluesse',
-    'aus',
-    AN_AUS,
-  );
+  const [zeigeEinzahlungAuswahl, setZeigeEinzahlungAuswahl] = useGespeichert<AnAus>('linieEinzahlung', 'an', AN_AUS);
+  const [zeigeZufluesseAuswahl, setZeigeZufluesseAuswahl] = useGespeichert<AnAus>('linieZufluesse', 'aus', AN_AUS);
 
   const abfrage = useQuery({
     queryKey: schluessel.zeitreihe(auswahl, benchmark),
@@ -129,7 +123,7 @@ export function VerlaufKachel() {
           }
           id="verlauf"
           zustand={zustand}
-              ladehoehe="gross"
+          ladehoehe="gross"
           werkzeuge={
             zustand.art === 'bereit' ? (
               <>
@@ -156,9 +150,7 @@ export function VerlaufKachel() {
               </>
             ) : undefined
           }
-          fussnoten={
-            <Driftfussnote drift={daten?.drift} />
-          }
+          fussnoten={<Driftfussnote drift={daten?.drift} />}
         >
           {daten === undefined ? null : (
             <VerlaufAnsicht
