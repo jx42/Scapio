@@ -42,3 +42,11 @@ Nachtrag zu [ADR-036](ADR-036-kennzahlen-korrekturen-nach-pruefung.md) und
   `/api/kennzahlen`, die Oberfläche zeigt sie bisher nicht.
 - Grenztests halten drei bisher überlebende Mutanten fest (`fifo.ts`, `xirr.ts`, `twr.ts`),
   dazu ein Test, dass die Depotreihe lückenlos ist.
+
+## Nachtrag: Hinweise in der Kachel
+
+Ein Kennzahlen-Hinweis ist jetzt `{ code, anzahl }` wie ein Lauf-Hinweis; den Satz baut
+`de.kennzahlen.hinweis` (`KERN_VERSION` 35). Die Kennzahlen-Kachel zählt die Hinweise rechts in der Titelzeile und listet sie im Dialog
+(`HinweisKnopf`, wie die fehlenden Fonds der Top 25).
+`H_KEIN_VPI` und `H_DRIFT_AUSGESETZT` bleiben dort still: die Inflationszeile und das
+Drift-Banner sagen dasselbe schon.

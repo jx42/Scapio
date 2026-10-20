@@ -114,14 +114,14 @@ describe('Top25Kachel', () => {
     }
   });
 
-  it('zeigt bei leerer Kachel im Kasten den Knopf zu den fehlenden Fonds statt der Anleitung, wenn welche bekannt sind', async () => {
+  it('zeigt bei leerer Kachel die fehlenden Fonds als Hinweis statt der Anleitung, wenn welche bekannt sind', async () => {
     wiederherstellen = fetchErsatz(() => ({
       body: { ...FIXTURE, zeilen: [], fehlendeFonds: [GESPERRTER_FONDS, GESCHEITERTER_FONDS] },
     }));
     rendern(<Top25Kachel />);
 
-    const knopf = await screen.findByRole('button', { name: de.top25.fehlendeFondsUntertitel(zahl(2)) });
-    expect(screen.queryByText(de.top25.leer)).not.toBeInTheDocument();
+    const knopf = await screen.findByRole('button', { name: de.hinweisKnopf.anzahl(2, zahl(2)) });
+    expect(screen.getByText(de.top25.leer)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: de.top25.leerAnleitungTitel })).not.toBeInTheDocument();
     expect(screen.queryByText(GESPERRTER_FONDS.name)).not.toBeInTheDocument();
 
@@ -142,13 +142,13 @@ describe('Top25Kachel', () => {
     expect(screen.getByText('Die Datenbank ist nicht erreichbar.')).toBeInTheDocument();
   });
 
-  it('zeigt den dritten Untertitelteil und den Dialog mit den fehlenden Fonds', async () => {
+  it('zeigt den Hinweis-Knopf und den Dialog mit den fehlenden Fonds', async () => {
     wiederherstellen = fetchErsatz(() => ({
       body: { ...FIXTURE, fehlendeFonds: [GESPERRTER_FONDS, GESCHEITERTER_FONDS] },
     }));
     rendern(<Top25Kachel />);
 
-    const knopf = await screen.findByRole('button', { name: de.top25.fehlendeFondsUntertitel(zahl(2)) });
+    const knopf = await screen.findByRole('button', { name: de.hinweisKnopf.anzahl(2, zahl(2)) });
     await userEvent.click(knopf);
 
     expect(screen.getByRole('dialog', { name: de.top25.fehlendeFondsTitel })).toBeInTheDocument();
@@ -171,7 +171,7 @@ describe('Top25Kachel', () => {
     }));
     rendern(<Top25Kachel />);
 
-    const knopf = await screen.findByRole('button', { name: de.top25.fehlendeFondsUntertitel(zahl(1)) });
+    const knopf = await screen.findByRole('button', { name: de.hinweisKnopf.anzahl(1, zahl(1)) });
     await userEvent.click(knopf);
     await userEvent.click(screen.getByRole('button', { name: de.top25.fundsJsonKopierenKnopf }));
 

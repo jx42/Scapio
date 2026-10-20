@@ -12,6 +12,7 @@ import { useGespeicherterSchalter } from '@/lib/speicher';
 import { Kachel } from '@/components/Kachel';
 import { Driftfussnote } from '@/components/Driftbanner';
 import { KennzahlenAnsicht } from '@/features/kennzahlen/KennzahlenAnsicht';
+import { KennzahlenHinweise, kennzahlenHinweisSaetze } from '@/features/kennzahlen/KennzahlenHinweise';
 import { Top25AusHinweis } from '@/features/top25/Top25AusHinweis';
 
 export type KennzahlenKachelProps = {
@@ -46,6 +47,7 @@ export function KennzahlenKachel({ hoehe = null, onAusgeklapptAendern, top25Aus 
   const [hoeheOffen, setHoeheOffen] = useState<number | null>(null);
 
   const zustand = kachelZustand(abfrage, (d) => d.drift.stufe === 'leer');
+  const hinweisSaetze = kennzahlenHinweisSaetze(daten?.hinweise);
 
   return (
     <Kachel
@@ -54,6 +56,7 @@ export function KennzahlenKachel({ hoehe = null, onAusgeklapptAendern, top25Aus 
       zustand={zustand}
       ladehoehe="gross"
       className="pb-2"
+      werkzeuge={hinweisSaetze.length === 0 ? undefined : <KennzahlenHinweise saetze={hinweisSaetze} />}
       fussnoten={
         <>
           <Driftfussnote drift={daten?.drift} />

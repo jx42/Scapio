@@ -88,7 +88,8 @@ ausgeklappt ist. Kacheln lassen sich ausblenden
 sind 375 px ohne Überlauf, Grids deshalb immer mit `grid-cols-1`.
 
 Hinweise, die der ganzen Seite gelten (Drift, Lauf, Anmeldung), stehen als Alert-Reihe
-zwischen Kopf und Kacheln, nicht in einer Kachel.
+zwischen Kopf und Kacheln, nicht in einer Kachel. Hinweise einer einzelnen Kachel stehen als
+Warnsymbol mit Anzahl rechts in ihrer Titelzeile und öffnen einen Dialog (`HinweisKnopf`).
 
 ## Elevation & Depth
 

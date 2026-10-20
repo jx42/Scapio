@@ -1,7 +1,7 @@
 /*
  * Kachel 4: Inhalt fuer die gehaltenen Fonds, zu denen diese Auswertung keine
  * Bestandteile zeigen kann. Rein darstellend, ohne eigene Abfrage — Inhalt von
- * `Top25Dialog`, ob einige oder alle Fonds fehlen.
+ * `HinweisKnopf`, ob einige oder alle Fonds fehlen.
  */
 
 import { Copy } from 'lucide-react';

@@ -144,6 +144,40 @@ describe('KennzahlenKachel', () => {
     expect(screen.queryByRole('button', { name: de.top25.ausHinweis })).not.toBeInTheDocument();
   });
 
+  it('zeigt die Hinweise des Kerns im Dialog hinter der Titelzeile, ausser denen, die anderswo stehen', async () => {
+    wiederherstellen = fetchErsatz(() => ({
+      body: {
+        ...FIXTURE,
+        hinweise: [
+          { code: 'H_AUSBUCHUNG', anzahl: 1 },
+          { code: 'H_KURSLUECKE', anzahl: 3 },
+          { code: 'H_KEIN_VPI', anzahl: null },
+          { code: 'H_DRIFT_AUSGESETZT', anzahl: null },
+        ],
+      },
+    }));
+    const { container } = rendern(<KennzahlenKachel />);
+    const knopf = await screen.findByRole('button', { name: de.hinweisKnopf.anzahl(2, '2') });
+    await erwarteBarrierefrei(container);
+    expect(screen.queryByText(de.kennzahlen.hinweis.H_AUSBUCHUNG(1, '1'))).not.toBeInTheDocument();
+
+    await userEvent.click(knopf);
+    const dialog = screen.getByRole('dialog', { name: de.kennzahlen.hinweiseTitel });
+    expect(within(dialog).getByText(de.kennzahlen.hinweis.H_AUSBUCHUNG(1, '1'))).toBeInTheDocument();
+    expect(within(dialog).getByText(de.kennzahlen.hinweis.H_KURSLUECKE(3, '3'))).toBeInTheDocument();
+    expect(within(dialog).getAllByRole('listitem')).toHaveLength(2);
+    expect(screen.queryByText(/H_KEIN_VPI|H_DRIFT_AUSGESETZT/)).not.toBeInTheDocument();
+  });
+
+  it('zeigt keinen Hinweis-Knopf, wenn nur Hinweise kommen, die anderswo stehen', async () => {
+    wiederherstellen = fetchErsatz(() => ({
+      body: { ...FIXTURE, hinweise: [{ code: 'H_KEIN_VPI', anzahl: null }] },
+    }));
+    rendern(<KennzahlenKachel />);
+    await screen.findByText(euro(FIXTURE.kursgewinnCent));
+    expect(screen.queryByRole('button', { name: /Hinweis/ })).not.toBeInTheDocument();
+  });
+
   it('zeigt das Skeleton, solange die Abfrage haengt', () => {
     wiederherstellen = fetchErsatz(() => 'haengt');
     const { container } = rendern(<KennzahlenKachel />);
