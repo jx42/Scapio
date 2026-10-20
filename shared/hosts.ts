@@ -21,6 +21,6 @@ export const ANBIETER_HOSTS = {
 } as const satisfies Record<FundsJsonAnbieter, readonly string[]>;
 
 /** Eurostat (Inflation) und EZB (Zins) — keine Anbieter, aber Teil derselben Allowlist. */
-export const STATISTIK_HOSTS = ['ec.europa.eu', 'data-api.ecb.europa.eu'] as const;
+const STATISTIK_HOSTS = ['ec.europa.eu', 'data-api.ecb.europa.eu'] as const;
 
 export const vorgabeErlaubteHosts = (): string[] => [...Object.values(ANBIETER_HOSTS).flat(), ...STATISTIK_HOSTS];

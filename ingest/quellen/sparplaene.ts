@@ -14,8 +14,9 @@ import { mcpAufrufRoh } from '../mcp.ts';
 import { entschaerfe } from '../fremdtext.ts';
 import type { Ernte, Kontext } from '../importieren.ts';
 import { GRENZE, pruefe, SparplaeneAntwort } from '../schema.ts';
+import type { QuellenArt } from '../../shared/quellen.ts';
 
-export const QUELLE = 'sparplaene';
+export const QUELLE = 'sparplaene' satisfies QuellenArt;
 const TOOL = 'list_savings_plans';
 
 export async function holeSparplaene(ctx: Kontext): Promise<Ernte<readonly Sparplan[]>> {

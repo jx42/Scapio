@@ -38,3 +38,7 @@ vor jedem Aufruf wieder abschnitt.
 - Die Fixtures `strom.ndjson` und `kaputt/strom-fremdes-tool.ndjson` behalten das Präfix: sie
   zeigen, was der frühere `claude`-Kindprozess lieferte, und werden nicht angepasst
   (`test/fixtures/LIESMICH.md`).
+
+## Nachtrag: die Strom-Fixtures sind entfernt
+
+Kein Test las sie mehr, seit es den `claude`-Kindprozess nicht mehr gibt.

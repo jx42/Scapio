@@ -41,8 +41,9 @@ import { tagIstBrauchbar } from '../plausibilitaet.ts';
 import { GRENZE, pruefe, SeedDatei, TransaktionenAntwort } from '../schema.ts';
 import type { Transaktionszeile } from '../schema.ts';
 import type { LaufFehlerCode } from '../../shared/laufFehler.ts';
+import type { QuellenArt } from '../../shared/quellen.ts';
 
-export const QUELLE = 'transaktionen';
+export const QUELLE = 'transaktionen' satisfies QuellenArt;
 const TOOL = 'list_portfolio_transactions';
 
 /** Typen, bei denen Geld das Depot verlaesst und Stuecke hineinkommen. */
@@ -274,7 +275,7 @@ function kurspunktAus(tx: NeueTx): Kurspunkt | null {
 }
 
 /** Handgepflegte Datei, kein Fremdtext — trotzdem nennt die Meldung nur den Code-Anker, nie den Inhalt. */
-export class SeedFehler extends Error {
+class SeedFehler extends Error {
   readonly code = 'E_SEED_KAPUTT' satisfies LaufFehlerCode;
   constructor() {
     super('seed.json im Datenverzeichnis ist kein gueltiges JSON. Siehe docs/RUNBOOK.md, E_SEED_KAPUTT.');

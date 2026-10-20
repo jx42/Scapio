@@ -42,14 +42,14 @@ deshalb als eigener, per Dynamic Client Registration angemeldeter OAuth-Client �
 Autorisierungscode-Fluss mit PKCE an: einmalig, interaktiv, über `npm run mcp-login`
 (`start/mcpLogin.ts`) — öffnet den Browser, wartet auf den Redirect nach
 `127.0.0.1:8732/callback`, tauscht den Code gegen `access_token`/`refresh_token` und legt
-beide unter `<datenverzeichnis>/mcp/` ab (Verzeichnis `0700`, Dateien `0600`, dasselbe
+beide über `ingest/mcpToken.ts` unter `<datenverzeichnis>/mcp/` ab (Verzeichnis `0700`, Dateien `0600`, dasselbe
 Vertrauensmodell wie bei der Datenbank — unter Windows wirken diese POSIX-Bits nicht, siehe
 [`docs/SICHERHEIT.md`](SICHERHEIT.md), Restrisiko 2). Jeder Ingest-Lauf danach tauscht bei Bedarf still
 gegen den Refresh-Token (`zugriffstoken()`) — dabei öffnet sich nie von selbst ein Browser;
 schlägt der Tausch fehl, bricht der Lauf mit `E_MCP_ANMELDUNG` ab (siehe
 [`docs/RUNBOOK.md`](RUNBOOK.md)).
 
-`ingest/mcp.ts` ruft danach JSON-RPC (`initialize`, `tools/call`) gegen
+`ingest/mcp.ts` ruft danach über `ingest/mcpTransport.ts` JSON-RPC (`initialize`, `tools/call`) gegen
 `https://mcp.scalable.capital/mcp` auf und liest die Nutzdaten direkt aus dem `content[]`-Block
 der Werkzeugantwort — nie aus Modelltext, denn es gibt seit dieser Umstellung kein Modell
 mehr im Datenpfad. `LESENDE_TOOLS.includes(tool)` steht dabei als allererste Anweisung vor
@@ -223,7 +223,7 @@ Dateien in dieser Reihenfolge; was der Compiler nicht bindet, ist vermerkt.
 | 7 | `src/lib/format.ts`, `src/i18n/de.ts` | Format und Text |
 | 8 | `src/features/kennzahlen/KennzahlenAnsicht.tsx`, `src/features/verlauf/VerlaufKennzahlen.tsx` | Zeile in Kachel 3; Karte in der Verlaufskachel, falls sie dort erscheint |
 | 9 | `test/core/` | Rechentest |
-| 10 | `test/api/vertrag.test.ts` | Schlüsselliste (handgepflegt) |
+| 10 | `test/api/vertrag.test.ts` | `felder<…>()` des Ergebnistyps; ein fehlendes Feld meldet `tsc` |
 | 11 | `test/ui/fixtures.ts` | Grundwert in `kennzahlenAntwort()`; `tsc` meldet ihn |
 | 12 | `test/edgecases/faelle.ts` | Randfall, wenn die Kennzahl einen eigenen Zustand hat (nicht berechenbar, leer) |
 
@@ -234,14 +234,14 @@ unter `server/routen/` und der Kachel unter `src/features/`.
 
 | # | Datei | Was |
 |---|---|---|
-| 1 | `server/vertrag.ts` | Antworttyp |
-| 2 | `server/routen/<name>.ts` | `registriere<Name>(app, ctx)`: `objektSchema<T>()` für die Antwort, `nurDieseParameter` für die Query, `umschlagAus` für `stand` und `drift`; Vorlage `sparplaene.ts` |
-| 3 | `server/server.ts` | Import und Aufruf neben den anderen `registriere…` — fehlt der Aufruf, antwortet die Route 404, `tsc` merkt nichts |
-| 4 | `server/fehler.ts` | nur bei neuem Fehlercode: `FehlerCode` und Fabrikfunktion |
-| 5 | `src/lib/api.ts` | Eintrag `holen<T>('/api/<name>')` und Query-Key in `schluessel` |
-| 6 | `src/features/<kachel>/` | Hook und Anzeige |
-| 7 | `test/api/vertrag.test.ts` | Schlüsselliste der Antwort |
-| 8 | `test/edgecases/faelle.ts` (`Route`), `stub.ts` (`ROUTEN`), `start/edgecases.ts` (`pfade()`) | Route auf der Randfallseite; fehlt sie in `pfade()`, bleibt sie dort leer |
+| 1 | `shared/routen.ts` | Pfad und erlaubte Query-Parameter in `LESENDE_ROUTEN`; Demo-Abzug und Randfallseite folgen daraus |
+| 2 | `server/vertrag.ts` | Antworttyp |
+| 3 | `server/routen/<name>.ts` | `registriere<Name>(app, ctx)`: `objektSchema<T>()` für die Antwort, `nurDieseParameter(…, LESENDE_ROUTEN.<name>.parameter)` für die Query, `umschlagAus` für `stand` und `drift`; Vorlage `sparplaene.ts` |
+| 4 | `server/server.ts` | Import und Aufruf neben den anderen `registriere…` — fehlt der Aufruf, bricht der Start ab |
+| 5 | `server/fehler.ts` | nur bei neuem Fehlercode: `FehlerCode` und Fabrikfunktion |
+| 6 | `src/lib/api.ts` | Eintrag `holen<T>(LESENDE_ROUTEN.<name>.pfad)` und Query-Key in `schluessel` |
+| 7 | `src/features/<kachel>/` | Hook und Anzeige |
+| 8 | `test/api/vertrag.test.ts` | `felder<T>()` der Antwort; ein fehlendes Feld meldet `tsc` |
 | 9 | `docs/ARCHITEKTUR.md` | Zeile in der Tabelle unter „API-Vertrag" |
 
 **Neue Spalte**

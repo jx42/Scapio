@@ -170,6 +170,12 @@ Minute, läuft der Halter noch.
 Ein manuelles Löschen von `lauf.lock` ist nur nötig, wenn seit über 15 Minuten kein neuer
 Versuch stattgefunden hat und das Problem eilt; danach den Server neu starten.
 
+## Aktualisieren meldet `E_TOKEN`
+
+Der Sitzungsschlüssel der Seite stammt von einem früheren Serverstart; er wird bei jedem Start
+neu vergeben. Seite neu laden. Die übrigen API-Codes stehen in
+[ARCHITEKTUR](ARCHITEKTUR.md) bei `nurDieseParameter`.
+
 ## Port belegt
 
 `npm start` sucht den Port nicht — ein wanderndes Dashboard wäre ein Lesezeichen, das

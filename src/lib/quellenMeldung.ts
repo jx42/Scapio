@@ -8,6 +8,7 @@
 import { de } from '@/i18n/de';
 import type { LaufHinweis } from '@/lib/api';
 import { istNetzFehlerCode, type LaufFehlerCode } from '../../shared/laufFehler.ts';
+import { istQuellenArt, zerlegeQuelle } from '../../shared/quellen.ts';
 
 export type QuellenMeldung = {
   readonly schluessel: string;
@@ -36,6 +37,7 @@ function codeText(code: string): { readonly grund: string; readonly tun: string 
 }
 
 function quellenText(art: string, teile: readonly string[]): { readonly titel: string; readonly folge: string; readonly tun?: string } {
+  if (!istQuellenArt(art) || art === 'transaktionen') return { titel: q.sonst.titel, folge: q.sonst.folge(teile.join(', ')) };
   switch (art) {
     case 'kurse':
       return { titel: q.kurse.titel, folge: q.kurse.folge(teile.length) };
@@ -52,8 +54,6 @@ function quellenText(art: string, teile: readonly string[]): { readonly titel: s
     case 'fonds':
     case 'fondsaufloesung':
       return q[art];
-    default:
-      return { titel: q.sonst.titel, folge: q.sonst.folge(teile.join(', ')) };
   }
 }
 
@@ -69,11 +69,9 @@ export function quellenMeldungen(
     const quelle = typeof w.quelle === 'string' ? w.quelle : '—';
     const code = typeof w.code === 'string' ? w.code : 'E_UNBEKANNT';
     if (code === 'E_MCP_ANMELDUNG') continue;
-    const trenner = quelle.indexOf(':');
-    const art = trenner < 0 ? quelle : quelle.slice(0, trenner);
+    const { art, teil } = zerlegeQuelle(quelle);
     // Ohne Transaktionen endet der Lauf als `fehler`; dessen Alert nennt den Code schon.
     if (art === 'transaktionen') continue;
-    const teil = quelle.slice(trenner + 1);
     const gruppe = gruppen.get(art) ?? { code, teile: [] };
     gruppe.teile.push(teil);
     gruppen.set(art, gruppe);

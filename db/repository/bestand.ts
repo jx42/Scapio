@@ -9,9 +9,13 @@
 import type { DatabaseSync } from 'node:sqlite';
 import type { KursE6, MengeE8 } from '../../core/dezimal.ts';
 import type { Bestand } from '../../core/typen.ts';
-import { stmt } from './hilfen.ts';
+import { platzhalter, spaltenliste, stmt } from './hilfen.ts';
+import type { Bindung, Spalten } from './hilfen.ts';
 
 type Zeile = { isin: string; name: string; menge_e8: bigint; kurs_e6: bigint; stand: string };
+
+const SPALTEN = { isin: true, name: true, menge_e8: true, kurs_e6: true, stand: true } satisfies Spalten<Zeile>;
+const SPALTENLISTE = spaltenliste(SPALTEN);
 
 const zu = (z: Zeile): Bestand => ({
   isin: z.isin,
@@ -27,26 +31,21 @@ const zu = (z: Zeile): Bestand => ({
  */
 export function ersetze(db: DatabaseSync, bestaende: readonly Bestand[]): number {
   stmt(db, 'DELETE FROM bestand').run();
-  const s = stmt(db, 'INSERT INTO bestand (isin, name, menge_e8, kurs_e6, stand) VALUES (?, ?, ?, ?, ?)');
-  for (const b of bestaende) s.run(b.isin, b.name, b.mengeE8, b.kursE6, b.stand);
+  const s = stmt(db, `INSERT INTO bestand (${SPALTENLISTE}) VALUES (${platzhalter(SPALTEN)})`);
+  for (const b of bestaende) {
+    const bindung: Bindung<Zeile> = { isin: b.isin, name: b.name, menge_e8: b.mengeE8, kurs_e6: b.kursE6, stand: b.stand };
+    s.run(bindung);
+  }
   return bestaende.length;
 }
 
 export function alle(db: DatabaseSync): Bestand[] {
-  const zeilen = stmt(
-    db,
-    'SELECT isin, name, menge_e8, kurs_e6, stand FROM bestand ORDER BY isin',
-    true,
-  ).all() as Zeile[];
+  const zeilen = stmt(db, `SELECT ${SPALTENLISTE} FROM bestand ORDER BY isin`, true).all() as Zeile[];
   return zeilen.map(zu);
 }
 
 export function fuerIsin(db: DatabaseSync, isin: string): Bestand | null {
-  const zeile = stmt(
-    db,
-    'SELECT isin, name, menge_e8, kurs_e6, stand FROM bestand WHERE isin = ?',
-    true,
-  ).get(isin) as Zeile | undefined;
+  const zeile = stmt(db, `SELECT ${SPALTENLISTE} FROM bestand WHERE isin = ?`, true).get(isin) as Zeile | undefined;
   return zeile === undefined ? null : zu(zeile);
 }
 

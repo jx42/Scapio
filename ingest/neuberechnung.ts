@@ -120,7 +120,7 @@ export function berechneNeu(db: DatabaseSync, heute: Tag, alles = false): Neuber
 
     const vorhanden = new Map<Tag, { hash: string; version: number }>();
     if (!versionGesprungen && !alles) {
-      for (const t of repo.depotTag.alle(db)) {
+      for (const t of repo.depotTag.summen(db)) {
         vorhanden.set(t.tag, { hash: t.eingabeHash, version: t.kernVersion });
       }
     }

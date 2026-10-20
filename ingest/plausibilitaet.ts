@@ -41,9 +41,9 @@ export const FRUEHESTER_TAG = '2015-01-01' as Tag;
  * darueber ist keine Preisentwicklung, sondern ein Fehler in der Reihe — der
  * wahrscheinlichste ist eine misslungene Umbasierung in `ingest/quellen/vpiAktuell.ts`.
  */
-export const VPI_SPRUNG_SCHWELLE = 0.03;
+const VPI_SPRUNG_SCHWELLE = 0.03;
 /** Positionswerte + Cash duerfen um so viel vom Gesamtwert abweichen: 1 Euro. */
-export const SUMMEN_TOLERANZ_CENT = 100n;
+const SUMMEN_TOLERANZ_CENT = 100n;
 
 export class PlausibilitaetsFehler extends Error {
   readonly code = 'E_PLAUSIBEL' satisfies LaufFehlerCode;

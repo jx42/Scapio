@@ -23,7 +23,7 @@ import { FehlerZustand, LadeZustand, LeerZustand, type Ladehoehe } from '@/compo
 export type KachelZustand =
   | { readonly art: 'laedt' }
   | { readonly art: 'leer'; readonly text?: ReactNode; readonly inhalt?: ReactNode }
-  | { readonly art: 'fehler'; readonly text?: string; readonly hinweis?: string | null }
+  | { readonly art: 'fehler'; readonly text?: string; readonly hinweis?: string | null; readonly still?: boolean }
   | { readonly art: 'bereit' };
 
 export type KachelProps = {
@@ -103,7 +103,7 @@ export function Kachel({
               <LeerZustand text={zustand.text}>{zustand.inhalt}</LeerZustand>
             ) : null}
             {zustand.art === 'fehler' ? (
-              <FehlerZustand text={zustand.text} hinweis={zustand.hinweis} />
+              <FehlerZustand text={zustand.text} hinweis={zustand.hinweis} still={zustand.still} />
             ) : null}
             {zustand.art === 'bereit' ? children : null}
           </Fehlergrenze>

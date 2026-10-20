@@ -51,7 +51,7 @@ export const SCHRITTE: readonly Schritt[] = [
   { name: 'test', werkzeug: 'vitest', argumente: ['run'], fehlerzeilen: /^\s*(FAIL|×|→)|Error:/ },
 ];
 
-export const LOGPFAD = join(PROJEKTWURZEL, '.start', 'pruefung.log');
+const LOGPFAD = join(PROJEKTWURZEL, '.start', 'pruefung.log');
 
 /** Die Bilanzzeilen am Ende eines vitest-Laufs, fuer die Erfolgsmeldung. */
 function bilanz(ausgabe: string): string[] {

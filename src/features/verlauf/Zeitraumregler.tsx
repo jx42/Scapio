@@ -20,7 +20,7 @@
  * nehmen keinen Fokus; Screenreadern nennt ihn `aria-describedby`.
  */
 
-import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useId, useRef, useState, type PointerEvent, type ReactNode } from 'react';
 
 import { de } from '@/i18n/de';
 import { datumKurz } from '@/lib/format';
@@ -41,6 +41,8 @@ export type ZeitraumreglerProps = {
 };
 
 const TASTEN_PAUSE_MS = 300;
+/** Zeit zwischen Verlassen des Reglers und Schliessen des Demo-Grunds. */
+const GRUND_SCHLIESSEN_MS = 300;
 
 /** Stufe des Tages; ein Tag ausserhalb der Reihe faellt auf den Rand. */
 function stufe(tage: readonly string[], tag: string): number {
@@ -86,6 +88,7 @@ export function Zeitraumregler({ tage, fenster, von, bis, gesperrt, onWahl, onVo
 
   const regler = (
     <Slider
+      role="group"
       aria-label={de.verlauf.reglerBezeichnung}
       min={0}
       max={tage.length - 1}
@@ -124,8 +127,18 @@ export function Zeitraumregler({ tage, fenster, von, bis, gesperrt, onWahl, onVo
         }, TASTEN_PAUSE_MS);
       }}
     >
-      <SliderThumb aria-label={de.verlauf.reglerBeginn} aria-valuetext={datumKurz(tagA)} aria-describedby={gesperrt ? grundId : undefined} />
-      <SliderThumb aria-label={de.verlauf.reglerEnde} aria-valuetext={datumKurz(tagB)} aria-describedby={gesperrt ? grundId : undefined} />
+      <SliderThumb
+        aria-label={de.verlauf.reglerBeginn}
+        aria-valuetext={datumKurz(tagA)}
+        aria-disabled={gesperrt || undefined}
+        aria-describedby={gesperrt ? grundId : undefined}
+      />
+      <SliderThumb
+        aria-label={de.verlauf.reglerEnde}
+        aria-valuetext={datumKurz(tagB)}
+        aria-disabled={gesperrt || undefined}
+        aria-describedby={gesperrt ? grundId : undefined}
+      />
     </Slider>
   );
 
@@ -145,10 +158,29 @@ export function Zeitraumregler({ tage, fenster, von, bis, gesperrt, onWahl, onVo
   );
 }
 
-/** Oeffnet den Grund beim Ueberfahren mit der Maus und beim Tippen; ein Klick daneben schliesst ihn. */
+/**
+ * Oeffnet den Grund beim Ueberfahren mit der Maus und beim Tippen; ein Klick daneben schliesst ihn.
+ * Beim Verlassen schliesst er erst nach einer Pause, damit die Maus auf den Grund wechseln kann (WCAG 1.4.13).
+ */
 function MitDemoGrund({ children }: { readonly children: ReactNode }) {
   const [offen, setOffen] = useState(false);
   const anker = useRef<HTMLDivElement>(null);
+  const schliessen = useRef<ReturnType<typeof setTimeout>>(undefined);
+  useEffect(() => () => {
+    clearTimeout(schliessen.current);
+  }, []);
+  const bleiben = (e: PointerEvent) => {
+    if (e.pointerType !== 'mouse') return;
+    clearTimeout(schliessen.current);
+    setOffen(true);
+  };
+  const gehen = (e: PointerEvent) => {
+    if (e.pointerType !== 'mouse') return;
+    clearTimeout(schliessen.current);
+    schliessen.current = setTimeout(() => {
+      setOffen(false);
+    }, GRUND_SCHLIESSEN_MS);
+  };
   return (
     <Popover open={offen} onOpenChange={setOffen}>
       <PopoverAnchor asChild>
@@ -156,12 +188,8 @@ function MitDemoGrund({ children }: { readonly children: ReactNode }) {
         <div
           ref={anker}
           className="cursor-not-allowed"
-          onPointerEnter={(e) => {
-            if (e.pointerType === 'mouse') setOffen(true);
-          }}
-          onPointerLeave={(e) => {
-            if (e.pointerType === 'mouse') setOffen(false);
-          }}
+          onPointerEnter={bleiben}
+          onPointerLeave={gehen}
           onClick={() => {
             setOffen(true);
           }}
@@ -171,6 +199,8 @@ function MitDemoGrund({ children }: { readonly children: ReactNode }) {
       </PopoverAnchor>
       <PopoverContent
         aria-label={de.verlauf.reglerBezeichnung}
+        onPointerEnter={bleiben}
+        onPointerLeave={gehen}
         onOpenAutoFocus={(e) => {
           e.preventDefault();
         }}

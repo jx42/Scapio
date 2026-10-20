@@ -12,8 +12,9 @@ import type { Cent } from '../../core/dezimal.ts';
 import { mcpAufrufRoh } from '../mcp.ts';
 import type { Ernte, Kontext } from '../importieren.ts';
 import { CashBreakdownAntwort, pruefe } from '../schema.ts';
+import type { QuellenArt } from '../../shared/quellen.ts';
 
-export const QUELLE = 'cash';
+export const QUELLE = 'cash' satisfies QuellenArt;
 const TOOL = 'get_portfolio_cash_breakdown';
 
 export async function holeCash(ctx: Kontext): Promise<Ernte<Cent>> {

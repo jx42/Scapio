@@ -259,7 +259,7 @@ export function Aktualisieren({ onAnmeldungStatus, verborgen = false }: Aktualis
     if (status === 'erfolg') toast.success(de.aktualisieren.erfolgreich);
     else if (status === 'teilweise')
       toast.warning(de.aktualisieren.teilweise, { description: de.aktualisieren.teilweiseBeschreibung });
-    else toast.error(de.aktualisieren.gescheitert);
+    else toast.error(de.aktualisieren.gescheitert, { duration: Infinity });
   }, [unsererLauf, status, queryClient]);
 
   const anmeldungLaeuftLautServer = anmeldungQuery.data?.laeuft;
@@ -334,5 +334,9 @@ export function Aktualisieren({ onAnmeldungStatus, verborgen = false }: Aktualis
 }
 
 function toastFehler(titel: string, fehler: Error): void {
-  toast.error(titel, { description: fehler instanceof ApiFehler ? (fehler.hinweis ?? fehler.message) : fehler.message });
+  // Ohne Ablauf: dieser Fehler steht sonst nirgends, und drei Sekunden reichen nicht zum Lesen.
+  toast.error(titel, {
+    description: fehler instanceof ApiFehler ? (fehler.hinweis ?? fehler.message) : fehler.message,
+    duration: Infinity,
+  });
 }

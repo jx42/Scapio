@@ -15,10 +15,14 @@ import type { DepotTag, Isin } from '../../core/typen.ts';
 import { alsBoolean, alsZahl, platzhalter, spaltenliste, stmt, ueberschreibe } from './hilfen.ts';
 import type { Bindung, Spalten } from './hilfen.ts';
 
-export type GespeicherterTag = DepotTag & {
+/** Ein Tag ohne Positionsaufteilung — was Kurve, Kennzahlen und Hochwassermarke brauchen. */
+export type Tagessumme = DepotTag & {
   readonly kernVersion: number;
   readonly eingabeHash: string;
   readonly berechnetAm: string;
+};
+
+export type GespeicherterTag = Tagessumme & {
   /** Positionsaufteilung dieses Tages, leer solange der Cache noch nicht gefuellt ist. */
   readonly positionen: ReadonlyMap<Isin, Cent>;
 };
@@ -49,6 +53,10 @@ const SPALTEN = {
   positionen_json: true,
 } satisfies Spalten<Zeile>;
 const SPALTENLISTE = spaltenliste(SPALTEN);
+/** Ohne `positionen_json`: Kurve und Kennzahlen brauchen die Aufteilung nicht, nur die des letzten Tages. */
+const SUMMENLISTE = Object.keys(SPALTEN)
+  .filter((k) => k !== 'positionen_json')
+  .join(', ');
 
 /** Cent-Betraege als Text — `JSON.stringify` verlustfrei fuer `bigint`, siehe `core/dezimal.ts`. */
 function positionenAlsJson(positionen: ReadonlyMap<Isin, Cent>): string {
@@ -64,7 +72,7 @@ function positionenAusJson(json: string): ReadonlyMap<Isin, Cent> {
   return karte;
 }
 
-const zu = (z: Zeile): GespeicherterTag => ({
+const zuSumme = (z: Omit<Zeile, 'positionen_json'>): Tagessumme => ({
   tag: alsTag(z.tag),
   wertpapiereCent: z.wertpapiere_cent as Cent,
   cashCent: z.cash_cent as Cent,
@@ -74,8 +82,9 @@ const zu = (z: Zeile): GespeicherterTag => ({
   eingabeHash: z.eingabe_hash,
   berechnetAm: z.berechnet_am,
   lueckenhaft: alsBoolean(z.lueckenhaft),
-  positionen: positionenAusJson(z.positionen_json),
 });
+
+const zu = (z: Zeile): GespeicherterTag => ({ ...zuSumme(z), positionen: positionenAusJson(z.positionen_json) });
 
 const EINFUEGEN = `INSERT INTO depot_tag (${SPALTENLISTE}) VALUES (${platzhalter(SPALTEN)})
   ON CONFLICT(tag) DO UPDATE SET ${ueberschreibe(SPALTEN, ['tag'])}`;
@@ -115,6 +124,15 @@ export function schreibeViele(db: DatabaseSync, tage: readonly GespeicherterTag[
 export function alle(db: DatabaseSync): GespeicherterTag[] {
   const zeilen = stmt(db, `SELECT ${SPALTENLISTE} FROM depot_tag ORDER BY tag`, true).all() as Zeile[];
   return zeilen.map(zu);
+}
+
+/** Die ganze Reihe ohne Positionen; die des letzten Tages liefert `letzter()`. */
+export function summen(db: DatabaseSync): Tagessumme[] {
+  const zeilen = stmt(db, `SELECT ${SUMMENLISTE} FROM depot_tag ORDER BY tag`, true).all() as Omit<
+    Zeile,
+    'positionen_json'
+  >[];
+  return zeilen.map(zuSumme);
 }
 
 export function spanne(db: DatabaseSync, von: Tag, bis: Tag): GespeicherterTag[] {

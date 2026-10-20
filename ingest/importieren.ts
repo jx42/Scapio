@@ -155,7 +155,7 @@ const STORNO_BREMSE_ANTEIL = 0.5;
 const STORNO_BREMSE_OBERGRENZE = 50;
 
 /** Eigener Code, damit der Lauf ihn im Protokoll und in `lauf.fehler_code` nennt statt `E_UNBEKANNT`. */
-export class StornoBremse extends Error {
+class StornoBremse extends Error {
   readonly code = 'E_STORNO_BREMSE' satisfies LaufFehlerCode;
   constructor(verschwunden: number, bekannt: number) {
     super(

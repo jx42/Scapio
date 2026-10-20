@@ -39,8 +39,9 @@ import { holeText } from '../netz.ts';
 import { EurostatAntwort, GRENZE, pruefe } from '../schema.ts';
 import { hinweis, hinweisKurz, type Hinweis } from '../../shared/hinweise.ts';
 import type { LaufFehlerCode } from '../../shared/laufFehler.ts';
+import type { QuellenArt } from '../../shared/quellen.ts';
 
-export const QUELLE = 'vpi';
+export const QUELLE = 'vpi' satisfies QuellenArt;
 
 /** Steht so in `vpi.quelle` — ADR-003 haelt die Spalte bewusst als Textfeld offen. */
 export const HERKUNFT = 'eurostat:prc_hicp_midx';

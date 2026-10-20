@@ -37,6 +37,7 @@ unter macOS/Windows), `geistFont.ts` (Schriftpfad fürs Ausliefern und fürs Bau
 `hinweise.ts` (Arten der Lauf-Hinweise; den Satz baut die Oberfläche),
 `laufFehler.ts` (Fehlercodes eines Laufs, je einer im Runbook),
 `dateirechte.ts` (0700/0600, Eigentümer- und Symlinkprüfung, atomares Schreiben, [ADR-056](docs/entscheidungen/ADR-056-datenverzeichnis-und-dateirechte-aus-einer-hand.md)),
+`routen.ts` (Pfade und Query-Parameter der API), `quellen.ts` (Arten der Ingest-Quellen),
 `demoAbzug.ts` (Anfragen und Dateipfade des Demo-Abzugs, [ADR-048](docs/entscheidungen/ADR-048-demo-als-statischer-abzug.md)),
 `drittlizenzen.ts` (Vite-Plugin für die Lizenztexte im Bundle, [ADR-055](docs/entscheidungen/ADR-055-update-und-release-kette.md)).
 `server/vertrag.ts` ist die eine Typquelle für den API-Vertrag — Server und Oberfläche importieren von dort.

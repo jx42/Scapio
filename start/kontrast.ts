@@ -17,8 +17,8 @@ import { fileURLToPath } from 'node:url';
 const WURZEL = fileURLToPath(new URL('../', import.meta.url)).replace(/[/\\]$/, '');
 export const THEME_DATEI = join(WURZEL, 'src', 'styles', 'theme.css');
 export const DOKUMENT_DATEI = join(WURZEL, 'docs', 'BARRIEREFREIHEIT.md');
-export const TABELLE_ANFANG = '<!-- kontrast:anfang — erzeugt von `npm run kontrast` -->';
-export const TABELLE_ENDE = '<!-- kontrast:ende -->';
+const TABELLE_ANFANG = '<!-- kontrast:anfang — erzeugt von `npm run kontrast` -->';
+const TABELLE_ENDE = '<!-- kontrast:ende -->';
 
 type Rgba = { r: number; g: number; b: number; a: number };
 
@@ -113,13 +113,15 @@ type ToastFlaeche = keyof typeof TOAST_FLAECHEN;
 
 export type Paarung = {
   readonly vorne: string;
+  /** Deckkraft einer Tailwind-Klasse wie `bg-chart-1/70`; ohne Angabe voll. */
+  readonly deckkraft?: number;
   readonly hinten: Untergrund;
   /** WCAG: Text 4,5, Grafik und Zustandsanzeige 3. */
   readonly mindestens: 4.5 | 3;
   readonly wofuer: string;
 };
 
-export const PAARUNGEN: readonly Paarung[] = [
+const PAARUNGEN: readonly Paarung[] = [
   ...(['grund', 'glas', 'flaeche', 'glas-hoch', 'bedien-aktiv'] as const).map(
     (hinten): Paarung => ({ vorne: 'text', hinten, mindestens: 4.5, wofuer: 'Text' }),
   ),
@@ -143,6 +145,14 @@ export const PAARUNGEN: readonly Paarung[] = [
   ...(['chart-1', 'chart-2', 'chart-3', 'chart-4', 'chart-5'] as const).map(
     (vorne): Paarung => ({ vorne, hinten: 'glas', mindestens: 3, wofuer: 'Grafik' }),
   ),
+  // Die Ringsegmente der Aufteilung trennt ein Strich in `flaeche`; untereinander brauchen sie daher keinen Abstand.
+  ...(['chart-1', 'chart-2', 'chart-3', 'chart-4', 'chart-5'] as const).map(
+    (vorne): Paarung => ({ vorne, hinten: 'flaeche', mindestens: 3, wofuer: 'Ringsegment' }),
+  ),
+  // Die gewählte Spanne des Zeitraumreglers; die Schiene darunter ist Schmuck, der Zustand steht in Spanne und Griffen.
+  ...(['bedien-aktiv', 'glas'] as const).map(
+    (hinten): Paarung => ({ vorne: 'chart-1', deckkraft: 0.7, hinten, mindestens: 3, wofuer: 'Reglerspanne' }),
+  ),
   ...(Object.entries(TOAST_FLAECHEN) as [ToastFlaeche, (typeof TOAST_FLAECHEN)[ToastFlaeche]][]).flatMap(
     ([hinten, { farbe }]): Paarung[] => [
       { vorne: farbe, hinten, mindestens: 4.5, wofuer: 'Toast' },
@@ -155,10 +165,10 @@ export function messe(css: string): { paarung: Paarung; wert: number }[] {
   const farben = tokens(css);
   const grund = farben.get('grund');
   if (grund === undefined) throw new Error('theme.css: --color-grund fehlt');
-  const farbe = (name: string, hinten: Rgba): Rgba => {
+  const farbe = (name: string, hinten: Rgba, deckkraft = 1): Rgba => {
     const token = farben.get(name);
     if (token === undefined) throw new Error(`theme.css: --color-${name} fehlt oder ist kein oklch()`);
-    return ueber(token, hinten);
+    return ueber({ ...token, a: token.a * deckkraft }, hinten);
   };
   const untergrund = (name: Untergrund): Rgba => {
     if (name in TOAST_FLAECHEN) {
@@ -169,7 +179,7 @@ export function messe(css: string): { paarung: Paarung; wert: number }[] {
   };
   return PAARUNGEN.map((paarung) => {
     const hinten = untergrund(paarung.hinten);
-    return { paarung, wert: verhaeltnis(farbe(paarung.vorne, hinten), hinten) };
+    return { paarung, wert: verhaeltnis(farbe(paarung.vorne, hinten, paarung.deckkraft), hinten) };
   });
 }
 
@@ -178,7 +188,7 @@ const zahl = (wert: number): string => wert.toFixed(2).replace('.', ',');
 export function tabelle(css: string): string {
   const zeilen = messe(css).map(
     ({ paarung, wert }) =>
-      `| \`--color-${paarung.vorne}\` | \`${paarung.hinten in TOAST_FLAECHEN ? TOAST_FLAECHEN[paarung.hinten as ToastFlaeche].variable : `--color-${paarung.hinten}`}\` | ${zahl(wert)} : 1 | ${paarung.wofuer} ≥ ${zahl(paarung.mindestens).replace(/,00$/, '').replace(/,50$/, ',5')} : 1 |`,
+      `| \`--color-${paarung.vorne}\`${paarung.deckkraft === undefined ? '' : ` / ${String(paarung.deckkraft * 100)} %`} | \`${paarung.hinten in TOAST_FLAECHEN ? TOAST_FLAECHEN[paarung.hinten as ToastFlaeche].variable : `--color-${paarung.hinten}`}\` | ${zahl(wert)} : 1 | ${paarung.wofuer} ≥ ${zahl(paarung.mindestens).replace(/,00$/, '').replace(/,50$/, ',5')} : 1 |`,
   );
   return [
     TABELLE_ANFANG,

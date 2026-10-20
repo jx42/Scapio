@@ -29,3 +29,9 @@ In der Wurzel bleibt, was ein Werkzeug dort verlangt (`package.json`, `tsconfig.
   Architektur ändert.
 - **`index.html` nach `src/` mit `root: 'src'`.** Ein Eintrag weniger, aber Vite, `dist/` und
   die Bauquellen in `start/start.ts` hätten sich mitbewegt.
+
+## Nachtrag: `routen.ts` und `quellen.ts`
+
+Server, Oberfläche, Demo-Abzug und Randfallseite führten die Routen je als eigene Liste,
+Ingest und Oberfläche die Quellenarten ebenso. Beide Listen stehen jetzt in `shared/`, nach
+derselben Regel wie die übrigen Module dort: mehrere Schichten brauchen sie, keiner gehören sie.

@@ -65,7 +65,7 @@ function AlertDescription({ className, ...props }: React.ComponentProps<'div'>) 
 
 function AlertAction({ className, ...props }: React.ComponentProps<'div'>) {
   return (
-    <div data-slot="alert-action" className={cn('col-start-3 row-span-2 row-start-1 ml-4 self-start', className)} {...props} />
+    <div data-slot="alert-action" className={cn('col-start-2 row-start-3 mt-2 self-start sm:col-start-3 sm:row-span-2 sm:row-start-1 sm:mt-0 sm:ml-4', className)} {...props} />
   );
 }
 

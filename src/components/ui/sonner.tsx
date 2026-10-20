@@ -15,6 +15,7 @@
  * geladen waere dieselbe Regel zweimal wirksam, ohne Nutzen.
  */
 import { Toaster as Sonner, type ToasterProps } from 'sonner';
+import { de } from '@/i18n/de';
 import { CircleCheckIcon, InfoIcon, TriangleAlertIcon, OctagonXIcon, Loader2Icon } from 'lucide-react';
 
 function Toaster({ ...props }: ToasterProps) {
@@ -23,6 +24,7 @@ function Toaster({ ...props }: ToasterProps) {
       theme="dark"
       className="toaster group"
       closeButton
+      containerAriaLabel={de.dialog.benachrichtigungen}
       richColors
       duration={3000}
       icons={{
@@ -33,6 +35,7 @@ function Toaster({ ...props }: ToasterProps) {
         loading: <Loader2Icon className="size-4 animate-spin" aria-hidden="true" />,
       }}
       toastOptions={{
+        closeButtonAriaLabel: de.dialog.schliessen,
         classNames: {
           toast: 'schwebend rounded-lg text-text',
           actionButton: 'bg-text text-grund',

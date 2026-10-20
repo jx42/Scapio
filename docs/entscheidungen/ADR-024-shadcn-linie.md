@@ -45,7 +45,7 @@ Fokusring in derselben Klasse ist per Lint verboten (`eslint.config.js`, Block `
 
 | Baustein | Abweichung |
 |---|---|
-| `alert` | Varianten `default`, `gewinn`, `warnung`, `verlust` statt `default`/`destructive`. Kompakter (`px-2.5 py-2`). `AlertAction` bleibt (aus `radix-nova`). Beschreibung ist ein Block statt eines Grids, damit gemischter Inline-Inhalt nicht in Zeilen zerfällt. |
+| `alert` | Varianten `default`, `gewinn`, `warnung`, `verlust` statt `default`/`destructive`. Kompakter (`px-2.5 py-2`). `AlertAction` bleibt (aus `radix-nova`). Beschreibung ist ein Block statt eines Grids, damit gemischter Inline-Inhalt nicht in Zeilen zerfällt. `AlertAction` steht unter `sm` unter dem Text statt daneben (WCAG 1.4.10 bei 320 px). |
 | `badge` | Varianten `default`, `gewinnLeise`, `verlustLeise`, `link` statt der shadcn-Palette; eckiger, Großbuchstaben, eigene Größen. `link` mit `text-text` statt `text-text-leise`: auf `rand-licht` kam das leise Grau nur auf 4,23:1 (WCAG 1.4.3). |
 | `button` | Varianten `default`, `outline`, `ghost`, `link` (kein `destructive`/`secondary` — die Anwendung löscht nichts); `link` ist der eine Linkstil aus `lib/linkStil.ts`, nicht `text-primary`. Größen `default`, `sm`, `icon` (kein `lg`, `xs`, keine `icon-*`) (kein `xs`, keine `icon-*`); `cursor-pointer`, `transition-farben`; keine `aria-invalid`-Stile (keine Formulare). Symbolgröße steht wie in der Registry in der Basisklasse — Symbole im Knopf tragen kein eigenes `size-4`. |
 | `card` | `glas glas-hover rounded-lg` statt `rounded-xl border bg-card shadow-sm`; nur `Card`, `CardHeader`, `CardTitle`, `CardDescription`, `CardContent` (kein `CardAction`, kein `CardFooter`); `asChild` als Erweiterung. |
@@ -56,7 +56,7 @@ Fokusring in derselben Klasse ist per Lint verboten (`eslint.config.js`, Block `
 | `trigger` (kein Registry-Baustein) | `triggerVariants` (cva, Größen `default`/`sm`, `aktiv` für eine gesetzte Auswahl) mit eigenem Fokusring für die Menü-Auslöser im Kachelkopf. Ersetzt das gelöschte `select.tsx`, das nur noch diesen Stil lieferte. |
 | `slider` | Immer zwei Griffe; `SliderThumb` als eigener Export statt der in `Slider` gerenderten Griffe, damit jeder Griff ein eigenes `aria-label` bekommt. Spur `h-0.5` ohne `data-slot`, Griff sichtbar 12 px mit 24-px-Klickziel per Pseudo-Element, Hof als `ring` statt `outline` (der bleibt dem Fokusring). |
 | `skeleton` | `bg-rand` und `motion-safe:animate-pulse` statt `animate-pulse bg-accent`. |
-| `sonner` | Ohne `next-themes` (Theme fest dunkel), ohne `style`-Attribut, Farben als Klassen aus den Tokens, `closeButton`, `duration={3000}`. Die beiden CSP-Hashes stehen in `server/sicherheit.ts`. |
+| `sonner` | Ohne `next-themes` (Theme fest dunkel), ohne `style`-Attribut, Farben als Klassen aus den Tokens, `closeButton`, `duration={3000}`; Region- und Schließen-Name aus `i18n/de.ts` (`containerAriaLabel`, `closeButtonAriaLabel`). Die beiden CSP-Hashes stehen in `server/sicherheit.ts`. |
 | `table` | Dichter (`h-8`, `py-1.5`, `text-xs`), Rahmen `border-rand`, Randzellen ohne Außenpolster, damit die Linien bündig mit dem Text enden; Zeilen-Hover als gerundete Fläche darüber hinaus (`tabellenzeile-hover`, ADR-029). Mit `bereich` wird der Scroll-Container eine fokussierbare, benannte Region — für Tabellen, die bei schmaler Breite überlaufen (WCAG 2.1.1). `innen` setzt Klassen am Scroll-Container (etwa die Blende `ausblenden-unten`), damit die Maske nicht über dem Fokusring der Region liegt. |
 | `tabs` | Liste als Bedienfläche (`lichtkante lichtkante-hover bg-bedien p-0.75`), feste Höhe `h-9`, Reiter `h-7`. |
 | `toggle`, `toggle-group` | `toggle.tsx` exportiert nur `toggleVariants` (ein einzelner Toggle kommt nicht vor). Nur die Variante `default`; feste Höhe (`h-7`) statt Größenstufen, kein `spacing` (die Registry setzt es per `style`). Die Gruppe ist eine Segmentleiste in derselben Bedienfläche wie `tabs`, Einträge ohne eigenen Rand. |
@@ -71,5 +71,5 @@ Fokusring in derselben Klasse ist per Lint verboten (`eslint.config.js`, Block `
 - Ein `shadcn add` eines neuen Bausteins ist wieder möglich: Ergebnis prüfen, Tokens statt
   shadcn-Namen einsetzen (Aliase aus ADR-019 fangen das Vergessene ab), INV-05 wahren und
   die neue Abweichung hier eintragen.
-- `ui/**` hat einen eigenen, reduzierten Lint-Regelsatz (Barrierefreiheit, `outline-none`);
+- `ui/**` hat einen eigenen, reduzierten Lint-Regelsatz (Barrierefreiheit mit `jsx-a11y` `strict`, `outline-none`);
   die Oberflächenregeln aus `src/**` gelten dort nicht.

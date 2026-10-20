@@ -40,8 +40,6 @@ export function hoechstensEintraege(grenze: number) {
 
 /** Eine ISIN ist zwoelf Zeichen mit Pruefziffer — nicht irgendeine Zeichenkette. */
 export const ISIN_MUSTER = /^[A-Z]{2}[A-Z0-9]{9}\d$/;
-const TAG_MUSTER = /^\d{4}-\d{2}-\d{2}$/;
-const MONAT_MUSTER = /^\d{4}-\d{2}$/;
 
 /**
  * Verpackt eine Umwandlung aus `core/dezimal.ts` so, dass eine unlesbare Zahl als
@@ -68,8 +66,6 @@ export const Menge = z.union([z.number(), z.string().max(40)]).transform(sicher<
 export const Kurs = z.union([z.number(), z.string().max(40)]).transform(sicher<KursE6>(zuKursE6, 'Kurs'));
 
 export const Isin = z.string().length(GRENZE.isin).regex(ISIN_MUSTER);
-export const Tagestext = z.string().regex(TAG_MUSTER);
-export const Monatstext = z.string().regex(MONAT_MUSTER);
 /** Fremdtext. Speichern, anzeigen — nie auswerten, nie loggen. [INV-06] */
 export const Fremdtext = z.string().max(GRENZE.name);
 export const Zeitstempel = z.string().min(4).max(GRENZE.zeitstempel);

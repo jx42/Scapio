@@ -63,8 +63,15 @@ const TON_MAP_REGEL = {
   message: 'Richtungs-Ton ueber richtungTon/richtungBgTon aus lib/farben.ts.',
 };
 
+// `react/jsx-no-literals` laesst Props durch; vorgelesener Text gehoert trotzdem nach i18n/de.ts.
+const ARIA_TEXT_REGEL = {
+  selector: 'JSXAttribute[name.name=/^aria-(label|description|valuetext|roledescription|placeholder)$/] > Literal',
+  message: 'Vorgelesener Text kommt aus i18n/de.ts, nicht als Literal.',
+};
+
 const OBERFLAECHEN_SYNTAX_REGELN = [
   ...INV06_SYNTAX_REGELN,
+  ARIA_TEXT_REGEL,
   FARB_REGEL,
   PALETTEN_REGEL,
   FARB_VARIABLE_REGEL,
@@ -96,11 +103,17 @@ const KEIN_RECHARTS_IMPORT = { name: 'recharts', message: 'Charts nur in src/fea
 const KEIN_FETCH = { name: 'fetch', message: 'Ansichten holen keine Daten — das tut die Kachel.' };
 
 // jsx-a11y prueft sonst nur rohe DOM-Elemente; die ui-Komponenten rendern diese hier.
+// Slider, Popover-Inhalt und Toasts haben kein DOM-Gegenstueck: die prueft axe im e2e-Durchstich.
 const A11Y_SETTINGS = {
   react: { version: 'detect' },
   'jsx-a11y': {
     components: {
       Button: 'button',
+      TabsTrigger: 'button',
+      ToggleGroupItem: 'button',
+      PopoverTrigger: 'button',
+      CollapsibleTrigger: 'button',
+      DropdownMenuTrigger: 'button',
       Table: 'table',
       TableHeader: 'thead',
       TableBody: 'tbody',
@@ -219,7 +232,7 @@ export default tseslint.config(
       ...react.configs.flat.recommended.rules,
       ...react.configs.flat['jsx-runtime'].rules,
       ...reactHooks.configs.recommended.rules,
-      ...jsxA11y.flatConfigs.recommended.rules,
+      ...jsxA11y.flatConfigs.strict.rules,
 
       // INV-05: kein Inline-CSS. Zwei Ausnahmen mit begruendetem eslint-disable.
       'react/forbid-dom-props': ['error', { forbid: ['style'] }],
@@ -281,13 +294,14 @@ export default tseslint.config(
     plugins: { react, 'jsx-a11y': jsxA11y },
     settings: A11Y_SETTINGS,
     rules: {
-      ...jsxA11y.flatConfigs.recommended.rules,
+      ...jsxA11y.flatConfigs.strict.rules,
       'react/forbid-dom-props': ['error', { forbid: ['style'] }],
       'react/forbid-component-props': ['error', { forbid: ['style'] }],
       'react/no-danger': 'error',
       'no-restricted-syntax': [
         'error',
         ...INV06_SYNTAX_REGELN,
+        ARIA_TEXT_REGEL,
         FARB_REGEL,
         PALETTEN_REGEL,
         {

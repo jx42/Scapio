@@ -21,11 +21,7 @@
     "types": ["node", "vitest/globals"],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
-      "#core/*": ["./core/*"],
-      "#db/*": ["./db/*"],
-      "#ingest/*": ["./ingest/*"],
-      "#server/*": ["./server/*"]
+      "@/*": ["./src/*"]
     }
   },
   "include": ["src", "core", "db", "server", "ingest", "shared", "start", "test", "demo-worker", "*.ts"],

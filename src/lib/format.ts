@@ -123,7 +123,7 @@ const zeitpunktFormat = new Intl.DateTimeFormat('de-DE', {
 });
 
 /** Ist die Zahl brauchbar? Alles andere wird als "unbekannt" behandelt, nie als NaN gezeigt. */
-export function istZahl(wert: unknown): wert is number {
+function istZahl(wert: unknown): wert is number {
   return typeof wert === 'number' && Number.isFinite(wert);
 }
 
@@ -178,12 +178,6 @@ export function verhaeltniszahl(wert: number, mitVorzeichen = true): string {
 export function richtungPfeil(wert: number): string {
   if (!istZahl(wert) || wert === 0) return '';
   return wert > 0 ? de.kennzahlen.richtungPfeil.auf : de.kennzahlen.richtungPfeil.ab;
-}
-
-/** Text mit vorangestelltem Richtungspfeil (fester Leerraum), fuer Sublines ohne eigenes Pfeil-Feld. */
-export function mitRichtungPfeil(wert: number, text: string): string {
-  const pfeil = richtungPfeil(wert);
-  return pfeil === '' ? text : `${pfeil}\u00a0${text}`;
 }
 
 export type Richtung = 'auf' | 'ab' | 'neutral';
@@ -249,13 +243,13 @@ function datumZweistellig(tag: string): string {
 }
 
 /** "2026-08-26" wird zu "08.26" — fuer Chart-Achsen, wo der volle Tag nicht hinpasst. */
-export function datumAlsMonatJahr(tag: string): string {
+function datumAlsMonatJahr(tag: string): string {
   const datum = tagAlsDatum(tag);
   return datum === null ? String(tag ?? '') : monatKurzFormat.format(datum);
 }
 
 /** "2026-08-26" wird zu "26.08." — fuer Chart-Achsen kurzer Zeitraeume, wo Monat und Jahr nichts unterscheiden. */
-export function datumAlsTagMonat(tag: string): string {
+function datumAlsTagMonat(tag: string): string {
   const datum = tagAlsDatum(tag);
   return datum === null ? String(tag ?? '') : tagMonatFormat.format(datum);
 }

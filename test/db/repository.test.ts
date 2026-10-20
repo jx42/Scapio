@@ -254,6 +254,16 @@ describe('depot_tag', () => {
     expect(depotTagRepo.letzter(db)!.tag).toBe('2026-01-03');
   });
 
+  it('liefert die Summen ohne Positionen, sonst dieselben Felder wie alle()', () => {
+    depotTagRepo.schreibeViele(db, [
+      { ...zeile('2026-01-01', '1000'), positionen: new Map([[WELT, zuCent('1000')]]) },
+      zeile('2026-01-02', '1010'),
+    ]);
+    const summen = depotTagRepo.summen(db);
+    expect(summen.every((t) => !('positionen' in t))).toBe(true);
+    expect(summen).toEqual(depotTagRepo.alle(db).map(({ positionen: _, ...rest }) => rest));
+  });
+
   it('nennt den letzten Tag der aktuellen Kernversion — alles Aeltere muss neu', () => {
     depotTagRepo.schreibeViele(db, [zeile('2026-01-01', '1000', 1), zeile('2026-01-02', '1010', 2)]);
     expect(depotTagRepo.letzterMitVersion(db, 2)).toBe('2026-01-02');

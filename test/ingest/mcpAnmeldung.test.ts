@@ -19,8 +19,7 @@ import http from 'node:http';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Konfiguration } from '../../shared/konfiguration.ts';
-import { mcpPfad } from '../../shared/konfiguration.ts';
+import { mcpPfad, konfigurationFuer, type Konfiguration } from '../../shared/konfiguration.ts';
 import { McpFehler } from '../../ingest/mcp.ts';
 import { erwarteRechte } from '../dateirechte.ts';
 
@@ -51,20 +50,7 @@ const tempDirs: string[] = [];
 function frischeKonfiguration(): Konfiguration {
   const datenpfad = mkdtempSync(join(tmpdir(), 'mcp-test-'));
   tempDirs.push(datenpfad);
-  return {
-    port: 4732,
-    datenverzeichnis: datenpfad,
-    datenpfad,
-    mcpZeitlimitMs: 120_000,
-    csvZeitlimitMs: 30_000,
-    csvGroesstMb: 32,
-    erlaubteHosts: [],
-    fondsKatalogFrischeTage: 5,
-    inflationsquelle: 'eurostat',
-    zinsquelle: 'ecb',
-    driftSchwellen: { hinweis: 0.001, banner: 0.005, abbruch: 0.02 },
-    top25: true,
-  };
+  return konfigurationFuer(datenpfad, { port: 4732, erlaubteHosts: [] });
 }
 
 function vorabClientAnlegen(k: Konfiguration, clientId = 'client-vorab'): void {

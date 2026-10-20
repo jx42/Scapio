@@ -8,7 +8,8 @@
 
 import type { DatabaseSync } from 'node:sqlite';
 import type { Vpi } from '../../core/inflation.ts';
-import { stmt } from './hilfen.ts';
+import { platzhalter, spaltenliste, stmt, ueberschreibe } from './hilfen.ts';
+import type { Bindung, Spalten } from './hilfen.ts';
 
 export type Vpiwert = {
   /** YYYY-MM */
@@ -19,17 +20,22 @@ export type Vpiwert = {
 
 type Zeile = { monat: string; index_wert: number; quelle: string };
 
-const EINFUEGEN = `INSERT INTO vpi (monat, index_wert, quelle) VALUES (?, ?, ?)
-  ON CONFLICT(monat) DO UPDATE SET index_wert = excluded.index_wert, quelle = excluded.quelle`;
+const SPALTEN = { monat: true, index_wert: true, quelle: true } satisfies Spalten<Zeile>;
+
+const EINFUEGEN = `INSERT INTO vpi (${spaltenliste(SPALTEN)}) VALUES (${platzhalter(SPALTEN)})
+  ON CONFLICT(monat) DO UPDATE SET ${ueberschreibe(SPALTEN, ['monat'])}`;
 
 export function schreibeViele(db: DatabaseSync, werte: readonly Vpiwert[]): number {
   const s = stmt(db, EINFUEGEN);
-  for (const w of werte) s.run(w.monat, w.indexWert, w.quelle);
+  for (const w of werte) {
+    const bindung: Bindung<Zeile> = { monat: w.monat, index_wert: w.indexWert, quelle: w.quelle };
+    s.run(bindung);
+  }
   return werte.length;
 }
 
 export function alle(db: DatabaseSync): Vpiwert[] {
-  const zeilen = stmt(db, 'SELECT monat, index_wert, quelle FROM vpi ORDER BY monat').all() as Zeile[];
+  const zeilen = stmt(db, `SELECT ${spaltenliste(SPALTEN)} FROM vpi ORDER BY monat`).all() as Zeile[];
   return zeilen.map((z) => ({ monat: z.monat, indexWert: z.index_wert, quelle: z.quelle }));
 }
 

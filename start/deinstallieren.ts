@@ -41,7 +41,7 @@ export const BESTAETIGUNG = 'ENTFERNEN';
  * gleichen macOS (iCloud) und Windows (OneDrive) oft mit der Cloud ab — dorthin gehoert
  * die Datenbank so wenig wie in den Projektordner. [ADR-005]
  */
-export const abschiedsOrdner = (): string => join(homedir(), 'Scapio-Sicherung');
+const abschiedsOrdner = (): string => join(homedir(), 'Scapio-Sicherung');
 
 /** Was Scapio selbst ins Datenverzeichnis legt, plus was das Betriebssystem dazulegt. */
 export function bekannteEintraege(k: Konfiguration): ReadonlySet<string> {
@@ -96,7 +96,7 @@ export function pruefeDatenordner(pfad: string, bekannte: ReadonlySet<string>): 
   };
 }
 
-export function lesbareGroesse(bytes: number): string {
+function lesbareGroesse(bytes: number): string {
   if (bytes < 1024) return `${String(bytes)} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`;

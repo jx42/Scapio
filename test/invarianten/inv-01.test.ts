@@ -6,13 +6,13 @@
  * nicht — auch dann nicht, wenn es gerade praktisch waere. Der Test prueft das nicht
  * nur als Absicht im Quelltext, sondern auch am tatsaechlichen Verhalten: `mcpAufrufRoh`
  * lehnt ein fremdes Tool ab, bevor es Konfiguration laedt oder ein Netzwerk beruehrt
- * [ADR-010], und `mcp.ts`/`mcpAnmeldung.ts` reden mit genau einer Gegenstelle.
+ * [ADR-010], und die `ingest/mcp*.ts` reden mit genau einer Gegenstelle.
  */
 
 import { describe, expect, it } from 'vitest';
 import { LESENDE_TOOLS, mcpAufrufRoh } from '../../ingest/mcp.ts';
 import type { LesendesTool } from '../../ingest/mcp.ts';
-import type { Konfiguration } from '../../shared/konfiguration.ts';
+import { konfigurationFuer } from '../../shared/konfiguration.ts';
 import { AUSGELIEFERT, alsListe, dateien, suche, sucheImCode } from './quellen.ts';
 
 const QUELLEN = dateien(AUSGELIEFERT);
@@ -88,20 +88,7 @@ describe('INV-01 — die Laufzeitsperre vor jedem MCP-Aufruf', () => {
   // Zeigt absichtlich auf ein nicht vorhandenes Datenverzeichnis: selbst wenn die
   // Allowlist-Pruefung in `mcpAufrufRoh` einmal wegfiele, faende `zugriffstoken` hier
   // keinen Token und wuerde nie tatsaechlich das Netzwerk erreichen.
-  const OHNE_TOKEN: Konfiguration = {
-    port: 4732,
-    datenverzeichnis: '/nicht-vorhanden-fuer-inv-01-test',
-    mcpZeitlimitMs: 300_000,
-    csvZeitlimitMs: 30_000,
-    csvGroesstMb: 32,
-    erlaubteHosts: [],
-    fondsKatalogFrischeTage: 5,
-    inflationsquelle: 'eurostat',
-    zinsquelle: 'ecb',
-    driftSchwellen: { hinweis: 0.001, banner: 0.005, abbruch: 0.02 },
-    top25: true,
-    datenpfad: '/nicht-vorhanden-fuer-inv-01-test',
-  };
+  const OHNE_TOKEN = konfigurationFuer('/nicht-vorhanden-fuer-inv-01-test', { port: 4732, erlaubteHosts: [] });
 
   it('lehnt ein Tool ausserhalb der Allowlist ab, bevor Konfiguration oder Netzwerk beruehrt werden', async () => {
     await expect(mcpAufrufRoh(FREMDES_TOOL, { konfiguration: OHNE_TOKEN })).rejects.toMatchObject({
@@ -117,7 +104,7 @@ describe('INV-01 — die Laufzeitsperre vor jedem MCP-Aufruf', () => {
 });
 
 describe('INV-01 — genau eine MCP-Gegenstelle', () => {
-  const MCP_QUELLEN = QUELLEN.filter((q) => q.pfad === 'ingest/mcp.ts' || q.pfad === 'ingest/mcpAnmeldung.ts');
+  const MCP_QUELLEN = QUELLEN.filter((q) => /^ingest\/mcp[A-Za-z]*\.ts$/.test(q.pfad));
 
   it('kennt nur den Scalable-Server als https-Adresse', () => {
     const fremd = suche(MCP_QUELLEN, /https:\/\/(?!mcp\.scalable\.capital)/);

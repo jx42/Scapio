@@ -8,41 +8,85 @@
 
 import { afterEach, describe, expect, it } from 'vitest';
 import type { FastifyInstance } from 'fastify';
+import type {
+  Aufteilung,
+  Drift,
+  Fluesse,
+  Health,
+  KennzahlenAntwort,
+  Lauf,
+  MaxDrawdownErgebnis,
+  McpAnmeldung,
+  SharpeErgebnis,
+  Sparplaene,
+  Top25,
+  VolatilitaetErgebnis,
+  XirrErgebnis,
+  Zeitreihe,
+} from '../../server/vertrag.ts';
 import { aufraeumen, eigeneHerkunft, testServer } from './hilfen.ts';
 
 afterEach(() => {
   aufraeumen();
 });
 
-const UMSCHLAG = ['stand', 'drift'] as const;
-const DRIFT = [
-  'stufe',
-  'abweichung',
-  'cashAbweichung',
-  'berechnetGesamtCent',
-  'gemeldetGesamtCent',
-  'grund',
-  'positionen',
-] as const;
-const XIRR = ['art', 'rate'] as const;
-const MAX_DRAWDOWN = ['art', 'anteil', 'tagHoch', 'tagTief'] as const;
-const VOLATILITAET = ['art', 'proJahr', 'monate'] as const;
-const SHARPE = ['art', 'wert', 'monate', 'zinsProJahr'] as const;
-const REAL = [
-  'exakt',
-  'fisher',
-  'basisMonat',
-  'teuerungBisMonat',
-  'fortgeschriebeneMonate',
-  'teuerungLaufendesJahr',
-] as const;
+/**
+ * Die Felder eines Vertragstyps. Die Liste ist an den Typ gebunden: ein Feld, das in
+ * server/vertrag.ts dazukommt oder wegfaellt, macht schon `tsc` rot, nicht erst den Lauf.
+ */
+const felder = <T extends object>(f: {
+  readonly [K in keyof Required<T>]: true;
+}): readonly string[] => Object.keys(f);
+
+const DRIFT = felder<Drift>({
+  stufe: true,
+  abweichung: true,
+  cashAbweichung: true,
+  berechnetGesamtCent: true,
+  gemeldetGesamtCent: true,
+  grund: true,
+  positionen: true,
+});
+const XIRR = felder<Exclude<XirrErgebnis, { art: 'ok' }>>({
+  art: true,
+  rate: true,
+});
+const MAX_DRAWDOWN = felder<Exclude<MaxDrawdownErgebnis, { art: 'ok' }>>({
+  art: true,
+  anteil: true,
+  tagHoch: true,
+  tagTief: true,
+});
+const VOLATILITAET = felder<Exclude<VolatilitaetErgebnis, { art: 'ok' }>>({
+  art: true,
+  proJahr: true,
+  monate: true,
+});
+const SHARPE = felder<Exclude<SharpeErgebnis, { art: 'ok' }>>({
+  art: true,
+  wert: true,
+  monate: true,
+  zinsProJahr: true,
+});
+const REAL = felder<KennzahlenAntwort['real']>({
+  exakt: true,
+  fisher: true,
+  basisMonat: true,
+  teuerungBisMonat: true,
+  fortgeschriebeneMonate: true,
+  teuerungLaufendesJahr: true,
+});
 
 function schluessel(pfad: string, ist: unknown, soll: readonly string[]): void {
   expect(Object.keys(ist as object).sort(), pfad).toEqual([...soll].sort());
 }
 
 async function holen(app: FastifyInstance, pfad: string): Promise<Record<string, unknown>> {
-  const antwort = await app.inject({ method: 'GET', url: pfad, headers: eigeneHerkunft() });
+  const antwort = await app.inject({
+    method: 'GET',
+    url: pfad,
+    headers: eigeneHerkunft(),
+  });
   expect(antwort.statusCode, pfad).toBe(200);
   return JSON.parse(antwort.body) as Record<string, unknown>;
 }
@@ -51,7 +95,19 @@ describe('Vertragstest: server/vertrag.ts gegen die tatsaechliche Antwort', () =
   it('GET /api/health', async () => {
     const { app } = await testServer();
     const body = await holen(app, '/api/health');
-    schluessel('health', body, ['ok', 'version', 'kernVersion', 'top25', 'lauf', ...UMSCHLAG]);
+    schluessel(
+      'health',
+      body,
+      felder<Health>({
+        ok: true,
+        version: true,
+        kernVersion: true,
+        top25: true,
+        lauf: true,
+        stand: true,
+        drift: true,
+      }),
+    );
     expect(body.lauf).toBeNull();
     schluessel('health.drift', body.drift, DRIFT);
   });
@@ -59,7 +115,17 @@ describe('Vertragstest: server/vertrag.ts gegen die tatsaechliche Antwort', () =
   it('GET /api/aufteilung', async () => {
     const { app } = await testServer();
     const body = await holen(app, '/api/aufteilung');
-    schluessel('aufteilung', body, ['cashCent', 'cashAnteil', 'positionen', ...UMSCHLAG]);
+    schluessel(
+      'aufteilung',
+      body,
+      felder<Aufteilung>({
+        cashCent: true,
+        cashAnteil: true,
+        positionen: true,
+        stand: true,
+        drift: true,
+      }),
+    );
     expect(body.positionen).toEqual([]);
     schluessel('aufteilung.drift', body.drift, DRIFT);
   });
@@ -67,7 +133,19 @@ describe('Vertragstest: server/vertrag.ts gegen die tatsaechliche Antwort', () =
   it('GET /api/fluesse', async () => {
     const { app } = await testServer();
     const body = await holen(app, '/api/fluesse');
-    schluessel('fluesse', body, ['monate', 'schnittCent', 'schnitt12Cent', 'medianCent', 'fenster', ...UMSCHLAG]);
+    schluessel(
+      'fluesse',
+      body,
+      felder<Fluesse>({
+        monate: true,
+        schnittCent: true,
+        schnitt12Cent: true,
+        medianCent: true,
+        fenster: true,
+        stand: true,
+        drift: true,
+      }),
+    );
     schluessel('fluesse.drift', body.drift, DRIFT);
   });
 
@@ -82,33 +160,38 @@ describe('Vertragstest: server/vertrag.ts gegen die tatsaechliche Antwort', () =
   it('GET /api/kennzahlen', async () => {
     const { app } = await testServer();
     const body = await holen(app, '/api/kennzahlen');
-    schluessel('kennzahlen', body, [
-      'investiertCent',
-      'kursgewinnCent',
-      'kursgewinnProzent',
-      'realisiertCent',
-      'zinsenCent',
-      'steuernCent',
-      'gebuehrenCent',
-      'gesamtCent',
-      'twr',
-      'twrProJahr',
-      'twrGrob',
-      'xirr',
-      'inflation',
-      'real',
-      'sparrateCent',
-      'sparrate12Cent',
-      'maxDrawdown',
-      'volatilitaetProJahr',
-      'sharpe',
-      'hinweise',
-      'zinsenTransaktionen',
-      'steuernTransaktionen',
-      'gebuehrenTransaktionen',
-      'realisierteVerkaeufe',
-      ...UMSCHLAG,
-    ]);
+    schluessel(
+      'kennzahlen',
+      body,
+      felder<KennzahlenAntwort>({
+        investiertCent: true,
+        kursgewinnCent: true,
+        kursgewinnProzent: true,
+        realisiertCent: true,
+        zinsenCent: true,
+        steuernCent: true,
+        gebuehrenCent: true,
+        gesamtCent: true,
+        twr: true,
+        twrProJahr: true,
+        twrGrob: true,
+        xirr: true,
+        inflation: true,
+        real: true,
+        sparrateCent: true,
+        sparrate12Cent: true,
+        maxDrawdown: true,
+        volatilitaetProJahr: true,
+        sharpe: true,
+        hinweise: true,
+        zinsenTransaktionen: true,
+        steuernTransaktionen: true,
+        gebuehrenTransaktionen: true,
+        realisierteVerkaeufe: true,
+        stand: true,
+        drift: true,
+      }),
+    );
     schluessel('kennzahlen.drift', body.drift, DRIFT);
     schluessel('kennzahlen.xirr', body.xirr, XIRR);
     schluessel('kennzahlen.real', body.real, REAL);
@@ -121,7 +204,22 @@ describe('Vertragstest: server/vertrag.ts gegen die tatsaechliche Antwort', () =
   it('GET /api/lauf', async () => {
     const { app } = await testServer();
     const body = await holen(app, '/api/lauf');
-    schluessel('lauf', body, ['laufId', 'status', 'schritt', 'quellen', 'hinweise', 'gestartet', 'beendet', 'fehler', ...UMSCHLAG]);
+    schluessel(
+      'lauf',
+      body,
+      felder<Lauf>({
+        laufId: true,
+        status: true,
+        schritt: true,
+        quellen: true,
+        hinweise: true,
+        gestartet: true,
+        beendet: true,
+        fehler: true,
+        stand: true,
+        drift: true,
+      }),
+    );
     expect(body.fehler).toBeNull();
     schluessel('lauf.drift', body.drift, DRIFT);
   });
@@ -129,7 +227,17 @@ describe('Vertragstest: server/vertrag.ts gegen die tatsaechliche Antwort', () =
   it('GET /api/mcp-anmeldung', async () => {
     const { app } = await testServer();
     const body = await holen(app, '/api/mcp-anmeldung');
-    schluessel('mcp-anmeldung', body, ['angemeldet', 'laeuft', 'fehler', ...UMSCHLAG]);
+    schluessel(
+      'mcp-anmeldung',
+      body,
+      felder<McpAnmeldung>({
+        angemeldet: true,
+        laeuft: true,
+        fehler: true,
+        stand: true,
+        drift: true,
+      }),
+    );
     expect(body.fehler).toBeNull();
     schluessel('mcp-anmeldung.drift', body.drift, DRIFT);
   });
@@ -137,7 +245,16 @@ describe('Vertragstest: server/vertrag.ts gegen die tatsaechliche Antwort', () =
   it('GET /api/sparplaene', async () => {
     const { app } = await testServer();
     const body = await holen(app, '/api/sparplaene');
-    schluessel('sparplaene', body, ['plaene', 'summeCent', ...UMSCHLAG]);
+    schluessel(
+      'sparplaene',
+      body,
+      felder<Sparplaene>({
+        plaene: true,
+        summeCent: true,
+        stand: true,
+        drift: true,
+      }),
+    );
     expect(body.plaene).toEqual([]);
     schluessel('sparplaene.drift', body.drift, DRIFT);
   });
@@ -145,15 +262,20 @@ describe('Vertragstest: server/vertrag.ts gegen die tatsaechliche Antwort', () =
   it('GET /api/top25', async () => {
     const { app } = await testServer();
     const body = await holen(app, '/api/top25');
-    schluessel('top25', body, [
-      'zeilen',
-      'topAnteil',
-      'abdeckung',
-      'durchschautCent',
-      'anzahlUnternehmen',
-      'fehlendeFonds',
-      ...UMSCHLAG,
-    ]);
+    schluessel(
+      'top25',
+      body,
+      felder<Top25>({
+        zeilen: true,
+        topAnteil: true,
+        abdeckung: true,
+        durchschautCent: true,
+        anzahlUnternehmen: true,
+        fehlendeFonds: true,
+        stand: true,
+        drift: true,
+      }),
+    );
     expect(body.zeilen).toEqual([]);
     schluessel('top25.drift', body.drift, DRIFT);
   });
@@ -161,19 +283,24 @@ describe('Vertragstest: server/vertrag.ts gegen die tatsaechliche Antwort', () =
   it('GET /api/zeitreihe', async () => {
     const { app } = await testServer();
     const body = await holen(app, '/api/zeitreihe');
-    schluessel('zeitreihe', body, [
-      'punkte',
-      'marken',
-      'grob',
-      'reiheLeer',
-      'zeitraum',
-      'ausschnitt',
-      'tage',
-      'fensterGewinnCent',
-      'fensterGewinnProzent',
-      'benchmark',
-      ...UMSCHLAG,
-    ]);
+    schluessel(
+      'zeitreihe',
+      body,
+      felder<Zeitreihe>({
+        punkte: true,
+        marken: true,
+        grob: true,
+        reiheLeer: true,
+        zeitraum: true,
+        ausschnitt: true,
+        tage: true,
+        fensterGewinnCent: true,
+        fensterGewinnProzent: true,
+        benchmark: true,
+        stand: true,
+        drift: true,
+      }),
+    );
     schluessel('zeitreihe.drift', body.drift, DRIFT);
   });
 });

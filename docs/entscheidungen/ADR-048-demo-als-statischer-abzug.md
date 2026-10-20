@@ -49,3 +49,9 @@ Monat und hat einen Kaltstart.
 - INV-07 und INV-08 bleiben unverändert. Öffentlich läuft nur Code, der aus Dateien liest.
 - Die Demo zeigt den Stand des letzten Exports. Neu exportiert und deployt wird bei Bedarf,
   etwa mit einem Release.
+
+## Nachtrag: Routen aus `shared/routen.ts`
+
+Die Routen ohne Parameter liest `shared/demoAbzug.ts` jetzt aus `LESENDE_ROUTEN`. Eine neue
+Route ohne Parameter ist damit ohne eigenen Eintrag im Abzug; nur neue Parameterwerte brauchen
+weiter einen.

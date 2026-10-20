@@ -36,8 +36,9 @@ import { holeText } from '../netz.ts';
 import { EzbZinsAntwort, GRENZE, pruefe } from '../schema.ts';
 import { hinweis, hinweisKurz, type Hinweis } from '../../shared/hinweise.ts';
 import type { LaufFehlerCode } from '../../shared/laufFehler.ts';
+import type { QuellenArt } from '../../shared/quellen.ts';
 
-export const QUELLE = 'zins';
+export const QUELLE = 'zins' satisfies QuellenArt;
 
 /** Erster veroeffentlichter €STR-Geschaeftstag. */
 const SEIT = '2019-10-01';

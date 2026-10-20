@@ -21,8 +21,9 @@ import { entschaerfe } from '../fremdtext.ts';
 import type { Ernte, Kontext } from '../importieren.ts';
 import { pruefeKurs, pruefeMenge } from '../plausibilitaet.ts';
 import { GRENZE, HoldingsAntwort, pruefe } from '../schema.ts';
+import type { QuellenArt } from '../../shared/quellen.ts';
 
-export const QUELLE = 'holdings';
+export const QUELLE = 'holdings' satisfies QuellenArt;
 const TOOL = 'get_portfolio_holdings';
 
 export type Holdingsernte = {

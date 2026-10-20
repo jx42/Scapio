@@ -7,7 +7,8 @@
  */
 
 import type { DatabaseSync } from 'node:sqlite';
-import { stmt } from './hilfen.ts';
+import { platzhalter, spaltenliste, stmt } from './hilfen.ts';
+import type { Bindung, Spalten } from './hilfen.ts';
 
 export type Schnappschuss = {
   readonly id: number;
@@ -17,6 +18,11 @@ export type Schnappschuss = {
 };
 
 type Zeile = { id: number; quelle: string; abgerufen_am: string; payload_json: string };
+type NeueZeile = Omit<Zeile, 'id'>;
+
+const NEU = { quelle: true, abgerufen_am: true, payload_json: true } satisfies Spalten<NeueZeile>;
+const SPALTEN = { id: true, ...NEU } satisfies Spalten<Zeile>;
+const SPALTENLISTE = spaltenliste(SPALTEN);
 
 const zu = (z: Zeile): Schnappschuss => ({
   id: Number(z.id),
@@ -27,17 +33,15 @@ const zu = (z: Zeile): Schnappschuss => ({
 
 /** @returns die vergebene id. */
 export function schreibe(db: DatabaseSync, quelle: string, abgerufenAm: string, payloadJson: string): number {
-  const ergebnis = stmt(
-    db,
-    'INSERT INTO raw_snapshot (quelle, abgerufen_am, payload_json) VALUES (?, ?, ?)',
-  ).run(quelle, abgerufenAm, payloadJson);
+  const bindung: Bindung<NeueZeile> = { quelle, abgerufen_am: abgerufenAm, payload_json: payloadJson };
+  const ergebnis = stmt(db, `INSERT INTO raw_snapshot (${spaltenliste(NEU)}) VALUES (${platzhalter(NEU)})`).run(bindung);
   return Number(ergebnis.lastInsertRowid);
 }
 
 export function letzter(db: DatabaseSync, quelle: string): Schnappschuss | null {
   const zeile = stmt(
     db,
-    'SELECT id, quelle, abgerufen_am, payload_json FROM raw_snapshot WHERE quelle = ? ORDER BY abgerufen_am DESC, id DESC LIMIT 1',
+    `SELECT ${SPALTENLISTE} FROM raw_snapshot WHERE quelle = ? ORDER BY abgerufen_am DESC, id DESC LIMIT 1`,
   ).get(quelle) as Zeile | undefined;
   return zeile === undefined ? null : zu(zeile);
 }
@@ -46,7 +50,9 @@ export function letzter(db: DatabaseSync, quelle: string): Schnappschuss | null 
 export function neuesteJeQuelle(db: DatabaseSync): Schnappschuss[] {
   const zeilen = stmt(
     db,
-    `SELECT r.id, r.quelle, r.abgerufen_am, r.payload_json
+    `SELECT ${Object.keys(SPALTEN)
+      .map((k) => `r.${k}`)
+      .join(', ')}
        FROM raw_snapshot r
        JOIN (SELECT quelle, MAX(abgerufen_am) AS neu FROM raw_snapshot GROUP BY quelle) m
          ON m.quelle = r.quelle AND m.neu = r.abgerufen_am
@@ -66,7 +72,7 @@ export function neuesteJeQuelle(db: DatabaseSync): Schnappschuss[] {
 export function alleFuer(db: DatabaseSync, quelle: string): Schnappschuss[] {
   const zeilen = stmt(
     db,
-    'SELECT id, quelle, abgerufen_am, payload_json FROM raw_snapshot WHERE quelle = ? ORDER BY abgerufen_am, id',
+    `SELECT ${SPALTENLISTE} FROM raw_snapshot WHERE quelle = ? ORDER BY abgerufen_am, id`,
   ).all(quelle) as Zeile[];
   return zeilen.map(zu);
 }

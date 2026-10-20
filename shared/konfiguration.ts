@@ -123,6 +123,11 @@ export type Konfiguration = z.infer<typeof KonfigurationSchema> & {
   readonly datenpfad: string;
 };
 
+/** Die Vorgaben auf ein festes Verzeichnis, ohne Datei — fuer Tests, Demo und Randfallseite. */
+export function konfigurationFuer(datenpfad: string, teil: Partial<Konfiguration> = {}): Konfiguration {
+  return { ...vorgaben(), top25: true, datenverzeichnis: datenpfad, datenpfad, ...teil };
+}
+
 /**
  * Die Wurzel eines synchronisierten Ordners, in dem `pfad` liegt, sonst `null`. SQLite mit
  * WAL verträgt keinen Dienst, der Datei und `-wal` getrennt hochlädt, und Depotdaten

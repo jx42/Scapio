@@ -6,7 +6,7 @@ Eurostat und der EZB und schreibt sie validiert in die Datenbank. Alles hier ver
 ## Regeln
 - Nur lesende MCP-Tools. Die Allowlist steht in `mcp.ts` als Union-Typ. [INV-01]
 - Nutzdaten kommen aus dem `content[]`-Block der JSON-RPC-`tools/call`-Antwort
-  (`extrahiereInhalt` in `mcp.ts`), nicht aus Modelltext — es gibt kein Modell mehr im
+  (`extrahiereInhalt` in `mcpTransport.ts`), nicht aus Modelltext — es gibt kein Modell mehr im
   Datenpfad.
 - Jede Antwort durch zod, `.strict()`, mit Obergrenzen. [INV-12] Ausnahme: Anbieter-Webseiten
   und Protokollumschläge ohne `.strict()`, nie `.passthrough()` [ADR-030].

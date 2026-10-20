@@ -40,7 +40,7 @@ const FondsEintragAmundi = z
   })
   .strict();
 
-export const FondsEintrag = z.preprocess(
+const FondsEintrag = z.preprocess(
   (roh) =>
     typeof roh === 'object' && roh !== null && !('anbieter' in roh) ? { ...roh, anbieter: 'ishares' } : roh,
   z.discriminatedUnion('anbieter', [FondsEintragIshares, FondsEintragXtrackers, FondsEintragAmundi]),
@@ -59,7 +59,7 @@ export type FondsXtrackers = z.infer<typeof FondsEintragXtrackers>;
 export type FondsAmundi = z.infer<typeof FondsEintragAmundi>;
 
 /** Anfangsbestand [P-13]: nur, wenn die Bank die Historie nicht weit genug liefert. */
-export const SeedEintrag = z
+const SeedEintrag = z
   .object({
     id: z.string().min(1).max(GRENZE.id),
     ts: Zeitstempel,

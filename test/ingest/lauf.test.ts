@@ -28,7 +28,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Tag } from '../../core/kalender.ts';
-import type { Konfiguration } from '../../shared/konfiguration.ts';
+import { konfigurationFuer, type Konfiguration } from '../../shared/konfiguration.ts';
 import type * as KonfigurationModul from '../../shared/konfiguration.ts';
 import type * as FondsaufloesungModul from '../../ingest/fondsaufloesung.ts';
 import type { Kontext } from '../../ingest/importieren.ts';
@@ -66,21 +66,7 @@ const tempDirs: string[] = [];
 function konfiguration(teil: Partial<Konfiguration> = {}): Konfiguration {
   const datenpfad = mkdtempSync(join(tmpdir(), 'lauf-test-'));
   tempDirs.push(datenpfad);
-  return {
-    port: 4732,
-    datenverzeichnis: datenpfad,
-    datenpfad,
-    mcpZeitlimitMs: 120_000,
-    csvZeitlimitMs: 30_000,
-    csvGroesstMb: 32,
-    erlaubteHosts: [],
-    fondsKatalogFrischeTage: 5,
-    inflationsquelle: 'eurostat',
-    zinsquelle: 'ecb',
-    driftSchwellen: { hinweis: 0.001, banner: 0.005, abbruch: 0.02 },
-    top25: true,
-    ...teil,
-  };
+  return konfigurationFuer(datenpfad, { port: 4732, erlaubteHosts: [], ...teil });
 }
 
 function kontext(teil: Partial<Kontext> = {}): Kontext {

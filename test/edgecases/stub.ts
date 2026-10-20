@@ -4,21 +4,14 @@
  */
 
 import type { Drift } from '../../server/vertrag.ts';
+import { LESENDE_ROUTEN, MUTIERENDE_ROUTEN, ROUTEN_NAMEN } from '../../shared/routen.ts';
 import { POST_STANDARD, type Antwort, type Fall, type Route } from './faelle.ts';
 
 export type Basis = Readonly<Record<'demo' | 'leer', Readonly<Record<string, unknown>>>>;
 
-const ROUTEN: Record<string, Route> = {
-  '/api/health': 'health',
-  '/api/zeitreihe': 'zeitreihe',
-  '/api/kennzahlen': 'kennzahlen',
-  '/api/aufteilung': 'aufteilung',
-  '/api/top25': 'top25',
-  '/api/fluesse': 'fluesse',
-  '/api/sparplaene': 'sparplaene',
-  '/api/lauf': 'lauf',
-  '/api/mcp-anmeldung': 'mcpAnmeldung',
-};
+const ROUTEN: Readonly<Record<string, Route>> = Object.fromEntries(
+  ROUTEN_NAMEN.map((name) => [LESENDE_ROUTEN[name].pfad, name]),
+);
 
 /** Ohne eigene Angabe gilt jeder Fall als angemeldet — sonst stuende ueberall der Anmeldehinweis. */
 const ANGEMELDET: Antwort = {
@@ -72,7 +65,7 @@ export function installiereStub(fall: Fall, basis: Basis): void {
     const ohneQuery = pfad.split('?')[0] ?? pfad;
 
     if ((init?.method ?? 'GET').toUpperCase() === 'POST') {
-      const route: Route = ohneQuery === '/api/refresh' ? 'refresh' : 'anmelden';
+      const route: Route = ohneQuery === MUTIERENDE_ROUTEN.refresh ? 'refresh' : 'anmelden';
       return antworte(fall.routen?.[route] ?? POST_STANDARD, pfad);
     }
     const route = ROUTEN[ohneQuery];
