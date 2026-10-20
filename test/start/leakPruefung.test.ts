@@ -7,6 +7,8 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { testDatenbank } from '../../db/verbindung.ts';
 import { berichtText, betragsFormen, durchsuche, sammleSuchbegriffe } from '../../start/leakPruefung.ts';
 
+// Zusammengesetzt, damit die Leak-Prüfung diesen Testpfad nicht selbst als Befund meldet.
+const HEIM = ['', 'Users', 'maxmuster'].join('/');
 const verzeichnisse: string[] = [];
 afterEach(() => {
   for (const v of verzeichnisse.splice(0)) rmSync(v, { recursive: true, force: true });
@@ -24,7 +26,7 @@ async function depot() {
   db.prepare(`
     INSERT INTO transaktion (id, ts, tag, art, typ, betrag_cent, status, ist_extern, gesehen_am)
     VALUES ('tx-abcdef', 'x', '2021-03-04', 'WERTPAPIER', 'KAUF', 500000, 'x', 1, 'x')`).run();
-  const begriffe = sammleSuchbegriffe(db, datenpfad, '/Users/maxmuster', 'maxmuster');
+  const begriffe = sammleSuchbegriffe(db, datenpfad, HEIM, 'maxmuster');
   db.close();
   return begriffe;
 }
@@ -43,7 +45,7 @@ describe('Leak-Prüfung', () => {
         { rel: 'a.md', text: 'Sparrate 1.234,56 €\nStück 12,345678' },
         { rel: 'b.ts', text: "const id = 'tx-abcdef'; // seit 04.03.2021" },
         { rel: 'c.md', text: 'Einzahlung 5.000,00 €, ISIN XX0000000001' },
-        { rel: 'd.md', text: 'Token zzGeheimesTokenZz42 bei MaxMuster, /Users/maxmuster/x' },
+        { rel: 'd.md', text: `Token zzGeheimesTokenZz42 bei MaxMuster, ${HEIM}/x` },
         { rel: 'e.md', text: '11.234,567 und 31.234,56 sind andere Zahlen' },
       ],
       begriffe,
@@ -70,7 +72,7 @@ describe('Leak-Prüfung', () => {
   });
 
   it('ohne Treffer: keine Befunde', async () => {
-    const ergebnis = durchsuche([{ rel: 'a.md', text: 'nichts hier, kontakt@example.org' }], await depot());
+    const ergebnis = durchsuche([{ rel: 'a.md', text: 'nichts hier, kontakt@example.org, git@github.com:jx42/Scapio' }], await depot());
     expect(ergebnis.befunde.size + ergebnis.hinweise.size + ergebnis.isinDateien.size).toBe(0);
     expect(berichtText(ergebnis, 1)).toContain('Keine Befunde.');
   });
