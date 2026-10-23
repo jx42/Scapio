@@ -77,8 +77,19 @@ function harmlos(text: string): string {
   return [...text.slice(0, 60)].map((z) => (z >= ' ' && z <= '~' ? z : '.')).join('');
 }
 
-function pfadText(pfad: readonly (string | number)[]): string {
+function pfadText(pfad: readonly PropertyKey[]): string {
   return pfad.length === 0 ? '(Wurzel)' : harmlos(pfad.map(String).join('.'));
+}
+
+// zod 4 nennt bei `invalid_type` den empfangenen Typ nicht mehr; ob ein Feld fehlt, steht im Block selbst.
+function fehlt(block: unknown, pfad: readonly PropertyKey[]): boolean {
+  let knoten = block;
+  for (const schluessel of pfad) {
+    if (typeof knoten !== 'object' || knoten === null) return false;
+    if (!Object.hasOwn(knoten, schluessel)) return true;
+    knoten = (knoten as Record<PropertyKey, unknown>)[schluessel];
+  }
+  return knoten === undefined;
 }
 
 type Befund = {
@@ -87,7 +98,7 @@ type Befund = {
   readonly andersartig: Set<string>;
 };
 
-function leererBefund(): Befund {
+export function leererBefund(): Befund {
   return { unbekannt: new Set(), fehlend: new Set(), andersartig: new Set() };
 }
 
@@ -95,7 +106,7 @@ function leererBefund(): Befund {
  * Wertet NUR die Struktur der zod-Befunde aus. `issue.message` wird bewusst nicht
  * ausgegeben: manche zod-Meldungen enthalten den empfangenen Wert.
  */
-function sammle(schema: z.ZodTypeAny, block: unknown, befund: Befund): boolean {
+export function sammle(schema: z.ZodTypeAny, block: unknown, befund: Befund): boolean {
   const ergebnis = schema.safeParse(block);
   if (ergebnis.success) return true;
 
@@ -105,7 +116,7 @@ function sammle(schema: z.ZodTypeAny, block: unknown, befund: Befund): boolean {
       for (const schluessel of problem.keys) {
         befund.unbekannt.add(stelle === '(Wurzel)' ? harmlos(schluessel) : `${stelle}.${harmlos(schluessel)}`);
       }
-    } else if (problem.code === 'invalid_type' && problem.received === 'undefined') {
+    } else if (problem.code === 'invalid_type' && fehlt(block, problem.path)) {
       befund.fehlend.add(stelle);
     } else {
       befund.andersartig.add(`${stelle} [${problem.code}]`);

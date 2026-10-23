@@ -103,7 +103,7 @@ describe('INV-12 — die Pruefung greift wirklich', () => {
   });
 
   it('nennt bei einem falschen enum-Wert nur den Pfad und den Code, nie den fremden Wert', () => {
-    // zods eigene Meldung zu `invalid_enum_value` zitiert den erhaltenen Wert woertlich —
+    // zods eigene Meldung zu `invalid_value` zitiert den erhaltenen Wert woertlich —
     // genau das darf `pruefe` nicht durchreichen. [INV-12]
     const fremderWert = 'GEHEIMER-STATUS-4711';
     try {

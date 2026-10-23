@@ -52,7 +52,7 @@ function sicher<T extends bigint>(um: (v: string | number) => T, feldart: string
       return um(v);
     } catch {
       ctx.addIssue({
-        code: z.ZodIssueCode.custom,
+        code: 'custom',
         message: `${feldart} nicht lesbar (${typeof v}, Laenge ${String(v).length})`,
       });
       return z.NEVER as unknown as T;
