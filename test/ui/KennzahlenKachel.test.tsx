@@ -109,6 +109,28 @@ describe('KennzahlenKachel', () => {
     expect(screen.queryByText(euro(FIXTURE.gesamtCent))).not.toBeInTheDocument();
   });
 
+  it('schaltet mit einem Klick auf den Max. Drawdown die Markierung im Verlauf um und scrollt dorthin', async () => {
+    wiederherstellen = fetchErsatz(() => ({ body: FIXTURE }));
+    rendern(<KennzahlenKachel />);
+
+    let gescrollt = 0;
+    const scrollen = window.scrollTo;
+    window.scrollTo = () => {
+      gescrollt += 1;
+    };
+
+    const knopf = await screen.findByRole('button', { name: de.verlauf.drawdownZeigen });
+    expect(knopf).toHaveAttribute('aria-pressed', 'false');
+    await userEvent.click(knopf);
+    expect(knopf).toHaveAttribute('aria-pressed', 'true');
+    expect(gescrollt).toBe(1);
+    // Beim Ausschalten bleibt die Seite stehen.
+    await userEvent.click(knopf);
+    expect(knopf).toHaveAttribute('aria-pressed', 'false');
+    expect(gescrollt).toBe(1);
+    window.scrollTo = scrollen;
+  });
+
   it('zeigt Renditen- und Risikozeilen ohne separates Aufklappen', async () => {
     wiederherstellen = fetchErsatz(() => ({ body: FIXTURE }));
     rendern(<KennzahlenKachel />);

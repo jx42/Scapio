@@ -12,6 +12,7 @@
  *
  * `onDetails` macht den Wert selbst zu einem echten Knopf (nicht ein div mit
  * onClick), damit die Transaktionsliste dahinter auch mit der Tastatur erreichbar ist.
+ * Mit `schalter` wird derselbe Knopf zum Umschalter (`aria-pressed`) statt zum Oeffner.
  *
  * Vertrag: <Kennzahlzeile bezeichnung="IZF" wert="11,23 %" nebenwert="+ 12.345,67 €" erklaerung="…" />
  *
@@ -48,6 +49,8 @@ export type KennzahlzeileProps = {
   readonly nebenwertAnimiert?: boolean;
   /** Macht den Wert zu einem Knopf, der die zugrundeliegenden Transaktionen zeigt. */
   readonly onDetails?: () => void;
+  /** Macht den Knopf aus `onDetails` zum Umschalter, mit eigener Beschriftung. */
+  readonly schalter?: { readonly bezeichnung: string; readonly gedrueckt: boolean };
   /** Zusätzliche CSS-Klassen für die Zeile, etwa `invisible` beim Kuerzen in Kennzahlen. */
   readonly className?: string;
   /** Nimmt die Zeile aus Tabulatorreihenfolge und Barrierefreiheitsbaum, solange sie unter der Blende liegt. */
@@ -64,6 +67,7 @@ export function Kennzahlzeile({
   anmerkung = null,
   nebenwertAnimiert = true,
   onDetails,
+  schalter,
   className,
   inert,
 }: KennzahlzeileProps) {
@@ -103,7 +107,8 @@ export function Kennzahlzeile({
           <button
             type="button"
             onClick={onDetails}
-            aria-label={de.kennzahlen.detailsOeffnen(bezeichnung)}
+            aria-label={schalter?.bezeichnung ?? de.kennzahlen.detailsOeffnen(bezeichnung)}
+            aria-pressed={schalter?.gedrueckt}
             className="absolute inset-0 cursor-pointer"
           />
         )}

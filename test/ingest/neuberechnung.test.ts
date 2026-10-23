@@ -18,7 +18,8 @@ import {
   transaktion as txRepo,
 } from '../../db/repository/index.ts';
 import { testDatenbank } from '../../db/verbindung.ts';
-import { JUNGE_SPANNE_TAGE, berechneNeu } from '../../ingest/neuberechnung.ts';
+import { JUNGE_SPANNE_TAGE } from '../../core/kennzahlen.ts';
+import { berechneNeu } from '../../ingest/neuberechnung.ts';
 import { T, WELT, kauf } from '../hilfen.ts';
 
 let db: DatabaseSync;

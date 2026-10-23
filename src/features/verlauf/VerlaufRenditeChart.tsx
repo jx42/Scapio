@@ -16,7 +16,7 @@ import { FARBE, richtungFarbe } from '@/lib/farben';
 import { VerlaufChartGeruest } from '@/features/verlauf/VerlaufChartGeruest';
 import type { VorschauAnschluss } from '@/features/verlauf/VerlaufVorschau';
 import { VerlaufTooltip } from '@/features/verlauf/VerlaufTooltip';
-import { AktivPunktMitLinie, leuchtLinie, yAchseImRaster, zeichenflaecheLinks } from '@/features/verlauf/verlaufAchsen';
+import { AktivPunktMitLinie, drawdownFlaeche, type DrawdownMarke, drawdownMarken, leuchtLinie, yAchseImRaster, zeichenflaecheLinks } from '@/features/verlauf/verlaufAchsen';
 import { tabelleRendite } from '@/features/verlauf/verlaufTabellen';
 
 /** Punkt beim Hover ueber die Rendite-Flaeche: feste Farbe je nach Vorzeichen des Werts an
@@ -48,9 +48,11 @@ export type VerlaufRenditeChartProps = {
   /** Unter der Zeichenflaeche: der Zeitraumregler. */
   readonly fuss?: ReactNode;
   readonly vorschau?: VorschauAnschluss;
+  /** Gesetzt nach einem Klick auf die Drawdown-Karte. */
+  readonly drawdown: DrawdownMarke | null;
 };
 
-export function VerlaufRenditeChart({ punkte, label, benchmarkName, fuss, vorschau }: VerlaufRenditeChartProps) {
+export function VerlaufRenditeChart({ punkte, label, benchmarkName, fuss, vorschau, drawdown }: VerlaufRenditeChartProps) {
   const tabelle = useMemo(() => tabelleRendite(punkte, benchmarkName), [punkte, benchmarkName]);
 
   // Y-Achse: siehe yAchseImRaster. Die 0 gehoert immer dazu, damit die Nulllinie
@@ -130,6 +132,7 @@ export function VerlaufRenditeChart({ punkte, label, benchmarkName, fuss, vorsch
       nulllinie
       tooltip={<VerlaufTooltip benchmarkName={benchmarkName} modus="rendite" />}
     >
+      {drawdownFlaeche(drawdown, punkte)}
       {leuchtLinie('gewinnProzent', 'url(#verlauf-linie-rendite)', LINIE_HAUPT, animation)}
       <Area
         type="monotone"
@@ -156,6 +159,7 @@ export function VerlaufRenditeChart({ punkte, label, benchmarkName, fuss, vorsch
           connectNulls
         />
       )}
+      {drawdownMarken(drawdown, punkte, 'gewinnProzent')}
     </VerlaufChartGeruest>
   );
 }

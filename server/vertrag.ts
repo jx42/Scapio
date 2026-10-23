@@ -12,6 +12,7 @@
 
 import type { LaufSchritt, LaufStatus, QuellenStatus } from '../db/repository/lauf.ts';
 import type { Hinweis as KennzahlHinweis, HinweisCode as KennzahlHinweisCode } from '../core/kennzahlen.ts';
+import { JUNGE_SPANNE_TAGE } from '../core/kennzahlen.ts';
 import type { Hinweis as LaufHinweis, HinweisArt as LaufHinweisArt } from '../shared/hinweise.ts';
 import type {
   DriftJson,
@@ -25,7 +26,7 @@ import type { Fenster, Zeitraum } from '../shared/zeitfenster.ts';
 import { BENCHMARKS, RISIKOFREI, RISIKOFREI_ISIN } from '../shared/benchmarks.ts';
 import type { BenchmarkIsin } from '../shared/benchmarks.ts';
 
-export { BENCHMARKS, RISIKOFREI, RISIKOFREI_ISIN };
+export { BENCHMARKS, JUNGE_SPANNE_TAGE, RISIKOFREI, RISIKOFREI_ISIN };
 export type { BenchmarkIsin };
 
 export type { LaufSchritt, LaufStatus, QuellenStatus, Fenster, Zeitraum, LaufHinweis, LaufHinweisArt };

@@ -5,9 +5,9 @@
  * Wrapper wuerde sie nicht finden.
  */
 
-import { Line, ReferenceLine } from 'recharts';
+import { Line, ReferenceArea, ReferenceDot, ReferenceLine } from 'recharts';
 
-import type { Marke } from '@/lib/api';
+import type { Marke, Zeitpunkt } from '@/lib/api';
 import { FARBE } from '@/lib/farben';
 import {
   AKTIV_PUNKT_RADIUS,
@@ -72,6 +72,75 @@ export function markenLinien(
       />
     );
   });
+}
+
+/** Max. Drawdown, vom Klick auf seine Karte ins Chart gelegt. */
+export type DrawdownMarke = {
+  readonly hoch: string;
+  readonly tief: string;
+};
+
+/**
+ * Hoch und Tief auf Punkte des Fensters gelegt: die Kategorie-Achse kennt nur Tage mit
+ * Punkt, und ab drei Jahren ist die Reihe woechentlich verdichtet. `null`, wenn der
+ * Drawdown nicht im Fenster liegt.
+ */
+function drawdownPunkte(marke: DrawdownMarke, daten: readonly Zeitpunkt[]) {
+  const hoch = daten.find((p) => p.tag >= marke.hoch);
+  const tief = daten.findLast((p) => p.tag <= marke.tief);
+  if (hoch === undefined || tief === undefined || hoch.tag > tief.tag) return null;
+  return { hoch, tief };
+}
+
+/**
+ * Ausgeschaltet bleiben Band und Punkte unsichtbar im Chart stehen, statt zu fehlen: Recharts
+ * reiht die Serien ohne Key nach Position ein, und ein neues Element davor haengt sie alle
+ * neu ein — der Chart zeichnete sich bei jedem Umschalten mit Einblendanimation neu.
+ */
+function drawdownLage(marke: DrawdownMarke | null, daten: readonly Zeitpunkt[]) {
+  const punkte = marke === null ? null : drawdownPunkte(marke, daten);
+  if (punkte !== null) return { ...punkte, sichtbar: 1 };
+  const erster = daten[0];
+  return erster === undefined ? null : { hoch: erster, tief: erster, sichtbar: 0 };
+}
+
+/** Band von Hoch bis Tief — vor den Serien, damit es hinter ihnen liegt. */
+export function drawdownFlaeche(marke: DrawdownMarke | null, daten: readonly Zeitpunkt[]) {
+  const lage = drawdownLage(marke, daten);
+  if (lage === null) return null;
+  return (
+    <ReferenceArea
+      key="drawdown-flaeche"
+      x1={lage.hoch.tag}
+      x2={lage.tief.tag}
+      fill={FARBE.verlust}
+      fillOpacity={0.12 * lage.sichtbar}
+      stroke={FARBE.verlust}
+      strokeOpacity={0.35 * lage.sichtbar}
+    />
+  );
+}
+
+/** Hoch und Tief auf der Hauptserie — nach den Serien, damit sie obenauf liegen. */
+export function drawdownMarken(
+  marke: DrawdownMarke | null,
+  daten: readonly Zeitpunkt[],
+  dataKey: 'gesamtCent' | 'gewinnProzent',
+) {
+  const lage = drawdownLage(marke, daten);
+  if (lage === null) return null;
+  return (['hoch', 'tief'] as const).map((ende) => (
+    <ReferenceDot
+      key={`drawdown-${ende}`}
+      x={lage[ende].tag}
+      y={lage[ende][dataKey]}
+      r={AKTIV_PUNKT_RADIUS}
+      fill={FARBE.verlust}
+      stroke={FARBE.grund}
+      strokeWidth={AKTIV_PUNKT_RAND}
+      opacity={lage.sichtbar}
+    />
+  ));
 }
 
 export type YAchse = {
