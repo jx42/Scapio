@@ -476,6 +476,8 @@ export const de = {
       max: 'gesamte Historie',
     },
     zeitraumFrei: (von: string, bis: string) => `vom ${von} bis ${bis}`,
+    drawdownZeigen: 'Max. Drawdown im Verlauf zeigen',
+    drawdownImChart: (wert: string, zeitraum: string) => ` Markiert: Max. Drawdown von ${wert}, ${zeitraum}.`,
     reglerBezeichnung: 'Zeitraum frei wählen',
     reglerBeginn: 'Beginn des Zeitraums',
     reglerEnde: 'Ende des Zeitraums',

@@ -30,6 +30,7 @@ import {
   zahl,
 } from '@/lib/format';
 import { Button } from '@/components/ui/button';
+import { schalteDrawdown, useDrawdownGezeigt } from '@/lib/drawdownMarkierung';
 import { cn } from '@/lib/utils';
 import { Kennzahlzeile } from '@/components/Kennzahlzeile';
 import { Table, TableBody, TableCaption, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -66,6 +67,12 @@ export function KennzahlenAnsicht({
   const laufendesJahr = daten.real.teuerungLaufendesJahr;
   const volatilitaet = volatilitaetAnzeige(daten.volatilitaetProJahr);
   const maxDrawdown = maxDrawdownAnzeige(daten.maxDrawdown);
+  const drawdownGezeigt = useDrawdownGezeigt();
+  // Der Verlauf steht ganz oben auf der Seite; ohne Scrollen bliebe der Klick ohne sichtbare Folge.
+  const zeigeDrawdownImVerlauf = () => {
+    schalteDrawdown();
+    if (!drawdownGezeigt) window.scrollTo({ top: 0 });
+  };
   const sharpe = sharpeAnzeige(daten.sharpe);
 
   const rahmenRef = useRef<HTMLDivElement>(null);
@@ -205,6 +212,12 @@ export function KennzahlenAnsicht({
       pfeil={daten.maxDrawdown.art === 'ok' ? de.kennzahlen.richtungPfeil.ab : ''}
       erklaerung={de.kennzahlen.erklaerung.maxDrawdown}
       anmerkung={maxDrawdown.satz ?? maxDrawdown.zeitraum}
+      {...(daten.maxDrawdown.art === 'ok'
+        ? {
+            onDetails: zeigeDrawdownImVerlauf,
+            schalter: { bezeichnung: de.verlauf.drawdownZeigen, gedrueckt: drawdownGezeigt },
+          }
+        : {})}
     />,
     sharpe === null ? null : (
       <Kennzahlzeile

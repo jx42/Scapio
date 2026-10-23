@@ -16,7 +16,7 @@ import { FARBE } from '@/lib/farben';
 import { VerlaufChartGeruest } from '@/features/verlauf/VerlaufChartGeruest';
 import type { VorschauAnschluss } from '@/features/verlauf/VerlaufVorschau';
 import { VerlaufTooltip } from '@/features/verlauf/VerlaufTooltip';
-import { AktivPunktMitLinie, leuchtLinie, markenLinien, yAchseImRaster, zeichenflaecheLinks } from '@/features/verlauf/verlaufAchsen';
+import { AktivPunktMitLinie, drawdownFlaeche, type DrawdownMarke, drawdownMarken, leuchtLinie, markenLinien, yAchseImRaster, zeichenflaecheLinks } from '@/features/verlauf/verlaufAchsen';
 import { tabelleVermoegen } from '@/features/verlauf/verlaufTabellen';
 
 export type VerlaufVermoegenChartProps = {
@@ -30,6 +30,8 @@ export type VerlaufVermoegenChartProps = {
   /** Unter der Zeichenflaeche: der Zeitraumregler. */
   readonly fuss?: ReactNode;
   readonly vorschau?: VorschauAnschluss;
+  /** Gesetzt nach einem Klick auf die Drawdown-Karte. */
+  readonly drawdown: DrawdownMarke | null;
 };
 
 export function VerlaufVermoegenChart({
@@ -41,6 +43,7 @@ export function VerlaufVermoegenChart({
   zeigeZufluesse,
   fuss,
   vorschau,
+  drawdown,
 }: VerlaufVermoegenChartProps) {
   const [hoverMarke, setHoverMarke] = useState<string | null>(null);
 
@@ -92,6 +95,7 @@ export function VerlaufVermoegenChart({
         />
       }
     >
+      {drawdownFlaeche(drawdown, punkte)}
       {leuchtLinie('gesamtCent', FARBE.chart1, LINIE_HAUPT, animation)}
       <Area
         type="monotone"
@@ -134,6 +138,7 @@ export function VerlaufVermoegenChart({
         />
       )}
       {zeigeZufluesse ? markenLinien(marken, hoverMarke, setHoverMarke) : null}
+      {drawdownMarken(drawdown, punkte, 'gesamtCent')}
     </VerlaufChartGeruest>
   );
 }
