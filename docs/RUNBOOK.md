@@ -339,7 +339,8 @@ diesem Tag keinen Kurs im Raster hat (`core/depotreihe.ts`); bewertet wird sie d
 letzten gemessenen Kurs, und die TWR-Verkettung überspringt den Tag, statt aus der fehlenden
 Notierung eine Rendite zu erfinden (`core/twr.ts`).
 
-Gemeldet werden **nur die letzten `JUNGE_SPANNE_TAGE` = 30 Tage** (`ingest/neuberechnung.ts`).
+Gemeldet werden **nur die letzten `JUNGE_SPANNE_TAGE` = 30 Tage** (`core/kennzahlen.ts`), hier wie
+im Hinweis-Dialog der Kennzahlen-Kachel.
 Die Gesamtzahl steht dauerhaft im vierstelligen Bereich — sie ist die Frühzeit des Depots, für
 die es je ISIN nur Monatsstände gibt, und als Meldung deshalb wertlos. Sie steht weiterhin im
 Laufprotokoll (`Neuberechnung: … lueckenhaft, davon … jung`), für die Fehlersuche.

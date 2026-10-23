@@ -38,7 +38,8 @@ import { ladeKonfiguration, logPfad } from '../shared/konfiguration.ts';
 import type { Importdaten } from './importieren.ts';
 import { importiere } from './importieren.ts';
 import { McpSicherung } from './mcp.ts';
-import { JUNGE_SPANNE_TAGE, berechneNeu } from './neuberechnung.ts';
+import { JUNGE_SPANNE_TAGE } from '../core/kennzahlen.ts';
+import { berechneNeu } from './neuberechnung.ts';
 import {
   Befunde,
   meldeSpruenge,
