@@ -165,6 +165,34 @@ describe('VerlaufKachel', () => {
     expect(localStorage.getItem('portfolio.zeitraum')).toBeNull();
   });
 
+  it('springt nach einem Klick auf die Drawdown-Karte auf Max und zeichnet den Drawdown ein', async () => {
+    const pfade: string[] = [];
+    const antworten = mitKennzahlen(FIXTURE);
+    wiederherstellen = fetchErsatz((pfad: string) => {
+      pfade.push(pfad);
+      return antworten(pfad);
+    });
+    rendern(<VerlaufKachel />);
+    await screen.findByText(de.verlauf.tabelleVermoegen);
+    await userEvent.click(screen.getByRole('radio', { name: de.verlauf.zeitraeume['1j'] }));
+    await waitFor(() => {
+      expect(pfade.some((p) => p.includes('zeitraum=1j'))).toBe(true);
+    });
+
+    const knopf = screen.getByRole('button', { name: de.verlauf.drawdownZeigen });
+    await userEvent.click(knopf);
+
+    expect(knopf).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('radio', { name: de.verlauf.zeitraeume.max })).toBeChecked();
+    // Der Wert der Karte, ueber die ganze Historie.
+    expect(await screen.findByRole('img', { name: /Markiert: .*-15,20\s%/ })).toBeInTheDocument();
+
+    // Ein anderer Zeitraum nimmt die Markierung weg.
+    await userEvent.click(screen.getByRole('radio', { name: de.verlauf.zeitraeume['1j'] }));
+    expect(knopf).toHaveAttribute('aria-pressed', 'false');
+    expect(screen.queryByRole('img', { name: /Markiert/ })).toBeNull();
+  });
+
   it('faellt auf den festen Zeitraum zurueck, wenn der freie scheitert', async () => {
     const antworten = mitKennzahlen(FIXTURE);
     let frei = 0;

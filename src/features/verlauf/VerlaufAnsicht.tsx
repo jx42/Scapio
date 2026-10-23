@@ -21,8 +21,8 @@
 import { ArrowUpRight } from 'lucide-react';
 
 import { de } from '@/i18n/de';
-import { RISIKOFREI_ISIN, type Marke, type Zeitpunkt, type Zeitraum } from '@/lib/api';
-import { betragOhneVorzeichen, datumKurz, euroAusCent, prozent } from '@/lib/format';
+import { RISIKOFREI_ISIN, type Marke, type MaxDrawdownErgebnis, type Zeitpunkt, type Zeitraum } from '@/lib/api';
+import { betragOhneVorzeichen, datumKurz, euroAusCent, maxDrawdownAnzeige, prozent } from '@/lib/format';
 import { linkVariants } from '@/lib/linkStil';
 import { cn } from '@/lib/utils';
 import { OnvistaLink } from '@/components/OnvistaLink';
@@ -34,6 +34,7 @@ import { Gewinnwert } from '@/features/verlauf/VerlaufGewinnwert';
 import { VerlaufRenditeChart } from '@/features/verlauf/VerlaufRenditeChart';
 import { VerlaufVermoegenChart } from '@/features/verlauf/VerlaufVermoegenChart';
 import { useZeitraumVorschau } from '@/features/verlauf/useZeitraumVorschau';
+import type { DrawdownMarke } from '@/features/verlauf/verlaufAchsen';
 
 export type VerlaufAnsichtModus = 'vermoegen' | 'rendite';
 
@@ -79,6 +80,8 @@ export type VerlaufAnsichtProps = {
   readonly zeigeEinzahlung: boolean;
   /** Aus Linienwahl, per Default aus: die gelben Markierungslinien im Vermoegen-Chart. */
   readonly zeigeZufluesse: boolean;
+  /** Nach einem Klick auf die Drawdown-Karte: im Chart eingezeichnet, bis der Zeitraum wechselt. */
+  readonly drawdown: Extract<MaxDrawdownErgebnis, { art: 'ok' }> | null;
 };
 
 
@@ -100,6 +103,7 @@ export function VerlaufAnsicht({
   benchmark,
   zeigeEinzahlung,
   zeigeZufluesse,
+  drawdown,
 }: VerlaufAnsichtProps) {
   const zeitraumLang =
     zeitraum !== null
@@ -115,6 +119,12 @@ export function VerlaufAnsicht({
   const differenzCent = letzter?.differenzCent;
   const differenzProzent = letzter?.differenzProzent;
   const benchmarkName = benchmark?.name ?? null;
+
+  const drawdownZeitraum = drawdown === null ? null : maxDrawdownAnzeige(drawdown).zeitraum;
+  const drawdownMarke: DrawdownMarke | null =
+    drawdown === null ? null : { hoch: drawdown.tagHoch, tief: drawdown.tagTief };
+  const drawdownLabel =
+    drawdown === null || drawdownZeitraum === null ? '' : de.verlauf.drawdownImChart(prozent(drawdown.anteil), drawdownZeitraum);
 
   const { fenster, anschluss, melde } = useZeitraumVorschau(ausschnitt, tage, auswahlRunde);
 
@@ -187,12 +197,13 @@ export function VerlaufAnsicht({
           <VerlaufVermoegenChart
             punkte={daten}
             marken={marken}
-            label={de.verlauf.chartVermoegen(zeitraumLang, benchmarkName)}
+            label={de.verlauf.chartVermoegen(zeitraumLang, benchmarkName) + drawdownLabel}
             benchmarkName={benchmarkName}
             zeigeEinzahlung={zeigeEinzahlung}
             zeigeZufluesse={zeigeZufluesse}
             fuss={regler}
             vorschau={regler === undefined ? undefined : anschluss}
+            drawdown={drawdownMarke}
           />
         )}
       </TabsContent>
@@ -200,10 +211,11 @@ export function VerlaufAnsicht({
         {ersatzinhalt ?? (
           <VerlaufRenditeChart
             punkte={daten}
-            label={de.verlauf.chartRendite(zeitraumLang, benchmarkName)}
+            label={de.verlauf.chartRendite(zeitraumLang, benchmarkName) + drawdownLabel}
             benchmarkName={benchmarkName}
             fuss={regler}
             vorschau={regler === undefined ? undefined : anschluss}
+            drawdown={drawdownMarke}
           />
         )}
       </TabsContent>
