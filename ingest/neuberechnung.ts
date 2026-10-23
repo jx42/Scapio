@@ -34,24 +34,11 @@ import { baueDepotreihe, startTagFuerNeuberechnung } from '../core/depotreihe.ts
 import type { Hochwassermarke } from '../core/depotreihe.ts';
 import type { Kurspunkt, Rasterwert } from '../core/kursraster.ts';
 import { rasterFuer, verschmelzeKurse } from '../core/kursraster.ts';
+import { JUNGE_SPANNE_TAGE } from '../core/kennzahlen.ts';
 import type { Isin } from '../core/typen.ts';
 import { KERN_VERSION } from '../core/version.ts';
 import * as repo from '../db/repository/index.ts';
 import { inTransaktion } from '../db/repository/index.ts';
-
-/**
- * Fenster, ueber das lueckenhafte Tage gemeldet werden.
- *
- * Die Gesamtzahl taugt nicht als Meldung: sie wird von der Fruehzeit des Depots
- * beherrscht, in der es je ISIN nur Monatsstaende gibt, steht damit dauerhaft im
- * vierstelligen Bereich und meldet bei jedem Lauf denselben unveraenderlichen
- * Zustand. Was man wissen will, ist der frische Ausfall: eine ISIN, die seit
- * gestern keine Kurse mehr liefert. Der faellt in dieses Fenster, der Altbestand
- * nicht. 30 Tage, weil das Kursraster ohnehin ueber `FUELL_GRENZE_TAGE` Tage
- * vorwaerts fuellt und Wochenenden und Feiertage deshalb gar nicht erst als
- * Luecke erscheinen — was hier auftaucht, ist echter Ausfall.
- */
-export const JUNGE_SPANNE_TAGE = 30;
 
 export type NeuberechnungErgebnis = {
   readonly neuBerechneteTage: number;
