@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { zuCent } from '../../core/dezimal.ts';
 import { drift } from '../../core/drift.ts';
 import type { DriftErgebnis } from '../../core/drift.ts';
-import { berechneKennzahlen } from '../../core/kennzahlen.ts';
+import { JUNGE_SPANNE_TAGE, berechneKennzahlen } from '../../core/kennzahlen.ts';
 import type { KennzahlenEingaben } from '../../core/kennzahlen.ts';
 import type { Vpi } from '../../core/inflation.ts';
 import type { Zinsreihe } from '../../core/risiko.ts';
@@ -388,6 +388,23 @@ describe('berechneKennzahlen — Hinweise', () => {
     });
     const hinweis = k.hinweise.find((h) => h.code === 'H_KURSLUECKE');
     expect(hinweis?.anzahl).toBe(1);
+  });
+
+  it('meldet nur Kursluecken der letzten JUNGE_SPANNE_TAGE Tage, den letzten Tag eingeschlossen', () => {
+    const e = standard();
+    const luecke = (tag: string) => depotTag(tag, '1100', { lueckenhaft: true });
+    const k = berechneKennzahlen({
+      ...e,
+      reihe: [...e.reihe, luecke('2025-09-01'), luecke('2026-07-27'), luecke('2026-07-28')],
+    });
+    expect(JUNGE_SPANNE_TAGE).toBe(30);
+    expect(k.hinweise.find((h) => h.code === 'H_KURSLUECKE')?.anzahl).toBe(1);
+  });
+
+  it('schweigt bei Kursluecken, die nur in der Fruehzeit liegen', () => {
+    const e = standard();
+    const h = codes({ ...e, reihe: [...e.reihe, depotTag('2025-09-01', '1050', { lueckenhaft: true })] });
+    expect(h).not.toContain('H_KURSLUECKE');
   });
 
   it('meldet den fehlenden Preisindex', () => {

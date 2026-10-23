@@ -9,4 +9,4 @@
  * Historie wird beim naechsten Lauf aus `raw_snapshot` neu aufgebaut. Das ist
  * beabsichtigt und kostet Sekunden.
  */
-export const KERN_VERSION = 35;
+export const KERN_VERSION = 36;
