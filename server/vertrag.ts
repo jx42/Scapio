@@ -176,6 +176,32 @@ export type Aufteilung = MitStand & {
   readonly cashAnteil: number;
 };
 
+export type RebalancingZeile = {
+  /** ISIN oder `KONTO` fuer das Verrechnungskonto. */
+  readonly schluessel: string;
+  /** `null` fuer das Konto und fuer eine ISIN ausserhalb des Depots. */
+  readonly name: string | null;
+  readonly imDepot: boolean;
+  readonly istCent: number;
+  readonly istAnteil: number;
+  readonly zielBp: number;
+  readonly sollCent: number;
+  /** Positiv: kaufen bzw. einzahlen; negativ: verkaufen bzw. vom Konto nehmen. */
+  readonly deltaCent: number;
+  readonly danachCent: number;
+  readonly anteilDanach: number;
+};
+
+export type Rebalancing = MitStand & {
+  /** `ohneWert`: Depot und Konto ohne positiven Wert, alle Betraege 0. */
+  readonly art: 'ok' | 'ohneWert';
+  readonly ohneVerkaeufe: boolean;
+  readonly zeilen: readonly RebalancingZeile[];
+  readonly gesamtCent: number;
+  readonly abstandDanachCent: number;
+  readonly abstandDanach: number;
+};
+
 export type Fondsanteil = {
   readonly isin: string;
   readonly name?: string;

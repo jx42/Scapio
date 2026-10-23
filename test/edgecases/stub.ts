@@ -44,7 +44,9 @@ function antworter(quelle: Readonly<Record<string, unknown>>, drift?: Drift): An
       case 'json':
         return antwortJson(mitDrift(a.rumpf), a.status);
       case 'aendern': {
-        const b = quelle[pfad];
+        // Der Rechner fragt mit beliebigem Ziel; die Basis kennt nur das feste Beispielziel.
+        const ohneQuery = pfad.split('?')[0] ?? pfad;
+        const b = quelle[pfad] ?? Object.entries(quelle).find(([k]) => k.startsWith(`${ohneQuery}?`))?.[1];
         if (b === undefined) return antwortJson({ fehler: { code: 'E_TESTSEITE', text: `Keine Basis für ${pfad}`, hinweis: '' } }, 500);
         return antwortJson(mitDrift(a.aendern(structuredClone(b))), 200);
       }

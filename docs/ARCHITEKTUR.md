@@ -103,6 +103,7 @@ aktuelle Drift-Stufe, unabhängig vom eigentlichen Inhalt der Route.
 | `GET /api/kennzahlen` | — | Investiert, Kursgewinn, Realisiertes, TWR, IZF (Feld `xirr`), Realrendite, Volatilität, Max. Drawdown, Sharpe-Ratio |
 | `GET /api/zeitreihe` | `zeitraum` oder `von` + `bis` (`YYYY-MM-DD`, Zeitraumregler), `benchmark` | Depotwert- und Gesamtgewinnreihe (€/%) für ein Fenster, gezählt ab Fensterbeginn, mit Vergleichsdepot; über drei Jahre ein Punkt je Woche (plus Fensterbeginn und Markentage); dazu der begrenzte `ausschnitt` und alle Tage der Reihe als Reglerstufen. Der Demo-Abzug kennt nur `zeitraum` |
 | `GET /api/aufteilung` | — | Positionen mit Art ([ADR-025](entscheidungen/ADR-025-wertpapierart-per-get-security-quote.md)), Einstand, Buchgewinn, Positions-IZF (Feld `xirr`) |
+| `GET /api/rebalancing` | `ziel` (`KONTO`/ISIN`:`Basispunkte, Summe 10 000, höchstens 50), `ohneVerkaeufe` (`0`/`1`) | je Zeile Ist, Soll, Betrag zum Ziel und Anteil danach; ohne Verkäufe der Abstand zum Ziel ([ADR-057](entscheidungen/ADR-057-rebalancing-rechner.md)). Der Demo-Abzug kennt nur das feste Beispielziel |
 | `GET /api/top25` | — | Look-Through auf Unternehmen, mit `abdeckung` |
 | `GET /api/fluesse` | `fenster` | Nettoinvestition in Wertpapiere je Monat, Schnitt, 12-Monats-Schnitt, Median |
 | `GET /api/sparplaene` | — | laufende Sparpläne, Monatssumme |

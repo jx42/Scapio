@@ -14,6 +14,13 @@ const OHNE_PARAMETER: readonly string[] = Object.values(LESENDE_ROUTEN)
 const BENCHMARK_WAHL: readonly string[] = [...BENCHMARKS.map((b) => b.isin), RISIKOFREI_ISIN];
 const OHNE_BENCHMARK = 'ohne';
 
+/**
+ * Das feste Beispielziel des Rebalancing-Rechners im Abzug, in Basispunkten je Zeile. Die
+ * Felder sind dort gesperrt; nur „Ohne Verkäufe“ bleibt schaltbar. [ADR-057]
+ */
+export const DEMO_REBALANCING_ZIEL = 'KONTO:500,IE00B4L5Y983:5000,LU0171310443:1000,US67066G1040:500,IE00B3VVMM84:1500,IE00B41RYL63:1000,CH0454664001:0,IE00B579F325:500';
+const OHNE_VERKAEUFE = ['0', '1'] as const;
+
 /** Ein Parameter, der genau einmal und mit erlaubtem Wert vorkommt; sonst `null`. */
 function einzeln(parameter: URLSearchParams, name: string, erlaubt: readonly string[], vorgabe: string): string | null {
   const werte = parameter.getAll(name);
@@ -52,6 +59,12 @@ export function abzugPfad(pfad: string, parameter: URLSearchParams): string | nu
     const fenster = einzeln(parameter, 'fenster', FENSTER, '12m');
     return fenster === null ? null : `/api/fluesse/${fenster}.json`;
   }
+  if (`/api/${name}` === LESENDE_ROUTEN.rebalancing.pfad) {
+    if (!nurErlaubte(parameter, ['ziel', 'ohneVerkaeufe'])) return null;
+    const ziel = einzeln(parameter, 'ziel', [DEMO_REBALANCING_ZIEL], '');
+    const ohne = einzeln(parameter, 'ohneVerkaeufe', OHNE_VERKAEUFE, '0');
+    return ziel === DEMO_REBALANCING_ZIEL && ohne !== null ? `/api/rebalancing/${ohne}.json` : null;
+  }
   return null;
 }
 
@@ -68,5 +81,8 @@ export function abzugAnfragen(): string[] {
     }
   }
   for (const f of FENSTER) anfragen.push(`${LESENDE_ROUTEN.fluesse.pfad}?fenster=${f}`);
+  for (const o of OHNE_VERKAEUFE) {
+    anfragen.push(`${LESENDE_ROUTEN.rebalancing.pfad}?ziel=${encodeURIComponent(DEMO_REBALANCING_ZIEL)}&ohneVerkaeufe=${o}`);
+  }
   return anfragen;
 }

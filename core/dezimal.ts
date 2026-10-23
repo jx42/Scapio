@@ -149,3 +149,25 @@ export function euroText(v: Cent): string {
   const rest = b % 100n;
   return `${negativ ? '-' : ''}${ganz.toString(10)},${rest.toString(10).padStart(2, '0')}`;
 }
+
+/**
+ * Verteilt `zaehler[i] / nenner` (alle ≥ 0) auf ganze Einheiten nach dem Verfahren des
+ * groessten Rests: jeder Wert wird abgerundet, die fehlenden Einheiten bekommen die Werte
+ * mit dem groessten Rest, bei Gleichstand der fruehere Index. So stimmt die Summe genau —
+ * kaufmaennisch je Wert gerundet, fehlte oder fiele ein Cent je Zeile heraus.
+ */
+export function verteileNachGroesstemRest(zaehler: readonly bigint[], nenner: bigint): bigint[] {
+  if (nenner <= 0n) throw new DezimalFehler(String(nenner), 'Nenner nicht positiv');
+  const ganz = zaehler.map((z) => (z < 0n ? 0n : z / nenner));
+  const ziel = rundeAufCent(summe(zaehler.map((z) => (z < 0n ? 0n : z))), nenner);
+  let fehlend = ziel - summe(ganz);
+  const reihenfolge = zaehler
+    .map((z, i) => ({ i, rest: z < 0n ? -1n : z % nenner }))
+    .sort((a, b) => (a.rest === b.rest ? a.i - b.i : a.rest > b.rest ? -1 : 1));
+  for (const { i } of reihenfolge) {
+    if (fehlend <= 0n) break;
+    ganz[i] = ganz[i]! + 1n;
+    fehlend -= 1n;
+  }
+  return ganz;
+}
