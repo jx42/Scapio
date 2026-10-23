@@ -26,7 +26,7 @@ function schluesselName(schluessel: string): string {
 }
 
 /** Validiert und wirft `SchemaFehler` — ohne je einen fremden Wert in die Meldung zu nehmen. */
-export function pruefe<T>(quelle: string, schema: z.ZodType<T, z.ZodTypeDef, unknown>, roh: unknown): T {
+export function pruefe<T>(quelle: string, schema: z.ZodType<T, unknown>, roh: unknown): T {
   const ergebnis = schema.safeParse(roh);
   if (ergebnis.success) return ergebnis.data;
 
@@ -34,11 +34,11 @@ export function pruefe<T>(quelle: string, schema: z.ZodType<T, z.ZodTypeDef, unk
   // lesbar" — nennt Typ und Laenge, nie den Wert) oder wo zod nur den Schluesselnamen nennt
   // (`unrecognized_keys` — der Schluessel der Antwort ist aber trotzdem fremder Text: nur
   // harmlose Namen erscheinen woertlich, alles andere wird zu `?`, damit keine Escape-Sequenz
-  // und kein langer Text im Protokoll landet). Bei `invalid_enum_value`
+  // und kein langer Text im Protokoll landet). Bei `invalid_value`
   // und aehnlichen uebernimmt zods eigene Meldung sonst den fremden Wert woertlich in den
   // Text; dort bleibt es bei `code`. [INV-12]
   const stellen = ergebnis.error.issues.slice(0, 10).map((i) => {
-    const pfad = i.path.join('.') || '(Wurzel)';
+    const pfad = i.path.map(String).join('.') || '(Wurzel)';
     if (i.code === 'custom') return `${pfad}: ${i.message}`;
     if (i.code === 'unrecognized_keys') {
       return `${pfad}: unrecognized_keys (${i.keys.slice(0, MAX_SCHLUESSEL).map(schluesselName).join(', ')})`;
