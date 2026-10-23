@@ -12,6 +12,7 @@
 import type { LaufFehlerCode } from '../../shared/laufFehler.ts';
 import type { QuellenArt } from '../../shared/quellen.ts';
 import type { HinweisCode, LaufSchritt } from '../../server/vertrag.ts';
+import { JUNGE_SPANNE_TAGE } from '../../server/vertrag.ts';
 
 /** Prueft die Schluessel gegen die Codes; nachgeschlagen wird mit beliebigem String und Rueckfall auf `sonst`. */
 type CodeTexte<T> = Partial<Record<LaufFehlerCode | 'E_SPERRE', T>>;
@@ -652,7 +653,7 @@ export const de = {
           ? 'Eine unbekannte Buchungsart zählt als interne Umbuchung und ändert die Rendite nicht.'
           : `${text} unbekannte Buchungsarten zählen als interne Umbuchungen und ändern die Rendite nicht.`,
       H_KURSLUECKE: (anzahl: number, text: string) =>
-        `${anzahl === 1 ? 'An einem Tag fehlten' : `An ${text} Tagen fehlten`} vollständige Kurse; der Verlauf ist dort geschätzt.`,
+        `In den letzten ${JUNGE_SPANNE_TAGE} Tagen fehlten ${anzahl === 1 ? 'an einem Tag' : `an ${text} Tagen`} vollständige Kurse; der Verlauf ist dort geschätzt.`,
       H_AUSBUCHUNG: (anzahl: number, text: string) =>
         `${anzahl === 1 ? 'Ein Abgang ohne Betrag und ohne Zugang am selben Tag zählt' : `${text} Abgänge ohne Betrag und ohne Zugang am selben Tag zählen`} als Totalverlust, eine spätere Einbuchung als geschenkte Anteile. Meist steckt ein über mehrere Tage gebuchter ISIN-Wechsel dahinter; Kursgewinn und Rendite der Position sind dann verzerrt.`,
       H_KEIN_ZINS: 'Die Sharpe-Ratio fehlt: Für den risikofreien Zins (EZB €STR) liegen keine Werte vor.',
