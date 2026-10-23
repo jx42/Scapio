@@ -66,6 +66,8 @@ describe('rebalanciere', () => {
     expect(zeile(e, WELT).deltaCent).toBe(-25_000n);
     expect(zeile(e, EM).deltaCent).toBe(35_000n);
     expect(zeile(e, WELT).istAnteil).toBeCloseTo(60_000 / 70_000);
+    expect(zeile(e, WELT).abweichung).toBeCloseTo(60_000 / 70_000 - 0.5);
+    expect(zeile(e, EM).abweichung).toBe(-0.5);
   });
 });
 

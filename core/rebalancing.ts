@@ -25,6 +25,8 @@ export type RebalancingZeile = {
   /** Positiv: kaufen bzw. einzahlen; negativ: verkaufen bzw. vom Konto nehmen. */
   readonly deltaCent: Cent;
   readonly istAnteil: number;
+  /** Ist- minus Zielanteil, beide bezogen auf `gesamtCent`; positiv heisst uebergewichtet. */
+  readonly abweichung: number;
 };
 
 export type RebalancingErgebnis = {
@@ -77,6 +79,7 @@ export function rebalanciere(ist: ReadonlyMap<Schluessel, Cent>, ziel: ReadonlyM
       sollCent: 0n,
       deltaCent: 0n,
       istAnteil: anteil(e.ist, gesamt),
+      abweichung: anteil(e.ist, gesamt) - Number(e.z) / BP_GANZ,
     })),
     gesamtCent: gesamt,
   });
@@ -101,6 +104,7 @@ export function rebalanciere(ist: ReadonlyMap<Schluessel, Cent>, ziel: ReadonlyM
     sollCent: soll[i]!,
     deltaCent: soll[i]! - e.ist,
     istAnteil: anteil(e.ist, gesamt),
+    abweichung: anteil(e.ist, gesamt) - Number(e.z) / BP_GANZ,
   }));
 
   return { art: 'ok', zeilen, gesamtCent: gesamt };

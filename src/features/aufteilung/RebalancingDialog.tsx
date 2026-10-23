@@ -55,7 +55,7 @@ export function RebalancingDialog({ anfangsOffen = false, ...props }: Rebalancin
   const [offen, setOffen] = useState(anfangsOffen);
   return (
     <>
-      <Button type="button" variant="outline" size="sm" onClick={() => setOffen(true)} className="gap-1.5 justify-self-start">
+      <Button type="button" variant="outline" size="sm" onClick={() => setOffen(true)} className="gap-1.5">
         <Scale aria-hidden="true" className="size-3.5" />
         {de.rebalancing.knopf}
       </Button>
@@ -165,8 +165,7 @@ function RebalancingInhalt({
           ? de.rebalancing.summeZuViel(prozent((summe - BP_GANZ) / BP_GANZ))
           : null;
 
-  const statusText =
-    angefragt === null ? '' : veraltet ? de.rebalancing.veraltet : ergebnis.laedt ? de.rebalancing.laedt : de.rebalancing.fertig;
+  const statusText = angefragt !== null && veraltet ? de.rebalancing.veraltet : angefragt !== null && ergebnis.laedt ? de.rebalancing.laedt : '';
   const standText = zeitpunktNurTag(daten?.stand ?? stand);
 
   return (
@@ -185,6 +184,9 @@ function RebalancingInhalt({
             </TableHead>
             <TableHead scope="col" className="text-right">
               {de.rebalancing.spalteZiel}
+            </TableHead>
+            <TableHead scope="col" className="text-right max-sm:hidden">
+              {de.rebalancing.spalteAbweichung}
             </TableHead>
             <TableHead scope="col" className="text-right">
               {de.rebalancing.spalteBetrag}
@@ -242,8 +244,11 @@ function RebalancingInhalt({
                     )}
                   />
                 </TableCell>
+                <TableCell className={cn('text-right tabular-nums whitespace-nowrap max-sm:hidden', veraltet && 'opacity-50')}>
+                  {aus || e === undefined ? '' : prozent(e.abweichung, true)}
+                </TableCell>
                 <TableCell className={cn('text-right tabular-nums whitespace-nowrap', veraltet && 'opacity-50')}>
-                  {aus ? <span className="text-text-leise">{de.rebalancing.ausgeschlossen}</span> : e === undefined ? '' : <Betrag zeile={e} />}
+                  {aus || e === undefined ? '' : <Betrag zeile={e} />}
                 </TableCell>
               </TableRow>
             );
@@ -261,12 +266,12 @@ function RebalancingInhalt({
             <TableCell className={cn('text-right tabular-nums', !bereit && 'text-warnung')}>
               {prozent(summe / BP_GANZ)}
             </TableCell>
+            <TableCell className="max-sm:hidden" />
             <TableCell />
           </TableRow>
         </TableFooter>
       </Table>
 
-      {ausgeschlossen.size > 0 ? <p className="text-text-leise">{de.rebalancing.bezugEinbezogen}</p> : null}
       {feldFehler ? (
         <p id={feldFehlerId} className="text-verlust">
           {de.rebalancing.feldUngueltig}

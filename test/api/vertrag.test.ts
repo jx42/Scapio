@@ -157,6 +157,7 @@ describe('Vertragstest: server/vertrag.ts gegen die tatsaechliche Antwort', () =
         istCent: true,
         istAnteil: true,
         zielBp: true,
+        abweichung: true,
         sollCent: true,
         deltaCent: true,
       }),

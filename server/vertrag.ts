@@ -185,6 +185,8 @@ export type RebalancingZeile = {
   readonly istCent: number;
   readonly istAnteil: number;
   readonly zielBp: number;
+  /** Ist- minus Zielanteil der einbezogenen Zeilen; positiv heisst uebergewichtet. */
+  readonly abweichung: number;
   readonly sollCent: number;
   /** Positiv: kaufen bzw. einzahlen; negativ: verkaufen bzw. vom Konto nehmen. */
   readonly deltaCent: number;

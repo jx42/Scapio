@@ -54,35 +54,35 @@ export function AufteilungKachel({ hoehe = null }: AufteilungKachelProps) {
       id="aufteilung"
       zustand={zustand}
       ladehoehe="mittel"
-      fussnoten={<Driftfussnote drift={daten?.drift} />}
-      hoehe={hoehe}
-    >
-      {daten === undefined ? null : (
-        <div className="grid grid-cols-1 gap-3">
-          <AufteilungAnsicht
+      werkzeuge={
+        zustand.art === 'bereit' && daten !== undefined ? (
+          <RebalancingDialog
             positionen={daten.positionen}
             cashCent={daten.cashCent}
             cashAnteil={daten.cashAnteil}
             gesamtCent={gesamtCent}
-            hervorgehoben={gehoverter ?? hervorgehoben}
-            ausgewaehlt={hervorgehoben}
-            onHervorheben={setHervorgehoben}
-            onHover={setGehoverter}
+            stand={daten.stand}
+            angefragt={anfrage}
+            ergebnis={{ daten: rebalancing.data, fehler: rebalancing.error, laedt: rebalancing.isFetching }}
+            onBerechnen={setAnfrage}
+            festesZiel={istDemoModus() && !tokenVorhanden() ? DEMO_REBALANCING_ZIEL : null}
           />
-          {zustand.art === 'bereit' ? (
-            <RebalancingDialog
-              positionen={daten.positionen}
-              cashCent={daten.cashCent}
-              cashAnteil={daten.cashAnteil}
-              gesamtCent={gesamtCent}
-              stand={daten.stand}
-              angefragt={anfrage}
-              ergebnis={{ daten: rebalancing.data, fehler: rebalancing.error, laedt: rebalancing.isFetching }}
-              onBerechnen={setAnfrage}
-              festesZiel={istDemoModus() && !tokenVorhanden() ? DEMO_REBALANCING_ZIEL : null}
-            />
-          ) : null}
-        </div>
+        ) : undefined
+      }
+      fussnoten={<Driftfussnote drift={daten?.drift} />}
+      hoehe={hoehe}
+    >
+      {daten === undefined ? null : (
+        <AufteilungAnsicht
+          positionen={daten.positionen}
+          cashCent={daten.cashCent}
+          cashAnteil={daten.cashAnteil}
+          gesamtCent={gesamtCent}
+          hervorgehoben={gehoverter ?? hervorgehoben}
+          ausgewaehlt={hervorgehoben}
+          onHervorheben={setHervorgehoben}
+          onHover={setGehoverter}
+        />
       )}
     </Kachel>
   );

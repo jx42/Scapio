@@ -13,7 +13,7 @@ import { prozent } from '@/lib/format';
 import type { Aufteilung, Rebalancing } from '@/lib/api';
 import { AufteilungKachel } from '@/features/aufteilung/AufteilungKachel';
 import { bpAusEingabe, zielLesen } from '@/features/aufteilung/zielaufteilung';
-import { erwarteBarrierefrei, euro, fetchErsatz, rendern, type Antwort } from './hilfen';
+import { erwarteBarrierefrei, euro, fetchErsatz, prozentText, rendern, type Antwort } from './hilfen';
 import { drift, kennzahlenAntwort, xirrOk } from './fixtures';
 
 const STAND = '2026-08-26T12:08:00+02:00';
@@ -48,6 +48,7 @@ const zeile = (schluessel: string, istCent: number, zielBp: number, deltaCent: n
   istCent,
   istAnteil: istCent / 10_000_000,
   zielBp,
+  abweichung: istCent / 10_000_000 - zielBp / 10_000,
   sollCent: istCent + deltaCent,
   deltaCent,
 });
@@ -163,6 +164,7 @@ describe('RebalancingDialog', () => {
     expect(await within(dialog).findByText(de.rebalancing.betrag(euro(3_000_000, true), de.rebalancing.richtung.kaufen))).toBeInTheDocument();
     expect(within(dialog).getByText(de.rebalancing.betrag(euro(-2_000_000, true), de.rebalancing.richtung.verkaufen))).toBeInTheDocument();
     expect(within(dialog).getByText(de.rebalancing.betrag(euro(-1_000_000, true), de.rebalancing.richtung.vomKonto))).toBeInTheDocument();
+    expect(within(dialog).getByText(prozentText(-0.3, true))).toBeInTheDocument();
     expect(anfragen).toEqual([`/api/rebalancing?ziel=${encodeURIComponent(`KONTO:0,${WORLD}:5000,${EM}:5000`)}`]);
     expect(zielLesen().ziel.get(EM)).toBe(5000);
     await erwarteBarrierefrei(dialog);
@@ -173,7 +175,7 @@ describe('RebalancingDialog', () => {
     const { user, dialog } = await oeffnen();
     await fuenfzigFuenfzig(user, dialog);
     await user.click(within(dialog).getByRole('button', { name: de.rebalancing.berechnen }));
-    await within(dialog).findByText(de.rebalancing.fertig);
+    await within(dialog).findByText(de.rebalancing.betrag(euro(3_000_000, true), de.rebalancing.richtung.kaufen));
     await user.click(within(dialog).getByLabelText(de.rebalancing.einbeziehen(de.rebalancing.konto)));
     expect(within(dialog).getByRole('status')).toHaveTextContent(de.rebalancing.veraltet);
   });
@@ -185,8 +187,6 @@ describe('RebalancingDialog', () => {
     await user.type(feld(dialog, AUFTEILUNG.positionen[0]!.name), '100');
     await user.click(within(dialog).getByLabelText(de.rebalancing.einbeziehen(de.rebalancing.konto)));
     expect(feld(dialog, de.rebalancing.konto)).toBeDisabled();
-    expect(within(dialog).getByText(de.rebalancing.ausgeschlossen)).toBeInTheDocument();
-    expect(within(dialog).getByText(de.rebalancing.bezugEinbezogen)).toBeInTheDocument();
 
     await user.click(within(dialog).getByRole('button', { name: de.rebalancing.berechnen }));
     expect(anfragen).toEqual([`/api/rebalancing?ziel=${encodeURIComponent(`${WORLD}:10000,${EM}:0`)}`]);
