@@ -17,7 +17,7 @@ import { monatsFluesse } from './fluesse.ts';
 import type { Vpi, RealErgebnis } from './inflation.ts';
 import { realeRendite } from './inflation.ts';
 import type { Tag } from './kalender.ts';
-import { vergleiche } from './kalender.ts';
+import { plusTage, vergleiche } from './kalender.ts';
 import type { MaxDrawdownErgebnis, SharpeErgebnis, VolatilitaetErgebnis, Zinsreihe } from './risiko.ts';
 import { maxDrawdown, monatsrenditen, sharpeRatio, volatilitaetProJahr } from './risiko.ts';
 import type { TwrErgebnis } from './twr.ts';
@@ -49,6 +49,20 @@ export const HINWEIS_CODES = [
   'H_DRIFT_AUSGESETZT',
 ] as const;
 export type HinweisCode = (typeof HINWEIS_CODES)[number];
+
+/**
+ * Fenster, ueber das lueckenhafte Tage gemeldet werden — im Hinweis-Dialog wie im Lauf.
+ *
+ * Die Gesamtzahl taugt nicht als Meldung: sie wird von der Fruehzeit des Depots
+ * beherrscht, in der es je ISIN nur Monatsstaende gibt, steht damit dauerhaft im
+ * vierstelligen Bereich und meldet bei jedem Lauf denselben unveraenderlichen
+ * Zustand. Was man wissen will, ist der frische Ausfall: eine ISIN, die seit
+ * gestern keine Kurse mehr liefert. Der faellt in dieses Fenster, der Altbestand
+ * nicht. 30 Tage, weil das Kursraster ohnehin ueber `FUELL_GRENZE_TAGE` Tage
+ * vorwaerts fuellt und Wochenenden und Feiertage deshalb gar nicht erst als
+ * Luecke erscheinen — was hier auftaucht, ist echter Ausfall.
+ */
+export const JUNGE_SPANNE_TAGE = 30;
 
 /** Code plus Anzahl, den Satz baut die Oberflaeche — wie bei den Lauf-Hinweisen (`shared/hinweise.ts`). */
 export type Hinweis = {
@@ -316,7 +330,9 @@ function sammleHinweise(e: KennzahlenEingaben, reihe: readonly DepotTag[], ausbu
   }
   if (unbekannt.size > 0) hinweise.push({ code: 'H_UNBEKANNTER_TYP', anzahl: unbekannt.size });
 
-  const luecken = reihe.filter((t) => t.lueckenhaft).length;
+  const letzterTag = reihe[reihe.length - 1]?.tag;
+  const ab = letzterTag === undefined ? null : plusTage(letzterTag, -(JUNGE_SPANNE_TAGE - 1));
+  const luecken = reihe.filter((t) => t.lueckenhaft && ab !== null && vergleiche(t.tag, ab) >= 0).length;
   if (luecken > 0) hinweise.push({ code: 'H_KURSLUECKE', anzahl: luecken });
 
   if (ausbuchungen > 0) hinweise.push({ code: 'H_AUSBUCHUNG', anzahl: ausbuchungen });
