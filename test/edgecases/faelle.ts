@@ -60,7 +60,7 @@ export type Fall = {
   /** Beschriftung eines Knopfs, der nach dem Laden einmal geklickt wird, oder eine Folge davon. */
   readonly klick?: string | readonly string[];
   /** Gespeichertes Ziel des Rebalancing-Rechners; ohne Angabe ist der Speicher leer. */
-  readonly zielaufteilung?: { readonly ziel: Readonly<Record<string, number>>; readonly weitere?: readonly string[]; readonly ohneVerkaeufe?: boolean };
+  readonly zielaufteilung?: { readonly ziel: Readonly<Record<string, number>>; readonly ausgeschlossen?: readonly string[] };
   /** Mindesthoehe des Rahmens in px, etwa fuer einen offenen Dialog. */
   readonly mindesthoehe?: number;
 };
@@ -98,6 +98,8 @@ export const POST_STANDARD = fehler(
 );
 
 export const ISIN_WORLD = 'IE00B4L5Y983';
+/** Ein gespeichertes Ziel mit 100 %, damit Berechnen ohne Eingabe frei ist. */
+const ZIEL_VOLL = { KONTO: 1000, [ISIN_WORLD]: 9000 };
 
 export const ALLE_HINWEISE: LaufHinweis[] = [
   { art: 'text', werte: { text: 'Ein fertiger Satz aus einer Datenbankzeile von vor der Umstellung auf Arten.' } },
@@ -445,29 +447,9 @@ export const FAELLE: readonly Fall[] = [
     id: 'rebalancing-ergebnis',
     gruppe: 'rebalancing',
     ansicht: 'aufteilung',
-    titel: 'Gleich gewichtet und berechnet, mit ISIN außerhalb des Depots',
-    zielaufteilung: { ziel: {}, weitere: ['US0378331005'] },
-    klick: ['Rebalancing', 'Gleich gewichten', 'Berechnen'],
-    mindesthoehe: 1000,
-  },
-  {
-    id: 'rebalancing-ohne-verkaeufe-leeres-konto',
-    gruppe: 'rebalancing',
-    ansicht: 'aufteilung',
-    titel: 'Ohne Verkäufe, Verrechnungskonto leer',
-    beschreibung: 'Nichts zu kaufen: alle Beträge 0, der Abstand zum Ziel bleibt.',
-    zielaufteilung: { ziel: {}, ohneVerkaeufe: true },
-    routen: {
-      aufteilung: aendern<Aufteilung>((b) => ({ ...b, cashCent: 0, cashAnteil: 0 })),
-      rebalancing: aendern<Rebalancing>((b) => ({
-        ...b,
-        ohneVerkaeufe: true,
-        abstandDanachCent: 1_234_56,
-        abstandDanach: 0.118,
-        zeilen: b.zeilen.map((z) => ({ ...z, deltaCent: 0, danachCent: z.istCent, anteilDanach: z.istAnteil })),
-      })),
-    },
-    klick: ['Rebalancing', 'Gleich gewichten', 'Berechnen'],
+    titel: 'Berechnet, eine Position ausgeschlossen',
+    zielaufteilung: { ziel: ZIEL_VOLL, ausgeschlossen: ['IE00B3VVMM84'] },
+    klick: ['Rebalancing', 'Berechnen'],
     mindesthoehe: 1000,
   },
   {
@@ -478,7 +460,8 @@ export const FAELLE: readonly Fall[] = [
     routen: {
       rebalancing: fehler(400, 'E_PARAMETER', 'Der Parameter ziel ist unbekannt oder ungültig.', 'Prüfe die Adresse.'),
     },
-    klick: ['Rebalancing', 'Gleich gewichten', 'Berechnen'],
+    zielaufteilung: { ziel: ZIEL_VOLL },
+    klick: ['Rebalancing', 'Berechnen'],
     mindesthoehe: 900,
   },
   {
@@ -492,7 +475,8 @@ export const FAELLE: readonly Fall[] = [
         drift: drift('banner', { abweichung: 0.008, berechnetGesamtCent: 10_080_00, gemeldetGesamtCent: 10_000_00 }),
       })),
     },
-    klick: ['Rebalancing', 'Gleich gewichten', 'Berechnen'],
+    zielaufteilung: { ziel: ZIEL_VOLL },
+    klick: ['Rebalancing', 'Berechnen'],
     mindesthoehe: 1000,
   },
   {
@@ -501,7 +485,8 @@ export const FAELLE: readonly Fall[] = [
     ansicht: 'aufteilung',
     titel: 'Selbstkontrolle: Abbruch, kein Ergebnis',
     routen: { rebalancing: aendern<Rebalancing>((b) => ({ ...b, drift: DRIFT_ABBRUCH })) },
-    klick: ['Rebalancing', 'Gleich gewichten', 'Berechnen'],
+    zielaufteilung: { ziel: ZIEL_VOLL },
+    klick: ['Rebalancing', 'Berechnen'],
     mindesthoehe: 900,
   },
   {

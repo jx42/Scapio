@@ -53,7 +53,7 @@ describe('Demo-Abzug — Abbildung', () => {
     '/api/fluesse?fenster=7m',
     '/api/rebalancing',
     '/api/rebalancing?ziel=KONTO:10000',
-    '/api/rebalancing?ziel=KONTO:10000&ohneVerkaeufe=2',
+    '/api/rebalancing?ziel=KONTO:10000&ohneVerkaeufe=1',
     '/api/refresh',
     '/api/unbekannt',
     '/index.html',

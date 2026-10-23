@@ -22,7 +22,6 @@ const HOECHSTENS = 50;
 
 const ANTWORT_SCHEMA = objektSchema<Rebalancing>({
   art: { type: 'string' },
-  ohneVerkaeufe: { type: 'boolean' },
   zeilen: {
     type: 'array',
     items: objektSchema<RebalancingZeile>({
@@ -34,17 +33,16 @@ const ANTWORT_SCHEMA = objektSchema<Rebalancing>({
       zielBp: { type: 'integer' },
       sollCent: { type: 'number' },
       deltaCent: { type: 'number' },
-      danachCent: { type: 'number' },
-      anteilDanach: { type: 'number' },
     }),
   },
   gesamtCent: { type: 'number' },
-  abstandDanachCent: { type: 'number' },
-  abstandDanach: { type: 'number' },
   ...umschlagSchemaEigenschaften,
 });
 
-/** `KONTO:0,IE00B4L5Y983:7000,…` — ganzzahlige Basispunkte, Summe genau 10 000. */
+/**
+ * `KONTO:0,IE00B4L5Y983:7000,…` — ganzzahlige Basispunkte, Summe genau 10 000. Eine
+ * Position, die fehlt, ist ausgeschlossen.
+ */
 function alsZiel(wert: unknown): Map<Schluessel, number> {
   if (typeof wert !== 'string' || wert === '') throw parameterAbgelehnt('ziel');
   const eintraege = wert.split(',');
@@ -66,17 +64,10 @@ function alsZiel(wert: unknown): Map<Schluessel, number> {
   return ziel;
 }
 
-function alsOhneVerkaeufe(wert: unknown): boolean {
-  if (wert === undefined || wert === '0') return false;
-  if (wert === '1') return true;
-  throw parameterAbgelehnt('ohneVerkaeufe');
-}
-
 export function registriereRebalancing(app: FastifyInstance, ctx: Kontext): void {
   app.get('/api/rebalancing', { schema: { response: { 200: ANTWORT_SCHEMA } } }, (anfrage: FastifyRequest): Rebalancing => {
     const query = nurDieseParameter(anfrage.query, LESENDE_ROUTEN.rebalancing.parameter);
     const ziel = alsZiel(query.ziel);
-    const ohneVerkaeufe = alsOhneVerkaeufe(query.ohneVerkaeufe);
 
     const lm = baueLesemodell(ctx.db, ctx.konfiguration, ctx.heute);
     const k = lm.kennzahlen();
@@ -85,12 +76,11 @@ export function registriereRebalancing(app: FastifyInstance, ctx: Kontext): void
     const ist = new Map<Schluessel, Cent>([[KONTO, k.cashCent], ...k.positionen.map((p) => [p.isin, p.wertCent] as const)]);
     const namen = new Map(k.positionen.map((p) => [p.isin, p.name]));
 
-    const e = rebalanciere(ist, ziel, ohneVerkaeufe);
+    const e = rebalanciere(ist, ziel);
     if (e.art === 'zielUngueltig') throw parameterAbgelehnt('ziel');
 
     return {
       art: e.art,
-      ohneVerkaeufe,
       zeilen: e.zeilen.map((z) => ({
         schluessel: z.schluessel,
         // Fremdtext. Nur Text. [INV-06]
@@ -101,12 +91,8 @@ export function registriereRebalancing(app: FastifyInstance, ctx: Kontext): void
         zielBp: z.zielBp,
         sollCent: centAlsZahl(z.sollCent),
         deltaCent: centAlsZahl(z.deltaCent),
-        danachCent: centAlsZahl(z.danachCent),
-        anteilDanach: zahlOderNull(z.anteilDanach) ?? 0,
       })),
       gesamtCent: centAlsZahl(e.gesamtCent),
-      abstandDanachCent: centAlsZahl(e.abstandDanachCent),
-      abstandDanach: zahlOderNull(e.abstandDanach) ?? 0,
       ...umschlagAus(lm.stand(), lm.drift()),
     };
   });

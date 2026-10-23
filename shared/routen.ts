@@ -10,7 +10,7 @@ export const LESENDE_ROUTEN = {
   zeitreihe: { pfad: '/api/zeitreihe', parameter: ['zeitraum', 'benchmark', 'von', 'bis'] },
   kennzahlen: { pfad: '/api/kennzahlen', parameter: [] },
   aufteilung: { pfad: '/api/aufteilung', parameter: [] },
-  rebalancing: { pfad: '/api/rebalancing', parameter: ['ziel', 'ohneVerkaeufe'] },
+  rebalancing: { pfad: '/api/rebalancing', parameter: ['ziel'] },
   top25: { pfad: '/api/top25', parameter: [] },
   fluesse: { pfad: '/api/fluesse', parameter: ['fenster'] },
   sparplaene: { pfad: '/api/sparplaene', parameter: [] },

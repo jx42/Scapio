@@ -12,7 +12,7 @@ import { de } from '@/i18n/de';
 import { prozent } from '@/lib/format';
 import type { Aufteilung, Rebalancing } from '@/lib/api';
 import { AufteilungKachel } from '@/features/aufteilung/AufteilungKachel';
-import { bpAusEingabe, gleichGewichtet, zielLesen } from '@/features/aufteilung/zielaufteilung';
+import { bpAusEingabe, zielLesen } from '@/features/aufteilung/zielaufteilung';
 import { erwarteBarrierefrei, euro, fetchErsatz, rendern, type Antwort } from './hilfen';
 import { drift, kennzahlenAntwort, xirrOk } from './fixtures';
 
@@ -50,18 +50,13 @@ const zeile = (schluessel: string, istCent: number, zielBp: number, deltaCent: n
   zielBp,
   sollCent: istCent + deltaCent,
   deltaCent,
-  danachCent: istCent + deltaCent,
-  anteilDanach: zielBp / 10_000,
 });
 
 const ERGEBNIS: Rebalancing = {
   stand: STAND,
   drift: drift(),
   art: 'ok',
-  ohneVerkaeufe: false,
   gesamtCent: 10_000_000,
-  abstandDanachCent: 0,
-  abstandDanach: 0,
   zeilen: [zeile('KONTO', 1_000_000, 0, -1_000_000), zeile(WORLD, 7_000_000, 5000, -2_000_000), zeile(EM, 2_000_000, 5000, 3_000_000)],
 };
 
@@ -86,6 +81,11 @@ async function oeffnen() {
   await user.click(await screen.findByRole('button', { name: de.rebalancing.knopf }));
   const dialog = await screen.findByRole('dialog');
   return { user, dialog };
+}
+
+async function fuenfzigFuenfzig(user: ReturnType<typeof userEvent.setup>, dialog: HTMLElement) {
+  await user.type(feld(dialog, AUFTEILUNG.positionen[0]!.name), '50');
+  await user.type(feld(dialog, AUFTEILUNG.positionen[1]!.name), '50');
 }
 
 const feld = (dialog: HTMLElement, name: string) => within(dialog).getByLabelText(de.rebalancing.zielFeld(name));
@@ -113,21 +113,14 @@ describe('Eingabehilfen', () => {
     expect(bpAusEingabe('abc')).toBeNull();
   });
 
-  it('gleich gewichtet in 0,1-%-Schritten, der Rest an die erste Zeile', () => {
-    expect(gleichGewichtet(3)).toEqual([3340, 3330, 3330]);
-    expect(gleichGewichtet(0)).toEqual([]);
-    expect(gleichGewichtet(7).reduce((s, b) => s + b, 0)).toBe(10_000);
-  });
-
   it('verwirft einen manipulierten Speicher zeilenweise', () => {
     localStorage.setItem(
       'portfolio.zielaufteilung',
-      JSON.stringify({ ziel: { KONTO: 500, [WORLD]: 1.5, quatsch: 100, [EM]: 20_000 }, weitere: ['X', 7], ohneVerkaeufe: 'ja' }),
+      JSON.stringify({ ziel: { KONTO: 500, [WORLD]: 1.5, quatsch: 100, [EM]: 20_000 }, ausgeschlossen: ['X', 7, EM] }),
     );
     const z = zielLesen();
     expect([...z.ziel]).toEqual([['KONTO', 500]]);
-    expect(z.weitere).toEqual([]);
-    expect(z.ohneVerkaeufe).toBe(false);
+    expect(z.ausgeschlossen).toEqual([EM]);
   });
 
   it('kaputtes JSON ergibt ein leeres Ziel', () => {
@@ -162,18 +155,15 @@ describe('RebalancingDialog', () => {
     expect(within(dialog).getByRole('button', { name: de.rebalancing.berechnen })).toBeDisabled();
   });
 
-  it('Gleich gewichten, Berechnen: Ergebnis mit Wort und Vorzeichen, Ziel gemerkt', async () => {
+  it('Berechnen: Ergebnis mit Wort und Vorzeichen, Ziel gemerkt', async () => {
     wiederherstellen = fetchErsatz(plan());
     const { user, dialog } = await oeffnen();
-    await user.click(within(dialog).getByRole('button', { name: de.rebalancing.gleichGewichten }));
-    expect(feld(dialog, de.rebalancing.konto)).toHaveValue('0,0');
-    expect(feld(dialog, AUFTEILUNG.positionen[0]!.name)).toHaveValue('50,0');
-
+    await fuenfzigFuenfzig(user, dialog);
     await user.click(within(dialog).getByRole('button', { name: de.rebalancing.berechnen }));
     expect(await within(dialog).findByText(de.rebalancing.betrag(euro(3_000_000, true), de.rebalancing.richtung.kaufen))).toBeInTheDocument();
     expect(within(dialog).getByText(de.rebalancing.betrag(euro(-2_000_000, true), de.rebalancing.richtung.verkaufen))).toBeInTheDocument();
     expect(within(dialog).getByText(de.rebalancing.betrag(euro(-1_000_000, true), de.rebalancing.richtung.vomKonto))).toBeInTheDocument();
-    expect(anfragen).toEqual([`/api/rebalancing?ziel=${encodeURIComponent(`KONTO:0,${WORLD}:5000,${EM}:5000`)}&ohneVerkaeufe=0`]);
+    expect(anfragen).toEqual([`/api/rebalancing?ziel=${encodeURIComponent(`KONTO:0,${WORLD}:5000,${EM}:5000`)}`]);
     expect(zielLesen().ziel.get(EM)).toBe(5000);
     await erwarteBarrierefrei(dialog);
   });
@@ -181,48 +171,59 @@ describe('RebalancingDialog', () => {
   it('eine geaenderte Eingabe macht das Ergebnis veraltet', async () => {
     wiederherstellen = fetchErsatz(plan());
     const { user, dialog } = await oeffnen();
-    await user.click(within(dialog).getByRole('button', { name: de.rebalancing.gleichGewichten }));
+    await fuenfzigFuenfzig(user, dialog);
     await user.click(within(dialog).getByRole('button', { name: de.rebalancing.berechnen }));
     await within(dialog).findByText(de.rebalancing.fertig);
-    await user.click(within(dialog).getByLabelText(de.rebalancing.ohneVerkaeufe));
+    await user.click(within(dialog).getByLabelText(de.rebalancing.einbeziehen(de.rebalancing.konto)));
     expect(within(dialog).getByRole('status')).toHaveTextContent(de.rebalancing.veraltet);
+  });
+
+  it('eine ausgeschlossene Zeile faellt aus Ziel und Summe und bleibt gemerkt', async () => {
+    wiederherstellen = fetchErsatz(plan());
+    const { user, dialog } = await oeffnen();
+    await user.type(feld(dialog, de.rebalancing.konto), '20');
+    await user.type(feld(dialog, AUFTEILUNG.positionen[0]!.name), '100');
+    await user.click(within(dialog).getByLabelText(de.rebalancing.einbeziehen(de.rebalancing.konto)));
+    expect(feld(dialog, de.rebalancing.konto)).toBeDisabled();
+    expect(within(dialog).getByText(de.rebalancing.ausgeschlossen)).toBeInTheDocument();
+    expect(within(dialog).getByText(de.rebalancing.bezugEinbezogen)).toBeInTheDocument();
+
+    await user.click(within(dialog).getByRole('button', { name: de.rebalancing.berechnen }));
+    expect(anfragen).toEqual([`/api/rebalancing?ziel=${encodeURIComponent(`${WORLD}:10000,${EM}:0`)}`]);
+    const gemerkt = zielLesen();
+    expect(gemerkt.ausgeschlossen).toEqual(['KONTO']);
+    expect(gemerkt.ziel.get('KONTO')).toBe(2000);
+  });
+
+  it('ohne einbezogene Zeile laesst sich nichts berechnen', async () => {
+    wiederherstellen = fetchErsatz(plan());
+    const { user, dialog } = await oeffnen();
+    for (const name of [de.rebalancing.konto, ...AUFTEILUNG.positionen.map((p) => p.name)]) {
+      await user.click(within(dialog).getByLabelText(de.rebalancing.einbeziehen(name)));
+    }
+    const knopf = within(dialog).getByRole('button', { name: de.rebalancing.berechnen });
+    expect(knopf).toBeDisabled();
+    expect(knopf).toHaveAccessibleDescription(de.rebalancing.nichtsEinbezogen);
   });
 
   it('belegt aus dem Speicher vor; eine verkaufte Position faellt heraus', async () => {
     localStorage.setItem(
       'portfolio.zielaufteilung',
-      JSON.stringify({ ziel: { KONTO: 1000, [WORLD]: 9000, US0378331005: 500 }, weitere: [], ohneVerkaeufe: true }),
+      JSON.stringify({ ziel: { KONTO: 1000, [WORLD]: 9000, US0378331005: 500 }, ausgeschlossen: [EM, 'US0378331005'] }),
     );
     wiederherstellen = fetchErsatz(plan());
     const { dialog } = await oeffnen();
     expect(feld(dialog, de.rebalancing.konto)).toHaveValue('10,0');
     expect(feld(dialog, AUFTEILUNG.positionen[0]!.name)).toHaveValue('90,0');
-    expect(feld(dialog, AUFTEILUNG.positionen[1]!.name)).toHaveValue('');
+    expect(feld(dialog, AUFTEILUNG.positionen[1]!.name)).toBeDisabled();
     expect(within(dialog).queryByText('US0378331005')).toBeNull();
-    expect(within(dialog).getByLabelText(de.rebalancing.ohneVerkaeufe)).toBeChecked();
-  });
-
-  it('nimmt eine weitere ISIN auf und lehnt eine ungueltige ab', async () => {
-    wiederherstellen = fetchErsatz(plan());
-    const { user, dialog } = await oeffnen();
-    const isin = within(dialog).getByLabelText(de.rebalancing.weitereIsin);
-    await user.type(isin, 'US03783310{Enter}');
-    expect(isin).toHaveAccessibleDescription(de.rebalancing.isinUngueltig);
-    await user.clear(isin);
-    await user.type(isin, WORLD + '{Enter}');
-    expect(isin).toHaveAccessibleDescription(de.rebalancing.isinVorhanden);
-    await user.clear(isin);
-    await user.type(isin, 'us0378331005{Enter}');
-    expect(feld(dialog, 'US0378331005')).toBeInTheDocument();
-    expect(within(dialog).getByText(de.rebalancing.nichtImDepot)).toBeInTheDocument();
-    await user.click(within(dialog).getByRole('button', { name: de.rebalancing.entfernen('US0378331005') }));
-    expect(within(dialog).queryByText(de.rebalancing.nichtImDepot)).toBeNull();
+    expect(within(dialog).getByRole('button', { name: de.rebalancing.berechnen })).toBeEnabled();
   });
 
   it('zeigt bei Drift-Abbruch kein Ergebnis', async () => {
     wiederherstellen = fetchErsatz(plan(() => ({ body: { ...ERGEBNIS, drift: drift('abbruch') } })));
     const { user, dialog } = await oeffnen();
-    await user.click(within(dialog).getByRole('button', { name: de.rebalancing.gleichGewichten }));
+    await fuenfzigFuenfzig(user, dialog);
     await user.click(within(dialog).getByRole('button', { name: de.rebalancing.berechnen }));
     expect(await within(dialog).findByText(de.rebalancing.driftAbbruch)).toBeInTheDocument();
     expect(within(dialog).queryByText(de.rebalancing.betrag(euro(3_000_000, true), de.rebalancing.richtung.kaufen))).toBeNull();
@@ -231,7 +232,7 @@ describe('RebalancingDialog', () => {
   it('meldet einen abgelehnten Parameter als Alarm', async () => {
     wiederherstellen = fetchErsatz(plan(() => ({ status: 400, body: { code: 'E_PARAMETER', text: 'Ziel ungültig.' } })));
     const { user, dialog } = await oeffnen();
-    await user.click(within(dialog).getByRole('button', { name: de.rebalancing.gleichGewichten }));
+    await fuenfzigFuenfzig(user, dialog);
     await user.click(within(dialog).getByRole('button', { name: de.rebalancing.berechnen }));
     expect(await within(dialog).findByRole('alert')).toBeInTheDocument();
   });

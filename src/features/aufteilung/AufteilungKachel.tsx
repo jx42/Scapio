@@ -16,7 +16,7 @@ import { tokenVorhanden } from '@/lib/token';
 import { Kachel } from '@/components/Kachel';
 import { Driftfussnote } from '@/components/Driftbanner';
 import { AufteilungAnsicht } from '@/features/aufteilung/AufteilungAnsicht';
-import { RebalancingDialog, type RebalancingAnfrage } from '@/features/aufteilung/RebalancingDialog';
+import { RebalancingDialog } from '@/features/aufteilung/RebalancingDialog';
 import { DEMO_REBALANCING_ZIEL } from '../../../shared/demoAbzug.ts';
 
 export type AufteilungKachelProps = {
@@ -31,14 +31,14 @@ export type AufteilungKachelProps = {
 export function AufteilungKachel({ hoehe = null }: AufteilungKachelProps) {
   const [hervorgehoben, setHervorgehoben] = useState<string | null>(null);
   const [gehoverter, setGehoverter] = useState<string | null>(null);
-  const [anfrage, setAnfrage] = useState<RebalancingAnfrage | null>(null);
+  const [anfrage, setAnfrage] = useState<string | null>(null);
 
   const abfrage = useQuery({ queryKey: schluessel.aufteilung, queryFn: api.aufteilung });
   const kennzahlen = useQuery({ queryKey: schluessel.kennzahlen, queryFn: api.kennzahlen });
   // Ein abgelehntes Ziel wird beim zweiten Versuch nicht richtiger.
   const rebalancing = useQuery({
-    queryKey: schluessel.rebalancing(anfrage?.ziel ?? '', anfrage?.ohneVerkaeufe ?? false),
-    queryFn: () => api.rebalancing(anfrage?.ziel ?? '', anfrage?.ohneVerkaeufe ?? false),
+    queryKey: schluessel.rebalancing(anfrage ?? ''),
+    queryFn: () => api.rebalancing(anfrage ?? ''),
     enabled: anfrage !== null,
     retry: false,
   });
@@ -56,33 +56,33 @@ export function AufteilungKachel({ hoehe = null }: AufteilungKachelProps) {
       ladehoehe="mittel"
       fussnoten={<Driftfussnote drift={daten?.drift} />}
       hoehe={hoehe}
-      werkzeuge={
-        zustand.art === 'bereit' && daten !== undefined ? (
-          <RebalancingDialog
+    >
+      {daten === undefined ? null : (
+        <div className="grid grid-cols-1 gap-3">
+          <AufteilungAnsicht
             positionen={daten.positionen}
             cashCent={daten.cashCent}
             cashAnteil={daten.cashAnteil}
             gesamtCent={gesamtCent}
-            stand={daten.stand}
-            angefragt={anfrage}
-            ergebnis={{ daten: rebalancing.data, fehler: rebalancing.error, laedt: rebalancing.isFetching }}
-            onBerechnen={setAnfrage}
-            festesZiel={istDemoModus() && !tokenVorhanden() ? DEMO_REBALANCING_ZIEL : null}
+            hervorgehoben={gehoverter ?? hervorgehoben}
+            ausgewaehlt={hervorgehoben}
+            onHervorheben={setHervorgehoben}
+            onHover={setGehoverter}
           />
-        ) : undefined
-      }
-    >
-      {daten === undefined ? null : (
-        <AufteilungAnsicht
-          positionen={daten.positionen}
-          cashCent={daten.cashCent}
-          cashAnteil={daten.cashAnteil}
-          gesamtCent={gesamtCent}
-          hervorgehoben={gehoverter ?? hervorgehoben}
-          ausgewaehlt={hervorgehoben}
-          onHervorheben={setHervorgehoben}
-          onHover={setGehoverter}
-        />
+          {zustand.art === 'bereit' ? (
+            <RebalancingDialog
+              positionen={daten.positionen}
+              cashCent={daten.cashCent}
+              cashAnteil={daten.cashAnteil}
+              gesamtCent={gesamtCent}
+              stand={daten.stand}
+              angefragt={anfrage}
+              ergebnis={{ daten: rebalancing.data, fehler: rebalancing.error, laedt: rebalancing.isFetching }}
+              onBerechnen={setAnfrage}
+              festesZiel={istDemoModus() && !tokenVorhanden() ? DEMO_REBALANCING_ZIEL : null}
+            />
+          ) : null}
+        </div>
       )}
     </Kachel>
   );

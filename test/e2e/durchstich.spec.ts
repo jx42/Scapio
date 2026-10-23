@@ -126,12 +126,12 @@ test.describe('Barrierefreiheit', () => {
   });
 
   for (const breite of [1280, 375]) {
-    test(`Rebalancing: gleich gewichten, berechnen, axe findet nichts (${String(breite)} px)`, async ({ page }) => {
+    test(`Rebalancing: Ziel eingeben, berechnen, axe findet nichts (${String(breite)} px)`, async ({ page }) => {
       await page.setViewportSize({ width: breite, height: 900 });
       await warteAufKacheln(page);
       await page.getByRole('button', { name: 'Rebalancing' }).click();
       const dialog = page.getByRole('dialog');
-      await dialog.getByRole('button', { name: 'Gleich gewichten' }).click();
+      await dialog.getByRole('textbox').first().fill('100');
       await dialog.getByRole('button', { name: 'Berechnen' }).click();
       await expect(dialog.getByRole('status')).toHaveText('Berechnet.');
       await expect(dialog.getByText(/ (kaufen|verkaufen)$/).first()).toBeVisible();

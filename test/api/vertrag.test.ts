@@ -140,11 +140,8 @@ describe('Vertragstest: server/vertrag.ts gegen die tatsaechliche Antwort', () =
       body,
       felder<Rebalancing>({
         art: true,
-        ohneVerkaeufe: true,
         zeilen: true,
         gesamtCent: true,
-        abstandDanachCent: true,
-        abstandDanach: true,
         stand: true,
         drift: true,
       }),
@@ -162,8 +159,6 @@ describe('Vertragstest: server/vertrag.ts gegen die tatsaechliche Antwort', () =
         zielBp: true,
         sollCent: true,
         deltaCent: true,
-        danachCent: true,
-        anteilDanach: true,
       }),
     );
     schluessel('rebalancing.drift', body.drift, DRIFT);

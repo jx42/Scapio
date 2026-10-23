@@ -56,7 +56,7 @@ describe('/api/rebalancing', () => {
     expect(r.zeilen[0]!.istCent).toBe(auf.cashCent);
     expect(r.zeilen.find((z) => z.schluessel === erste.isin)?.istCent).toBe(erste.wertCent);
     expect(r.zeilen.reduce((s, z) => s + z.deltaCent, 0)).toBe(0);
-    expect(r.zeilen.filter((z) => z.schluessel !== erste.isin).every((z) => z.danachCent === 0)).toBe(true);
+    expect(r.zeilen.filter((z) => z.schluessel !== erste.isin).every((z) => z.sollCent === 0)).toBe(true);
   });
 
   it('fuehrt eine Ziel-ISIN ausserhalb des Depots ohne Namen', async () => {
@@ -65,10 +65,13 @@ describe('/api/rebalancing', () => {
     expect(fremd).toMatchObject({ imDepot: false, name: null, istCent: 0 });
   });
 
-  it('verkauft ohne Verkaeufe nichts', async () => {
-    const r = await rebalancing('ziel=KONTO:10000&ohneVerkaeufe=1');
-    expect(r.ohneVerkaeufe).toBe(true);
-    expect(r.zeilen.every((z) => z.deltaCent === 0)).toBe(true);
+  it('laesst eine Position ohne Ziel aus Summe und Zeilen heraus', async () => {
+    const auf = JSON.parse((await app.inject({ method: 'GET', url: '/api/aufteilung', headers: eigeneHerkunft() })).body) as Aufteilung;
+    const erste = auf.positionen[0]!;
+    const r = await rebalancing(`ziel=${erste.isin}:10000`);
+    expect(r.zeilen.map((z) => z.schluessel)).toEqual([erste.isin]);
+    expect(r.gesamtCent).toBe(erste.wertCent);
+    expect(r.zeilen[0]!.deltaCent).toBe(0);
   });
 
   it.each([
@@ -82,8 +85,7 @@ describe('/api/rebalancing', () => {
     'ziel=KONTO:10000.0',
     'ziel=KONTO:-1,IE00B4L5Y983:10001',
     `ziel=${Array.from({ length: 51 }, (_, i) => `XX${String(i).padStart(9, '0')}0:${i === 0 ? 10000 : 0}`).join(',')}`,
-    'ziel=KONTO:10000&ohneVerkaeufe=ja',
-    'ziel=KONTO:10000&ohneVerkaeufe=1&ohneVerkaeufe=1',
+    'ziel=KONTO:10000&ohneVerkaeufe=1',
     'ziel=KONTO:10000&ziel=KONTO:10000',
     'ziel=KONTO:10000&x=1',
   ])('lehnt „%s“ mit E_PARAMETER ab', async (query) => {

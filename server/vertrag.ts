@@ -188,18 +188,15 @@ export type RebalancingZeile = {
   readonly sollCent: number;
   /** Positiv: kaufen bzw. einzahlen; negativ: verkaufen bzw. vom Konto nehmen. */
   readonly deltaCent: number;
-  readonly danachCent: number;
-  readonly anteilDanach: number;
 };
 
 export type Rebalancing = MitStand & {
-  /** `ohneWert`: Depot und Konto ohne positiven Wert, alle Betraege 0. */
+  /** `ohneWert`: die einbezogenen Zeilen ohne positiven Wert, alle Betraege 0. */
   readonly art: 'ok' | 'ohneWert';
-  readonly ohneVerkaeufe: boolean;
+  /** Nur die einbezogenen Zeilen; eine ausgeschlossene Position fehlt. */
   readonly zeilen: readonly RebalancingZeile[];
+  /** Summe der einbezogenen Zeilen. */
   readonly gesamtCent: number;
-  readonly abstandDanachCent: number;
-  readonly abstandDanach: number;
 };
 
 export type Fondsanteil = {

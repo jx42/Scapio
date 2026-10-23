@@ -24,14 +24,6 @@ export function bpAusEingabe(text: string): number | null {
   return bp <= BP_GANZ ? bp : null;
 }
 
-/** 100 % zu gleichen Teilen in 0,1-%-Schritten; den Rest bekommt die erste Zeile. */
-export function gleichGewichtet(anzahl: number): number[] {
-  if (anzahl <= 0) return [];
-  const einheiten = BP_GANZ / SCHRITT;
-  const je = Math.floor(einheiten / anzahl);
-  return Array.from({ length: anzahl }, (_, i) => (je + (i === 0 ? einheiten - je * anzahl : 0)) * SCHRITT);
-}
-
 export function zielParameter(ziel: ReadonlyArray<readonly [string, number]>): string {
   return ziel.map(([schluessel, bp]) => `${schluessel}:${String(bp)}`).join(',');
 }
@@ -56,12 +48,11 @@ const NAME = 'zielaufteilung';
 
 export type GespeichertesZiel = {
   readonly ziel: ReadonlyMap<string, number>;
-  /** Von Hand aufgenommene ISINs ausserhalb des Depots; sie bleiben, bis man sie entfernt. */
-  readonly weitere: readonly string[];
-  readonly ohneVerkaeufe: boolean;
+  /** Zeilen, die nicht in die Rechnung eingehen; ihr Ziel bleibt fuer spaeter stehen. */
+  readonly ausgeschlossen: readonly string[];
 };
 
-const LEER: GespeichertesZiel = { ziel: new Map(), weitere: [], ohneVerkaeufe: false };
+const LEER: GespeichertesZiel = { ziel: new Map(), ausgeschlossen: [] };
 
 const gueltigerSchluessel = (s: unknown): s is string => typeof s === 'string' && (s === KONTO || istIsin(s));
 const gueltigeBp = (bp: unknown): bp is number => Number.isInteger(bp) && (bp as number) >= 0 && (bp as number) <= BP_GANZ;
@@ -70,18 +61,17 @@ const gueltigeBp = (bp: unknown): bp is number => Number.isInteger(bp) && (bp as
 export function zielLesen(): GespeichertesZiel {
   const roh = jsonLesen(NAME);
   if (typeof roh !== 'object' || roh === null) return LEER;
-  const { ziel, weitere, ohneVerkaeufe } = roh as Record<string, unknown>;
+  const { ziel, ausgeschlossen } = roh as Record<string, unknown>;
   const eintraege =
     typeof ziel === 'object' && ziel !== null
       ? Object.entries(ziel).filter(([s, bp]) => gueltigerSchluessel(s) && gueltigeBp(bp)).slice(0, HOECHSTENS_ZEILEN)
       : [];
   return {
     ziel: new Map(eintraege as [string, number][]),
-    weitere: Array.isArray(weitere) ? weitere.filter((s): s is string => typeof s === 'string' && istIsin(s)).slice(0, HOECHSTENS_ZEILEN) : [],
-    ohneVerkaeufe: ohneVerkaeufe === true,
+    ausgeschlossen: Array.isArray(ausgeschlossen) ? ausgeschlossen.filter(gueltigerSchluessel).slice(0, HOECHSTENS_ZEILEN) : [],
   };
 }
 
 export function zielSchreiben(z: GespeichertesZiel): void {
-  jsonSchreiben(NAME, { ziel: Object.fromEntries(z.ziel), weitere: z.weitere, ohneVerkaeufe: z.ohneVerkaeufe });
+  jsonSchreiben(NAME, { ziel: Object.fromEntries(z.ziel), ausgeschlossen: z.ausgeschlossen });
 }
