@@ -26,6 +26,10 @@
  * Auch unter `sm` bleiben alle sechs Karten gross, zwei je Reihe. Damit das bei 390 px
  * traegt, ist jede Subline einzeilig und so kurz gehalten, dass sie in die halbe Breite
  * passt: Stand ohne Uhrzeit, Drawdown-Zeitraum mit zweistelligem Jahr.
+ *
+ * Die Drawdown-Karte schaltet das Einzeichnen im Verlauf um. Der Knopf liegt
+ * als Flaeche ueber der Karte statt um sie herum: ein `<button>` darf den Info-Knopf nicht
+ * enthalten.
  */
 
 import { de } from '@/i18n/de';
@@ -54,6 +58,8 @@ import { RichtungsPfeil, TextMitPfeil } from '@/components/RichtungsPfeil';
 export type VerlaufKennzahlenProps = {
   readonly daten: KennzahlenAntwort | undefined;
   readonly laedt: boolean;
+  readonly drawdownGezeigt: boolean;
+  readonly onDrawdownZeigen: () => void;
 };
 
 /** Die Karte nimmt die Richtung ihrer Kopfzahl in Rand und Flaeche auf; neutral bleibt Schimmer. */
@@ -76,9 +82,10 @@ type Karte = {
    */
   readonly sublineAnimiert?: boolean;
   readonly erklaerung: string;
+  readonly aktion?: { readonly bezeichnung: string; readonly gedrueckt: boolean; readonly onKlick: () => void };
 };
 
-function karten(daten: KennzahlenAntwort): readonly Karte[] {
+function karten(daten: KennzahlenAntwort, drawdownGezeigt: boolean, onDrawdownZeigen: () => void): readonly Karte[] {
   const xirr = xirrAnzeige(daten.xirr);
   const izf = xirr.rate === null ? xirr.wert : prozent(xirr.rate);
   const real = realRendite(daten.real);
@@ -123,6 +130,7 @@ function karten(daten: KennzahlenAntwort): readonly Karte[] {
       subline: maxDrawdown.zeitraumKurz,
       sublineAnimiert: false,
       erklaerung: de.kennzahlen.erklaerung.maxDrawdown,
+      aktion: { bezeichnung: de.verlauf.drawdownZeigen, gedrueckt: drawdownGezeigt, onKlick: onDrawdownZeigen },
     },
     ...(sharpe === null
       ? []
@@ -139,7 +147,7 @@ function karten(daten: KennzahlenAntwort): readonly Karte[] {
   ];
 }
 
-export function VerlaufKennzahlen({ daten, laedt }: VerlaufKennzahlenProps) {
+export function VerlaufKennzahlen({ daten, laedt, drawdownGezeigt, onDrawdownZeigen }: VerlaufKennzahlenProps) {
   if (laedt) {
     return (
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
@@ -153,7 +161,7 @@ export function VerlaufKennzahlen({ daten, laedt }: VerlaufKennzahlenProps) {
   // Vor dem ersten Lauf gaebe es nur Nullkarten und „nicht berechenbar“.
   if (daten === undefined || daten.drift.stufe === 'leer') return null;
 
-  const alleKarten = karten(daten);
+  const alleKarten = karten(daten, drawdownGezeigt, onDrawdownZeigen);
   return (
     <section aria-label={de.kennzahlen.ueberblick}>
       <div className={cn('grid grid-cols-2 gap-3 sm:grid-cols-3', alleKarten.length === 6 ? 'lg:grid-cols-6' : 'lg:grid-cols-5')}>
@@ -173,10 +181,19 @@ function Kennzahlkarte({ karte }: { readonly karte: Karte }) {
     karte.sublineAnimiert === false ? (karte.subline ?? '') : gezaehlteSubline;
 
   return (
-    <Card className={cn('min-w-0', GLAS_TON[karte.richtung])}>
+    <Card className={cn('min-w-0', karte.aktion === undefined ? undefined : 'relative', GLAS_TON[karte.richtung])}>
+      {karte.aktion === undefined ? null : (
+        <button
+          type="button"
+          aria-label={karte.aktion.bezeichnung}
+          aria-pressed={karte.aktion.gedrueckt}
+          onClick={karte.aktion.onKlick}
+          className="absolute inset-0 cursor-pointer rounded-lg aria-pressed:ring-1 aria-pressed:ring-verlust"
+        />
+      )}
       <CardHeader className="max-sm:px-4">
         <CardTitle>
-          <span className="inline-flex items-center gap-1.5">
+          <span className="relative z-10 inline-flex items-center gap-1.5">
             {karte.bezeichnung}
             <InfoKnopf bezeichnung={karte.bezeichnung}>
               <p>{karte.erklaerung}</p>

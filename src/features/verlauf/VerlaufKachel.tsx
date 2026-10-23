@@ -16,6 +16,10 @@
  * Der frei gewaehlte Zeitraum des Reglers wird nicht gespeichert: er haengt an den Tagen
  * der Reihe, die mit jedem Lauf weiterwandert. In der Demo steht der Regler gesperrt da —
  * der statische Abzug kennt nur die festen Zeitraeume. [ADR-048]
+ *
+ * Die Drawdown-Karte und die Zeile in den Kennzahlen schalten das Einzeichnen um. Der
+ * Drawdown zaehlt die ganze Historie, also springt der Verlauf dafuer auf „Max“; ein
+ * anderer Zeitraum nimmt die Markierung wieder weg.
  */
 
 import { useState } from 'react';
@@ -34,6 +38,7 @@ import {
   type ZeitraumAuswahl,
 } from '@/lib/api';
 import { istDemoModus } from '@/lib/demoModus';
+import { schalteDrawdown, setzeDrawdownGezeigt, useDrawdownGezeigt } from '@/lib/drawdownMarkierung';
 import { AN_AUS, useGespeichert, type AnAus } from '@/lib/speicher';
 import { Kachel } from '@/components/Kachel';
 import { InfoKnopf } from '@/components/InfoKnopf';
@@ -61,6 +66,7 @@ export function VerlaufKachel() {
   const [frei, setFrei] = useState<{ readonly von: string; readonly bis: string } | null>(null);
   const [auswahlRunde, setAuswahlRunde] = useState(0);
   const auswahl: ZeitraumAuswahl = frei ?? zeitraum;
+  const drawdownZeigen = useDrawdownGezeigt();
   const [modus, setModus] = useGespeichert<VerlaufAnsichtModus>('verlaufModus', 'vermoegen', VERLAUF_MODI);
   const [benchmarkAuswahl, setBenchmarkAuswahl] = useGespeichert<BenchmarkAuswahl>(
     'benchmark',
@@ -96,11 +102,25 @@ export function VerlaufKachel() {
 
   const daten = abfrage.data;
 
+  if (drawdownZeigen && (frei !== null || zeitraum !== 'max')) {
+    setFrei(null);
+    setAuswahlRunde((n) => n + 1);
+    setZeitraum('max');
+  }
+  const gesamtDrawdown = kennzahlenAbfrage.data?.maxDrawdown;
+  const drawdown =
+    drawdownZeigen && gesamtDrawdown?.art === 'ok' && gesamtDrawdown.anteil < 0 ? gesamtDrawdown : null;
+
   const zustand = kachelZustand(abfrage, (d) => d.reiheLeer);
 
   return (
     <div className="flex flex-col gap-4">
-      <VerlaufKennzahlen daten={kennzahlenAbfrage.data} laedt={kennzahlenAbfrage.isPending} />
+      <VerlaufKennzahlen
+        daten={kennzahlenAbfrage.data}
+        laedt={kennzahlenAbfrage.isPending}
+        drawdownGezeigt={drawdownZeigen}
+        onDrawdownZeigen={schalteDrawdown}
+      />
       <Tabs
         value={modus}
         onValueChange={(wert) => {
@@ -167,16 +187,19 @@ export function VerlaufKachel() {
               gesperrt={chartGesperrt(daten.drift)}
               sperrgrund={sperrtext(daten.drift)}
               onZeitraum={(neu) => {
+                setzeDrawdownGezeigt(false);
                 setFrei(null);
                 setAuswahlRunde((n) => n + 1);
                 setZeitraum(neu);
               }}
               onFreierZeitraum={(von, bis) => {
+                setzeDrawdownGezeigt(false);
                 setFrei({ von, bis });
               }}
               benchmark={daten.benchmark}
               zeigeEinzahlung={zeigeEinzahlungAuswahl === 'an'}
               zeigeZufluesse={zeigeZufluesseAuswahl === 'an'}
+              drawdown={drawdown}
             />
           )}
         </Kachel>
