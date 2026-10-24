@@ -124,7 +124,7 @@ export function AufteilungAnsicht({
         }}
       >
         <ResponsiveContainer width="100%" height="100%">
-          <PieChart aria-hidden="true">
+          <PieChart accessibilityLayer={false} aria-hidden="true">
             {/* rootTabIndex -1: das SVG ist aria-hidden, ein Tabstopp darin waere fuer
                 Screenreader ein Loch. Bedient wird ueber die Legende. */}
             <Pie
@@ -148,9 +148,10 @@ export function AufteilungAnsicht({
                   fillOpacity={hervorgehoben === null || hervorgehoben === s.schluessel ? 1 : 0.35}
                 />
               ))}
+              {/* Ohne `position`: "center" liest in Recharts 3 nur die kartesische viewBox, die
+                  es im PieChart nicht gibt; RingMitte braucht nur cx/cy der polaren. */}
               {gesamtCent === null ? null : (
                 <Label
-                  position="center"
                   content={<RingMitte beschriftung={de.aufteilung.gesamt} wert={euroAusCent(gesamtCent)} />}
                 />
               )}

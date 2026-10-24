@@ -1,8 +1,6 @@
 /*
  * Kachel 1, Helfer fuer die Achsen der beiden Chart-Ansichten: Y-Raster, Monats-Ticks,
- * Markierungslinien, Leuchtlinien, Y-Hoverlinie. Markierungs- und Leuchtlinien sind
- * Funktionen und keine Komponenten, weil Recharts seine Kinder nach Typ sucht — ein
- * Wrapper wuerde sie nicht finden.
+ * Markierungslinien, Leuchtlinien, Y-Hoverlinie.
  */
 
 import { Line, ReferenceArea, ReferenceDot, ReferenceLine } from 'recharts';

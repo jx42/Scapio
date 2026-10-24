@@ -5,7 +5,8 @@
  * dieser Rahmen role="img", ein aria-label mit der Kernaussage und eine visuell
  * verborgene Datentabelle als gleichwertige Alternative — nicht als Zugabe, sondern
  * als die Alternative. Kein Chart wird ohne ihn eingebunden. [P-06] Das Chart selbst
- * ist nicht fokussierbar — kein `accessibilityLayer`, nichts Bedienbares in role="img".
+ * ist nicht fokussierbar — `accessibilityLayer={false}` an jedem Chart (seit Recharts 3 an),
+ * nichts Bedienbares in role="img".
  *
  * Zweite und letzte Stelle mit einem style-Attribut: Recharts braucht ein Pixelmass am
  * Container, sonst zeichnet es in eine Flaeche der Hoehe null. Gesetzt werden

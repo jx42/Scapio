@@ -91,6 +91,7 @@ export function FluesseAnsicht({ monate, schnittCent, fenster }: FluesseAnsichtP
         >
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
+              accessibilityLayer={false}
               data={daten}
               margin={FLUESSE_MARGIN}
               onMouseMove={behandleMausBewegung}

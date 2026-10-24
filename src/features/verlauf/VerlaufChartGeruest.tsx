@@ -36,8 +36,8 @@ import { FARBE } from '@/lib/farben';
 import { ChartRahmen, type ChartTabelle } from '@/components/ChartRahmen';
 import { domainBeschriftungen, monatsTicks, type YAchse } from '@/features/verlauf/verlaufAchsen';
 import {
+  LageMelder,
   VorschauUeberlage,
-  lageMelder,
   type ChartLage,
   type VorschauAnschluss,
 } from '@/features/verlauf/VerlaufVorschau';
@@ -90,7 +90,7 @@ export function VerlaufChartGeruest({
       fussEinzug={VERLAUF_MARGIN.left + yBreite}
     >
       <ResponsiveContainer width="100%" height="100%">
-        <ComposedChart data={daten} margin={VERLAUF_MARGIN}>
+        <ComposedChart accessibilityLayer={false} data={daten} margin={VERLAUF_MARGIN}>
           {defs}
           <CartesianGrid stroke={FARBE.rand} strokeDasharray={GITTER_STRICHELUNG} vertical={false} />
           <XAxis
@@ -117,7 +117,7 @@ export function VerlaufChartGeruest({
           {nulllinie ? <ReferenceLine y={0} stroke={FARBE.rand} /> : null}
           <RechartsTooltip content={tooltip} cursor={{ stroke: FARBE.rand }} />
           {children}
-          {vorschau === undefined ? null : lageMelder(lage, daten)}
+          {vorschau === undefined ? null : <LageMelder lage={lage} daten={daten} />}
         </ComposedChart>
       </ResponsiveContainer>
       {vorschau === undefined ? null : <VorschauUeberlage anschluss={vorschau} lage={lage} />}
