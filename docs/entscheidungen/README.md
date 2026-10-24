@@ -61,3 +61,4 @@ der Geschichte stehen. Eine neue ADR bekommt die nächste freie Nummer und eine 
 | [054](ADR-054-agentensperre-in-den-einstellungen.md) | Agentensperre in den Einstellungen, Toolnamen ohne Präfix | gilt |
 | [055](ADR-055-update-und-release-kette.md) | Update- und Release-Kette geschlossen | gilt |
 | [056](ADR-056-datenverzeichnis-und-dateirechte-aus-einer-hand.md) | Datenverzeichnis und Dateirechte aus einer Hand | gilt |
+| [057](ADR-057-rebalancing-rechner.md) | Rebalancing-Rechner als Rechnung, nicht als Empfehlung | gilt |

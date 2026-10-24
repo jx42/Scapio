@@ -32,6 +32,8 @@ import type {
   MitStand,
   Monatsfluss,
   PositionZeile,
+  Rebalancing,
+  RebalancingZeile,
   RealisierteZeile,
   Sparplan,
   Sparplaene,
@@ -83,6 +85,8 @@ export type {
   MitStand,
   Monatsfluss,
   PositionZeile,
+  Rebalancing,
+  RebalancingZeile,
   RealisierteZeile,
   Sparplan,
   Sparplaene,
@@ -256,6 +260,8 @@ export const api = {
 
   aufteilung: () => holen<Aufteilung>(LESENDE_ROUTEN.aufteilung.pfad),
 
+  rebalancing: (ziel: string) => holen<Rebalancing>(`${LESENDE_ROUTEN.rebalancing.pfad}?ziel=${encodeURIComponent(ziel)}`),
+
   top25: () => holen<Top25>(LESENDE_ROUTEN.top25.pfad),
 
   fluesse: (fenster: Fenster) =>
@@ -328,6 +334,7 @@ export const schluessel = {
   zeitreihe: (auswahl: ZeitraumAuswahl, benchmark: string | null) => ['zeitreihe', auswahl, benchmark] as const,
   kennzahlen: ['kennzahlen'] as const,
   aufteilung: ['aufteilung'] as const,
+  rebalancing: (ziel: string) => ['rebalancing', ziel] as const,
   top25: ['top25'] as const,
   fluesse: (fenster: Fenster) => ['fluesse', fenster] as const,
   sparplaene: ['sparplaene'] as const,

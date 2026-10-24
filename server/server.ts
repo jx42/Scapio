@@ -37,6 +37,7 @@ import { registriereHealth } from './routen/health.ts';
 import { registriereKennzahlen } from './routen/kennzahlen.ts';
 import { registriereLauf } from './routen/lauf.ts';
 import { registriereMcpAnmeldung } from './routen/mcpAnmeldung.ts';
+import { registriereRebalancing } from './routen/rebalancing.ts';
 import { registriereRefresh } from './routen/refresh.ts';
 import { registriereSparplaene } from './routen/sparplaene.ts';
 import { registriereTop25 } from './routen/top25.ts';
@@ -268,6 +269,7 @@ export function baueServer(optionen: ServerOptionen): { app: FastifyInstance; to
   registriereZeitreihe(app, ctx);
   registriereKennzahlen(app, ctx);
   registriereAufteilung(app, ctx);
+  registriereRebalancing(app, ctx);
   registriereTop25(app, ctx);
   registriereFluesse(app, ctx);
   registriereSparplaene(app, ctx);

@@ -389,7 +389,7 @@ export const de = {
     titel: 'Verbindung zu Scalable Capital',
     /** Der Text zu `E_MCP_ANMELDUNG` — abgelaufener Token oder nicht freigeschalteter Zugang. */
     noetig:
-      'Die Verbindung zu Scalable Capital ist abgelaufen, oder der Zugang ist nicht freigeschaltet. Prüfe, ob in deinem Konto unter „Agentic Investing“ der MCP-Zugang aktiviert ist, und melde dich erneut an.',
+      'Die Anmeldung bei Scalable Capital ist abgelaufen. Sie gilt aus Sicherheitsgründen nur eine Woche, danach musst du dich erneut anmelden. Klappt das nicht, prüfe, ob in deinem Konto unter „Agentic Investing“ der MCP-Zugang aktiviert ist.',
     knopf: 'Anmelden',
     /** Beschriftung des Action-Buttons im Alert selbst; den Rahmen nennt der Alert-Titel. */
     anmeldenKnopf: 'Anmelden',
@@ -557,6 +557,41 @@ export const de = {
     onvista: 'onvista',
     onvistaTitel: 'Details bei onvista',
     onvistaOeffnen: (name: string) => `${name} bei onvista öffnen, neuer Tab`,
+  },
+
+  rebalancing: {
+    knopf: 'Rebalancing',
+    titel: 'Rebalancing',
+    beschreibung: 'Zielaufteilung eingeben und je Zeile den Betrag zum Ziel berechnen.',
+    tabelle: 'Zielaufteilung und Betrag zum Ziel',
+    spaltePosition: 'Position',
+    spalteIstWert: 'Ist €',
+    spalteIstAnteil: 'Ist %',
+    spalteZiel: 'Ziel %',
+    spalteAbweichung: 'Abweichung',
+    spalteBetrag: 'Betrag zum Ziel',
+    konto: 'Bargeld (Verrechnungskonto)',
+    einbeziehen: (name: string) => `${name} in die Rechnung einbeziehen`,
+    nichtsEinbezogen: 'Mindestens eine Zeile muss in die Rechnung eingehen.',
+    istKurz: (wert: string, anteil: string) => `${wert} · ${anteil}`,
+    zielFeld: (name: string) => `Zielanteil ${name} in Prozent`,
+    feldUngueltig: 'Jeder Zielanteil ist eine Zahl von 0 bis 100 mit höchstens einer Nachkommastelle.',
+    summe: 'Summe',
+    summeFehlt: (differenz: string) => `Noch ${differenz} zu verteilen, bis die Summe 100 % ergibt.`,
+    summeZuViel: (differenz: string) => `${differenz} zu viel verteilt, die Summe muss 100 % ergeben.`,
+    berechnen: 'Berechnen',
+    richtung: {
+      kaufen: 'kaufen',
+      verkaufen: 'verkaufen',
+      aufsKonto: 'aufs Konto',
+      vomKonto: 'vom Konto',
+    },
+    betrag: (wert: string, richtung: string) => `${wert} ${richtung}`,
+    laedt: 'Wird berechnet …',
+    ohneWert: 'Die einbezogenen Zeilen haben keinen Wert, es gibt nichts aufzuteilen.',
+    driftBanner: 'Die Selbstkontrolle weicht ab: die Ist-Werte können ungenau sein.',
+    driftAbbruch: 'Die Ist-Werte stimmen nicht mit der Bank überein, deshalb zeigt der Rechner kein Ergebnis.',
+    gesperrt: 'In der öffentlichen Demo ist das Beispielziel fest.',
   },
 
   kennzahlen: {
