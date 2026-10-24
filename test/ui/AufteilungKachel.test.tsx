@@ -131,7 +131,7 @@ describe('AufteilungKachel', () => {
     await screen.findByText(de.aufteilung.tabelle);
 
     const knopf = screen.getByRole('button', {
-      name: de.aufteilung.positionWaehlen('iShares Core MSCI World'),
+      name: /^iShares Core MSCI World /,
     });
     expect(knopf).toHaveAttribute('aria-pressed', 'false');
 
@@ -147,10 +147,10 @@ describe('AufteilungKachel', () => {
     await screen.findByText(de.aufteilung.tabelle);
 
     const ersteZeile = screen.getByRole('button', {
-      name: de.aufteilung.positionWaehlen('iShares Core MSCI World'),
+      name: /^iShares Core MSCI World /,
     });
     const zweiteZeile = screen.getByRole('button', {
-      name: de.aufteilung.positionWaehlen('iShares Core MSCI EM IMI'),
+      name: /^iShares Core MSCI EM IMI /,
     });
 
     // Die Hover-Fläche liegt an der Listenzeile (`zeile-hover`), nicht am Knopf.

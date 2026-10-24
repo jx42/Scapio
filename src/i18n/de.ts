@@ -554,7 +554,6 @@ export const de = {
     cash: 'Bargeld (Verrechnungskonto)',
     artCash: 'Cash',
     leer: 'Keine Positionen im Bestand.',
-    positionWaehlen: (name: string) => `Position ${name} hervorheben`,
     onvista: 'onvista',
     onvistaTitel: 'Details bei onvista',
     onvistaOeffnen: (name: string) => `${name} bei onvista öffnen, neuer Tab`,

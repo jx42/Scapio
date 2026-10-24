@@ -182,7 +182,6 @@ export function AufteilungAnsicht({
                 <button
                   type="button"
                   aria-pressed={ausgewaehlt === s.schluessel}
-                  aria-label={de.aufteilung.positionWaehlen(s.name)}
                   onMouseEnter={() => onHover(s.schluessel)}
                   onMouseLeave={() => onHover(null)}
                   onFocus={() => onHover(s.schluessel)}
