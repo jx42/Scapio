@@ -29,9 +29,9 @@ const ACHSEN_ZEICHENBREITE_EM = 0.6;
 const ACHSEN_BESCHRIFTUNG_ABSTAND = 8;
 
 /**
- * Breite einer Y-Achse: genau die laengste Beschriftung plus Abstand. Recharts 2 kennt
- * kein `width="auto"`, und eine feste Breite laesst links Leerraum, sobald die Zahlen
- * kuerzer sind als der Worst Case.
+ * Breite einer Y-Achse: genau die laengste Beschriftung plus Abstand. Selbst gerechnet statt
+ * `width="auto"`, weil Regler und Hoverlinie den linken Rand der Zeichenflaeche schon vor dem
+ * Zeichnen brauchen; eine feste Breite liesse links Leerraum, sobald die Zahlen kuerzer sind.
  */
 export function yAchsenBreite(beschriftungen: readonly string[]): number {
   const laengste = Math.max(0, ...beschriftungen.map((text) => text.length));

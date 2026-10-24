@@ -5,7 +5,7 @@
  *
  * Ein eigenes SVG ueber dem Chart, nicht eine Schicht darin: ein Ziehschritt rendert so nur
  * diese Ueberlage, nicht Recharts samt aller Punkte (gemessen 12–34 ms je Schritt bei
- * 420 Punkten). Zeichenflaeche und X-Skala meldet ein unsichtbares `<Customized>` (`lageMelder`),
+ * 420 Punkten). Zeichenflaeche und X-Skala meldet ein unsichtbares Kind des Charts (`LageMelder`),
  * und das nur, wenn das Chart ohnehin rendert. Beide SVGs beginnen in der linken oberen Ecke
  * von `.chart-flaeche`, also gelten dieselben Koordinaten.
  *
@@ -20,7 +20,7 @@
  */
 
 import { useLayoutEffect } from 'react';
-import { Customized } from 'recharts';
+import { usePlotArea, useXAxisScale } from 'recharts';
 
 import type { Zeitpunkt } from '@/lib/api';
 import { useBeobachtet, type Beobachtbar } from '@/lib/beobachtbar';
@@ -59,34 +59,30 @@ export type ChartLage = {
   readonly daten: readonly Zeitpunkt[];
 };
 
-type Skala = ((wert: string) => number | undefined) & { bandwidth?: () => number };
-
-/** Was Recharts einem `<Customized>` mitgibt, soweit hier gebraucht. */
-type MelderProps = {
+/** Steht als Kind im Chart und liest dort Zeichenflaeche und X-Skala. */
+export function LageMelder({
+  lage,
+  daten,
+}: {
   readonly lage: Beobachtbar<ChartLage | null>;
   readonly daten: readonly Zeitpunkt[];
-  readonly offset?: Flaeche;
-  readonly xAxisMap?: Record<string, { readonly scale: Skala }>;
-};
-
-/** Als Funktion, nicht als Komponente: Recharts findet seine Kinder ueber den Typ. */
-export function lageMelder(lage: Beobachtbar<ChartLage | null>, daten: readonly Zeitpunkt[]) {
-  return <Customized component={<LageMelder lage={lage} daten={daten} />} />;
-}
-
-function LageMelder({ lage, daten, offset, xAxisMap }: MelderProps) {
-  const skala = xAxisMap === undefined ? undefined : Object.values(xAxisMap)[0]?.scale;
-  const left = offset?.left;
-  const top = offset?.top;
-  const width = offset?.width;
-  const height = offset?.height;
+}) {
+  const skala = useXAxisScale();
+  const flaeche = usePlotArea();
+  const left = flaeche?.x;
+  const top = flaeche?.y;
+  const width = flaeche?.width;
+  const height = flaeche?.height;
   useLayoutEffect(() => {
     if (skala === undefined || left === undefined || top === undefined || width === undefined || height === undefined) {
       lage.setze(null);
       return;
     }
-    const mitte = (skala.bandwidth?.() ?? 0) / 2;
-    lage.setze({ flaeche: { left, top, width, height }, x: (tag) => (skala(tag) ?? left) + mitte, daten });
+    lage.setze({
+      flaeche: { left, top, width, height },
+      x: (tag) => skala(tag, { position: 'middle' }) ?? left,
+      daten,
+    });
   }, [lage, daten, skala, left, top, width, height]);
   return null;
 }
