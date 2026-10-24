@@ -129,7 +129,7 @@ test.describe('Barrierefreiheit', () => {
     test(`Rebalancing: Ziel eingeben, berechnen, axe findet nichts (${String(breite)} px)`, async ({ page }) => {
       await page.setViewportSize({ width: breite, height: 900 });
       await warteAufKacheln(page);
-      await page.getByRole('button', { name: 'Rebalancieren' }).click();
+      await page.getByRole('button', { name: 'Rebalancing' }).click();
       const dialog = page.getByRole('dialog');
       await dialog.getByRole('textbox').first().fill('100');
       await dialog.getByRole('button', { name: 'Berechnen' }).click();

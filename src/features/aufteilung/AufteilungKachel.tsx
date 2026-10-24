@@ -61,7 +61,6 @@ export function AufteilungKachel({ hoehe = null }: AufteilungKachelProps) {
             cashCent={daten.cashCent}
             cashAnteil={daten.cashAnteil}
             gesamtCent={gesamtCent}
-            stand={daten.stand}
             angefragt={anfrage}
             ergebnis={{ daten: rebalancing.data, fehler: rebalancing.error, laedt: rebalancing.isFetching }}
             onBerechnen={setAnfrage}

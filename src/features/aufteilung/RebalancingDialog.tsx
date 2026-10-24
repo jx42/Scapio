@@ -7,18 +7,17 @@
  * Speicher vorbelegt — Radix haengt `DialogContent` im geschlossenen Zustand aus.
  */
 
-import { useId, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { Scale } from 'lucide-react';
 
 import { de } from '@/i18n/de';
 import type { PositionZeile, Rebalancing, RebalancingZeile } from '@/lib/api';
-import { euroAusCent, prozent, vorzeichen, zeitpunktNurTag, zielEingabe } from '@/lib/format';
+import { euroAusCent, prozent, vorzeichen, zielEingabe } from '@/lib/format';
 import { richtungTon } from '@/lib/farben';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { InfoKnopf } from '@/components/InfoKnopf';
 import {
   BP_GANZ,
   KONTO,
@@ -40,7 +39,6 @@ export type RebalancingDialogProps = {
   readonly cashCent: number;
   readonly cashAnteil: number;
   readonly gesamtCent: number | null;
-  readonly stand: string | null;
   /** Das zuletzt berechnete Ziel als Query-Wert, `null` vor dem ersten Berechnen. */
   readonly angefragt: string | null;
   readonly ergebnis: RebalancingErgebnisZustand;
@@ -100,7 +98,6 @@ function RebalancingInhalt({
   cashCent,
   cashAnteil,
   gesamtCent,
-  stand,
   angefragt,
   ergebnis,
   onBerechnen,
@@ -123,6 +120,8 @@ function RebalancingInhalt({
   const ziel = festesZiel ?? zielParameter(einbezogen.map((z) => [z.schluessel, bp.get(z.schluessel) ?? 0] as const));
   const bereit = einbezogen.length > 0 && !feldFehler && summe === BP_GANZ;
   const veraltet = angefragt !== null && angefragt !== ziel;
+  // Nur ein geaendertes Ziel gibt etwas zu berechnen; die Ist-Werte aendert erst ein Lauf.
+  const berechenbar = bereit && angefragt !== ziel;
 
   const daten = angefragt === null ? undefined : ergebnis.daten;
   const abbruch = daten?.drift.stufe === 'abbruch';
@@ -142,7 +141,7 @@ function RebalancingInhalt({
     });
 
   const berechnen = () => {
-    if (!bereit) return;
+    if (!berechenbar) return;
     if (!gesperrt) {
       // Auch das Ziel einer ausgeschlossenen Zeile bleibt gemerkt, fuer das naechste Einbeziehen.
       const gemerkt = new Map<string, number>();
@@ -155,6 +154,12 @@ function RebalancingInhalt({
     onBerechnen(ziel);
   };
 
+  // Beim Oeffnen gleich mit dem gemerkten Ziel rechnen; die Ist-Werte holt der Server frisch.
+  useEffect(() => {
+    if (bereit) onBerechnen(ziel);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- nur beim Oeffnen
+  }, []);
+
   const summenHinweis = feldFehler
     ? null
     : einbezogen.length === 0
@@ -165,8 +170,7 @@ function RebalancingInhalt({
           ? de.rebalancing.summeZuViel(prozent((summe - BP_GANZ) / BP_GANZ))
           : null;
 
-  const statusText = angefragt !== null && veraltet ? de.rebalancing.veraltet : angefragt !== null && ergebnis.laedt ? de.rebalancing.laedt : '';
-  const standText = zeitpunktNurTag(daten?.stand ?? stand);
+  const statusText = angefragt !== null && !veraltet && ergebnis.laedt ? de.rebalancing.laedt : '';
 
   return (
     <div className="grid gap-4">
@@ -282,15 +286,13 @@ function RebalancingInhalt({
         <p id={summeId} className="mr-auto text-warnung">
           {summenHinweis}
         </p>
-        <InfoKnopf bezeichnung={de.rebalancing.titel}>
-          <p>{standText === null ? de.rebalancing.infoOhneStand : de.rebalancing.info(standText)}</p>
-        </InfoKnopf>
-        <Button type="button" onClick={berechnen} disabled={!bereit} aria-describedby={summenHinweis === null ? undefined : summeId}>
+        <Button type="button" onClick={berechnen} disabled={!berechenbar} aria-describedby={summenHinweis === null ? undefined : summeId}>
           {de.rebalancing.berechnen}
         </Button>
       </div>
 
-      <p role="status" className="text-text-leise">
+      {/* Leer nur aus dem Fluss nehmen, nicht aushaengen: die Live-Region muss vor ihrem Text stehen. */}
+      <p role="status" className="text-text-leise empty:sr-only">
         {statusText}
       </p>
       {ergebnis.fehler !== null && angefragt !== null && !veraltet ? (

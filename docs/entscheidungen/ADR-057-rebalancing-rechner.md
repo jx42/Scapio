@@ -20,8 +20,8 @@ Position, wie viel bis zu einem Ziel fehlt. Gleichzeitig rechnet die Oberfläche
   aufzuteilenden Wert noch zur 100-%-Summe. Die Query trägt nur die einbezogenen Zeilen; was im
   Depot, aber nicht im Ziel steht, ist ausgeschlossen.
 - **Ausgabe ist der „Betrag zum Ziel“ in €.** Keine Stückzahl, kein Ordertyp, kein Link zur Bank.
-  Ein `InfoKnopf` sagt: „Rechnung zum Stand vom …, kein Kaufvorschlag; Kosten und Steuern sind
-  nicht berücksichtigt.“
+- **Beim Öffnen wird sofort gerechnet**, wenn das gemerkte Ziel 100 % ergibt — mit den Ist-Werten
+  des letzten Laufs.
 - **Gerechnet wird in `core/rebalancing.ts`** in Cent und Basispunkten, größter Rest für `Σ delta = 0`.
   Erreichbar über die lesende Route `GET /api/rebalancing?ziel=…`. Die Ist-Werte holt der Server
   selbst; die Query trägt nur das Ziel. Ungültiges Ziel: `E_PARAMETER`.

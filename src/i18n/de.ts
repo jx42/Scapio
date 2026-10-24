@@ -561,7 +561,7 @@ export const de = {
   },
 
   rebalancing: {
-    knopf: 'Rebalancieren',
+    knopf: 'Rebalancing',
     titel: 'Rebalancing',
     beschreibung: 'Zielaufteilung eingeben und je Zeile den Betrag zum Ziel berechnen.',
     tabelle: 'Zielaufteilung und Betrag zum Ziel',
@@ -589,13 +589,9 @@ export const de = {
     },
     betrag: (wert: string, richtung: string) => `${wert} ${richtung}`,
     laedt: 'Wird berechnet …',
-    veraltet: 'Die Eingaben haben sich geändert, das Ergebnis ist veraltet. Neu berechnen.',
     ohneWert: 'Die einbezogenen Zeilen haben keinen Wert, es gibt nichts aufzuteilen.',
     driftBanner: 'Die Selbstkontrolle weicht ab: die Ist-Werte können ungenau sein.',
     driftAbbruch: 'Die Ist-Werte stimmen nicht mit der Bank überein, deshalb zeigt der Rechner kein Ergebnis.',
-    info: (stand: string) =>
-      `Rechnung zum Stand vom ${stand}, kein Kaufvorschlag; Kosten und Steuern sind nicht berücksichtigt.`,
-    infoOhneStand: 'Rechnung zum letzten Stand, kein Kaufvorschlag; Kosten und Steuern sind nicht berücksichtigt.',
     gesperrt: 'In der öffentlichen Demo ist das Beispielziel fest.',
   },
 

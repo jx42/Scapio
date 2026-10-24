@@ -430,7 +430,7 @@ export const FAELLE: readonly Fall[] = [
     ansicht: 'aufteilung',
     titel: 'Rechner ohne gespeichertes Ziel',
     beschreibung: 'Alle Felder leer, Summe 0 %, Berechnen gesperrt.',
-    klick: 'Rebalancieren',
+    klick: 'Rebalancing',
     mindesthoehe: 900,
   },
   {
@@ -440,7 +440,7 @@ export const FAELLE: readonly Fall[] = [
     titel: 'Summe über 100 %, ein Feld ohne Ziel',
     beschreibung: 'Gespeichert sind 110 %; drei Positionen haben kein Ziel und stehen leer.',
     zielaufteilung: { ziel: { KONTO: 1000, [ISIN_WORLD]: 7000, IE00B3VVMM84: 3000 } },
-    klick: 'Rebalancieren',
+    klick: 'Rebalancing',
     mindesthoehe: 900,
   },
   {
@@ -449,7 +449,7 @@ export const FAELLE: readonly Fall[] = [
     ansicht: 'aufteilung',
     titel: 'Berechnet, eine Position ausgeschlossen',
     zielaufteilung: { ziel: ZIEL_VOLL, ausgeschlossen: ['IE00B3VVMM84'] },
-    klick: ['Rebalancieren', 'Berechnen'],
+    klick: 'Rebalancing',
     mindesthoehe: 1000,
   },
   {
@@ -461,7 +461,7 @@ export const FAELLE: readonly Fall[] = [
       rebalancing: fehler(400, 'E_PARAMETER', 'Der Parameter ziel ist unbekannt oder ungültig.', 'Prüfe die Adresse.'),
     },
     zielaufteilung: { ziel: ZIEL_VOLL },
-    klick: ['Rebalancieren', 'Berechnen'],
+    klick: 'Rebalancing',
     mindesthoehe: 900,
   },
   {
@@ -476,7 +476,7 @@ export const FAELLE: readonly Fall[] = [
       })),
     },
     zielaufteilung: { ziel: ZIEL_VOLL },
-    klick: ['Rebalancieren', 'Berechnen'],
+    klick: 'Rebalancing',
     mindesthoehe: 1000,
   },
   {
@@ -486,7 +486,7 @@ export const FAELLE: readonly Fall[] = [
     titel: 'Selbstkontrolle: Abbruch, kein Ergebnis',
     routen: { rebalancing: aendern<Rebalancing>((b) => ({ ...b, drift: DRIFT_ABBRUCH })) },
     zielaufteilung: { ziel: ZIEL_VOLL },
-    klick: ['Rebalancieren', 'Berechnen'],
+    klick: 'Rebalancing',
     mindesthoehe: 900,
   },
   {
