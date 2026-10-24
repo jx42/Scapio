@@ -11,9 +11,13 @@ import { useQuery } from '@tanstack/react-query';
 
 import { de } from '@/i18n/de';
 import { api, kachelZustand, schluessel } from '@/lib/api';
+import { istDemoModus } from '@/lib/demoModus';
+import { tokenVorhanden } from '@/lib/token';
 import { Kachel } from '@/components/Kachel';
 import { Driftfussnote } from '@/components/Driftbanner';
 import { AufteilungAnsicht } from '@/features/aufteilung/AufteilungAnsicht';
+import { RebalancingDialog } from '@/features/aufteilung/RebalancingDialog';
+import { DEMO_REBALANCING_ZIEL } from '../../../shared/demoAbzug.ts';
 
 export type AufteilungKachelProps = {
   /**
@@ -27,9 +31,17 @@ export type AufteilungKachelProps = {
 export function AufteilungKachel({ hoehe = null }: AufteilungKachelProps) {
   const [hervorgehoben, setHervorgehoben] = useState<string | null>(null);
   const [gehoverter, setGehoverter] = useState<string | null>(null);
+  const [anfrage, setAnfrage] = useState<string | null>(null);
 
   const abfrage = useQuery({ queryKey: schluessel.aufteilung, queryFn: api.aufteilung });
   const kennzahlen = useQuery({ queryKey: schluessel.kennzahlen, queryFn: api.kennzahlen });
+  // Ein abgelehntes Ziel wird beim zweiten Versuch nicht richtiger.
+  const rebalancing = useQuery({
+    queryKey: schluessel.rebalancing(anfrage ?? ''),
+    queryFn: () => api.rebalancing(anfrage ?? ''),
+    enabled: anfrage !== null,
+    retry: false,
+  });
 
   const daten = abfrage.data;
   const gesamtCent = kennzahlen.data?.gesamtCent ?? null;
@@ -42,6 +54,20 @@ export function AufteilungKachel({ hoehe = null }: AufteilungKachelProps) {
       id="aufteilung"
       zustand={zustand}
       ladehoehe="mittel"
+      werkzeuge={
+        zustand.art === 'bereit' && daten !== undefined ? (
+          <RebalancingDialog
+            positionen={daten.positionen}
+            cashCent={daten.cashCent}
+            cashAnteil={daten.cashAnteil}
+            gesamtCent={gesamtCent}
+            angefragt={anfrage}
+            ergebnis={{ daten: rebalancing.data, fehler: rebalancing.error, laedt: rebalancing.isFetching }}
+            onBerechnen={setAnfrage}
+            festesZiel={istDemoModus() && !tokenVorhanden() ? DEMO_REBALANCING_ZIEL : null}
+          />
+        ) : undefined
+      }
       fussnoten={<Driftfussnote drift={daten?.drift} />}
       hoehe={hoehe}
     >

@@ -16,6 +16,7 @@ import type {
   KennzahlenAntwort,
   Lauf,
   McpAnmeldung,
+  Rebalancing,
   Sparplaene,
   Top25,
   Zeitreihe,
@@ -56,8 +57,10 @@ export type Fall = {
   /** Ersetzt `drift` in jeder Antwort, die eines traegt. */
   readonly drift?: Drift;
   readonly routen?: Partial<Record<Route, Antwort>>;
-  /** Beschriftung eines Knopfs, der nach dem Laden einmal geklickt wird. */
-  readonly klick?: string;
+  /** Beschriftung eines Knopfs, der nach dem Laden einmal geklickt wird, oder eine Folge davon. */
+  readonly klick?: string | readonly string[];
+  /** Gespeichertes Ziel des Rebalancing-Rechners; ohne Angabe ist der Speicher leer. */
+  readonly zielaufteilung?: { readonly ziel: Readonly<Record<string, number>>; readonly ausgeschlossen?: readonly string[] };
   /** Mindesthoehe des Rahmens in px, etwa fuer einen offenen Dialog. */
   readonly mindesthoehe?: number;
 };
@@ -95,6 +98,8 @@ export const POST_STANDARD = fehler(
 );
 
 export const ISIN_WORLD = 'IE00B4L5Y983';
+/** Ein gespeichertes Ziel mit 100 %, damit Berechnen ohne Eingabe frei ist. */
+const ZIEL_VOLL = { KONTO: 1000, [ISIN_WORLD]: 9000 };
 
 export const ALLE_HINWEISE: LaufHinweis[] = [
   { art: 'text', werte: { text: 'Ein fertiger Satz aus einer Datenbankzeile von vor der Umstellung auf Arten.' } },
@@ -418,6 +423,79 @@ export const FAELLE: readonly Fall[] = [
     ansicht: 'aufteilung',
     titel: 'Weder Positionen noch Bargeld',
     routen: { aufteilung: aendern<Aufteilung>((b) => ({ ...b, positionen: [], cashCent: 0, cashAnteil: 0 })) },
+  },
+  {
+    id: 'rebalancing-ohne-ziel',
+    gruppe: 'rebalancing',
+    ansicht: 'aufteilung',
+    titel: 'Rechner ohne gespeichertes Ziel',
+    beschreibung: 'Alle Felder leer, Summe 0 %, Berechnen gesperrt.',
+    klick: 'Rebalancing',
+    mindesthoehe: 900,
+  },
+  {
+    id: 'rebalancing-summe-falsch',
+    gruppe: 'rebalancing',
+    ansicht: 'aufteilung',
+    titel: 'Summe über 100 %, ein Feld ohne Ziel',
+    beschreibung: 'Gespeichert sind 110 %; drei Positionen haben kein Ziel und stehen leer.',
+    zielaufteilung: { ziel: { KONTO: 1000, [ISIN_WORLD]: 7000, IE00B3VVMM84: 3000 } },
+    klick: 'Rebalancing',
+    mindesthoehe: 900,
+  },
+  {
+    id: 'rebalancing-ergebnis',
+    gruppe: 'rebalancing',
+    ansicht: 'aufteilung',
+    titel: 'Berechnet, eine Position ausgeschlossen',
+    zielaufteilung: { ziel: ZIEL_VOLL, ausgeschlossen: ['IE00B3VVMM84'] },
+    klick: 'Rebalancing',
+    mindesthoehe: 1000,
+  },
+  {
+    id: 'rebalancing-parameter',
+    gruppe: 'rebalancing',
+    ansicht: 'aufteilung',
+    titel: 'Ziel vom Server abgelehnt (E_PARAMETER)',
+    routen: {
+      rebalancing: fehler(400, 'E_PARAMETER', 'Der Parameter ziel ist unbekannt oder ungültig.', 'Prüfe die Adresse.'),
+    },
+    zielaufteilung: { ziel: ZIEL_VOLL },
+    klick: 'Rebalancing',
+    mindesthoehe: 900,
+  },
+  {
+    id: 'rebalancing-drift-banner',
+    gruppe: 'rebalancing',
+    ansicht: 'aufteilung',
+    titel: 'Selbstkontrolle: Banner',
+    routen: {
+      rebalancing: aendern<Rebalancing>((b) => ({
+        ...b,
+        drift: drift('banner', { abweichung: 0.008, berechnetGesamtCent: 10_080_00, gemeldetGesamtCent: 10_000_00 }),
+      })),
+    },
+    zielaufteilung: { ziel: ZIEL_VOLL },
+    klick: 'Rebalancing',
+    mindesthoehe: 1000,
+  },
+  {
+    id: 'rebalancing-drift-abbruch',
+    gruppe: 'rebalancing',
+    ansicht: 'aufteilung',
+    titel: 'Selbstkontrolle: Abbruch, kein Ergebnis',
+    routen: { rebalancing: aendern<Rebalancing>((b) => ({ ...b, drift: DRIFT_ABBRUCH })) },
+    zielaufteilung: { ziel: ZIEL_VOLL },
+    klick: 'Rebalancing',
+    mindesthoehe: 900,
+  },
+  {
+    id: 'rebalancing-kein-lauf',
+    gruppe: 'rebalancing',
+    ansicht: 'aufteilung',
+    titel: 'Noch kein Lauf',
+    beschreibung: 'Leere Kachel, kein Rebalancing-Knopf.',
+    basis: 'leer',
   },
 
   // --- Top 25

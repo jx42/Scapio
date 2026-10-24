@@ -9,7 +9,7 @@
  * Ausnahme: ADR-021 und ADR-028.
  */
 
-const ISIN_MUSTER = /^[A-Z]{2}[A-Z0-9]{9}\d$/;
+export const ISIN_MUSTER = /^[A-Z]{2}[A-Z0-9]{9}\d$/;
 
 /**
  * `null`, wenn `isin` nicht dem ISIN-Muster entspricht — dann gibt es keinen Link.
