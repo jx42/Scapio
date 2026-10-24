@@ -13,7 +13,7 @@
  * Stand kennt.
  */
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { CircleCheck, KeyRound, Loader2, RefreshCw, TriangleAlert, X } from 'lucide-react';
 
 import { de } from '@/i18n/de';
@@ -33,9 +33,7 @@ export function McpAnmeldungHinweise({
   // Rein optische Sichtbarkeit, kein Datenzustand: setzt sich zurueck, sobald die
   // erfolgreiche Anmeldung selbst verschwindet, damit die naechste wieder angezeigt wird.
   const [erfolgVersteckt, setErfolgVersteckt] = useState(false);
-  useEffect(() => {
-    if (!erfolg) setErfolgVersteckt(false);
-  }, [erfolg]);
+  if (!erfolg && erfolgVersteckt) setErfolgVersteckt(false);
 
   const zeigeNoetig = noetig && !laeuft && !erfolg && fehler === null;
   const zeigeErfolg = erfolg && !erfolgVersteckt;

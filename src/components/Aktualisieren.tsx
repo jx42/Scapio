@@ -216,7 +216,7 @@ export function Aktualisieren({ onAnmeldungStatus, verborgen = false }: Aktualis
   const anmelden = useMutation({
     mutationFn: api.mcpAnmeldenStarten,
     onSuccess: (ergebnis) => {
-      // Sonst stuende im Cache noch `laeuft: false` von vor dem Klick, und der Effekt
+      // Sonst stuende im Cache noch `laeuft: false` von vor dem Klick, und die Pruefung
       // unten schaltete die Abfrage ab, bevor sie einmal lief.
       queryClient.setQueryData(schluessel.mcpAnmeldung, ergebnis);
       setAnmeldungAktiv(true);
@@ -244,14 +244,14 @@ export function Aktualisieren({ onAnmeldungStatus, verborgen = false }: Aktualis
   // Ein Lauf, der schon beim Laden der Seite unterwegs ist — meist der erste aus `npm start`,
   // der Browser oeffnet sich vor dessen Ende [ADR-039]. Ohne Uebernahme sprange nichts an,
   // und die leeren Kacheln blieben bis zum Neuladen leer.
-  useEffect(() => {
-    if (beobachtet !== null || status !== 'laufend' || gezeigteLaufId === null) return;
+  if (beobachtet === null && status === 'laufend' && gezeigteLaufId !== null) {
     setBeobachtet({ laufId: gezeigteLaufId, vorher: null });
-  }, [beobachtet, status, gezeigteLaufId]);
+  }
 
   useEffect(() => {
     if (!unsererLauf) return;
     if (status === null || status === 'laufend') return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- gehoert zu den Seiteneffekten darunter; im Render zurueckgesetzt, liefe dieser Effekt nie.
     setBeobachtet(null);
     // Der Lauf ist zu Ende: alles neu holen, nichts aus dem Cache stehen lassen.
     void queryClient.invalidateQueries();
@@ -264,11 +264,7 @@ export function Aktualisieren({ onAnmeldungStatus, verborgen = false }: Aktualis
 
   const anmeldungLaeuftLautServer = anmeldungQuery.data?.laeuft;
 
-  useEffect(() => {
-    if (!anmeldungAktiv) return;
-    if (anmeldungLaeuftLautServer !== false) return;
-    setAnmeldungAktiv(false);
-  }, [anmeldungAktiv, anmeldungLaeuftLautServer]);
+  if (anmeldungAktiv && anmeldungLaeuftLautServer === false) setAnmeldungAktiv(false);
 
   const lauf = laufQuery.data;
   const laeuft = laufAktiv || starten.isPending;
