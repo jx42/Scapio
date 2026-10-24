@@ -389,7 +389,7 @@ export const de = {
     titel: 'Verbindung zu Scalable Capital',
     /** Der Text zu `E_MCP_ANMELDUNG` — abgelaufener Token oder nicht freigeschalteter Zugang. */
     noetig:
-      'Die Verbindung zu Scalable Capital ist abgelaufen, oder der Zugang ist nicht freigeschaltet. Prüfe, ob in deinem Konto unter „Agentic Investing“ der MCP-Zugang aktiviert ist, und melde dich erneut an.',
+      'Die Anmeldung bei Scalable Capital ist abgelaufen. Sie gilt aus Sicherheitsgründen nur eine Woche, danach musst du dich erneut anmelden. Klappt das nicht, prüfe, ob in deinem Konto unter „Agentic Investing“ der MCP-Zugang aktiviert ist.',
     knopf: 'Anmelden',
     /** Beschriftung des Action-Buttons im Alert selbst; den Rahmen nennt der Alert-Titel. */
     anmeldenKnopf: 'Anmelden',
