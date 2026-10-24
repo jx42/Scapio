@@ -196,12 +196,13 @@ export function AufteilungAnsicht({
                 >
                   <span className="flex items-baseline gap-x-3">
                     <Farbtupfer farbe={farbe(i)} />
+                    {/* Leerraum zwischen Flex-Kindern rendert nicht, trennt aber die Woerter im Namen des Knopfs. */}
                     <span className="min-w-0 flex-1 break-words text-text">
                       {s.name}
-                    </span>
+                    </span>{' '}
                     <span className={cn(ART_SPALTE, 'text-text-leise')}>
                       {s.position === null ? de.aufteilung.artCash : de.aufteilung.art(s.art)}
-                    </span>
+                    </span>{' '}
                     <LegendenWerte anteil={s.anteil} wertCent={s.wertCent} />
                   </span>
                 </button>
@@ -253,7 +254,7 @@ function LegendenWerte({ anteil, wertCent }: { readonly anteil: number; readonly
   const angezeigterWert = useZahlZaehler(euroAusCent(wertCent));
   return (
     <>
-      <span className="min-w-16 shrink-0 text-right tabular-nums text-text-leise">{angezeigterAnteil}</span>
+      <span className="min-w-16 shrink-0 text-right tabular-nums text-text-leise">{angezeigterAnteil}</span>{' '}
       <span className="min-w-24 shrink-0 text-right tabular-nums text-text">{angezeigterWert}</span>
     </>
   );
