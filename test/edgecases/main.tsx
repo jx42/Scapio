@@ -45,6 +45,12 @@ const KACHELN: Record<Exclude<Ansicht, 'seite'>, ComponentType> = {
 async function starteFall(fall: Fall, ziel: HTMLElement): Promise<void> {
   const basis = (await (await fetch('/__edgecases/basis.json')).json()) as Basis;
   installiereStub(fall, basis);
+  try {
+    if (fall.zielaufteilung === undefined) localStorage.removeItem('portfolio.zielaufteilung');
+    else localStorage.setItem('portfolio.zielaufteilung', JSON.stringify(fall.zielaufteilung));
+  } catch {
+    // ohne Speicher eben ohne
+  }
   meldeHoehe(fall.id);
 
   let inhalt: ReactNode;
@@ -74,18 +80,17 @@ async function starteFall(fall: Fall, ziel: HTMLElement): Promise<void> {
     </StrictMode>,
   );
 
-  if (fall.klick !== undefined) {
-    const text = fall.klick;
+  const klicks = typeof fall.klick === 'string' ? [fall.klick] : (fall.klick ?? []);
+  for (const [i, text] of klicks.entries()) {
     const suche = (): HTMLButtonElement | undefined =>
       [...document.querySelectorAll('button')].find(
         (b) => !b.disabled && (b.textContent ?? '').trim().startsWith(text),
       );
     // Erst wenn die Seite zur Ruhe kommt: vorher fehlt der Toaster, und der Anmeldeknopf
     // haengt noch am Platzhalter-Handler aus dem ersten Render.
-    if ((await warteAuf(suche)) !== undefined) {
-      await new Promise((fertig) => setTimeout(fertig, 1000));
-      suche()?.click();
-    }
+    if ((await warteAuf(suche)) === undefined) break;
+    await new Promise((fertig) => setTimeout(fertig, i === 0 ? 1000 : 200));
+    suche()?.click();
   }
 }
 
@@ -143,6 +148,7 @@ const TABS: readonly Tab[] = [
   { id: 'verlauf', titel: 'Verlauf', inhalt: rahmen('verlauf') },
   { id: 'kennzahlen', titel: 'Kennzahlen', inhalt: rahmen('kennzahlen') },
   { id: 'aufteilung', titel: 'Aufteilung', inhalt: rahmen('aufteilung') },
+  { id: 'rebalancing', titel: 'Rebalancing', inhalt: rahmen('rebalancing') },
   { id: 'top25', titel: 'Top 25', inhalt: rahmen('top25') },
   { id: 'fluesse', titel: 'Käufe & Sparpläne', inhalt: rahmen('fluesse') },
 ];

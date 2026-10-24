@@ -69,6 +69,8 @@ export function anmeldungAbgeschlossenHtml(dashboardFolgt = false): string {
     ...(dashboardFolgt
       ? { text: 'Scapio startet jetzt und öffnet sich gleich in einem neuen Tab. Dieses Tab kann danach geschlossen werden.', fortschritt: 'Scapio startet' }
       : { text: 'Dieses Fenster kann geschlossen werden.' }),
+    // Scalables Refresh-Token gilt fest 7 Tage ab Anmeldung, unabhaengig von Laeufen dazwischen.
+    nachsatz: 'Aus Sicherheitsgründen gilt diese Anmeldung nur eine Woche. Danach musst du dich wieder bei Scalable Capital anmelden.',
   });
 }
 
