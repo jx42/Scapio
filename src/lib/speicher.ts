@@ -97,3 +97,19 @@ function ausgeblendetLesen(): { laufId: number | null; schluessel: ReadonlySet<s
   }
   return { laufId: null, schluessel: LEER };
 }
+
+/**
+ * Ein gespeicherter JSON-Wert, roh. Wer ihn liest, prueft ihn selbst — der Speicher ist
+ * Eingabe von aussen wie jede andere.
+ */
+export function jsonLesen(name: string): unknown {
+  try {
+    return JSON.parse(window.localStorage.getItem(PRAEFIX + name) ?? 'null') as unknown;
+  } catch {
+    return null;
+  }
+}
+
+export function jsonSchreiben(name: string, wert: unknown): void {
+  schreiben(name, JSON.stringify(wert));
+}

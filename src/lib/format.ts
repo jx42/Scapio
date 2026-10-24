@@ -52,6 +52,13 @@ const prozentMitZeichenFormat = new Intl.NumberFormat('de-DE', {
   signDisplay: 'exceptZero',
 });
 
+/** Eingabefeld eines Zielanteils: Prozent mit genau einer Nachkommastelle, ohne Zeichen. */
+const zielEingabeFormat = new Intl.NumberFormat('de-DE', {
+  minimumFractionDigits: 1,
+  maximumFractionDigits: 1,
+  useGrouping: false,
+});
+
 const zahlFormat = new Intl.NumberFormat('de-DE', {
   minimumFractionDigits: 0,
   maximumFractionDigits: 0,
@@ -160,6 +167,12 @@ export function prozent(anteil: number, mitVorzeichen = false): string {
 /** Prozent aus einer Zahl, die schon in Prozent steht (12,5 statt 0,125), etwa aus einem Lauf-Hinweis. */
 export function prozentAusProzentzahl(wertProzent: number): string {
   return prozent(wertProzent / 100);
+}
+
+/** Basispunkte als Inhalt eines Prozentfelds: 7000 wird zu "70,0". */
+export function zielEingabe(bp: number): string {
+  if (!istZahl(bp)) return '';
+  return zielEingabeFormat.format(bp / 100);
 }
 
 /** Blanke Zahl ohne Einheit, etwa fuer einen Index. */

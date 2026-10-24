@@ -17,6 +17,8 @@ import type {
   Lauf,
   MaxDrawdownErgebnis,
   McpAnmeldung,
+  Rebalancing,
+  RebalancingZeile,
   SharpeErgebnis,
   Sparplaene,
   Top25,
@@ -128,6 +130,39 @@ describe('Vertragstest: server/vertrag.ts gegen die tatsaechliche Antwort', () =
     );
     expect(body.positionen).toEqual([]);
     schluessel('aufteilung.drift', body.drift, DRIFT);
+  });
+
+  it('GET /api/rebalancing', async () => {
+    const { app } = await testServer();
+    const body = await holen(app, '/api/rebalancing?ziel=KONTO:10000');
+    schluessel(
+      'rebalancing',
+      body,
+      felder<Rebalancing>({
+        art: true,
+        zeilen: true,
+        gesamtCent: true,
+        stand: true,
+        drift: true,
+      }),
+    );
+    expect(body.art).toBe('ohneWert');
+    schluessel(
+      'rebalancing.zeilen[0]',
+      (body.zeilen as unknown[])[0],
+      felder<RebalancingZeile>({
+        schluessel: true,
+        name: true,
+        imDepot: true,
+        istCent: true,
+        istAnteil: true,
+        zielBp: true,
+        abweichung: true,
+        sollCent: true,
+        deltaCent: true,
+      }),
+    );
+    schluessel('rebalancing.drift', body.drift, DRIFT);
   });
 
   it('GET /api/fluesse', async () => {
