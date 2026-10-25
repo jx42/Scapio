@@ -20,6 +20,10 @@
  * Die Drawdown-Karte und die Zeile in den Kennzahlen schalten das Einzeichnen um. Der
  * Drawdown zaehlt die ganze Historie, also springt der Verlauf dafuer auf „Max“; ein
  * anderer Zeitraum nimmt die Markierung wieder weg.
+ *
+ * Die Jahrestabelle ersetzt Chart, Zeitraumwahl und Regler: sie hat kein Fenster, und
+ * Vermoegen/Rendite unterscheidet sie nicht. Der Vergleich bleibt waehlbar, auch der
+ * risikofreie — eine Jahresrendite ist eine Rendite.
  */
 
 import { useState } from 'react';
@@ -43,8 +47,11 @@ import { AN_AUS, useGespeichert, type AnAus } from '@/lib/speicher';
 import { Kachel } from '@/components/Kachel';
 import { InfoKnopf } from '@/components/InfoKnopf';
 import { Driftfussnote, chartGesperrt, sperrtext } from '@/components/Driftbanner';
+import { LeerZustand } from '@/components/Zustaende';
 import { Tabs } from '@/components/ui/tabs';
 import { Benchmarkwahl } from '@/features/verlauf/Benchmarkwahl';
+import { DARSTELLUNGEN, Darstellungswahl, type Darstellung } from '@/features/verlauf/Darstellungswahl';
+import { JahresTabelle } from '@/features/verlauf/JahresTabelle';
 import { Linienwahl } from '@/features/verlauf/Linienwahl';
 import { VERLAUF_MODI, VerlaufAnsicht, type VerlaufAnsichtModus } from '@/features/verlauf/VerlaufAnsicht';
 import { VerlaufKennzahlen } from '@/features/verlauf/VerlaufKennzahlen';
@@ -73,7 +80,9 @@ export function VerlaufKachel() {
     STANDARD_BENCHMARK,
     BENCHMARK_AUSWAHL,
   );
-  const zeigeRisikofrei = modus === 'rendite';
+  const [darstellung, setDarstellung] = useGespeichert<Darstellung>('verlaufDarstellung', 'verlauf', DARSTELLUNGEN);
+  const tabelle = darstellung === 'tabelle';
+  const zeigeRisikofrei = modus === 'rendite' || tabelle;
   // Wechselt der Tab, bevor `onValueChange` unten die Auswahl zuruecksetzen konnte (z.B.
   // beim Laden mit einer alten Auswahl im localStorage), zaehlt hier nur diese Ableitung —
   // Query und Anzeige sehen nie einen risikofreien Vergleich ausserhalb des Rendite-Tabs.
@@ -89,6 +98,12 @@ export function VerlaufKachel() {
     queryFn: () => api.zeitreihe(auswahl, benchmark),
     // Ohne das waere jeder neue Schluessel `isPending`: Skeleton statt Chart, dann
     // Neuaufbau — das Flackern beim Umschalten.
+    placeholderData: keepPreviousData,
+  });
+  const jahreAbfrage = useQuery({
+    queryKey: schluessel.jahre(benchmark),
+    queryFn: () => api.jahre(benchmark),
+    enabled: tabelle,
     placeholderData: keepPreviousData,
   });
   const kennzahlenAbfrage = useQuery({ queryKey: schluessel.kennzahlen, queryFn: api.kennzahlen });
@@ -111,7 +126,18 @@ export function VerlaufKachel() {
   const drawdown =
     drawdownZeigen && gesamtDrawdown?.art === 'ok' && gesamtDrawdown.anteil < 0 ? gesamtDrawdown : null;
 
-  const zustand = kachelZustand(abfrage, (d) => d.reiheLeer);
+  const zustand = tabelle
+    ? kachelZustand(jahreAbfrage, (d) => d.jahre.length === 0, de.verlauf.jahre.leer)
+    : kachelZustand(abfrage, (d) => d.reiheLeer);
+  const jahre = jahreAbfrage.data;
+
+  // Wie beim Tabwechsel: zurueck im Vermoegen-Chart waere der risikofreie Vergleich nicht abwaehlbar.
+  const waehleDarstellung = (neu: Darstellung) => {
+    setDarstellung(neu);
+    if (neu === 'verlauf' && modus !== 'rendite' && benchmarkAuswahl === RISIKOFREI.isin) {
+      setBenchmarkAuswahl(KEIN_BENCHMARK);
+    }
+  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -145,34 +171,43 @@ export function VerlaufKachel() {
           zustand={zustand}
           ladehoehe="gross"
           werkzeuge={
-            zustand.art === 'bereit' ? (
-              <>
-                {modus !== 'vermoegen' ? null : (
-                  <Linienwahl
-                    zeigeEinzahlung={zeigeEinzahlungAuswahl === 'an'}
-                    zeigeZufluesse={zeigeZufluesseAuswahl === 'an'}
-                    onZeigeEinzahlung={(wert) => {
-                      setZeigeEinzahlungAuswahl(wert ? 'an' : 'aus');
+            <>
+              {zustand.art !== 'bereit' ? null : (
+                <>
+                  {tabelle || modus !== 'vermoegen' ? null : (
+                    <Linienwahl
+                      zeigeEinzahlung={zeigeEinzahlungAuswahl === 'an'}
+                      zeigeZufluesse={zeigeZufluesseAuswahl === 'an'}
+                      onZeigeEinzahlung={(wert) => {
+                        setZeigeEinzahlungAuswahl(wert ? 'an' : 'aus');
+                      }}
+                      onZeigeZufluesse={(wert) => {
+                        setZeigeZufluesseAuswahl(wert ? 'an' : 'aus');
+                      }}
+                    />
+                  )}
+                  <Benchmarkwahl
+                    gewaehlt={benchmark}
+                    onWahl={(isin) => {
+                      setBenchmarkAuswahl((isin ?? KEIN_BENCHMARK) as BenchmarkAuswahl);
                     }}
-                    onZeigeZufluesse={(wert) => {
-                      setZeigeZufluesseAuswahl(wert ? 'an' : 'aus');
-                    }}
+                    zeigeRisikofrei={zeigeRisikofrei}
                   />
-                )}
-                <Benchmarkwahl
-                  gewaehlt={benchmark}
-                  onWahl={(isin) => {
-                    setBenchmarkAuswahl((isin ?? KEIN_BENCHMARK) as BenchmarkAuswahl);
-                  }}
-                  zeigeRisikofrei={zeigeRisikofrei}
-                />
-                <Verlaufwahl />
-              </>
-            ) : undefined
+                  {tabelle ? null : <Verlaufwahl />}
+                </>
+              )}
+              <Darstellungswahl gewaehlt={darstellung} onWahl={waehleDarstellung} />
+            </>
           }
-          fussnoten={<Driftfussnote drift={daten?.drift} />}
+          fussnoten={<Driftfussnote drift={tabelle ? jahre?.drift : daten?.drift} />}
         >
-          {daten === undefined ? null : (
+          {tabelle ? (
+            jahre === undefined ? null : chartGesperrt(jahre.drift) ? (
+              <LeerZustand ton="verlust" titel={de.drift.chartUnterdrueckt} text={sperrtext(jahre.drift)} />
+            ) : (
+              <JahresTabelle daten={jahre} />
+            )
+          ) : daten === undefined ? null : (
             <VerlaufAnsicht
               punkte={daten.punkte}
               marken={daten.marken}

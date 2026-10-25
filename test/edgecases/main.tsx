@@ -84,7 +84,8 @@ async function starteFall(fall: Fall, ziel: HTMLElement): Promise<void> {
   for (const [i, text] of klicks.entries()) {
     const suche = (): HTMLButtonElement | undefined =>
       [...document.querySelectorAll('button')].find(
-        (b) => !b.disabled && (b.textContent ?? '').trim().startsWith(text),
+        (b) =>
+          !b.disabled && ((b.textContent ?? '').trim().startsWith(text) || b.getAttribute('aria-label') === text),
       );
     // Erst wenn die Seite zur Ruhe kommt: vorher fehlt der Toaster, und der Anmeldeknopf
     // haengt noch am Platzhalter-Handler aus dem ersten Render.
@@ -280,10 +281,11 @@ const wurzel = document.getElementById('wurzel');
 if (wurzel === null) throw new Error('Kein Element mit der id "wurzel" in der Seite.');
 
 // Rahmen und Uebersicht teilen sich den Ursprung: ein ausgeblendeter Hinweis soll nicht
-// beim naechsten Laden fehlen.
+// beim naechsten Laden fehlen, und die Jahrestabelle eines Falls nicht in jedem anderen stehen.
 try {
   localStorage.removeItem('portfolio.ausgeblendet');
   localStorage.removeItem('portfolio.kacheln-ausgeblendet');
+  localStorage.removeItem('portfolio.verlaufDarstellung');
 } catch {
   // ohne Speicher eben ohne
 }
