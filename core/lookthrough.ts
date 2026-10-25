@@ -10,6 +10,10 @@
  *
  * Gold und Cash haben keine Bestandteile. Die Abdeckungsquote nennt genau das —
  * ohne sie waeren die Prozentwerte irrefuehrend.
+ *
+ * Laender und Sektoren laufen ueber ALLE Bestandteile, nicht nur ueber die Top 25, und
+ * beziehen sich auf den durchschauten Teil: ein Gold-ETC hat kein Land. Gruppiert wird
+ * nach dem Rohtext des Anbieters; die Uebersetzung ist Sache der Oberflaeche.
  */
 
 import { summeAnteile } from './anteile.ts';
@@ -45,6 +49,14 @@ export type Unternehmenszeile = {
   readonly land: string | null;
 };
 
+export type Gruppe = {
+  /** Rohtext des Anbieters; `null` sammelt den Rest und alles ohne Angabe. */
+  readonly name: string | null;
+  readonly exposure: Cent;
+  /** Anteil am durchschauten Exposure, 0..1. */
+  readonly anteil: number;
+};
+
 export type LookThroughErgebnis = {
   readonly top: readonly Unternehmenszeile[];
   /** Summe von `anteilDepot` ueber `top` — nicht ueber alle Unternehmen. */
@@ -55,6 +67,8 @@ export type LookThroughErgebnis = {
   readonly durchschautCent: Cent;
   /** Alle Unternehmen mit Exposure > 0, dedupliziert ueber die ISIN — vor der Grenze. */
   readonly anzahlUnternehmen: number;
+  readonly laender: readonly Gruppe[];
+  readonly sektoren: readonly Gruppe[];
 };
 
 export const LEERES_ERGEBNIS: LookThroughErgebnis = {
@@ -63,7 +77,12 @@ export const LEERES_ERGEBNIS: LookThroughErgebnis = {
   abdeckung: 0,
   durchschautCent: 0n,
   anzahlUnternehmen: 0,
+  laender: [],
+  sektoren: [],
 };
+
+/** So viele wie die Oberflaeche Chartfarben hat — sonst stuenden zwei gleichfarbige Segmente in einem Ring. */
+export const GRUPPEN_GRENZE = 10;
 
 /** Gewichte werden in 1e-9 gerechnet, damit die Multiplikation in bigint bleibt. */
 const GEWICHT_SKALA = 1_000_000_000n;
@@ -92,6 +111,8 @@ export function lookThrough(
   >();
 
   const fondsMitBestandteilen = new Set<Isin>();
+  const laender = new Map<string | null, Cent>();
+  const sektoren = new Map<string | null, Cent>();
 
   for (const b of bestandteile) {
     const fondswert = werte.get(b.fondsIsin);
@@ -117,6 +138,9 @@ export function lookThrough(
       };
       gesammelt.set(b.unternehmenIsin, eintrag);
     }
+
+    laender.set(gruppenName(b.land), (laender.get(gruppenName(b.land)) ?? 0n) + anteil);
+    sektoren.set(gruppenName(b.sektor), (sektoren.get(gruppenName(b.sektor)) ?? 0n) + anteil);
 
     eintrag.exposure += anteil;
     eintrag.ausFonds.set(b.fondsIsin, (eintrag.ausFonds.get(b.fondsIsin) ?? 0n) + anteil);
@@ -147,7 +171,33 @@ export function lookThrough(
     abdeckung: gesamtCent === 0n ? 0 : Number(durchschaut) / Number(gesamtCent),
     durchschautCent: durchschaut,
     anzahlUnternehmen: gesammelt.size,
+    laender: gruppen(laender),
+    sektoren: gruppen(sektoren),
   };
+}
+
+function gruppenName(roh: string | null): string | null {
+  const name = roh?.trim() ?? '';
+  return name === '' ? null : name;
+}
+
+/** Die groessten `GRUPPEN_GRENZE` Gruppen einzeln, der Rest samt fehlender Angaben als `null` am Ende. */
+function gruppen(summen: ReadonlyMap<string | null, Cent>): Gruppe[] {
+  let gesamt = 0n;
+  for (const exposure of summen.values()) gesamt += exposure;
+  if (gesamt === 0n) return [];
+
+  const benannt = [...summen.entries()]
+    .filter((e): e is [string, Cent] => e[0] !== null)
+    .sort((a, b) => vergleiche(b[1], a[1]) || vergleiche(a[0], b[0]));
+  const einzeln = benannt.slice(0, GRUPPEN_GRENZE);
+  let rest = summen.get(null) ?? 0n;
+  for (const [, exposure] of benannt.slice(GRUPPEN_GRENZE)) rest += exposure;
+
+  const anteil = (exposure: Cent) => Number(exposure) / Number(gesamt);
+  const ergebnis: Gruppe[] = einzeln.map(([name, exposure]) => ({ name, exposure, anteil: anteil(exposure) }));
+  if (rest > 0n) ergebnis.push({ name: null, exposure: rest, anteil: anteil(rest) });
+  return ergebnis;
 }
 
 /**

@@ -42,7 +42,7 @@ import { Toaster } from '@/components/ui/sonner';
 import { VerlaufKachel } from '@/features/verlauf/VerlaufKachel';
 import { AufteilungKachel } from '@/features/aufteilung/AufteilungKachel';
 import { KennzahlenKachel } from '@/features/kennzahlen/KennzahlenKachel';
-import { Top25Kachel } from '@/features/top25/Top25Kachel';
+import { LookThroughKacheln } from '@/features/top25/LookThroughKacheln';
 import { FluesseKachel } from '@/features/fluesse/FluesseKachel';
 import { SparplaeneKachel } from '@/features/sparplaene/SparplaeneKachel';
 
@@ -178,13 +178,12 @@ function Seite() {
             <KennzahlenKachel
               hoehe={nebeneinander ? aufteilungHoehe : null}
               onAusgeklapptAendern={setKennzahlenAusgeklappt}
-              top25Aus={health.data?.top25 === false}
             />
           </div>
           {/* Nur mit `top25` in einstellungen.json [ADR-038]. */}
           {health.data?.top25 === true ? (
             <div className="xl:col-span-2">
-              <Top25Kachel />
+              <LookThroughKacheln />
             </div>
           ) : null}
           <div className="flex flex-col self-stretch">
@@ -276,8 +275,8 @@ function Seite() {
  */
 function DemoBand() {
   return (
-    <aside aria-label={de.seite.demoBand} data-demo-band className="sticky top-0 z-40 border-b border-rand bg-flaeche">
-      <p className="mx-auto flex max-w-8xl flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2 text-sm text-text-leise">
+    <aside aria-label={de.seite.demoBand} data-demo-band className="sticky top-0 z-40 bg-demo-band text-demo-band-text">
+      <p className="mx-auto flex max-w-8xl flex-wrap items-center gap-x-3 gap-y-1 px-4 py-2 text-sm">
         <span className="sm:hidden">{de.seite.demoBandTextKurz}</span>
         <span className="max-sm:hidden">{de.seite.demoBandText}</span>
         <a
@@ -285,7 +284,7 @@ function DemoBand() {
           target="_blank"
           rel="noopener noreferrer"
           aria-label={de.seite.demoBandLinkOeffnen}
-          className={cn(linkVariants(), 'inline-flex min-h-6 items-center gap-1 font-medium text-text')}
+          className={cn(linkVariants(), 'inline-flex min-h-6 items-center gap-1 font-semibold hover:text-demo-band-text')}
         >
           <span className="sm:hidden">{de.seite.demoBandLinkKurz}</span>
           <span className="max-sm:hidden">{de.seite.demoBandLink}</span>

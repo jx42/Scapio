@@ -13,6 +13,7 @@ import type { LaufFehlerCode } from '../../shared/laufFehler.ts';
 import type { QuellenArt } from '../../shared/quellen.ts';
 import type { HinweisCode, LaufSchritt } from '../../server/vertrag.ts';
 import { JUNGE_SPANNE_TAGE } from '../../server/vertrag.ts';
+import { landKuerzel } from '../lib/laender.ts';
 
 /** Prueft die Schluessel gegen die Codes; nachgeschlagen wird mit beliebigem String und Rueckfall auf `sonst`. */
 type CodeTexte<T> = Partial<Record<LaufFehlerCode | 'E_SPERRE', T>>;
@@ -20,6 +21,65 @@ type CodeTexte<T> = Partial<Record<LaufFehlerCode | 'E_SPERRE', T>>;
 /** Bekannte Wertpapierarten der Bank (`securityType`); weitere Werte erscheinen unverändert. */
 /** Wo `funds.json` und `einstellungen.json` liegen [ADR-037] — beide Plattformen, die Seite weiss nicht, welche. */
 const DATENORDNER = 'im Datenordner von Scapio (macOS: ~/Library/Application Support/scapio, Windows: %LOCALAPPDATA%\\scapio)';
+
+/** Angezeigter Name je Länderkürzel aus `lib/laender.ts`; Unbekanntes erscheint unverändert. */
+const LAENDER: Readonly<Partial<Record<string, string>>> = {
+  us: 'USA',
+  gb: 'Großbritannien',
+  jp: 'Japan',
+  ca: 'Kanada',
+  fr: 'Frankreich',
+  de: 'Deutschland',
+  ch: 'Schweiz',
+  nl: 'Niederlande',
+  au: 'Australien',
+  cn: 'China',
+  tw: 'Taiwan',
+  in: 'Indien',
+  kr: 'Südkorea',
+  dk: 'Dänemark',
+  se: 'Schweden',
+  it: 'Italien',
+  es: 'Spanien',
+  ie: 'Irland',
+  be: 'Belgien',
+  fi: 'Finnland',
+  no: 'Norwegen',
+  at: 'Österreich',
+  pt: 'Portugal',
+  pl: 'Polen',
+  lu: 'Luxemburg',
+  il: 'Israel',
+  hk: 'Hongkong',
+  sg: 'Singapur',
+  br: 'Brasilien',
+  mx: 'Mexiko',
+  za: 'Südafrika',
+  sa: 'Saudi-Arabien',
+  ae: 'Vereinigte Arabische Emirate',
+  id: 'Indonesien',
+  th: 'Thailand',
+  my: 'Malaysia',
+  nz: 'Neuseeland',
+  ky: 'Kaimaninseln',
+};
+
+/** GICS-Sektoren der Fondsanbieter auf Deutsch; Unbekanntes erscheint unverändert. */
+const SEKTOREN: Readonly<Partial<Record<string, string>>> = {
+  'information technology': 'IT',
+  financials: 'Finanzen',
+  'health care': 'Gesundheit',
+  'consumer discretionary': 'Zyklischer Konsum',
+  'consumer staples': 'Basiskonsumgüter',
+  communication: 'Kommunikation',
+  'communication services': 'Kommunikation',
+  industrials: 'Industrie',
+  energy: 'Energie',
+  materials: 'Rohstoffe',
+  utilities: 'Versorger',
+  'real estate': 'Immobilien',
+  'cash and/or derivatives': 'Cash und Derivate',
+};
 
 const ARTEN: Readonly<Partial<Record<string, string>>> = { STOCK: 'Aktie', ETF: 'ETF', FUND: 'Fonds', CRYPTO_ETP: 'Krypto' };
 
@@ -742,26 +802,32 @@ export const de = {
 
   top25: {
     titel: 'Top 25 Unternehmen',
-    untertitel: (anteil: string, anzahl: string) => `${anteil} des Depots · Insgesamt ${anzahl} Unternehmen`,
+    laenderSektoren: 'Länder & Sektoren',
+    laender: 'Länder',
+    sektoren: 'Sektoren',
+    ringLaender: 'Ringdiagramm der Länder nach Exposure',
+    ringSektoren: 'Ringdiagramm der Sektoren nach Exposure',
+    tabelleLaender: 'Länder nach Exposure',
+    tabelleSektoren: 'Sektoren nach Exposure',
+    spalteLand: 'Land',
+    spalteSektor: 'Sektor',
+    /** `null` sammelt alles ausserhalb der grössten Gruppen und alles ohne Angabe. */
+    land: (name: string | null) => (name === null ? 'Übrige' : (LAENDER[landKuerzel(name) ?? ''] ?? name)),
+    sektor: (name: string | null) => (name === null ? 'Übrige' : (SEKTOREN[name.toLowerCase()] ?? name)),
+    untertitel: (anteil: string, anzahl: string) => `${anteil} des Depots · Insgesamt ${anzahl}`,
     tabelle: (von: string, bis: string) => `Unternehmen ${von} bis ${bis} nach Exposure`,
     spalteRang: 'Rang',
     spalteName: 'Unternehmen',
     spalteExposure: 'Exposure',
-    spalteAnteil: 'Depotanteil',
-    spalteEtfs: 'Enthalten in',
+    spalteAnteil: 'Anteil',
     fondsListe: (namen: readonly string[]) => (namen.length === 0 ? '–' : namen.join(', ')),
+    /** Für Screenreader in der Zeile; sehend steht die Liste in der Hover-Karte. */
+    fondsHinweis: (liste: string) => `, enthalten in ${liste}`,
     mehrZeigen: 'Mehr zeigen',
     wenigerZeigen: 'Weniger zeigen',
     leer: 'Es liegen keine Fondsbestandteile vor.',
     leerAnleitungTitel: 'So bekommst du diese Ansicht',
     leerAnleitungBeschreibung: 'Schritte, um die Fondsliste „funds.json“ anzulegen.',
-    /** Steht bei `top25: false` unter den Kennzahlen; einschalten geht nur über die Datei [ADR-038]. */
-    ausHinweis: 'Top 25 ist aus — so schaltest du sie ein',
-    ausSchritte: [
-      `„docs/einstellungen.example.json“ aus dem Scapio-Ordner als „einstellungen.json“ ${DATENORDNER} ablegen. Gibt es die Datei schon, darin die Zeile "top25": true eintragen.`,
-      'Scapio neu starten (Start.command bzw. .bat), dann auf „Aktualisieren“ klicken.',
-      'Die Anbieter iShares, Xtrackers und Amundi erfahren dann bei jedem Abruf, welche ihrer ETFs du hältst, nicht wie viel.',
-    ],
     leerAnleitungSchritte: [
       `„ingest/funds.example.json“ aus dem Scapio-Ordner als „funds.json“ ${DATENORDNER} ablegen.`,
       'Für jeden gehaltenen ETF einen Eintrag mit der ISIN eintragen. Bei „xtrackers“ oder „amundi“ als Anbieter reicht das schon — die Adresse wird automatisch abgefragt.',
@@ -773,7 +839,7 @@ export const de = {
     fehlendeFondsTitel: 'Diese Fonds fehlen in der Auswertung',
     fehlendeFondsBeschreibung: 'Liste der Fonds ohne bekannte Bestandteile, mit Grund je Fonds.',
     fehlendeFondsEinleitung: (abdeckung: string) =>
-      `${abdeckung} deines Depots sind aufgeschlüsselt. Bei den folgenden Fonds ist nicht bekannt, welche Unternehmen sie enthalten — sie zählen deshalb in der Top 25 nicht mit.`,
+      `${abdeckung} deines Depots sind aufgeschlüsselt. Bei den folgenden Fonds ist nicht bekannt, welche Unternehmen sie enthalten — sie zählen deshalb bei Ländern, Sektoren und Unternehmen nicht mit.`,
     fehlendeFondsGesperrt: (anbieter: string) =>
       `${anbieter} veröffentlicht nicht, welche Unternehmen im Fonds stecken. Daran lässt sich von hier aus nichts ändern.`,
     fehlendeFondsAbrufGescheitert:

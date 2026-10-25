@@ -12,7 +12,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import * as axe from 'axe-core';
 import { expect } from 'vitest';
 
-import { euroAusCent, prozent } from '@/lib/format';
+import { anteilProzent, euroAusCent, prozent } from '@/lib/format';
 
 export function rendern(ui: ReactElement) {
   const client = new QueryClient({
@@ -82,6 +82,11 @@ export function euro(cent: number, mitVorzeichen = false): string {
 /** Erwarteter Kacheltext fuer ein Verhaeltnis, wie es prozent() rendert. */
 export function prozentText(anteil: number, mitVorzeichen = false): string {
   return ohneGeschuetztesLeerzeichen(prozent(anteil, mitVorzeichen));
+}
+
+/** Dasselbe für eine Anteilsspalte, wie anteilProzent() sie rendert. */
+export function anteilText(anteil: number, mitVorzeichen = false): string {
+  return ohneGeschuetztesLeerzeichen(anteilProzent(anteil, mitVorzeichen));
 }
 
 /**

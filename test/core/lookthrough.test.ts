@@ -209,6 +209,48 @@ describe('lookThrough', () => {
   });
 });
 
+describe('lookThrough: Laender und Sektoren', () => {
+  it('summiert ueber alle Bestandteile und Fonds, bezogen auf das durchschaute Exposure', () => {
+    const e = lookThrough(
+      werte([[WELT, '1000'], [EUROPA, '1000'], [GOLD, '2000']]),
+      [
+        teil(WELT, 'A', 'a', 0.6, 'Financials', 'United States'),
+        teil(WELT, 'B', 'b', 0.4, 'Health Care', ' Switzerland '),
+        teil(EUROPA, 'B', 'b', 0.5, 'Health Care', 'Switzerland'),
+        teil(EUROPA, 'C', 'c', 0.5, 'Financials', 'Germany'),
+      ],
+      zuCent('4000'),
+      1,
+    );
+    // Ueber alle Unternehmen, nicht nur die eine Top-Zeile; Gold zaehlt nicht mit.
+    expect(e.laender).toEqual([
+      { name: 'Switzerland', exposure: zuCent('900'), anteil: 0.45 },
+      { name: 'United States', exposure: zuCent('600'), anteil: 0.3 },
+      { name: 'Germany', exposure: zuCent('500'), anteil: 0.25 },
+    ]);
+    expect(e.sektoren).toEqual([
+      { name: 'Financials', exposure: zuCent('1100'), anteil: 0.55 },
+      { name: 'Health Care', exposure: zuCent('900'), anteil: 0.45 },
+    ]);
+  });
+
+  it('fasst alles jenseits der zehn groessten Gruppen und alles ohne Angabe als null zusammen', () => {
+    const laender = Array.from({ length: 12 }, (_, i) => `L${String(i + 1)}`);
+    const e = lookThrough(
+      werte([[WELT, '1000']]),
+      [
+        ...laender.map((land, i) => teil(WELT, `U${String(i)}`, land, (laender.length - i) / 100, null, land)),
+        teil(WELT, 'X', 'x', 0.02, null, '  '),
+      ],
+      zuCent('1000'),
+    );
+    expect(e.laender.map((g) => g.name)).toEqual([...laender.slice(0, 10), null]);
+    // L11 (2 %), L12 (1 %) und die leere Angabe (2 %).
+    expect(e.laender.at(-1)!.exposure).toBe(zuCent('50'));
+    expect(e.sektoren).toEqual([{ name: null, exposure: zuCent('800'), anteil: 1 }]);
+  });
+});
+
 describe('gewichtsSumme', () => {
   it('summiert nur die Gewichte des gefragten Fonds', () => {
     const bestandteile = [teil(WELT, 'A', 'a', 0.6), teil(WELT, 'B', 'b', 0.4), teil(EUROPA, 'C', 'c', 1)];

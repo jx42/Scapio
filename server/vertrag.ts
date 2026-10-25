@@ -228,12 +228,21 @@ export type FehlenderFonds = {
   readonly fall: FehlenderFondsFall;
 };
 
+/** Ein Land oder Sektor ueber alle durchschauten Fonds. `name` ist Rohtext des Anbieters, `null` heisst „Übrige“. */
+export type Gruppe = {
+  readonly name: string | null;
+  readonly exposureCent: number;
+  readonly anteil: number;
+};
+
 export type Top25 = MitStand & {
   readonly zeilen: readonly UnternehmenZeile[];
   readonly topAnteil: number;
   readonly abdeckung: number;
   readonly durchschautCent: number;
   readonly anzahlUnternehmen: number;
+  readonly laender: readonly Gruppe[];
+  readonly sektoren: readonly Gruppe[];
   readonly fehlendeFonds: readonly FehlenderFonds[];
 };
 

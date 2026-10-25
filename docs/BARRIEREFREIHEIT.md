@@ -19,6 +19,7 @@ Stelle, an der sie geprüft werden.
 | Zustand nicht allein über Fläche: das gewählte Segment trägt den Rand `--color-bedien-rand` (3 : 1). | WCAG 1.4.11: die Fläche allein hebt sich mit 1,19 : 1 ab. | `ui/toggle.tsx` |
 | Fehlerzustände tragen `role="alert"` — außer bei `E_NETZ`: dann meldet die Seite den Ausfall einmal (`App.tsx`), die Kacheln zeigen ihn `still`; Dialoge geben den Fokus an ihren Auslöser zurück; eine Erklärung („i“) und der Demo-Grund am Aktualisieren-Knopf sind Popover; `ui/tooltip.tsx` gibt es nicht (`test/keinTooltip.test.ts`). | WCAG 4.1.3, 2.4.3; ein Tooltip erscheint auf Touch nicht und verschwindet, bevor man ihn liest (1.4.13). | `Kachel`, `ui/dialog.tsx`, `InfoKnopf` |
 | Eine überlaufende Tabelle ist eine benannte, fokussierbare Region (`bereich`), damit sie per Tastatur scrollt. | axe `scrollable-region-focusable` bei 375 px. | `ui/table.tsx`, `Top25Ansicht.tsx` |
+| Die Fonds eines Unternehmens zeigt eine Hover-Karte (`ui/hover-card.tsx`); dieselbe Liste steht `sr-only` in der Zeile. | WCAG 1.4.13: die Karte bleibt beim Zeigen darauf offen und schließt mit Escape — anders als ein Tooltip, den `test/keinTooltip.test.ts` weiter ausschließt. | `Top25Ansicht.tsx` |
 | Eine Live-Region steht von Anfang an leer im DOM und bekommt erst dann Text (`Aktualisieren`: `role="status"`). Der Ladezustand einer Kachel ist `aria-busy`, nicht `aria-live`. | Eine bereits gefüllt eingefügte Region wird nicht vorgelesen; sechs ladende Kacheln, die gleichzeitig ansagen, sind Lärm (WCAG 4.1.3). | `Aktualisieren.tsx`, `Zustaende.tsx` |
 | Ausklappzustand („Mehr zeigen“) steht mit `aria-expanded`/`aria-controls` am Knopf und bleibt über ein Neuladen (`useGespeicherterSchalter`). | WCAG 4.1.2; wer aufklappt, will es beim nächsten Mal nicht wieder tun. | `KennzahlenAnsicht.tsx`, `Top25Ansicht.tsx` |
 | Toasts: Region und Schließen-Knopf tragen deutsche Namen aus `de.ts`; ein Fehlertoast bleibt stehen (`duration: Infinity`). Texte fremder Bibliotheken (Sonner, Radix) kommen immer über deren Props aus `de.ts`. | Sonst sagt der Screenreader „Notifications“ und „Close toast“; ein Fehler, der nach vier Sekunden verschwindet, ist für Langsame nie da gewesen (WCAG 2.2.1, 3.1.2). | `ui/sonner.tsx`, `Aktualisieren.tsx` |
@@ -83,6 +84,7 @@ stimmt; `npm run kontrast` schreibt sie neu.
 | `--color-text` | `--color-rand-licht` | 9,76 : 1 | Badge ≥ 4,5 : 1 |
 | `--color-grund` | `--color-chart-1` | 8,16 : 1 | Knopf ≥ 4,5 : 1 |
 | `--color-fokus` | `--color-grund` | 10,84 : 1 | Fokusring ≥ 3 : 1 |
+| `--color-demo-band-text` | `--color-demo-band` | 6,08 : 1 | Demo-Band, Text und Fokusring ≥ 4,5 : 1 |
 | `--color-fokus` | `--color-glas` | 10,23 : 1 | Fokusring ≥ 3 : 1 |
 | `--color-fokus` | `--color-flaeche` | 9,86 : 1 | Fokusring ≥ 3 : 1 |
 | `--color-fokus` | `--color-glas-hoch` | 10,30 : 1 | Fokusring ≥ 3 : 1 |
@@ -94,11 +96,21 @@ stimmt; `npm run kontrast` schreibt sie neu.
 | `--color-chart-3` | `--color-glas` | 9,92 : 1 | Grafik ≥ 3 : 1 |
 | `--color-chart-4` | `--color-glas` | 7,09 : 1 | Grafik ≥ 3 : 1 |
 | `--color-chart-5` | `--color-glas` | 9,92 : 1 | Grafik ≥ 3 : 1 |
+| `--color-chart-6` | `--color-glas` | 4,79 : 1 | Grafik ≥ 3 : 1 |
+| `--color-chart-7` | `--color-glas` | 12,70 : 1 | Grafik ≥ 3 : 1 |
+| `--color-chart-8` | `--color-glas` | 6,15 : 1 | Grafik ≥ 3 : 1 |
+| `--color-chart-9` | `--color-glas` | 5,43 : 1 | Grafik ≥ 3 : 1 |
+| `--color-chart-10` | `--color-glas` | 11,94 : 1 | Grafik ≥ 3 : 1 |
 | `--color-chart-1` | `--color-flaeche` | 7,42 : 1 | Ringsegment ≥ 3 : 1 |
 | `--color-chart-2` | `--color-flaeche` | 6,80 : 1 | Ringsegment ≥ 3 : 1 |
 | `--color-chart-3` | `--color-flaeche` | 9,56 : 1 | Ringsegment ≥ 3 : 1 |
 | `--color-chart-4` | `--color-flaeche` | 6,84 : 1 | Ringsegment ≥ 3 : 1 |
 | `--color-chart-5` | `--color-flaeche` | 9,56 : 1 | Ringsegment ≥ 3 : 1 |
+| `--color-chart-6` | `--color-flaeche` | 4,62 : 1 | Ringsegment ≥ 3 : 1 |
+| `--color-chart-7` | `--color-flaeche` | 12,24 : 1 | Ringsegment ≥ 3 : 1 |
+| `--color-chart-8` | `--color-flaeche` | 5,92 : 1 | Ringsegment ≥ 3 : 1 |
+| `--color-chart-9` | `--color-flaeche` | 5,23 : 1 | Ringsegment ≥ 3 : 1 |
+| `--color-chart-10` | `--color-flaeche` | 11,51 : 1 | Ringsegment ≥ 3 : 1 |
 | `--color-chart-1` / 70 % | `--color-bedien-aktiv` | 3,92 : 1 | Reglerspanne ≥ 3 : 1 |
 | `--color-chart-1` / 70 % | `--color-glas` | 4,32 : 1 | Reglerspanne ≥ 3 : 1 |
 | `--color-gewinn` | `--success-bg` | 8,09 : 1 | Toast ≥ 4,5 : 1 |

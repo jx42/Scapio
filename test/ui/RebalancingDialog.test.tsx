@@ -13,7 +13,7 @@ import { prozent } from '@/lib/format';
 import type { Aufteilung, Rebalancing } from '@/lib/api';
 import { AufteilungKachel } from '@/features/aufteilung/AufteilungKachel';
 import { bpAusEingabe, zielLesen } from '@/features/aufteilung/zielaufteilung';
-import { erwarteBarrierefrei, euro, fetchErsatz, prozentText, rendern, type Antwort } from './hilfen';
+import { anteilText, erwarteBarrierefrei, euro, fetchErsatz, rendern, type Antwort } from './hilfen';
 import { drift, kennzahlenAntwort, xirrOk } from './fixtures';
 
 const STAND = '2026-08-26T12:08:00+02:00';
@@ -165,7 +165,7 @@ describe('RebalancingDialog', () => {
     expect(within(dialog).getByRole('button', { name: de.rebalancing.berechnen })).toBeDisabled();
     expect(within(dialog).getByText(de.rebalancing.betrag(euro(-2_000_000, true), de.rebalancing.richtung.verkaufen))).toBeInTheDocument();
     expect(within(dialog).getByText(de.rebalancing.betrag(euro(-1_000_000, true), de.rebalancing.richtung.vomKonto))).toBeInTheDocument();
-    expect(within(dialog).getByText(prozentText(-0.3, true))).toBeInTheDocument();
+    expect(within(dialog).getByText(anteilText(-0.3, true))).toBeInTheDocument();
     expect(anfragen).toEqual([`/api/rebalancing?ziel=${encodeURIComponent(`KONTO:0,${WORLD}:5000,${EM}:5000`)}`]);
     expect(zielLesen().ziel.get(EM)).toBe(5000);
     await erwarteBarrierefrei(dialog);

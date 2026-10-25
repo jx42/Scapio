@@ -98,6 +98,7 @@ type Untergrund =
   | 'bedien-aktiv'
   | 'rand-licht'
   | 'chart-1'
+  | 'demo-band'
   | ToastFlaeche;
 
 /**
@@ -121,6 +122,8 @@ export type Paarung = {
   readonly wofuer: string;
 };
 
+const CHART_TOKENS = Array.from({ length: 10 }, (_, i) => `chart-${String(i + 1)}`);
+
 const PAARUNGEN: readonly Paarung[] = [
   ...(['grund', 'glas', 'flaeche', 'glas-hoch', 'bedien-aktiv'] as const).map(
     (hinten): Paarung => ({ vorne: 'text', hinten, mindestens: 4.5, wofuer: 'Text' }),
@@ -138,15 +141,16 @@ const PAARUNGEN: readonly Paarung[] = [
   { vorne: 'text', hinten: 'rand-licht', mindestens: 4.5, wofuer: 'Badge' },
   { vorne: 'grund', hinten: 'chart-1', mindestens: 4.5, wofuer: 'Knopf' },
   { vorne: 'fokus', hinten: 'grund', mindestens: 3, wofuer: 'Fokusring' },
+  { vorne: 'demo-band-text', hinten: 'demo-band', mindestens: 4.5, wofuer: 'Demo-Band, Text und Fokusring' },
   ...(['glas', 'flaeche', 'glas-hoch', 'bedien', 'bedien-aktiv'] as const).map(
     (hinten): Paarung => ({ vorne: 'fokus', hinten, mindestens: 3, wofuer: 'Fokusring' }),
   ),
   { vorne: 'bedien-rand', hinten: 'bedien', mindestens: 3, wofuer: 'Gewähltes Segment' },
-  ...(['chart-1', 'chart-2', 'chart-3', 'chart-4', 'chart-5'] as const).map(
+  ...CHART_TOKENS.map(
     (vorne): Paarung => ({ vorne, hinten: 'glas', mindestens: 3, wofuer: 'Grafik' }),
   ),
   // Die Ringsegmente der Aufteilung trennt ein Strich in `flaeche`; untereinander brauchen sie daher keinen Abstand.
-  ...(['chart-1', 'chart-2', 'chart-3', 'chart-4', 'chart-5'] as const).map(
+  ...CHART_TOKENS.map(
     (vorne): Paarung => ({ vorne, hinten: 'flaeche', mindestens: 3, wofuer: 'Ringsegment' }),
   ),
   // Die gewählte Spanne des Zeitraumreglers; die Schiene darunter ist Schmuck, der Zustand steht in Spanne und Griffen.

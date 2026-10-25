@@ -16,7 +16,7 @@ import { Toaster } from '@/components/ui/sonner';
 import { VerlaufKachel } from '@/features/verlauf/VerlaufKachel';
 import { AufteilungKachel } from '@/features/aufteilung/AufteilungKachel';
 import { KennzahlenKachel } from '@/features/kennzahlen/KennzahlenKachel';
-import { Top25Kachel } from '@/features/top25/Top25Kachel';
+import { LookThroughKacheln } from '@/features/top25/LookThroughKacheln';
 import { FluesseKachel } from '@/features/fluesse/FluesseKachel';
 import { SparplaeneKachel } from '@/features/sparplaene/SparplaeneKachel';
 
@@ -37,7 +37,7 @@ const KACHELN: Record<Exclude<Ansicht, 'seite'>, ComponentType> = {
   verlauf: VerlaufKachel,
   kennzahlen: KennzahlenKachel,
   aufteilung: AufteilungKachel,
-  top25: Top25Kachel,
+  top25: LookThroughKacheln,
   fluesse: FluesseKachel,
   sparplaene: SparplaeneKachel,
 };
@@ -150,7 +150,7 @@ const TABS: readonly Tab[] = [
   { id: 'kennzahlen', titel: 'Kennzahlen', inhalt: rahmen('kennzahlen') },
   { id: 'aufteilung', titel: 'Aufteilung', inhalt: rahmen('aufteilung') },
   { id: 'rebalancing', titel: 'Rebalancing', inhalt: rahmen('rebalancing') },
-  { id: 'top25', titel: 'Top 25', inhalt: rahmen('top25') },
+  { id: 'top25', titel: 'Länder & Unternehmen', inhalt: rahmen('top25') },
   { id: 'fluesse', titel: 'Käufe & Sparpläne', inhalt: rahmen('fluesse') },
 ];
 

@@ -170,6 +170,7 @@ export function VerlaufKachel() {
           id="verlauf"
           zustand={zustand}
           ladehoehe="gross"
+          className="pb-4"
           werkzeuge={
             <>
               {zustand.art !== 'bereit' ? null : (

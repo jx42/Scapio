@@ -52,6 +52,20 @@ const prozentMitZeichenFormat = new Intl.NumberFormat('de-DE', {
   signDisplay: 'exceptZero',
 });
 
+const KLEINSTER_ANTEIL = 0.001;
+const anteilFormat = new Intl.NumberFormat('de-DE', {
+  style: 'percent',
+  minimumFractionDigits: 1,
+  maximumFractionDigits: 1,
+});
+
+const anteilMitZeichenFormat = new Intl.NumberFormat('de-DE', {
+  style: 'percent',
+  minimumFractionDigits: 1,
+  maximumFractionDigits: 1,
+  signDisplay: 'exceptZero',
+});
+
 /** Eingabefeld eines Zielanteils: Prozent mit genau einer Nachkommastelle, ohne Zeichen. */
 const zielEingabeFormat = new Intl.NumberFormat('de-DE', {
   minimumFractionDigits: 1,
@@ -154,14 +168,25 @@ export function euroKompaktAusCent(cent: number): string {
 /**
  * Verhaeltniszahl als Prozent, immer mit zwei Nachkommastellen: 0,1123 wird zu
  * "11,23 %". Die API liefert Verhaeltnisse, keine Prozentwerte — das ist die Stelle,
- * an der beides auseinandergehalten wird. Zwei Nachkommastellen fuer jeden
- * Prozentwert der Anwendung, ohne Ausnahme — dieselbe Genauigkeit wie bei der
- * Sharpe-Ratio, und fein genug fuer die Drift-Abweichung, deren kleinste Schwelle
- * bei 0,1 % liegt [RUNBOOK.md].
+ * an der beides auseinandergehalten wird. Zwei Nachkommastellen fuer Renditen und
+ * Kennzahlen — dieselbe Genauigkeit wie bei der Sharpe-Ratio, und fein genug fuer die
+ * Drift-Abweichung, deren kleinste Schwelle bei 0,1 % liegt [RUNBOOK.md].
  */
 export function prozent(anteil: number, mitVorzeichen = false): string {
   if (!istZahl(anteil)) return '—';
   return mitVorzeichen ? prozentMitZeichenFormat.format(anteil) : prozentFormat.format(anteil);
+}
+
+/**
+ * Anteil in einer Tabellenspalte, mit einer Nachkommastelle: 0,1123 wird zu "11,2 %".
+ * Eine Spalte von Anteilen liest sich als Verteilung; die zweite Stelle waere dort nur Rauschen.
+ */
+export function anteilProzent(anteil: number, mitVorzeichen = false): string {
+  if (!istZahl(anteil)) return '—';
+  if (mitVorzeichen) return anteilMitZeichenFormat.format(anteil);
+  // „0,0 %“ hieße „nichts“, obwohl etwas da ist.
+  if (anteil > 0 && anteil < KLEINSTER_ANTEIL / 2) return `<\u00A0${anteilFormat.format(KLEINSTER_ANTEIL)}`;
+  return anteilFormat.format(anteil);
 }
 
 /** Prozent aus einer Zahl, die schon in Prozent steht (12,5 statt 0,125), etwa aus einem Lauf-Hinweis. */

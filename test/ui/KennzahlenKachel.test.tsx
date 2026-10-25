@@ -153,19 +153,6 @@ describe('KennzahlenKachel', () => {
     expect(screen.getByRole('button', { name: de.kennzahlen.mehrZeigen })).toBeInTheDocument();
   });
 
-  it('erklaert bei ausgeschalteter Top 25, wie man sie einschaltet, und nur dann', async () => {
-    wiederherstellen = fetchErsatz(() => ({ body: FIXTURE }));
-    const { container, unmount } = rendern(<KennzahlenKachel top25Aus />);
-    await userEvent.click(await screen.findByRole('button', { name: de.top25.ausHinweis }));
-    expect(await screen.findByText(de.top25.ausSchritte[1]!)).toBeInTheDocument();
-    await erwarteBarrierefrei(container);
-    unmount();
-
-    rendern(<KennzahlenKachel />);
-    await screen.findByText(euro(FIXTURE.kursgewinnCent));
-    expect(screen.queryByRole('button', { name: de.top25.ausHinweis })).not.toBeInTheDocument();
-  });
-
   it('zeigt die Hinweise des Kerns im Dialog hinter der Titelzeile, ausser denen, die anderswo stehen', async () => {
     wiederherstellen = fetchErsatz(() => ({
       body: {

@@ -10,36 +10,22 @@
  */
 
 import { Cell, Label, Pie, PieChart, ResponsiveContainer } from 'recharts';
+import { Wallet } from 'lucide-react';
 
 import { de } from '@/i18n/de';
 import type { PositionZeile } from '@/lib/api';
-import {
-  AUFTEILUNG_CHART_HOEHE,
-  FARBTUPFER_GROESSE,
-  LINIE_HAUPT,
-  RING_AUSSEN,
-  RING_BESCHRIFTUNG_GROESSE,
-  RING_BESCHRIFTUNG_VERSATZ,
-  RING_WERT_GROESSE,
-  RING_INNEN,
-  RING_LUECKE_GRAD,
-  RING_WERT_VERSATZ,
-} from '@/lib/chartmasse';
-import { betragOhneVorzeichen, euroAusCent, prozent } from '@/lib/format';
+import { AUFTEILUNG_CHART_HOEHE, LINIE_HAUPT, RING_AUSSEN, RING_INNEN, RING_LUECKE_GRAD } from '@/lib/chartmasse';
+import { anteilProzent, betragOhneVorzeichen, euroAusCent, prozent } from '@/lib/format';
 import { cn } from '@/lib/utils';
-import { CHART_REIHE, FARBE } from '@/lib/farben';
+import { FARBE } from '@/lib/farben';
 import { useZahlZaehler } from '@/hooks/useZahlZaehler';
 import { ChartRahmen } from '@/components/ChartRahmen';
 import { OnvistaLink } from '@/components/OnvistaLink';
 import { RichtungsBadge } from '@/components/RichtungsBadge';
+import { Farbtupfer, RingMitte, ringFarbe as farbe } from '@/components/Ring';
 import { LeerZustand } from '@/components/Zustaende';
 
 const CASH_SCHLUESSEL = 'cash';
-
-
-function farbe(index: number): string {
-  return CHART_REIHE[index % CHART_REIHE.length] ?? FARBE.chart1;
-}
 
 /** Die Art-Spalte: feste Breite, bricht Langes um statt es zu kürzen (WCAG 1.4.10) und entfällt auf schmalen Bildschirmen, damit der Name Platz behält. */
 const ART_SPALTE = 'hidden w-16 shrink-0 break-words sm:block';
@@ -117,7 +103,7 @@ export function AufteilungAnsicht({
           zeilen: stuecke.map((s) => [
             s.name,
             s.position === null ? de.aufteilung.artCash : de.aufteilung.art(s.art),
-            prozent(s.anteil),
+            anteilProzent(s.anteil),
             euroAusCent(s.wertCent),
             s.position?.isin ?? '',
           ]),
@@ -152,7 +138,7 @@ export function AufteilungAnsicht({
                   es im PieChart nicht gibt; RingMitte braucht nur cx/cy der polaren. */}
               {gesamtCent === null ? null : (
                 <Label
-                  content={<RingMitte beschriftung={de.aufteilung.gesamt} wert={euroAusCent(gesamtCent)} />}
+                  content={<RingMitte symbol={Wallet} beschriftung={de.aufteilung.gesamt} wert={euroAusCent(gesamtCent)} />}
                 />
               )}
             </Pie>
@@ -229,28 +215,10 @@ export function AufteilungAnsicht({
   );
 }
 
-/**
- * Der Farbpunkt vor dem Namen. Ein SVG-Kreis, weil `fill` ein Zeichenattribut ist
- * und kein Inline-CSS — die Farbe selbst bleibt ein Token. [INV-05]
- */
-function Farbtupfer({ farbe: wert }: { readonly farbe: string }) {
-  return (
-    <svg
-      width={FARBTUPFER_GROESSE}
-      height={FARBTUPFER_GROESSE}
-      viewBox={`0 0 ${String(FARBTUPFER_GROESSE)} ${String(FARBTUPFER_GROESSE)}`}
-      aria-hidden="true"
-      className="shrink-0"
-    >
-      <circle cx={FARBTUPFER_GROESSE / 2} cy={FARBTUPFER_GROESSE / 2} r={FARBTUPFER_GROESSE / 2} fill={wert} />
-    </svg>
-  );
-}
-
 /** Anteil und Wert einer Legendenzeile — eigene Komponente, weil `useZahlZaehler`
  *  als Hook nicht in der `.map()`-Schleife der Legende stehen darf. */
 function LegendenWerte({ anteil, wertCent }: { readonly anteil: number; readonly wertCent: number }) {
-  const angezeigterAnteil = useZahlZaehler(prozent(anteil));
+  const angezeigterAnteil = useZahlZaehler(anteilProzent(anteil));
   const angezeigterWert = useZahlZaehler(euroAusCent(wertCent));
   return (
     <>
@@ -269,36 +237,4 @@ function Positionsdetail({ position }: { position: PositionZeile }) {
     ),
   );
   return <RichtungsBadge wert={position.gewinnCent}>{angezeigterGewinn}</RichtungsBadge>;
-}
-
-/**
- * Die Mitte des Rings. Recharts uebergibt dem Label-Inhalt die Geometrie; die beiden
- * SVG-Textknoten sind Zeichnung, kein Dokumenttext — der Wert steht zusaetzlich in der
- * verborgenen Tabelle des Rahmens.
- */
-function RingMitte(props: {
-  readonly beschriftung: string;
-  readonly wert: string;
-  readonly viewBox?: { readonly cx?: number; readonly cy?: number };
-}) {
-  const angezeigterWert = useZahlZaehler(props.wert);
-  const cx = props.viewBox?.cx;
-  const cy = props.viewBox?.cy;
-  if (cx === undefined || cy === undefined) return null;
-  return (
-    <g aria-hidden="true">
-      <text
-        x={cx}
-        y={cy + RING_BESCHRIFTUNG_VERSATZ}
-        textAnchor="middle"
-        fill={FARBE.textLeise}
-        fontSize={RING_BESCHRIFTUNG_GROESSE}
-      >
-        {props.beschriftung}
-      </text>
-      <text x={cx} y={cy + RING_WERT_VERSATZ} textAnchor="middle" fill={FARBE.text} fontSize={RING_WERT_GROESSE}>
-        {angezeigterWert}
-      </text>
-    </g>
-  );
 }

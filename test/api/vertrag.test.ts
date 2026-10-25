@@ -314,6 +314,8 @@ describe('Vertragstest: server/vertrag.ts gegen die tatsaechliche Antwort', () =
         abdeckung: true,
         durchschautCent: true,
         anzahlUnternehmen: true,
+        laender: true,
+        sektoren: true,
         fehlendeFonds: true,
         stand: true,
         drift: true,

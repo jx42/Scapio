@@ -13,7 +13,6 @@ import { Kachel } from '@/components/Kachel';
 import { Driftfussnote } from '@/components/Driftbanner';
 import { KennzahlenAnsicht } from '@/features/kennzahlen/KennzahlenAnsicht';
 import { KennzahlenHinweise, kennzahlenHinweisSaetze } from '@/features/kennzahlen/KennzahlenHinweise';
-import { Top25AusHinweis } from '@/features/top25/Top25AusHinweis';
 
 export type KennzahlenKachelProps = {
   /** Aussenhoehe in Pixeln, gemessen an Aufteilung — siehe `Kachel`-Prop `hoehe`. */
@@ -24,11 +23,9 @@ export type KennzahlenKachelProps = {
    * Hoehe mitwaechst, statt neben einer viel groesseren Nachbarkachel zu verkuemmern.
    */
   readonly onAusgeklapptAendern?: (ausgeklappt: boolean) => void;
-  /** `top25: false` laut Health — dann steht der Hinweis zum Einschalten in den Fussnoten. */
-  readonly top25Aus?: boolean;
 };
 
-export function KennzahlenKachel({ hoehe = null, onAusgeklapptAendern, top25Aus = false }: KennzahlenKachelProps) {
+export function KennzahlenKachel({ hoehe = null, onAusgeklapptAendern }: KennzahlenKachelProps) {
   const abfrage = useQuery({ queryKey: schluessel.kennzahlen, queryFn: api.kennzahlen });
   const daten = abfrage.data;
 
@@ -57,12 +54,7 @@ export function KennzahlenKachel({ hoehe = null, onAusgeklapptAendern, top25Aus 
       ladehoehe="gross"
       className="pb-2"
       werkzeuge={hinweisSaetze.length === 0 ? undefined : <KennzahlenHinweise saetze={hinweisSaetze} />}
-      fussnoten={
-        <>
-          <Driftfussnote drift={daten?.drift} />
-          {top25Aus ? <Top25AusHinweis /> : null}
-        </>
-      }
+      fussnoten={<Driftfussnote drift={daten?.drift} />}
       hoehe={ausgeklappt ? hoeheOffen : hoehe}
     >
       {daten === undefined ? null : (
