@@ -34,6 +34,7 @@ import { Sperre } from './sperre.ts';
 import { registriereAufteilung } from './routen/aufteilung.ts';
 import { registriereFluesse } from './routen/fluesse.ts';
 import { registriereHealth } from './routen/health.ts';
+import { registriereJahre } from './routen/jahre.ts';
 import { registriereKennzahlen } from './routen/kennzahlen.ts';
 import { registriereLauf } from './routen/lauf.ts';
 import { registriereMcpAnmeldung } from './routen/mcpAnmeldung.ts';
@@ -268,6 +269,7 @@ export function baueServer(optionen: ServerOptionen): { app: FastifyInstance; to
   registriereHealth(app, ctx);
   registriereZeitreihe(app, ctx);
   registriereKennzahlen(app, ctx);
+  registriereJahre(app, ctx);
   registriereAufteilung(app, ctx);
   registriereRebalancing(app, ctx);
   registriereTop25(app, ctx);

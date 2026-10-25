@@ -8,13 +8,10 @@
  */
 
 import type { FastifyInstance, FastifyRequest } from 'fastify';
-import { baueBenchmarkreihe, risikofreiesRaster } from '../../core/benchmark.ts';
 import type { Tag } from '../../core/kalender.ts';
 import { frueher, spaeter, tageZwischen, vergleiche } from '../../core/kalender.ts';
 import { kursgewinnFenster, vergleichImFenster } from '../../core/kursgewinn.ts';
 import type { VergleichPunkt } from '../../core/kursgewinn.ts';
-import { rasterFuer, verschmelzeKurse } from '../../core/kursraster.ts';
-import * as repository from '../../db/repository/index.ts';
 import { nurDieseParameter, parameterAbgelehnt } from '../fehler.ts';
 import { centAlsZahl, objektSchema, oderNull, tagAlsText, umschlagAus, umschlagSchemaEigenschaften } from '../json.ts';
 import { baueLesemodell } from '../lesemodell.ts';
@@ -22,16 +19,8 @@ import { markenAus } from '../marken.ts';
 import { alsTagParameter, alsZeitraum, beginnVon, minusMonate } from '../zeitraum.ts';
 import { LESENDE_ROUTEN } from '../../shared/routen.ts';
 import type { Kontext } from '../server.ts';
-import { BENCHMARKS, RISIKOFREI, RISIKOFREI_ISIN } from '../vertrag.ts';
+import { alsBenchmarkIsin, vergleichsdepot } from '../vergleichsdepot.ts';
 import type { Marke, MarkenVorgang, Zeitpunkt, Zeitreihe } from '../vertrag.ts';
-
-/** Unbekannt oder fehlend wird still zu `null` — eine kaputte gespeicherte Auswahl im
- * localStorage soll die Kachel nicht sperren, anders als ein ungueltiger `zeitraum`. */
-function alsBenchmarkIsin(wert: unknown): string | null {
-  if (typeof wert !== 'string') return null;
-  if (wert === RISIKOFREI_ISIN) return wert;
-  return BENCHMARKS.some((b) => b.isin === wert) ? wert : null;
-}
 
 /**
  * Ueber drei Jahren reicht ein Punkt je Woche: taeglich waere „max“ ein Megabyte, das
@@ -156,31 +145,12 @@ export function registriereZeitreihe(app: FastifyInstance, ctx: Kontext): void {
     const kursgewinnErgebnis = kursgewinnFenster(reihe, von, bis);
     const kursgewinn = new Map(kursgewinnErgebnis.punkte.map((p) => [p.tag, p]));
 
-    // Vergleichsdepot: dieselben externen Fluesse, am selben Tag in die gewaehlte
-    // Benchmark-ISIN investiert statt ins echte Depot. Raster ueber die volle Historie
-    // (`erster`..`letzter`), nicht nur das Fenster — `baueBenchmarkreihe` simuliert
-    // selbst ab dem ersten Fluss und braucht dafuer Kurse vor `von`.
-    let benchmarkInfo: { isin: string; name: string } | null = null;
-    let vergleich: ReadonlyMap<string, VergleichPunkt> | null = null;
-    if (benchmarkIsin === RISIKOFREI_ISIN) {
-      benchmarkInfo = RISIKOFREI;
-      const raster = risikofreiesRaster(repository.zins.alsKarte(ctx.db), erster, letzter);
-      if (raster.size > 0) {
-        const benchmarkReihe = baueBenchmarkreihe({ fluesse: lm.externeFluesse(), raster, von, bis });
-        vergleich = new Map(vergleichImFenster(reihe, benchmarkReihe, von, bis).map((p) => [p.tag, p]));
-      }
-    } else if (benchmarkIsin !== null) {
-      const eintrag = BENCHMARKS.find((b) => b.isin === benchmarkIsin);
-      if (eintrag !== undefined) {
-        benchmarkInfo = eintrag;
-        const kurspunkte = repository.kurs.fuerIsin(ctx.db, benchmarkIsin);
-        if (kurspunkte.length > 0) {
-          const raster = rasterFuer(verschmelzeKurse(kurspunkte), erster, letzter);
-          const benchmarkReihe = baueBenchmarkreihe({ fluesse: lm.externeFluesse(), raster, von, bis });
-          vergleich = new Map(vergleichImFenster(reihe, benchmarkReihe, von, bis).map((p) => [p.tag, p]));
-        }
-      }
-    }
+    const depot = benchmarkIsin === null ? null : vergleichsdepot(ctx.db, benchmarkIsin, lm.externeFluesse(), erster, letzter, von, bis);
+    const benchmarkInfo = depot?.info ?? null;
+    const vergleich: ReadonlyMap<string, VergleichPunkt> | null =
+      depot === null || depot.reihe === null
+        ? null
+        : new Map(vergleichImFenster(reihe, depot.reihe, von, bis).map((p) => [p.tag, p]));
 
     const marken = markenAus(lm.transaktionen(), von, bis);
     const woechentlich = vergleiche(von, minusMonate(bis, 36)) < 0;

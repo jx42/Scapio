@@ -6,13 +6,20 @@
  * fehlt, ohne Fehler. Nur `app.inject()` gegen die echte Antwort deckt das auf.
  */
 
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
 import { afterEach, describe, expect, it } from 'vitest';
 import type { FastifyInstance } from 'fastify';
+import { tagAus } from '../../core/kalender.ts';
+import { testDatenbank } from '../../db/verbindung.ts';
+import { baueServer } from '../../server/server.ts';
 import type {
   Aufteilung,
   Drift,
   Fluesse,
   Health,
+  Jahre,
+  Jahreszeile,
   KennzahlenAntwort,
   Lauf,
   MaxDrawdownErgebnis,
@@ -26,7 +33,8 @@ import type {
   XirrErgebnis,
   Zeitreihe,
 } from '../../server/vertrag.ts';
-import { aufraeumen, eigeneHerkunft, testServer } from './hilfen.ts';
+import { seedeDatenbank } from '../e2e/seed.ts';
+import { aufraeumen, eigeneHerkunft, konfiguration, testServer } from './hilfen.ts';
 
 afterEach(() => {
   aufraeumen();
@@ -337,5 +345,51 @@ describe('Vertragstest: server/vertrag.ts gegen die tatsaechliche Antwort', () =
       }),
     );
     schluessel('zeitreihe.drift', body.drift, DRIFT);
+  });
+
+  it('GET /api/jahre', async () => {
+    // Mit Demodaten: die Zeilen gehen erst mit einer Reihe ueber die Leitung.
+    const db = await testDatenbank();
+    const jetzt = new Date().toISOString();
+    const { heute } = seedeDatenbank(db, tagAus(jetzt), jetzt);
+    const { app } = baueServer({
+      db,
+      konfiguration: konfiguration(),
+      distPfad: join(tmpdir(), 'portfolio-kein-dist'),
+      heute,
+      protokoll: false,
+    });
+    const body = await holen(app, '/api/jahre?benchmark=IE00B4L5Y983');
+    schluessel(
+      'jahre',
+      body,
+      felder<Jahre>({
+        jahre: true,
+        benchmark: true,
+        stand: true,
+        drift: true,
+      }),
+    );
+    const zeilen = body.jahre as unknown[];
+    expect(zeilen.length).toBeGreaterThan(1);
+    schluessel(
+      'jahre.jahre[0]',
+      zeilen[0],
+      felder<Jahreszeile>({
+        jahr: true,
+        ab: true,
+        bis: true,
+        twr: true,
+        vergleich: true,
+        teuerung: true,
+        teuerungBisMonat: true,
+        real: true,
+        gewinnCent: true,
+        einzahlungCent: true,
+        endwertCent: true,
+      }),
+    );
+    schluessel('jahre.benchmark', body.benchmark, ['isin', 'name']);
+    schluessel('jahre.drift', body.drift, DRIFT);
   });
 });

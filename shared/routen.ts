@@ -9,6 +9,7 @@ export const LESENDE_ROUTEN = {
   health: { pfad: '/api/health', parameter: [] },
   zeitreihe: { pfad: '/api/zeitreihe', parameter: ['zeitraum', 'benchmark', 'von', 'bis'] },
   kennzahlen: { pfad: '/api/kennzahlen', parameter: [] },
+  jahre: { pfad: '/api/jahre', parameter: ['benchmark'] },
   aufteilung: { pfad: '/api/aufteilung', parameter: [] },
   rebalancing: { pfad: '/api/rebalancing', parameter: ['ziel'] },
   top25: { pfad: '/api/top25', parameter: [] },

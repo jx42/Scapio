@@ -50,6 +50,13 @@ export function abzugPfad(pfad: string, parameter: URLSearchParams): string | nu
     const benchmark = benchmarke[0] !== undefined && BENCHMARK_WAHL.includes(benchmarke[0]) ? benchmarke[0] : OHNE_BENCHMARK;
     return `/api/zeitreihe/${zeitraum}/${benchmark}.json`;
   }
+  if (`/api/${name}` === LESENDE_ROUTEN.jahre.pfad) {
+    if (!nurErlaubte(parameter, ['benchmark'])) return null;
+    const benchmarke = parameter.getAll('benchmark');
+    if (benchmarke.length > 1) return null;
+    const benchmark = benchmarke[0] !== undefined && BENCHMARK_WAHL.includes(benchmarke[0]) ? benchmarke[0] : OHNE_BENCHMARK;
+    return `/api/jahre/${benchmark}.json`;
+  }
   if (`/api/${name}` === LESENDE_ROUTEN.fluesse.pfad) {
     if (!nurErlaubte(parameter, ['fenster'])) return null;
     const fenster = einzeln(parameter, 'fenster', FENSTER, '12m');
@@ -74,6 +81,8 @@ export function abzugAnfragen(): string[] {
       anfragen.push(`${LESENDE_ROUTEN.zeitreihe.pfad}?zeitraum=${z}&benchmark=${encodeURIComponent(b)}`);
     }
   }
+  anfragen.push(LESENDE_ROUTEN.jahre.pfad);
+  for (const b of BENCHMARK_WAHL) anfragen.push(`${LESENDE_ROUTEN.jahre.pfad}?benchmark=${encodeURIComponent(b)}`);
   for (const f of FENSTER) anfragen.push(`${LESENDE_ROUTEN.fluesse.pfad}?fenster=${f}`);
   anfragen.push(`${LESENDE_ROUTEN.rebalancing.pfad}?ziel=${encodeURIComponent(DEMO_REBALANCING_ZIEL)}`);
   return anfragen;

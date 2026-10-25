@@ -10,8 +10,9 @@ import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { de } from '@/i18n/de';
-import type { Zeitreihe } from '@/lib/api';
+import type { Jahre, Zeitreihe } from '@/lib/api';
 import { VerlaufKachel } from '@/features/verlauf/VerlaufKachel';
+import { JahresTabelle } from '@/features/verlauf/JahresTabelle';
 import { erwarteBarrierefrei, euro, fetchErsatz, fokussieren, prozentText, rendern } from './hilfen';
 import { drift, kennzahlenAntwort, sharpeOhne } from './fixtures';
 
@@ -62,6 +63,40 @@ const FIXTURE: Zeitreihe = {
   ],
 };
 
+const JAHRE_FIXTURE: Jahre = {
+  stand: FIXTURE.stand,
+  drift: drift(),
+  benchmark: null,
+  jahre: [
+    {
+      jahr: '2025',
+      ab: '2025-03-03',
+      bis: null,
+      twr: -0.04,
+      vergleich: null,
+      teuerung: 0.021,
+      teuerungBisMonat: '2025-12',
+      real: 0.96 / 1.021 - 1,
+      gewinnCent: -1_200_000,
+      einzahlungCent: 30_000_000,
+      endwertCent: 28_800_000,
+    },
+    {
+      jahr: '2026',
+      ab: null,
+      bis: '2026-08-26',
+      twr: 0.08,
+      vergleich: null,
+      teuerung: 0.012,
+      teuerungBisMonat: '2026-06',
+      real: 1.08 / 1.012 - 1,
+      gewinnCent: 2_500_000,
+      einzahlungCent: 600_000,
+      endwertCent: 37_805_537,
+    },
+  ],
+};
+
 const KENNZAHLEN_FIXTURE = kennzahlenAntwort();
 
 /** Beantwortet /api/zeitreihe mit `zeitreihe`, /api/kennzahlen mit der KENNZAHLEN_FIXTURE. */
@@ -72,7 +107,9 @@ function mitKennzahlen(
   return (pfad: string) =>
     pfad.includes('/api/kennzahlen')
       ? { body: { ...KENNZAHLEN_FIXTURE, ...kennzahlen } }
-      : { body: zeitreihe };
+      : pfad.includes('/api/jahre')
+        ? { body: JAHRE_FIXTURE }
+        : { body: zeitreihe };
 }
 
 let wiederherstellen: (() => void) | null = null;
@@ -160,7 +197,8 @@ describe('VerlaufKachel', () => {
     await waitFor(() => {
       expect(pfade).toContain('/api/zeitreihe?von=2024-01-15&bis=2026-08-26&benchmark=IE00B4L5Y983');
     });
-    for (const radio of screen.getAllByRole('radio')) expect(radio).toHaveAttribute('aria-checked', 'false');
+    const zeitraumwahl = screen.getByRole('radiogroup', { name: de.verlauf.zeitraum });
+    for (const radio of within(zeitraumwahl).getAllByRole('radio')) expect(radio).toHaveAttribute('aria-checked', 'false');
     // Der freie Zeitraum ueberlebt kein Neuladen, der gemerkte feste bleibt unberuehrt.
     expect(localStorage.getItem('portfolio.zeitraum')).toBeNull();
   });
@@ -423,5 +461,63 @@ describe('VerlaufKachel', () => {
     expect(
       screen.queryByRole('button', { name: `${de.erklaerungOeffnen}: ${de.verlauf.gesamtgewinn}` }),
     ).not.toBeInTheDocument();
+  });
+
+  it('schaltet auf die Jahrestabelle um, ohne Chart, Zeitraum und Moduswahl, und merkt es sich', async () => {
+    wiederherstellen = fetchErsatz(mitKennzahlen(FIXTURE));
+    rendern(<VerlaufKachel />);
+    await screen.findByText(de.verlauf.tabelleVermoegen);
+
+    await userEvent.click(screen.getByRole('radio', { name: de.verlauf.darstellungTabelle }));
+    const bereich = await screen.findByRole('region', { name: de.verlauf.jahre.tabelle });
+    const tabelle = within(bereich).getByRole('table');
+    expect(localStorage.getItem('portfolio.verlaufDarstellung')).toBe('tabelle');
+
+    const zeilen = within(tabelle).getAllByRole('row');
+    expect(within(zeilen[2]!).getByRole('rowheader')).toHaveTextContent(`2026 ${de.verlauf.jahre.bis('26.08.')}`);
+    expect(within(zeilen[1]!).getByRole('rowheader')).toHaveTextContent(`2025 ${de.verlauf.jahre.ab('03.03.')}`);
+    // Ohne Vergleich keine Vergleichsspalte; der Verlust traegt Pfeil, nicht nur Farbe.
+    expect(within(tabelle).queryByText(/^Vergleich/)).toBeNull();
+    expect(within(zeilen[1]!).getAllByRole('img', { name: de.kennzahlen.richtungNegativ }).length).toBeGreaterThan(0);
+    expect(within(zeilen[2]!).getByTitle(/Inflation bis Juni 2026/)).toBeInTheDocument();
+
+    expect(screen.queryByRole('tab', { name: de.verlauf.rendite })).toBeNull();
+    expect(screen.queryByRole('radiogroup', { name: de.verlauf.zeitraum })).toBeNull();
+    expect(screen.queryByRole('table', { name: de.verlauf.tabelleVermoegen })).toBeNull();
+    expect(screen.queryByRole('slider')).toBeNull();
+    await erwarteBarrierefrei(document.body);
+
+    await userEvent.click(screen.getByRole('radio', { name: de.verlauf.darstellungVerlauf }));
+    expect(await screen.findByRole('table', { name: de.verlauf.tabelleVermoegen })).toBeInTheDocument();
+  });
+
+  it('nennt den Inflationsstand auch bei einem abgeschlossenen Jahr ohne Dezemberzahl', () => {
+    const [aelter, neuer] = JAHRE_FIXTURE.jahre;
+    rendern(<JahresTabelle daten={{ ...JAHRE_FIXTURE, jahre: [{ ...aelter!, teuerungBisMonat: '2025-11' }, neuer!] }} />);
+    const zeilen = screen.getAllByRole('row');
+    expect(within(zeilen[1]!).getByTitle(/Inflation bis November 2025/)).toBeInTheDocument();
+  });
+
+  it('schreibt die Spanne eines Jahres, das in sich beginnt und endet, in eine Klammer', () => {
+    const [aelter] = JAHRE_FIXTURE.jahre;
+    rendern(<JahresTabelle daten={{ ...JAHRE_FIXTURE, jahre: [{ ...aelter!, bis: '2025-10-20' }] }} />);
+    expect(screen.getByRole('rowheader')).toHaveTextContent(`2025 ${de.verlauf.jahre.abBis('03.03.', '20.10.')}`);
+  });
+
+  it('erklaert im Tooltip, warum ein Wert nicht berechenbar ist', () => {
+    const [aelter, neuer] = JAHRE_FIXTURE.jahre;
+    const daten: Jahre = {
+      ...JAHRE_FIXTURE,
+      benchmark: { isin: 'IE00B4L5Y983', name: 'MSCI World' },
+      jahre: [{ ...aelter!, twr: null, vergleich: null, real: null }, { ...neuer!, teuerung: null, real: null }],
+    };
+    rendern(<JahresTabelle daten={daten} />);
+    const [, erste, zweite] = screen.getAllByRole('row');
+    const j = de.verlauf.jahre;
+    expect(within(erste!).getByTitle(j.ohneRendite)).toHaveTextContent(de.xirr.nichtBerechenbar);
+    expect(within(erste!).getByTitle(j.ohneVergleich('MSCI World'))).toBeInTheDocument();
+    expect(within(erste!).getByTitle(j.realOhneRendite)).toBeInTheDocument();
+    expect(within(zweite!).getByTitle(j.ohneInflation)).toBeInTheDocument();
+    expect(within(zweite!).getByTitle(j.realOhneInflation)).toBeInTheDocument();
   });
 });
