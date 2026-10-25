@@ -13,6 +13,7 @@ import type {
   FehlenderFonds,
   Fluesse,
   Health,
+  Jahre,
   KennzahlenAntwort,
   Lauf,
   McpAnmeldung,
@@ -57,7 +58,7 @@ export type Fall = {
   /** Ersetzt `drift` in jeder Antwort, die eines traegt. */
   readonly drift?: Drift;
   readonly routen?: Partial<Record<Route, Antwort>>;
-  /** Beschriftung eines Knopfs, der nach dem Laden einmal geklickt wird, oder eine Folge davon. */
+  /** Beschriftung (oder `aria-label`) eines Knopfs, der nach dem Laden einmal geklickt wird, oder eine Folge davon. */
   readonly klick?: string | readonly string[];
   /** Gespeichertes Ziel des Rebalancing-Rechners; ohne Angabe ist der Speicher leer. */
   readonly zielaufteilung?: { readonly ziel: Readonly<Record<string, number>>; readonly ausgeschlossen?: readonly string[] };
@@ -321,6 +322,35 @@ export const FAELLE: readonly Fall[] = [
     ansicht: 'verlauf',
     titel: 'Selbstkontrolle: Hinweis (Fußnote)',
     drift: drift('hinweis', { abweichung: 0.002, berechnetGesamtCent: 10_020_00, gemeldetGesamtCent: 10_000_00 }),
+  },
+  {
+    id: 'verlauf-jahre',
+    gruppe: 'verlauf',
+    ansicht: 'verlauf',
+    titel: 'Jahrestabelle',
+    klick: 'Als Jahrestabelle zeigen',
+  },
+  {
+    id: 'verlauf-jahre-luecken',
+    gruppe: 'verlauf',
+    ansicht: 'verlauf',
+    titel: 'Jahrestabelle ohne Inflation und Vergleich',
+    beschreibung: 'Kein Preisindex, keine Benchmarkkurse: die Felder stehen als „nicht berechenbar“.',
+    klick: 'Als Jahrestabelle zeigen',
+    routen: {
+      jahre: aendern<Jahre>((b) => ({
+        ...b,
+        jahre: b.jahre.map((z) => ({ ...z, vergleich: null, teuerung: null, teuerungBisMonat: null, real: null })),
+      })),
+    },
+  },
+  {
+    id: 'verlauf-jahre-drift-abbruch',
+    gruppe: 'verlauf',
+    ansicht: 'verlauf',
+    titel: 'Jahrestabelle bei Abbruch der Selbstkontrolle',
+    klick: 'Als Jahrestabelle zeigen',
+    drift: DRIFT_ABBRUCH,
   },
 
   // --- Kennzahlen

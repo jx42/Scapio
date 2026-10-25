@@ -287,7 +287,7 @@ function datumAlsMonatJahr(tag: string): string {
 }
 
 /** "2026-08-26" wird zu "26.08." — fuer Chart-Achsen kurzer Zeitraeume, wo Monat und Jahr nichts unterscheiden. */
-function datumAlsTagMonat(tag: string): string {
+export function datumAlsTagMonat(tag: string): string {
   const datum = tagAlsDatum(tag);
   return datum === null ? String(tag ?? '') : tagMonatFormat.format(datum);
 }

@@ -21,6 +21,8 @@ import type {
   Gruppe,
   Health,
   Hinweis,
+  Jahre,
+  Jahreszeile,
   KennzahlenAntwort,
   Lauf,
   LaufHinweis,
@@ -75,6 +77,8 @@ export type {
   Gruppe,
   Health,
   Hinweis,
+  Jahre,
+  Jahreszeile,
   KennzahlenAntwort,
   Lauf,
   LaufHinweis,
@@ -260,6 +264,11 @@ export const api = {
 
   kennzahlen: () => holen<KennzahlenAntwort>(LESENDE_ROUTEN.kennzahlen.pfad),
 
+  jahre: (benchmark: string | null) =>
+    holen<Jahre>(
+      LESENDE_ROUTEN.jahre.pfad + (benchmark === null ? '' : `?benchmark=${encodeURIComponent(benchmark)}`),
+    ),
+
   aufteilung: () => holen<Aufteilung>(LESENDE_ROUTEN.aufteilung.pfad),
 
   rebalancing: (ziel: string) => holen<Rebalancing>(`${LESENDE_ROUTEN.rebalancing.pfad}?ziel=${encodeURIComponent(ziel)}`),
@@ -335,6 +344,7 @@ export const schluessel = {
   health: ['health'] as const,
   zeitreihe: (auswahl: ZeitraumAuswahl, benchmark: string | null) => ['zeitreihe', auswahl, benchmark] as const,
   kennzahlen: ['kennzahlen'] as const,
+  jahre: (benchmark: string | null) => ['jahre', benchmark] as const,
   aufteilung: ['aufteilung'] as const,
   rebalancing: (ziel: string) => ['rebalancing', ziel] as const,
   top25: ['top25'] as const,

@@ -102,6 +102,7 @@ aktuelle Drift-Stufe, unabhängig vom eigentlichen Inhalt der Route.
 | `GET /api/health` | — | Version, `KERN_VERSION`, Schalter `top25`, Status des letzten Laufs |
 | `GET /api/kennzahlen` | — | Investiert, Kursgewinn, Realisiertes, TWR, IZF (Feld `xirr`), Realrendite, Volatilität, Max. Drawdown, Sharpe-Ratio |
 | `GET /api/zeitreihe` | `zeitraum` oder `von` + `bis` (`YYYY-MM-DD`, Zeitraumregler), `benchmark` | Depotwert- und Gesamtgewinnreihe (€/%) für ein Fenster, gezählt ab Fensterbeginn, mit Vergleichsdepot; über drei Jahre ein Punkt je Woche (plus Fensterbeginn und Markentage); dazu der begrenzte `ausschnitt` und alle Tage der Reihe als Reglerstufen. Der Demo-Abzug kennt nur `zeitraum` |
+| `GET /api/jahre` | `benchmark` | je Kalenderjahr TWR, Vergleich, Inflation (Dezember gegen Dezember), Realrendite, Gesamtgewinn, Einzahlungen, Erträge, Steuern und Depotwert am Jahresende; angebrochene Jahre mit `ab`/`bis`, nicht hochgerechnet |
 | `GET /api/aufteilung` | — | Positionen mit Art ([ADR-025](entscheidungen/ADR-025-wertpapierart-per-get-security-quote.md)), Einstand, Buchgewinn, Positions-IZF (Feld `xirr`) |
 | `GET /api/rebalancing` | `ziel` (`KONTO`/ISIN`:`Basispunkte, Summe 10 000, höchstens 50; fehlende Positionen sind ausgeschlossen) | je einbezogener Zeile Ist, Soll und Betrag zum Ziel ([ADR-057](entscheidungen/ADR-057-rebalancing-rechner.md)). Der Demo-Abzug kennt nur das feste Beispielziel |
 | `GET /api/top25` | — | Look-Through auf Unternehmen, mit `abdeckung` |

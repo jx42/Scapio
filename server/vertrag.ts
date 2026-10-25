@@ -268,6 +268,29 @@ export type Sparplan = {
   readonly naechste: string | null;
 };
 
+/** Eine Zeile der Jahresuebersicht — siehe `core/jahre.ts`. */
+export type Jahreszeile = {
+  readonly jahr: string;
+  /** Gesetzt, wenn die Reihe in diesem Jahr spaeter als am 1. Januar beginnt. */
+  readonly ab: string | null;
+  /** Gesetzt, wenn die Reihe in diesem Jahr vor dem 31. Dezember endet. */
+  readonly bis: string | null;
+  readonly twr: number | null;
+  readonly vergleich: number | null;
+  readonly teuerung: number | null;
+  readonly teuerungBisMonat: string | null;
+  readonly real: number | null;
+  readonly gewinnCent: number;
+  readonly einzahlungCent: number;
+  readonly endwertCent: number;
+};
+
+export type Jahre = MitStand & {
+  /** Aeltestes Jahr zuerst. */
+  readonly jahre: readonly Jahreszeile[];
+  readonly benchmark: { readonly isin: string; readonly name: string } | null;
+};
+
 export type Sparplaene = MitStand & {
   readonly plaene: readonly Sparplan[];
   readonly summeCent: number;
