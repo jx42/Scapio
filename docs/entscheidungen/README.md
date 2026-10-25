@@ -62,3 +62,4 @@ der Geschichte stehen. Eine neue ADR bekommt die nächste freie Nummer und eine 
 | [055](ADR-055-update-und-release-kette.md) | Update- und Release-Kette geschlossen | gilt |
 | [056](ADR-056-datenverzeichnis-und-dateirechte-aus-einer-hand.md) | Datenverzeichnis und Dateirechte aus einer Hand | gilt |
 | [057](ADR-057-rebalancing-rechner.md) | Rebalancing-Rechner als Rechnung, nicht als Empfehlung | gilt |
+| [058](ADR-058-laender-und-sektoren-neben-den-unternehmen.md) | Länder und Sektoren neben den Unternehmen | gilt |

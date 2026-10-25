@@ -9,7 +9,17 @@ import { nurDieseParameter } from '../fehler.ts';
 import { centAlsZahl, objektSchema, umschlagAus, umschlagSchemaEigenschaften, zahlOderNull } from '../json.ts';
 import { baueLesemodell } from '../lesemodell.ts';
 import type { Kontext } from '../server.ts';
-import type { FehlenderFonds, Fondsanteil, Top25, UnternehmenZeile } from '../vertrag.ts';
+import type { Gruppe as KernGruppe } from '../../core/lookthrough.ts';
+import type { FehlenderFonds, Fondsanteil, Gruppe, Top25, UnternehmenZeile } from '../vertrag.ts';
+
+const GRUPPEN_SCHEMA = {
+  type: 'array',
+  items: objektSchema<Gruppe>({
+    name: { type: ['string', 'null'] },
+    exposureCent: { type: 'number' },
+    anteil: { type: 'number' },
+  }),
+} as const;
 
 const ANTWORT_SCHEMA = objektSchema<Top25>({
   zeilen: {
@@ -39,6 +49,8 @@ const ANTWORT_SCHEMA = objektSchema<Top25>({
   abdeckung: { type: 'number' },
   durchschautCent: { type: 'number' },
   anzahlUnternehmen: { type: 'integer' },
+  laender: GRUPPEN_SCHEMA,
+  sektoren: GRUPPEN_SCHEMA,
   fehlendeFonds: {
     type: 'array',
     items: objektSchema<FehlenderFonds>({
@@ -80,6 +92,8 @@ export function registriereTop25(app: FastifyInstance, ctx: Kontext): void {
       abdeckung: zahlOderNull(d.abdeckung) ?? 0,
       durchschautCent: centAlsZahl(d.durchschautCent),
       anzahlUnternehmen: d.anzahlUnternehmen,
+      laender: d.laender.map(gruppe),
+      sektoren: d.sektoren.map(gruppe),
       fehlendeFonds: lm.fehlendeFonds().map((f) => ({
         isin: f.isin,
         name: f.name,
@@ -89,4 +103,9 @@ export function registriereTop25(app: FastifyInstance, ctx: Kontext): void {
       ...umschlagAus(lm.stand(), lm.drift()),
     };
   });
+}
+
+function gruppe(g: KernGruppe): Gruppe {
+  // Fremdtext des Anbieters. Nur Text. [INV-06]
+  return { name: g.name, exposureCent: centAlsZahl(g.exposure), anteil: zahlOderNull(g.anteil) ?? 0 };
 }

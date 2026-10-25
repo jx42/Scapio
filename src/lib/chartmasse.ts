@@ -6,9 +6,16 @@
  */
 
 export const AUFTEILUNG_CHART_HOEHE = 260;
-/** Vertikaler Versatz der beiden Textzeilen in der Ringmitte, vom Mittelpunkt aus. */
-export const RING_BESCHRIFTUNG_VERSATZ = -8;
+/** Ringe in „Länder & Sektoren“: neben der Legende statt darüber, passt zu `w-66`, so hoch wie die zugeklappte Legende. */
+export const GRUPPEN_RING_HOEHE = 264;
+/** Ringmitte von oben nach unten: Symbol, Wert, Beschriftung — Versatz vom Mittelpunkt aus. */
+export const RING_SYMBOL_GROESSE = 28;
+export const RING_SYMBOL_VERSATZ = -38;
+/** Flagge statt Symbol: 3 : 2, so breit, dass sie neben dem 28er-Symbol gleich schwer wirkt; unten bündig mit ihm. */
+export const RING_FLAGGE_BREITE = 36;
+export const RING_FLAGGE_HOEHE = 24;
 export const RING_WERT_VERSATZ = 14;
+export const RING_BESCHRIFTUNG_VERSATZ = 32;
 export const RING_BESCHRIFTUNG_GROESSE = 12;
 export const RING_WERT_GROESSE = 18;
 /** Ringbreite als Anteil des Radius und Luecke zwischen zwei Stuecken in Grad. */

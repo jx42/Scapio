@@ -13,6 +13,11 @@ export const FARBE = {
   chart3: 'var(--color-chart-3)',
   chart4: 'var(--color-chart-4)',
   chart5: 'var(--color-chart-5)',
+  chart6: 'var(--color-chart-6)',
+  chart7: 'var(--color-chart-7)',
+  chart8: 'var(--color-chart-8)',
+  chart9: 'var(--color-chart-9)',
+  chart10: 'var(--color-chart-10)',
   grund: 'var(--color-grund)',
   flaeche: 'var(--color-flaeche)',
   rand: 'var(--color-rand)',
@@ -22,8 +27,19 @@ export const FARBE = {
   verlust: 'var(--color-verlust)',
 } as const;
 
-/** Fuenf Chartfarben, reihum. Mehr als fuenf Segmente wiederholen die Reihe. */
-export const CHART_REIHE = [FARBE.chart1, FARBE.chart2, FARBE.chart3, FARBE.chart4, FARBE.chart5] as const;
+/** Zehn Chartfarben, reihum. Mehr als zehn Segmente wiederholen die Reihe. */
+export const CHART_REIHE = [
+  FARBE.chart1,
+  FARBE.chart2,
+  FARBE.chart3,
+  FARBE.chart4,
+  FARBE.chart5,
+  FARBE.chart6,
+  FARBE.chart7,
+  FARBE.chart8,
+  FARBE.chart9,
+  FARBE.chart10,
+] as const;
 
 /**
  * Textfarbe je Richtung — neben `richtungFarbe` und `richtungBgTon` die eine Stelle, die `Richtung` auf ein Tailwind-Utility

@@ -1,9 +1,7 @@
 // @vitest-environment jsdom
 /*
- * Kachel 4: keine Auswahl, eine Tabelle mit allen Zeilen und ein Aufschluesseln-Knopf
- * je Zeile mit ausFonds. Derselbe Sechser-Satz wie ueberall in test/ui/. Kein
- * <ChartRahmen> hier — keine verborgene Tabelle, also keine Text-Kollisionen wie bei
- * Aufteilung/Verlauf.
+ * Kachel 4, linke Hälfte: die Unternehmen-Tabelle. Derselbe Sechser-Satz wie ueberall in
+ * test/ui/; Laender und Sektoren in LaenderSektorenKachel.test.tsx.
  */
 
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -14,7 +12,7 @@ import { de } from '@/i18n/de';
 import type { FehlenderFonds, Top25, UnternehmenZeile } from '@/lib/api';
 import { zahl } from '@/lib/format';
 import { Top25Kachel } from '@/features/top25/Top25Kachel';
-import { erwarteBarrierefrei, euro, fetchErsatz, prozentText, rendern } from './hilfen';
+import { anteilText, erwarteBarrierefrei, euro, fetchErsatz, prozentText, rendern } from './hilfen';
 import { drift, unternehmenZeile } from './fixtures';
 
 const APPLE: UnternehmenZeile = unternehmenZeile(1, {
@@ -37,6 +35,15 @@ const FIXTURE: Top25 = {
   abdeckung: 0.83,
   durchschautCent: 37_805_537,
   anzahlUnternehmen: 1842,
+  laender: [
+    { name: 'United States', exposureCent: 25_000_000, anteil: 0.7 },
+    { name: 'Japan', exposureCent: 5_000_000, anteil: 0.14 },
+    { name: null, exposureCent: 5_700_000, anteil: 0.16 },
+  ],
+  sektoren: [
+    { name: 'Information Technology', exposureCent: 20_000_000, anteil: 0.56 },
+    { name: 'Raumfahrt', exposureCent: 15_700_000, anteil: 0.44 },
+  ],
   fehlendeFonds: [],
   zeilen: ZEILEN,
 };
@@ -73,13 +80,12 @@ describe('Top25Kachel', () => {
     });
 
     expect(
-      screen.getByText(de.top25.untertitel(prozentText(FIXTURE.topAnteil), zahl(1842))),
+      screen.getByText(de.top25.untertitel(anteilText(FIXTURE.topAnteil), zahl(1842))),
     ).toBeInTheDocument();
     expect(within(tabelle).getByText(euro(APPLE.exposureCent))).toBeInTheDocument();
     expect(within(tabelle).getByText('Apple Inc.')).toBeInTheDocument();
     expect(within(tabelle).queryByText('Firma 15')).not.toBeInTheDocument();
-    // Zweimal: als eigene Spalte ab `sm`, darunter unter dem Namen — jsdom kennt kein CSS.
-    expect(within(tabelle).getAllByText('iShares Core MSCI World, IE00BKM4GZ66')).toHaveLength(2);
+    expect(within(tabelle).getByText(de.top25.fondsHinweis('iShares Core MSCI World, IE00BKM4GZ66'))).toBeInTheDocument();
     const mehr = screen.getByRole('button', { name: de.top25.mehrZeigen });
     await userEvent.click(mehr);
     expect(await screen.findByRole('table', { name: de.top25.tabelle(zahl(1), zahl(15)) })).toBeInTheDocument();

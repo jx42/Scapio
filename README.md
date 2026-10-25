@@ -14,7 +14,7 @@
 - **Rendite:** deine persönliche Rendite (IZF, interner Zinsfuß) auch nach Abzug der Inflation. So weißt du, was real übrig bleibt.
 - **Benchmark:** dein Depot (TWR, Time-Weighted Return) im Vergleich zu MSCI World, MSCI ACWI, Gold, Bitcoin und dem risikofreien Zins. So siehst du, ob sich deine Strategie lohnt.
 - **Risiko:** Volatilität*, maximaler Drawdown und Sharpe-Ratio*. So erkennst du, wie stark dein Depot schwankt und ob sich das Risiko auszahlt. 
-- **Top 25 (optional):** die Unternehmen, in die du über alle ETFs hinweg wirklich investiert bist. So erkennst du Klumpenrisiken. Standardmäßig aus, siehe [Top 25 einschalten](#-top-25-einschalten).
+- **Länder, Sektoren und Top 25 (optional):** in welchen Ländern, Sektoren und Unternehmen du über alle ETFs hinweg wirklich investiert bist. So erkennst du Klumpenrisiken. Standardmäßig aus, siehe [Länder, Sektoren und Unternehmen einschalten](#-länder-sektoren-und-unternehmen-einschalten).
 - **Erträge & Steuern:** realisierte Gewinne, Zinsen, Ausschüttungen und Steuern einzeln aufgeschlüsselt.
 - **Sparen:** Käufe, Verkäufe und aktive Sparpläne. So siehst du, wie viel du monatlich investierst.
 
@@ -69,14 +69,14 @@ Datenbank, Sicherungen, Cache und Anmeldung liegen dort, wo das Betriebssystem A
 | macOS          | `~/Library/Application Support/scapio/` | Im Finder ⇧⌘G drücken („Gehe zu Ordner“), Pfad einfügen, Enter. |
 | Windows        | `%LOCALAPPDATA%\scapio\`                | Windows-Taste + R drücken („Ausführen“), Pfad einfügen, Enter.  |
 
-## 🏢 Top 25 einschalten
+## 🏢 Länder, Sektoren und Unternehmen einschalten
 
-Die Kachel „Top 25 Unternehmen“ listet die 25 Unternehmen, in die du das meiste Geld investiert hast – über alle ETFs und Aktien zusammengerechnet. Sie ist standardmäßig deaktiviert, weil sie nur mit ETFs von iShares, Xtrackers und Amundi funktioniert und dafür deren inoffizielle Schnittstellen abfragt. Ist sie deaktiviert, fragt Scapio diese Anbieter gar nicht erst ab. Ist sie aktiviert, erfahren die Anbieter mit jedem Abruf, welche ihrer ETFs du hältst (nicht wie viel). Um die Kachel zu aktivieren:
+Die Kacheln „Länder & Sektoren“ und „Top 25 Unternehmen“ zeigen, in welche Länder, Sektoren und Unternehmen dein Geld fließt – über alle ETFs und Aktien zusammengerechnet. Sie sind standardmäßig deaktiviert, weil sie nur mit ETFs von iShares, Xtrackers und Amundi funktionieren und dafür deren inoffizielle Schnittstellen abfragen. Sind sie deaktiviert, fragt Scapio diese Anbieter gar nicht erst ab. Sind sie aktiviert, erfahren die Anbieter mit jedem Abruf, welche ihrer ETFs du hältst (nicht wie viel). Um die Kacheln zu aktivieren:
 
 1. Die Datei `docs/einstellungen.example.json` aus dem Scapio-Ordner in den Datenordner kopieren (siehe [Wo liegen meine Daten?](#-wo-liegen-meine-daten)) und in `einstellungen.json` umbenennen. Liegt dort schon eine `einstellungen.json`, stattdessen die Zeile `"top25": true` in sie übernehmen.
 2. Scapio neu starten und auf „Aktualisieren“ klicken.
 
-ETFs von Xtrackers und Amundi erkennt Scapio selbst. Fehlen iShares-Fonds, nennt die Kachel sie und erklärt, wie du sie in einer `funds.json` einträgst. Ausschalten: in `einstellungen.json` `true` durch `false` ersetzen und neu starten.
+ETFs von Xtrackers und Amundi erkennt Scapio selbst. Fehlen iShares-Fonds, nennen die Kacheln sie und erklären, wie du sie in einer `funds.json` einträgst. Ausschalten: in `einstellungen.json` `true` durch `false` ersetzen und neu starten.
 
 ## ⏹️ Beenden
 
@@ -119,9 +119,9 @@ Ohne das Skript: den Datenordner von Hand löschen (siehe [Wo liegen meine Daten
 | Scalable Capital, offizielle MCP-Schnittstelle                                                                                                                                                            | Dein Depot: Positionen, Transaktionen, Sparpläne; Kurshistorie der Benchmarks | dein eigener, ausschließlich lesender Zugriff auf deine eigenen Daten |
 | Eurostat, harmonisierter Verbraucherpreisindex ([`prc_hicp_midx`](https://ec.europa.eu/eurostat/databrowser/view/prc_hicp_midx), [`ei_cphi_m`](https://ec.europa.eu/eurostat/databrowser/view/ei_cphi_m)) | Inflation für die Realrendite                                                 | © Europäische Union; Weiterverwendung mit Quellenangabe erlaubt       |
 | Europäische Zentralbank, [€STR (`EST`)](https://data.ecb.europa.eu/data/datasets/EST)                                                                                                                     | Risikofreier Zins für die Sharpe-Ratio und als Benchmark                      | Weiterverwendung mit Quellenangabe erlaubt                            |
-| iShares, DWS Xtrackers, Amundi                                                                                                                                                                            | Bestandslisten der ETFs, nur mit eingeschalteter Top-25-Ansicht               | Nutzungsbedingungen des jeweiligen Anbieters                          |
+| iShares, DWS Xtrackers, Amundi                                                                                                                                                                            | Bestandslisten der ETFs, nur mit eingeschalteten Look-Through-Kacheln         | Nutzungsbedingungen des jeweiligen Anbieters                          |
 
-Die Schnittstellen von iShares, Xtrackers und Amundi sind nicht offiziell dokumentiert und können sich jederzeit ändern. Fehlt die Top-25-Ansicht nach einem Update eines Anbieters, liegt das meist dort und nicht an deinem Depot.
+Die Schnittstellen von iShares, Xtrackers und Amundi sind nicht offiziell dokumentiert und können sich jederzeit ändern. Fehlen Länder, Sektoren oder Unternehmen nach einem Update eines Anbieters, liegt das meist dort und nicht an deinem Depot.
 
 Je weiter die Kurshistorie von Scalable Capital zurückreicht, desto gröber ist sie: Für Zeiträume älter als etwa ein Jahr liefert die Schnittstelle nur monatliche Kurse, näher an heute zweitäglich bis täglich. Eine als auffällig markierte Kursbewegung in älteren Daten ist deshalb oft eine normale Bewegung über mehrere Wochen, kein echter Tagessprung.
 

@@ -30,6 +30,8 @@ export type KachelProps = {
   readonly titel: string;
   /** Kurzer Zusatz unter dem Titel, etwa eine Grundgesamtheit — auch mit eingebettetem Knopf. */
   readonly untertitel?: ReactNode;
+  /** Zusatz rechtsbündig auf der Grundlinie des Titels, statt darunter. */
+  readonly nebentitel?: ReactNode;
   /** Erklaerung zur Kachel als `InfoKnopf` direkt hinter dem Titel. */
   readonly info?: ReactNode;
   readonly id: string;
@@ -54,6 +56,7 @@ export type KachelProps = {
 export function Kachel({
   titel,
   untertitel,
+  nebentitel,
   info,
   id,
   zustand,
@@ -76,12 +79,17 @@ export function Kachel({
     >
       <section id={id} aria-labelledby={titelId}>
         <header className="mb-4 flex flex-wrap items-center justify-between gap-3 px-2">
-          <div className={cn(werkzeuge === undefined && 'min-w-0 flex-1')}>
-            <div className="flex items-center gap-1">
-              <h2 id={titelId} className="font-heading text-xl font-semibold text-text">
-                {titel}
-              </h2>
-              {info}
+          <div className={cn((werkzeuge === undefined || nebentitel !== undefined) && 'min-w-0 flex-1')}>
+            <div className="flex flex-wrap items-baseline justify-between gap-x-3">
+              <div className="flex items-center gap-1">
+                <h2 id={titelId} className="font-heading text-xl font-semibold text-text">
+                  {titel}
+                </h2>
+                {info}
+              </div>
+              {nebentitel === undefined ? null : (
+                <p className="text-sm text-text-leise">{nebentitel}</p>
+              )}
             </div>
             {untertitel === undefined ? null : (
               <p className="text-sm text-text-leise">{untertitel}</p>

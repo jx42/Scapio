@@ -1,5 +1,6 @@
 /*
- * Kachel 4, Container.
+ * Kachel 4, linke Hälfte „Unternehmen“, Container. Länder und Sektoren aus demselben
+ * Look-Through stehen in `LaenderSektorenKachel` daneben.
  */
 
 import { useState } from 'react';
@@ -16,14 +17,21 @@ import { FehlendeFondsListe } from '@/features/top25/FehlendeFondsListe';
 import { Top25Ansicht } from '@/features/top25/Top25Ansicht';
 import { Top25Dialog } from '@/features/top25/Top25Dialog';
 import { Top25FondsAnleitung } from '@/features/top25/Top25FondsAnleitung';
-import { prozent, zahl } from '@/lib/format';
+import { anteilProzent, zahl } from '@/lib/format';
+import { useGespeicherterSchalter } from '@/lib/speicher';
 
 const ID = 'top25';
 
-export function Top25Kachel() {
+export type Top25KachelProps = {
+  /** Aussenhoehe in Pixeln, gemessen an Länder & Sektoren — siehe `Kachel`-Prop `hoehe`. */
+  readonly hoehe?: number | null;
+};
+
+export function Top25Kachel({ hoehe = null }: Top25KachelProps) {
   const abfrage = useQuery({ queryKey: schluessel.top25, queryFn: api.top25 });
   const daten = abfrage.data;
   const [anleitungOffen, setAnleitungOffen] = useState(false);
+  const [ausgeklappt, setAusgeklappt] = useGespeicherterSchalter('top25Ausgeklappt', false);
 
   const top25Anteil = daten?.topAnteil ?? 0;
   const fehlendeFonds = daten?.fehlendeFonds ?? [];
@@ -50,14 +58,15 @@ export function Top25Kachel() {
   const untertitel =
     leer || top25Anteil === 0
       ? undefined
-      : de.top25.untertitel(prozent(top25Anteil), zahl(daten.anzahlUnternehmen));
+      : de.top25.untertitel(anteilProzent(top25Anteil), zahl(daten.anzahlUnternehmen));
 
   return (
     <>
       <Kachel
         titel={de.top25.titel}
-        untertitel={untertitel}
+        nebentitel={untertitel}
         id={ID}
+        hoehe={ausgeklappt ? null : hoehe}
         zustand={zustand}
         ladehoehe="gross"
         className="pb-2"
@@ -74,7 +83,14 @@ export function Top25Kachel() {
         }
         fussnoten={<Driftfussnote drift={daten?.drift} />}
       >
-        {daten === undefined ? null : <Top25Ansicht zeilen={daten.zeilen} />}
+        {daten === undefined ? null : (
+          <Top25Ansicht
+            zeilen={daten.zeilen}
+            gebunden={hoehe !== null}
+            ausgeklappt={ausgeklappt}
+            onAusgeklapptAendern={setAusgeklappt}
+          />
+        )}
       </Kachel>
       {zeigeAnleitung ? (
         <Top25Dialog

@@ -1,0 +1,95 @@
+/*
+ * Flagge je Land für die Ringmitte, aus `country-flag-icons` (3 : 2, als React-Komponente gebündelt,
+ * keine Bilddatei [INV-06, INV-11]). Nur die hier genannten Länder landen im Bau.
+ */
+
+import {
+  AE,
+  AT,
+  AU,
+  BE,
+  BR,
+  CA,
+  CH,
+  CN,
+  DE,
+  DK,
+  ES,
+  FI,
+  FR,
+  GB,
+  HK,
+  ID,
+  IE,
+  IL,
+  IN,
+  IT,
+  JP,
+  KR,
+  KY,
+  LU,
+  MX,
+  MY,
+  NL,
+  NO,
+  NZ,
+  PL,
+  PT,
+  SA,
+  SE,
+  SG,
+  TH,
+  TW,
+  US,
+  ZA,
+} from 'country-flag-icons/react/3x2';
+
+import { landKuerzel } from './laender';
+
+export type Flagge = typeof US;
+
+const FLAGGEN: Readonly<Partial<Record<string, Flagge>>> = {
+  ae: AE,
+  at: AT,
+  au: AU,
+  be: BE,
+  br: BR,
+  ca: CA,
+  ch: CH,
+  cn: CN,
+  de: DE,
+  dk: DK,
+  es: ES,
+  fi: FI,
+  fr: FR,
+  gb: GB,
+  hk: HK,
+  id: ID,
+  ie: IE,
+  il: IL,
+  in: IN,
+  it: IT,
+  jp: JP,
+  kr: KR,
+  ky: KY,
+  lu: LU,
+  mx: MX,
+  my: MY,
+  nl: NL,
+  no: NO,
+  nz: NZ,
+  pl: PL,
+  pt: PT,
+  sa: SA,
+  se: SE,
+  sg: SG,
+  th: TH,
+  tw: TW,
+  us: US,
+  za: ZA,
+};
+
+export function flagge(name: string): Flagge | undefined {
+  const kuerzel = landKuerzel(name);
+  return kuerzel === undefined ? undefined : FLAGGEN[kuerzel];
+}

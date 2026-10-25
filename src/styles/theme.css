@@ -66,11 +66,22 @@
   --color-warnung: oklch(0.82 0.15 70);
   --color-fokus: oklch(0.8 0.115 237.32);
 
+  /* Das Demo-Band soll vor jeder Zahl auffallen: als einzige Fläche voll farbig. [ADR-052] */
+  --color-demo-band: oklch(0.5 0.16 255);
+  --color-demo-band-text: oklch(1 0 0);
+
   --color-chart-1: oklch(0.72 0.14 240);
   --color-chart-2: oklch(0.7 0.04 250);
   --color-chart-3: oklch(0.8 0.14 80);
   --color-chart-4: oklch(0.72 0.15 320);
   --color-chart-5: oklch(0.78 0.13 165);
+  /* 6–10 für die zehn Gruppen in Länder & Sektoren: Ton und Helligkeit wechseln, damit Nachbarn im Ring
+     auch bei Farbfehlsichtigkeit auseinandergehen; Rot und Grün bleiben Gewinn und Verlust. */
+  --color-chart-6: oklch(0.62 0.14 345);
+  --color-chart-7: oklch(0.86 0.1 205);
+  --color-chart-8: oklch(0.66 0.12 110);
+  --color-chart-9: oklch(0.64 0.14 275);
+  --color-chart-10: oklch(0.86 0.07 15);
 
   /* Seitenbreite: Tailwinds groesster benannter Schritt (7xl, 80rem) reicht der
      Seite nicht mehr; eigener Schritt statt Arbitrary-Value in der Komponente. */
@@ -158,6 +169,11 @@
 
 /* Scrollbare Tabellen-Regionen: Ring nach innen. Aussen schnitte ihn jedes `overflow-hidden`
    der Kachel darueber ab (Kennzahlen kuerzt so). */
+/* Der Fokusring in `fokus` hebt sich vom blauen Demo-Band nicht genug ab. */
+[data-demo-band] :focus-visible {
+  outline-color: var(--color-demo-band-text);
+}
+
 [data-slot='table-container']:focus-visible {
   outline-offset: -2px;
 }

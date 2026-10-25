@@ -12,7 +12,7 @@ import { Scale } from 'lucide-react';
 
 import { de } from '@/i18n/de';
 import type { PositionZeile, Rebalancing, RebalancingZeile } from '@/lib/api';
-import { euroAusCent, prozent, vorzeichen, zielEingabe } from '@/lib/format';
+import { anteilProzent, euroAusCent, prozent, vorzeichen, zielEingabe } from '@/lib/format';
 import { richtungTon } from '@/lib/farben';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -218,14 +218,14 @@ function RebalancingInhalt({
                     {z.name}
                   </label>
                   <span className="block text-xs text-text-leise sm:hidden">
-                    {de.rebalancing.istKurz(euroAusCent(z.istCent), prozent(z.istAnteil))}
+                    {de.rebalancing.istKurz(euroAusCent(z.istCent), anteilProzent(z.istAnteil))}
                   </span>
                 </TableHead>
                 <TableCell className={cn('text-right tabular-nums max-sm:hidden', aus && 'text-text-leise')}>
                   {euroAusCent(z.istCent)}
                 </TableCell>
                 <TableCell className={cn('text-right tabular-nums max-sm:hidden', aus && 'text-text-leise')}>
-                  {prozent(z.istAnteil)}
+                  {anteilProzent(z.istAnteil)}
                 </TableCell>
                 <TableCell className="text-right">
                   <label htmlFor={feldId} className="sr-only">
@@ -249,7 +249,7 @@ function RebalancingInhalt({
                   />
                 </TableCell>
                 <TableCell className={cn('text-right tabular-nums whitespace-nowrap max-sm:hidden', veraltet && 'opacity-50')}>
-                  {aus || e === undefined ? '' : prozent(e.abweichung, true)}
+                  {aus || e === undefined ? '' : anteilProzent(e.abweichung, true)}
                 </TableCell>
                 <TableCell className={cn('text-right tabular-nums whitespace-nowrap', veraltet && 'opacity-50')}>
                   {aus || e === undefined ? '' : <Betrag zeile={e} />}
@@ -268,7 +268,7 @@ function RebalancingInhalt({
             </TableCell>
             <TableCell className="max-sm:hidden" />
             <TableCell className={cn('text-right tabular-nums', !bereit && 'text-warnung')}>
-              {prozent(summe / BP_GANZ)}
+              {anteilProzent(summe / BP_GANZ)}
             </TableCell>
             <TableCell className="max-sm:hidden" />
             <TableCell />

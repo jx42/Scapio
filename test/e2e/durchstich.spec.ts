@@ -74,7 +74,8 @@ async function warteAufKacheln(page: Page): Promise<void> {
   await page.goto('/');
   await expect(page.getByRole('img', { name: /Flächenchart/ })).toBeVisible();
   await expect(page.locator('[aria-busy="true"]')).toHaveCount(0);
-  await expect(page.locator('.recharts-pie')).toBeAttached();
+  // Aufteilung, Länder und Sektoren — erst dann prüft axe die ganze Seite.
+  await expect(page.locator('.recharts-pie')).toHaveCount(3);
 }
 
 async function erwarteAxeOhneVerstoss(page: Page, nur?: string): Promise<void> {

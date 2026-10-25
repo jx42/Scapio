@@ -50,7 +50,9 @@ Recharts bekommt nur `FARBE.*` aus `src/lib/farben.ts`. Jede Reihe hat eine fest
 - **chart-3** (Gelb): Ereignisse und Bezugslinien wie Kauf/Verkauf-Marken, Zuflüsse und den
   Durchschnitt der Investition.
 - **chart-4** (Magenta): der Vergleich (Benchmark).
-- **chart-5** (Grün-Türkis): nur reihum in der Aufteilung.
+- **chart-5** (Grün-Türkis): nur reihum in Aufteilung und Länder & Sektoren.
+- **chart-6** bis **chart-10** (Beere, Hellcyan, Oliv, Immergrün, Rosé): nur reihum in den Ringen der
+  Länder & Sektoren, die bis zu zehn Gruppen zeigen. Dunkel und hell wechseln sich ab, damit Nachbarn trennen.
 - Der Rendite-Chart verläuft von **gewinn** zu **verlust** und trennt sich an der Nulllinie.
 
 ### Named Rules
@@ -81,8 +83,8 @@ Tailwinds Skala ist um je 1 px angehoben, die Zeilenhöhe im selben Maß.
 
 Eine Spalte bis `xl`, darüber ein Raster aus `1.45fr` und `0.55fr` (mindestens 19 rem),
 höchstens `max-w-8xl` (88 rem) mit `px-4` und `gap-4`. Die Reihenfolge ist Verlauf (volle
-Breite), Aufteilung neben Kennzahlen, Top 25 (volle Breite), Käufe & Verkäufe neben
-Sparplänen. Die Höhe von Kennzahlen folgt der Aufteilung und umgekehrt, wenn Kennzahlen
+Breite), Aufteilung neben Kennzahlen, Unternehmen neben Länder & Sektoren (2 : 3), Käufe & Verkäufe
+neben Sparplänen; Käufe und Sparpläne strecken sich auf gleiche Höhe. Unternehmen folgt der Höhe von Länder & Sektoren, solange es zugeklappt ist; die Höhe von Kennzahlen folgt der Aufteilung und umgekehrt, wenn Kennzahlen
 ausgeklappt ist. Kacheln lassen sich ausblenden
 ([ADR-034](docs/entscheidungen/ADR-034-kachel-ausblenden-im-browser.md)). Die Untergrenze
 sind 375 px ohne Überlauf, Grids deshalb immer mit `grid-cols-1`.
