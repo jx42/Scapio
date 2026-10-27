@@ -47,9 +47,12 @@ export const QUELLE = 'transaktionen' satisfies QuellenArt;
 const TOOL = 'list_portfolio_transactions';
 
 /** Typen, bei denen Geld das Depot verlaesst und Stuecke hineinkommen. */
-const KAUF = /(^|_)(BUY|SAVINGS_PLAN|SUBSCRIPTION|PURCHASE)($|_)/;
-/** Typen, bei denen Stuecke das Depot verlassen und Geld hereinkommt. */
-const VERKAUF = /(^|_)(SELL|SALE|REDEMPTION)($|_)/;
+const KAUF = /(^|_)(BUY|SAVINGS_PLAN|SUBSCRIPTION|PURCHASE|REINVESTMENT)($|_)|^SWAP_IN$/;
+/**
+ * Typen, bei denen Stuecke das Depot verlassen und Geld hereinkommt. `SWAP_OUT` muss hier
+ * stehen, nicht in ABFLUSS: dort passte er ueber `_OUT$`, und seine Stuecke kaemen hinzu.
+ */
+const VERKAUF = /(^|_)(SELL|SALE|REDEMPTION)($|_)|^SWAP_OUT$/;
 /**
  * Typen, bei denen Geld das Depot verlaesst, ohne dass Stuecke bewegt werden.
  * `TRANSFER_OUT` passt ueber die `_OUT$`-Endung zufaellig ebenfalls, ist aber ein

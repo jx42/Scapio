@@ -118,6 +118,10 @@ export function letzterKursBis(punkte: readonly Kurspunkt[], tag: Tag): KursE6 |
  * `chart_max` bleibt aussen vor: das Fenster loest nur monatlich auf (siehe Kommentar oben),
  * eine grosse relative Aenderung zwischen zwei Monatspunkten ist dort die Regel, kein
  * Ausreisser — sonst wuerde jede normale Kursbewegung ueber Monate als "Tagessprung" markiert.
+ *
+ * Aus demselben Grund zaehlt nur ein Vorgaenger hoechstens `FUELL_GRENZE_TAGE` zurueck. Ohne
+ * Sparplan liegt vor dem ersten `chart_1y`-Punkt oft nur ein Kaufkurs von vor Jahren — der
+ * Vergleich mass dann die Rendite seither und markierte jede ISIN am Beginn des Fensters.
  */
 export function markiereSpruenge(punkte: readonly Kurspunkt[]): Set<string> {
   const auffaellig = new Set<string>();
@@ -135,7 +139,7 @@ export function markiereSpruenge(punkte: readonly Kurspunkt[]): Set<string> {
     for (let i = 1; i < liste.length; i += 1) {
       const vorher = liste[i - 1]!;
       const jetzt = liste[i]!;
-      if (vorher.kurs === 0n) continue;
+      if (vorher.kurs === 0n || tageZwischen(vorher.tag, jetzt.tag) > FUELL_GRENZE_TAGE) continue;
       const relativ = Math.abs(Number(jetzt.kurs - vorher.kurs) / Number(vorher.kurs));
       if (relativ > SPRUNG_SCHWELLE) auffaellig.add(`${isin} ${jetzt.tag}`);
     }
