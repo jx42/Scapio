@@ -166,6 +166,17 @@ describe('markiereSpruenge', () => {
     expect(auffaellig.has(`${WELT} 2026-01-02`)).toBe(true);
   });
 
+  it('vergleicht nicht ueber eine Luecke hinweg, die laenger als die Fuellgrenze ist', () => {
+    // Kaufkurs von vor Jahren, dann der erste Punkt des Ein-Jahres-Fensters.
+    const auffaellig = markiereSpruenge([p('2023-03-01', '70', 'transaktion'), p('2025-10-14', '110', 'chart_1y')]);
+    expect(auffaellig.size).toBe(0);
+  });
+
+  it('markiert weiter ueber ein Wochenende hinweg', () => {
+    const auffaellig = markiereSpruenge([p('2026-01-02', '100', 'chart_1m'), p('2026-01-05', '140', 'chart_1m')]);
+    expect(auffaellig.has(`${WELT} 2026-01-05`)).toBe(true);
+  });
+
   it('vergleicht nur innerhalb derselben ISIN', () => {
     const auffaellig = markiereSpruenge([p('2026-01-01', '100', 'chart_1m', WELT), p('2026-01-02', '5', 'chart_1m', EUROPA)]);
     expect(auffaellig.size).toBe(0);

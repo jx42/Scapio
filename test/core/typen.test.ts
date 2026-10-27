@@ -34,6 +34,14 @@ describe('einordnen', () => {
     expect(einordnen('DEPOSIT_TRANSFER')).toBe('extern');
   });
 
+  it('zaehlt Wiederanlage und Umtausch als interne Umschichtung', () => {
+    // Die Ausschuettung selbst ist schon als DISTRIBUTION Ertrag; doppelt zaehlen darf sie nicht.
+    for (const typ of ['REINVESTMENT', 'REINVESTMENT_DISTRIBUTION', 'REINVESTMENT_POCKET_MONEY', 'SWAP_IN', 'SWAP_OUT']) {
+      expect(einordnen(typ)).toBe('intern');
+      expect(istBekannterTyp(typ)).toBe(true);
+    }
+  });
+
   it('liest Kleinschreibung wie Grossschreibung', () => {
     expect(einordnen('cash_transfer_in')).toBe('extern');
     expect(einordnen('Interest')).toBe('ertrag');
