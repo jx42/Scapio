@@ -89,6 +89,16 @@ export const INTERNE_TYPEN: ReadonlySet<string> = new Set([
   'SELL',
   'ORDER',
   'TRADE',
+  // Kauf aus einer Ausschuettung oder aus Taschengeld. Ohne `includeReinvestmentSubtypes`
+  // liefert die Bank nur den Sammeltyp. Die Ausschuettung selbst kommt als eigene
+  // `DISTRIBUTION` aufs Verrechnungskonto, die Wiederanlage verschiebt sie nur.
+  'REINVESTMENT',
+  'REINVESTMENT_DISTRIBUTION',
+  'REINVESTMENT_POCKET_MONEY',
+  // Umtausch (Fondsverschmelzung, ISIN-Wechsel): Stuecke der einen ISIN gehen, die der
+  // anderen kommen. Mit Betrag 0 ist das eine Kapitalmassnahme in `fifo.ts`.
+  'SWAP_IN',
+  'SWAP_OUT',
   // Depot- oder Kontogebuehr: mindert den Cash-Bestand, ist aber keine vom Anleger
   // veranlasste Kapitalbewegung wie eine Auszahlung — kein externer Fluss. [P-05]
   'FEE',

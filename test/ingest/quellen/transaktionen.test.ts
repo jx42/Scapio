@@ -172,6 +172,47 @@ describe('holeTransaktionen', () => {
     expect(ctx.befunde.hinweise).toContainEqual({ art: 'zeileOhneZeitstempel', werte: { quelle: 'transaktionen' } });
   });
 
+  // Die Bank liefert Vorzeichen nicht verlaesslich — die gelieferte Menge ist deshalb gemischt.
+  it.each([
+    ['security', 'REINVESTMENT', -50.5, 5050000000n, -zuCent('2000.00')],
+    ['security', 'REINVESTMENT_DISTRIBUTION', 50.5, 5050000000n, -zuCent('2000.00')],
+    ['non_trade_security', 'SWAP_IN', 50.5, 5050000000n, -zuCent('2000.00')],
+    ['non_trade_security', 'SWAP_OUT', 50.5, -5050000000n, zuCent('2000.00')],
+  ] as const)('normalisiert %s/%s wie Kauf oder Verkauf', async (kind, typ, menge, mengeE8, betragCent) => {
+    const zweig = { isin: 'IE00B4L5Y983', transactionType: typ, quantity: menge, amount: 2000.0 };
+    mcp.mockResolvedValue(
+      antwort({
+        page: { nextCursor: null, totalCount: 1, returnedCount: 1 },
+        transactions: [
+          {
+            id: 'x-zweig',
+            kind,
+            category: 'TRADE',
+            status: 'EXECUTED',
+            currency: 'EUR',
+            isCancellation: false,
+            lastEventAt: '2026-01-05T10:00:00+01:00',
+            description: null,
+            custodian: 'BNP',
+            security: kind === 'security' ? { ...zweig, side: 'BUY', limitPrice: null, stopPrice: null } : null,
+            cash: null,
+            nonTradeSecurity: kind === 'non_trade_security' ? zweig : null,
+            eltif: null,
+          },
+        ],
+      }),
+    );
+
+    const ctx = kontext();
+    const ernte = await holeTransaktionen(ctx);
+    const t = ernte.daten.transaktionen[0]!;
+
+    expect(t.betragCent).toBe(betragCent);
+    expect(t.mengeE8).toBe(mengeE8);
+    expect(t.istExtern).toBe(false);
+    expect(ctx.befunde.leer).toBe(true);
+  });
+
   it('meldet einen unbekannten Transaktionstyp als Hinweis, ordnet ihn aber intern ein', async () => {
     mcp.mockResolvedValue(
       antwort({
