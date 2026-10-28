@@ -29,8 +29,22 @@ Oberfläche trennen sich, weil nur der Server einen Netzwerk-Port öffnet und da
 einzige Angriffsfläche der Anwendung ist [INV-07] — die Oberfläche bleibt statisches,
 gebautes JavaScript ohne eigene Rechte.
 
-Welcher Ordner welche Schicht ist, steht in AGENTS.md, „Aufbau"; dort auch die Liste von
-`shared/`, was keiner Schicht gehört und mehrere brauchen. Den Invariantentests
+Welcher Ordner welche Schicht ist, steht in AGENTS.md, „Aufbau".
+
+`shared/` hält, was mehrere Schichten brauchen und keiner gehört
+([ADR-040](entscheidungen/ADR-040-aufgeraeumte-projektwurzel.md)): `konfiguration.ts`
+(Datenverzeichnis, Ports), `hosts.ts` (Host-Allowlist), `zeitfenster.ts` (Zeitraum- und
+Fensterlisten), `benchmarks.ts` (Vergleichs-ETFs), `browser.ts` (Browser öffnen unter
+macOS/Windows), `geistFont.ts` (Schriftpfad fürs Ausliefern und fürs Bauen), `statusseite.ts`
+(Hülle der Bau- und der Anmeldeseite außerhalb von Vite), `hinweise.ts` (Arten der
+Lauf-Hinweise; den Satz baut die Oberfläche), `laufFehler.ts` (Fehlercodes eines Laufs, je
+einer im Runbook), `dateirechte.ts` (0700/0600, Eigentümer- und Symlinkprüfung, atomares
+Schreiben, [ADR-056](entscheidungen/ADR-056-datenverzeichnis-und-dateirechte-aus-einer-hand.md)),
+`routen.ts` (Pfade und Query-Parameter der API), `quellen.ts` (Arten der Ingest-Quellen),
+`demoAbzug.ts` (Anfragen und Dateipfade des Demo-Abzugs,
+[ADR-048](entscheidungen/ADR-048-demo-als-statischer-abzug.md)), `drittlizenzen.ts`
+(Vite-Plugin für die Lizenztexte im Bundle,
+[ADR-055](entscheidungen/ADR-055-update-und-release-kette.md)). Den Invariantentests
 gelten sie als ausgeliefert wie jeder Ordner; `AUSGELIEFERT` (`test/invarianten/quellen.ts`)
 nimmt `shared/` und zusätzlich jede `*.ts` der Wurzel außer `*.config.ts` von selbst auf.
 

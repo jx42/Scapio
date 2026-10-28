@@ -11,7 +11,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { PROJEKTWURZEL } from '../shared/konfiguration.ts';
-import { SCHRITTE } from '../start/pruefung.ts';
+import { geaenderteSchritte, SCHRITTE } from '../start/pruefung.ts';
 
 const skripte = (
   JSON.parse(readFileSync(join(PROJEKTWURZEL, 'package.json'), 'utf8')) as {
@@ -42,5 +42,20 @@ describe('check und check:kurz', () => {
 
   it('laesst check:kurz auf start/pruefung.ts zeigen', () => {
     expect(skripte['check:kurz']).toContain('start/pruefung.ts');
+  });
+});
+
+describe('check:geaendert', () => {
+  it('typisiert alles, lintet nur die geaenderten Dateien, testet nur die betroffenen', () => {
+    const schritte = geaenderteSchritte(['core/xirr.ts', 'src/App.tsx'], 'origin/main');
+    expect(schritte.map((s) => [s.name, s.argumente.join(' ')])).toEqual([
+      ['typecheck', '--noEmit'],
+      ['lint', 'core/xirr.ts src/App.tsx --max-warnings 0'],
+      ['test', 'run --changed origin/main --passWithNoTests'],
+    ]);
+  });
+
+  it('laesst eslint ohne geaenderte Datei weg — sonst lintete es das ganze Projekt', () => {
+    expect(geaenderteSchritte([]).map((s) => s.name)).toEqual(['typecheck', 'test']);
   });
 });

@@ -17,7 +17,7 @@
  * aufgerufen, wie `start/zeitzonen.ts` es mit vitest schon tut.
  */
 
-import { spawnSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { PROJEKTWURZEL } from '../shared/konfiguration.ts';
@@ -50,6 +50,34 @@ export const SCHRITTE: readonly Schritt[] = [
   },
   { name: 'test', werkzeug: 'vitest', argumente: ['run'], fehlerzeilen: /^\s*(FAIL|×|→)|Error:/ },
 ];
+
+/** Vergleichsstand fuer `--geaendert`: was dieser Branch gegenueber `main` anfasst. */
+const BASIS = 'origin/main';
+
+/** Geaenderte und neue, nicht ignorierte Quelldateien gegenueber `basis`, ohne geloeschte. */
+export function geaenderteDateien(basis: string = BASIS): string[] {
+  const git = (...argumente: string[]): string[] =>
+    execFileSync('git', argumente, { cwd: PROJEKTWURZEL, encoding: 'utf8' }).split('\n').filter(Boolean);
+  const alle = new Set([
+    ...git('diff', '--name-only', '--diff-filter=d', basis),
+    ...git('ls-files', '--others', '--exclude-standard'),
+  ]);
+  return [...alle].filter((d) => /\.(ts|tsx|js|mjs)$/.test(d)).sort();
+}
+
+/*
+ * `npm run check:geaendert` — fuer Zwischenschritte, nicht fuer die Uebergabe. tsc laeuft
+ * ganz, weil eine Typaenderung beliebig weit traegt; eslint nur ueber die geaenderten
+ * Dateien, vitest nur ueber die Tests, die von ihnen abhaengen.
+ */
+export function geaenderteSchritte(dateien: readonly string[], basis: string = BASIS): Schritt[] {
+  const [typecheck, lint, test] = SCHRITTE as readonly [Schritt, Schritt, Schritt];
+  return [
+    typecheck,
+    ...(dateien.length > 0 ? [{ ...lint, argumente: [...dateien, '--max-warnings', '0'] }] : []),
+    { ...test, argumente: ['run', '--changed', basis, '--passWithNoTests'] },
+  ];
+}
 
 const LOGPFAD = join(PROJEKTWURZEL, '.start', 'pruefung.log');
 
@@ -128,4 +156,6 @@ function schreibeLog(mitschrift: readonly string[]): void {
   writeFileSync(LOGPFAD, mitschrift.join('\n'), 'utf8');
 }
 
-if (import.meta.filename === resolve(process.argv[1] ?? '')) haupt();
+if (import.meta.filename === resolve(process.argv[1] ?? '')) {
+  haupt(process.argv.includes('--geaendert') ? geaenderteSchritte(geaenderteDateien()) : SCHRITTE);
+}

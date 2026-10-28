@@ -12,6 +12,6 @@ Reine Funktionen. Hier entstehen alle Zahlen, die das Dashboard zeigt.
   „keine Lösung“. Kein `NaN` verlässt diesen Ordner.
 
 ## Wenn du hier etwas änderst
-Erst `KERN_VERSION` in `version.ts` erhöhen, dann `npm run abdruck` (schreibt den Hash in
-`core/.abdruck.json`, gegen den `inv-10.test.ts` prüft). Der nächste Lauf rechnet die ganze
-Historie neu — beabsichtigt. [INV-10]
+Einmal je Änderung `npm run kern:version`: erhöht `KERN_VERSION` und schreibt den Hash in
+`core/.abdruck.json`, gegen den `inv-10.test.ts` prüft. Ist die Version auf dem Branch schon
+erhöht, nur `npm run abdruck`. Der nächste Lauf rechnet die ganze Historie neu — beabsichtigt. [INV-10]
