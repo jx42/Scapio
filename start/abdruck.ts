@@ -9,6 +9,10 @@
  * `npm run abdruck` schreibt die Datei neu. Aufzurufen, NACHDEM `KERN_VERSION` erhoeht
  * wurde: das Skript nimmt die Version, wie sie dasteht, und fragt nicht nach. Es soll
  * den Abdruck festhalten, nicht die Entscheidung treffen.
+ *
+ * `npm run kern:version` (`--erhoehen`) erhoeht `KERN_VERSION` um eins und schreibt den
+ * Abdruck im selben Schritt — die Entscheidung bleibt der Aufruf, nur der vergessliche
+ * zweite Schritt faellt weg.
  */
 
 import { createHash } from 'node:crypto';
@@ -52,14 +56,31 @@ export function abdruckVonCore(): string {
   return h.digest('hex');
 }
 
-function schreibeAbdruck(): Abdruckdatei {
-  const datei: Abdruckdatei = { kernVersion: KERN_VERSION, abdruck: abdruckVonCore() };
+function schreibeAbdruck(kernVersion: number): Abdruckdatei {
+  const datei: Abdruckdatei = { kernVersion, abdruck: abdruckVonCore() };
   writeFileSync(ABDRUCK_DATEI, `${JSON.stringify(datei, null, 2)}\n`, { mode: 0o644 });
   return datei;
 }
 
+const VERSION_DATEI = join(WURZEL, 'core', 'version.ts');
+const VERSION_ZEILE = /^export const KERN_VERSION = (\d+);$/m;
+
+/** Hebt `KERN_VERSION` in `core/version.ts` um eins und gibt die neue Zahl zurueck. */
+export function erhoeheKernVersion(quelle: string): { quelle: string; version: number } {
+  const treffer = VERSION_ZEILE.exec(quelle);
+  if (treffer === null) throw new Error('core/version.ts: Zeile `export const KERN_VERSION = <n>;` fehlt');
+  const version = Number(treffer[1]) + 1;
+  return { quelle: quelle.replace(VERSION_ZEILE, `export const KERN_VERSION = ${String(version)};`), version };
+}
+
 // Als Skript aufgerufen — nicht beim Import aus dem Test.
 if (import.meta.filename === resolve(process.argv[1] ?? '')) {
-  const { kernVersion, abdruck } = schreibeAbdruck();
+  let version = KERN_VERSION;
+  if (process.argv.includes('--erhoehen')) {
+    const neu = erhoeheKernVersion(readFileSync(VERSION_DATEI, 'utf8'));
+    writeFileSync(VERSION_DATEI, neu.quelle);
+    version = neu.version;
+  }
+  const { kernVersion, abdruck } = schreibeAbdruck(version);
   process.stdout.write(`core/.abdruck.json: Kernversion ${String(kernVersion)}, ${abdruck.slice(0, 16)}…\n`);
 }

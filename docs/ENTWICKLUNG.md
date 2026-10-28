@@ -23,10 +23,40 @@ npm start
 
 `npm run audit` läuft bewusst **nicht** in `npm run check`: `check` muss ohne Netz grün werden können, und ein neu veröffentlichter Fund in einer Abhängigkeit sagt nichts über den gerade geänderten Code. In der CI ist es ein eigener Job.
 
-## Befehle und Aufbau
+## Befehle
 
-Die vollständige Befehlsliste, die Ordner und die zwölf Invarianten stehen in
-[AGENTS.md](../AGENTS.md); die Begründung der Schichtentrennung in [ARCHITEKTUR.md](ARCHITEKTUR.md).
+Ordner und die zwölf Invarianten stehen in [AGENTS.md](../AGENTS.md), die Begründung der
+Schichtentrennung in [ARCHITEKTUR.md](ARCHITEKTUR.md). „Nicht für Agenten“ sperrt
+`.claude/settings.json` zusätzlich ([ADR-054](entscheidungen/ADR-054-agentensperre-in-den-einstellungen.md)).
+
+```sh
+npm start              # bauen (nur wenn nötig), servieren, Browser öffnen — der normale Weg; nicht für Agenten
+npm run build          # typecheck + Vite-Bau nach dist/, ohne zu starten
+npm run update         # neue Version per git holen, alten Bau wegräumen — nur auf Knopfdruck
+npm run deinstallieren # Datenverzeichnis löschen, nach Rückfrage — Projektordner bleibt (ADR-049)
+npm run dev            # Entwicklung mit Neuladen
+npm run demo           # Oberfläche mit erfundenen Daten, ohne echtes Depot — mit Neuladen
+npm run demo:export    # dieselbe Demo als statischer Abzug nach .demo-export/, für demo-worker/
+npm run edgecases      # alle Fehlermeldungen und Randfälle der Oberfläche auf einer Seite
+npm run mcp-login      # einmalige, interaktive OAuth/PKCE-Anmeldung am Scalable-MCP
+npm run check          # typecheck + lint + tests (die Invarianten laufen darin mit) — muss vor jeder Übergabe grün sein
+npm run check:kurz     # dieselbe Prüfung, aber still: drei Zeilen statt tausend, Volltext im Log
+npm run check:geaendert # tsc ganz, eslint und vitest nur für Geändertes gegenüber origin/main — für Zwischenschritte
+npm run test:tz        # dieselbe Suite unter drei Zeitzonen
+npm run test:invarianten # nur die zwölf Invariantentests, dazu der Kontrasttest der Farb-Tokens
+npm run test:e2e       # der eine Playwright-Durchstich, echter Chromium
+npm run test:abdeckung # Testabdeckung, nicht Teil von check
+npm run verify         # Historie komplett neu rechnen und mit der gespeicherten vergleichen — mit Beträgen, nicht für Agenten
+npm run verify:zaehlung # dasselbe, aber nur Tag und Feld — der Weg für Agenten
+npm run ingest         # Ingest einmalig, für die Fehlersuche — nicht für Agenten
+npm run vertrag        # zod-Schemata des Ingest gegen den echten MCP prüfen (ruft die Bank, nur lesend)
+npm run kontrast       # Kontrasttabelle in docs/BARRIEREFREIHEIT.md aus theme.css neu schreiben
+npm run abdruck        # Hash über core/ neu schreiben, nach einer KERN_VERSION-Erhöhung
+npm run kern:version   # KERN_VERSION um eins erhöhen und den Abdruck im selben Schritt schreiben
+npm run backup         # Sicherung der Datenbank
+npm run leak-pruefung  # Depotwerte, Token, Pfade im Repository suchen — vor jedem Release, nur der Nutzer
+npm run audit          # Schwachstellen in den Laufzeitabhängigkeiten — nicht Teil von check, aber Pflicht vor jedem Push
+```
 
 `npm run demo` und der Ende-zu-Ende-Test zeigen modellierte Tageskurse aus `test/e2e/kurshistorie-modelliert.json`, keine echten Börsenkurse. Wie sie entstehen, steht in der Datei selbst, wozu sie dienen, im Dateikopf von `test/e2e/daten.ts`.
 

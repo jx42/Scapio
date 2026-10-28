@@ -27,6 +27,7 @@
     "build": "npm run typecheck && vite build",
     "check": "npm run -s typecheck && npm run -s lint && npm run -s test",
     "check:kurz": "node --experimental-strip-types start/pruefung.ts",
+    "check:geaendert": "node --experimental-strip-types start/pruefung.ts --geaendert",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --max-warnings 0",
     "test": "vitest run",
@@ -42,6 +43,7 @@
     "mcp-login": "node start/nodeVersion.mjs && node --disable-warning=ExperimentalWarning --experimental-strip-types start/mcpLogin.ts",
     "kontrast": "node --experimental-strip-types start/kontrast.ts",
     "abdruck": "node --experimental-strip-types start/abdruck.ts",
+    "kern:version": "node --experimental-strip-types start/abdruck.ts --erhoehen",
     "vertrag": "node --experimental-strip-types start/vertrag.ts",
     "backup": "node start/nodeVersion.mjs && node --disable-warning=ExperimentalWarning --experimental-strip-types start/backup.ts"
   },

@@ -28,18 +28,7 @@ neue ADR dorthin, nicht in einen Kommentar.
 | `shared/` | Module ohne eigene Schicht, siehe unten | — |
 | `demo-worker/` | Cloudflare-Worker der öffentlichen Demo, liest nur den Abzug ([ADR-048](docs/entscheidungen/ADR-048-demo-als-statischer-abzug.md)) | — |
 
-`shared/` hält, was mehrere Schichten brauchen und keiner gehört
-([ADR-040](docs/entscheidungen/ADR-040-aufgeraeumte-projektwurzel.md)): `konfiguration.ts` (Datenverzeichnis, Ports), `hosts.ts`
-(Host-Allowlist), `zeitfenster.ts` (Zeitraum- und Fensterlisten), `benchmarks.ts`
-(Vergleichs-ETFs), `browser.ts` (Browser öffnen
-unter macOS/Windows), `geistFont.ts` (Schriftpfad fürs Ausliefern und fürs Bauen),
-`statusseite.ts` (Hülle der Bau- und der Anmeldeseite außerhalb von Vite),
-`hinweise.ts` (Arten der Lauf-Hinweise; den Satz baut die Oberfläche),
-`laufFehler.ts` (Fehlercodes eines Laufs, je einer im Runbook),
-`dateirechte.ts` (0700/0600, Eigentümer- und Symlinkprüfung, atomares Schreiben, [ADR-056](docs/entscheidungen/ADR-056-datenverzeichnis-und-dateirechte-aus-einer-hand.md)),
-`routen.ts` (Pfade und Query-Parameter der API), `quellen.ts` (Arten der Ingest-Quellen),
-`demoAbzug.ts` (Anfragen und Dateipfade des Demo-Abzugs, [ADR-048](docs/entscheidungen/ADR-048-demo-als-statischer-abzug.md)),
-`drittlizenzen.ts` (Vite-Plugin für die Lizenztexte im Bundle, [ADR-055](docs/entscheidungen/ADR-055-update-und-release-kette.md)).
+Was in `shared/` liegt: [`docs/ARCHITEKTUR.md`](docs/ARCHITEKTUR.md#datenfluss), Absatz „`shared/` hält“.
 `server/vertrag.ts` ist die eine Typquelle für den API-Vertrag — Server und Oberfläche importieren von dort.
 
 Eine neue Kennzahl, ein neues Antwortfeld, eine neue Spalte: welche Dateien in welcher Reihenfolge,
@@ -50,46 +39,29 @@ Richtung. Die Oberfläche rechnet nicht, der Server rechnet nicht, der Rechenker
 
 ## Befehle
 
+Die für Agenten; alle übrigen in [`docs/ENTWICKLUNG.md`](docs/ENTWICKLUNG.md#befehle).
+
 ```sh
-npm start              # bauen (nur wenn nötig), servieren, Browser öffnen — der normale Weg; nicht für Agenten
-npm run build          # typecheck + Vite-Bau nach dist/, ohne zu starten
-npm run update         # neue Version per git holen, alten Bau wegräumen — nur auf Knopfdruck
-npm run deinstallieren # Datenverzeichnis löschen, nach Rückfrage — Projektordner bleibt (ADR-049)
-npm run dev            # Entwicklung mit Neuladen
-npm run demo           # Oberfläche mit erfundenen Daten, ohne echtes Depot — mit Neuladen
-npm run demo:export    # dieselbe Demo als statischer Abzug nach .demo-export/, für demo-worker/
-npm run edgecases      # alle Fehlermeldungen und Randfälle der Oberfläche auf einer Seite
-npm run mcp-login      # einmalige, interaktive OAuth/PKCE-Anmeldung am Scalable-MCP
-npm run check          # typecheck + lint + tests (die Invarianten laufen darin mit) — muss vor jeder Übergabe grün sein
-npm run check:kurz     # dieselbe Prüfung, aber still: drei Zeilen statt tausend, Volltext im Log
-npm run test:tz        # dieselbe Suite unter drei Zeitzonen
-npm run test:invarianten # nur die zwölf Invariantentests, dazu der Kontrasttest der Farb-Tokens
-npm run test:e2e       # der eine Playwright-Durchstich, echter Chromium
-npm run test:abdeckung # Testabdeckung, nicht Teil von check
-npm run verify         # Historie komplett neu rechnen und mit der gespeicherten vergleichen — mit Beträgen, nicht für Agenten
-npm run verify:zaehlung # dasselbe, aber nur Tag und Feld — der Weg für Agenten
-npm run ingest         # Ingest einmalig, für die Fehlersuche — nicht für Agenten
-npm run vertrag        # zod-Schemata des Ingest gegen den echten MCP prüfen (ruft die Bank, nur lesend)
-npm run kontrast       # Kontrasttabelle in docs/BARRIEREFREIHEIT.md aus theme.css neu schreiben
-npm run abdruck        # Hash über core/ neu schreiben, nach einer KERN_VERSION-Erhöhung
-npm run backup         # Sicherung der Datenbank
-npm run leak-pruefung  # Depotwerte, Token, Pfade im Repository suchen — vor jedem Release, nur der Nutzer
-npm run audit          # Schwachstellen in den Laufzeitabhängigkeiten — nicht Teil von check, aber Pflicht vor jedem Push
+npm run check:geaendert  # Zwischenschritt: tsc ganz, eslint und vitest nur für Geändertes gegenüber origin/main
+npm run check:kurz       # typecheck + lint + tests, still — muss vor jeder Übergabe grün sein
+npm run test:tz          # dieselbe Suite unter drei Zeitzonen — vor jedem Push
+npm run audit            # Schwachstellen der Laufzeitabhängigkeiten — vor jedem Push
+npm run test:invarianten # nur die zwölf Invariantentests und der Kontrasttest
+npm run test:e2e         # der eine Playwright-Durchstich, echter Chromium
+npm run kern:version     # nach einer Änderung in core/: KERN_VERSION + 1 und Abdruck neu [INV-10]
+npm run kontrast         # nach einem neuen Farb-Token: Kontrasttabelle neu schreiben
+npm run verify:zaehlung  # bei Zweifeln an einer Zahl: nur Tag und Feld, ohne Werte
 ```
 
 Installation immer `npm ci --ignore-scripts`. Node ≥ 24 (wegen `node:sqlite`).
-`.github/workflows/pruefung.yml` fährt `check` auf macOS, Linux und Windows, `test:tz` (ohne UTC)
-und `audit` als eigene Jobs unter Linux ([ADR-050](docs/entscheidungen/ADR-050-zeitzonen-in-der-ci-nur-unter-linux.md)).
 
 ## Push
 
-Auf `main` kommt nichts direkt, auch nicht vom Inhaber: jede Änderung geht über einen Branch und
-einen Pull Request, gemergt wird nur von Hand ([ADR-051](docs/entscheidungen/ADR-051-main-nur-ueber-pull-requests.md)).
-Ein Push ist eine Übergabe und endet erst, wenn die Prüfung des PR auf allen drei Plattformen grün ist
-und die CI keine Anmerkung hat. Der Ablauf wird ohne Rückfrage durchlaufen: vorher `npm run check`,
-`npm run test:tz` und `npm run audit`, dann Branch pushen und PR öffnen, den Lauf mit `gh` prüfen und
-bei Rot beheben bis grün, dann mit der PR-Nummer melden. Mergen tut der Nutzer. `npm audit fix --force` wird nie erzwungen, sondern gemeldet. Der Ablauf im Einzelnen: [`docs/ENTWICKLUNG.md`](docs/ENTWICKLUNG.md#push).
-Ein Release folgt [`docs/ENTWICKLUNG.md`](docs/ENTWICKLUNG.md#release), einschließlich Deploy der Demo.
+Nichts direkt auf `main`; jede Änderung über Branch und PR, gemergt wird nur vom Nutzer
+([ADR-051](docs/entscheidungen/ADR-051-main-nur-ueber-pull-requests.md)). Ein Push endet erst,
+wenn die CI auf allen drei Plattformen grün und ohne Anmerkung ist — Ablauf im Skill `/push`,
+Begründung in [`docs/ENTWICKLUNG.md`](docs/ENTWICKLUNG.md#push). Release:
+[`docs/ENTWICKLUNG.md`](docs/ENTWICKLUNG.md#release).
 
 ## Die zwölf Invarianten
 
@@ -119,22 +91,14 @@ Jede hat einen Test in `test/invarianten/`; begründet sind sie in den verlinkte
 - **Keine Wildcard in der Tool-Allowlist**, keine Aufweichung der Laufzeitprüfung
   `LESENDE_TOOLS.includes(tool)` in `ingest/mcp.ts`, keine weitere MCP-Gegenstelle neben dem
   fest im Code stehenden `mcp.scalable.capital`.
-- **Kein CORS-Header**, keine dritte schreibende Route, keine Bindung an `0.0.0.0`. Die zweite
-  ist in [ADR-012](docs/entscheidungen/ADR-012-anmeldeknopf-als-zweite-mutierende-route.md)
-  begründet; damit ist die Liste geschlossen.
-- **Kein Selbst-Update und keine Versionsprüfung.** Aktualisiert wird nur, wenn jemand
-  `npm run update` oder `Aktualisieren.command`/`Aktualisieren.bat` auslöst
-  ([ADR-013](docs/entscheidungen/ADR-013-update-nur-auf-knopfdruck.md)). Der Start holt keinen
-  Code und fragt keine Gegenstelle, ob es die Anwendung neuer gibt.
-- **Keine externe Ressource im Frontend** — keine CDN-Schrift, kein Analytics, kein Icon von fremder
-  Adresse.
-- **Keine Zugangsdaten im Repository.** Der Ingest meldet sich selbst per OAuth/PKCE am
-  Scalable-MCP an ([ADR-010](docs/entscheidungen/ADR-010-direkte-mcp-anmeldung-ohne-claude-code.md)) —
-  Token liegen unter `<datenverzeichnis>/mcp/`, außerhalb von Git und iCloud, mit denselben
-  Dateirechten (`0700`/`0600`) wie die Datenbank.
-- **Keine Daten im Projektordner.** Datenbank und Sicherungen liegen unter
-  `~/Library/Application Support/scapio/` bzw. `%LOCALAPPDATA%\scapio\`
-  ([ADR-005](docs/entscheidungen/ADR-005-datenbank-ausserhalb-des-projekts.md)).
+- **Kein CORS-Header.** Dritte schreibende Route und `0.0.0.0`: INV-07, INV-08,
+  [ADR-012](docs/entscheidungen/ADR-012-anmeldeknopf-als-zweite-mutierende-route.md).
+- **Kein Selbst-Update, keine Versionsprüfung.** Nur `npm run update` bzw.
+  `Aktualisieren.command`/`.bat` holt Code ([ADR-013](docs/entscheidungen/ADR-013-update-nur-auf-knopfdruck.md)).
+- **Keine Zugangsdaten und keine Daten im Projektordner.** Token unter `<datenverzeichnis>/mcp/`
+  ([ADR-010](docs/entscheidungen/ADR-010-direkte-mcp-anmeldung-ohne-claude-code.md)), Datenbank und
+  Sicherungen unter `~/Library/Application Support/scapio/` bzw. `%LOCALAPPDATA%\scapio\`, beide
+  `0700`/`0600` ([ADR-005](docs/entscheidungen/ADR-005-datenbank-ausserhalb-des-projekts.md)).
 - **Beide Plattformen gleich behandeln.** macOS und Windows sind Zielplattform, und alles,
   was der Nutzer anfasst, gibt es zweimal: `Start.command`/`Start.bat`,
   `Aktualisieren.command`/`Aktualisieren.bat`, `Deinstallieren.command`/`Deinstallieren.bat` — gleiche Schritte, gleiche Sätze; erlaubte
