@@ -107,7 +107,7 @@ dabei nirgends mit — weder im Cashflow noch im Eingabe-Hash. Siehe
 
 ## API-Vertrag
 
-Neun lesende Routen, zwei mutierende. Jede Antwort trägt zusätzlich `stand` und `drift`
+Zwölf lesende Routen, zwei mutierende. Jede Antwort trägt zusätzlich `stand` und `drift`
 (`umschlagAus`, siehe `server/json.ts`) — Zeitpunkt der letzten Berechnung und die
 aktuelle Drift-Stufe, unabhängig vom eigentlichen Inhalt der Route.
 
@@ -120,6 +120,7 @@ aktuelle Drift-Stufe, unabhängig vom eigentlichen Inhalt der Route.
 | `GET /api/aufteilung` | — | Positionen mit Art ([ADR-025](entscheidungen/ADR-025-wertpapierart-per-get-security-quote.md)), Einstand, Buchgewinn, Positions-IZF (Feld `xirr`) |
 | `GET /api/rebalancing` | `ziel` (`KONTO`/ISIN`:`Basispunkte, Summe 10 000, höchstens 50; fehlende Positionen sind ausgeschlossen) | je einbezogener Zeile Ist, Soll und Betrag zum Ziel ([ADR-057](entscheidungen/ADR-057-rebalancing-rechner.md)). Der Demo-Abzug kennt nur das feste Beispielziel |
 | `GET /api/top25` | — | Look-Through auf Unternehmen, mit `abdeckung` |
+| `GET /api/gewinnquellen` | — | Gesamtgewinn seit dem ersten Kauf nach Herkunft: je Wertpapier (Buchgewinn plus Realisiertes, auch verkaufte), Erträge, Steuern, Gebühren; Zuflüsse, Abflüsse, Brutto, Netto und Anteile an der Mitte. Über acht Positionen je Seite zusammengefasst |
 | `GET /api/fluesse` | `fenster` | Nettoinvestition in Wertpapiere je Monat, Schnitt, 12-Monats-Schnitt, Median |
 | `GET /api/sparplaene` | — | laufende Sparpläne, Monatssumme |
 | `GET /api/lauf` | — | Fortschritt des letzten/laufenden Ingest-Laufs |

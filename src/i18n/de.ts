@@ -867,6 +867,27 @@ export const de = {
     fundsJsonKopiert: 'In die Zwischenablage kopiert.',
   },
 
+  gewinnquellen: {
+    titel: 'Woher kommt der Gewinn?',
+    abzuege: 'Abzüge',
+    netto: 'Netto',
+    brutto: 'Brutto',
+    nettogewinn: 'Nettogewinn',
+    nettoverlust: 'Nettoverlust',
+    ertraege: 'Erträge',
+    steuern: 'Steuern',
+    gebuehren: 'Gebühren',
+    uebrige: (anzahl: number) => `${anzahl} weitere`,
+    betragUndAnteil: (betrag: string, anteil: string) => `${betrag} · ${anteil}`,
+    chart: (netto: string) =>
+      `Flussdiagramm: Gewinne und Erträge je Herkunft fließen zusammen und teilen sich in Nettoergebnis (${netto}), Verluste, Steuern und Gebühren.`,
+    tabelle: 'Herkunft des Gewinns',
+    spalteHerkunft: 'Herkunft',
+    spalteBetrag: 'Betrag',
+    spalteAnteil: 'Anteil',
+    leer: 'Es gibt noch keinen Gewinn oder Verlust, der sich zuordnen ließe.',
+  },
+
   fluesse: {
     titel: 'Käufe & Verkäufe',
     fenster: 'Zeitfenster',

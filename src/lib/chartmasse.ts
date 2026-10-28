@@ -71,6 +71,37 @@ export const FLUESSE_MARGIN = { top: 8, right: 0, bottom: 0, left: 0 } as const;
 /** Oben gerundete Balken (oben links, oben rechts, unten rechts, unten links). */
 export const FLUESSE_BALKEN_RUNDUNG: [number, number, number, number] = [4, 4, 0, 0];
 
+export const GEWINN_CHART_HOEHE = 440;
+/** Oben und unten Platz fuer die halbe Zeile ueber dem ersten und unter dem letzten Knoten. */
+export const GEWINN_MARGIN = { top: 16, right: 0, bottom: 16, left: 0 } as const;
+export const GEWINN_KNOTEN_BREITE = 6;
+/** Mindestens eine Textzeile, damit sich die Beschriftungen kleiner Knoten nicht ueberlagern. */
+export const GEWINN_KNOTEN_ABSTAND = 22;
+export const GEWINN_KNOTEN_RUNDUNG = 2;
+export const GEWINN_BESCHRIFTUNG_ABSTAND = 8;
+/** Hoehe des Beschriftungskastens: zwei Zeilen, senkrecht mittig am Knoten. */
+export const GEWINN_BESCHRIFTUNG_HOEHE = 44;
+/** Ab dieser Knotenhoehe stehen Name und Betrag untereinander, darunter in einer Zeile. */
+export const GEWINN_ZWEIZEILIG_AB = 36;
+/** Schriftgroesse der Beschriftung in px — muss `text-sm` entsprechen, wie in Top 25 und Länder & Sektoren. */
+export const GEWINN_SCHRIFT = 14;
+// Beim Überfahren tritt das Aktive nur leicht hervor, der Rest bleibt lesbar.
+export const GEWINN_BAND_DECKKRAFT = { normal: 0.32, aktiv: 0.48, gedimmt: 0.16 } as const;
+export const GEWINN_KNOTEN_DECKKRAFT_GEDIMMT = 0.55;
+/** Unter so vielen Zeichen ist ein Name nicht mehr zu erkennen. */
+export const GEWINN_NAME_MINDESTZEICHEN = 8;
+/** Mittlere Zeichenbreite von Fliesstext; schmaler als die der Ziffern an den Achsen. */
+const GEWINN_ZEICHENBREITE_EM = 0.55;
+
+/**
+ * Wie viele Zeichen eine Beschriftung haben darf: sie steht zwischen Knoten und Mitte. Geschaetzt
+ * statt per CSS gekuerzt — `text-overflow: ellipsis` faellt beim Textabstand nach WCAG 1.4.12 durch.
+ */
+export function gewinnBeschriftungZeichen(breite: number): number {
+  const platz = breite / 2 - GEWINN_KNOTEN_BREITE * 1.5 - GEWINN_BESCHRIFTUNG_ABSTAND * 2;
+  return Math.max(GEWINN_NAME_MINDESTZEICHEN, Math.floor(platz / (GEWINN_SCHRIFT * GEWINN_ZEICHENBREITE_EM)));
+}
+
 /** Strichstaerken: Hauptlinie (Flaeche, Ringtrenner), Nebenlinie (Einzahlung, Vergleich, Nulllinie),
  *  Markierungslinie normal und hervorgehoben. */
 export const LINIE_HAUPT = 2;

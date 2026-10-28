@@ -12,6 +12,8 @@ import { anteil } from './dezimal.ts';
 import { externeFluesse } from './depotreihe.ts';
 import type { DriftErgebnis } from './drift.ts';
 import { fifo, positionsFluesse } from './fifo.ts';
+import type { Gewinnquellen, PositionsBeitrag } from './gewinnquellen.ts';
+import { gewinnquellen } from './gewinnquellen.ts';
 import type { Flussuebersicht } from './fluesse.ts';
 import { monatsFluesse } from './fluesse.ts';
 import type { Vpi, RealErgebnis } from './inflation.ts';
@@ -140,6 +142,8 @@ export type Kennzahlen = {
   readonly gebuehrenTransaktionen: readonly ErtragsZeile[];
   /** Einzelverkaeufe hinter `realisiertCent`, neueste zuerst. */
   readonly realisierteVerkaeufe: readonly RealisierteZeile[];
+  /** Gesamtgewinn nach Herkunft: je Wertpapier, Ertraege, Steuern, Gebuehren. */
+  readonly gewinnquellen: Gewinnquellen;
 };
 
 export type KennzahlenEingaben = {
@@ -199,9 +203,13 @@ export function berechneKennzahlen(e: KennzahlenEingaben): Kennzahlen {
   for (const b of bestand) namen.set(b.isin, b.name);
 
   const positionen: Position[] = [];
+  // Auch verkaufte Positionen: ihr realisierter Gewinn gehoert zum Gesamtgewinn.
+  const beitraege: PositionsBeitrag[] = [];
   let wertpapiere = 0n;
 
   for (const [isin, einstand] of einstaende) {
+    const buchgewinn = einstand.menge === 0n ? 0n : (positionswerte.get(isin) ?? 0n) - einstand.einstand;
+    beitraege.push({ isin, name: namen.get(isin) ?? isin, gewinnCent: buchgewinn + einstand.realisiert });
     if (einstand.menge === 0n) continue;
 
     const wertCent = positionswerte.get(isin) ?? 0n;
@@ -318,6 +326,12 @@ export function berechneKennzahlen(e: KennzahlenEingaben): Kennzahlen {
     steuernTransaktionen,
     gebuehrenTransaktionen,
     realisierteVerkaeufe,
+    gewinnquellen: gewinnquellen({
+      positionen: beitraege,
+      ertraegeCent: zinsen,
+      steuernCent: steuern,
+      gebuehrenCent: gebuehren,
+    }),
   };
 }
 

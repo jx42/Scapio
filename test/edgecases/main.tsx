@@ -18,6 +18,7 @@ import { AufteilungKachel } from '@/features/aufteilung/AufteilungKachel';
 import { KennzahlenKachel } from '@/features/kennzahlen/KennzahlenKachel';
 import { LookThroughKacheln } from '@/features/top25/LookThroughKacheln';
 import { FluesseKachel } from '@/features/fluesse/FluesseKachel';
+import { GewinnquellenKachel } from '@/features/gewinnquellen/GewinnquellenKachel';
 import { SparplaeneKachel } from '@/features/sparplaene/SparplaeneKachel';
 
 import {
@@ -38,6 +39,7 @@ const KACHELN: Record<Exclude<Ansicht, 'seite'>, ComponentType> = {
   kennzahlen: KennzahlenKachel,
   aufteilung: AufteilungKachel,
   top25: LookThroughKacheln,
+  gewinnquellen: GewinnquellenKachel,
   fluesse: FluesseKachel,
   sparplaene: SparplaeneKachel,
 };
@@ -151,6 +153,7 @@ const TABS: readonly Tab[] = [
   { id: 'aufteilung', titel: 'Aufteilung', inhalt: rahmen('aufteilung') },
   { id: 'rebalancing', titel: 'Rebalancing', inhalt: rahmen('rebalancing') },
   { id: 'top25', titel: 'Länder & Unternehmen', inhalt: rahmen('top25') },
+  { id: 'gewinnquellen', titel: 'Woher kommt der Gewinn', inhalt: rahmen('gewinnquellen') },
   { id: 'fluesse', titel: 'Käufe & Sparpläne', inhalt: rahmen('fluesse') },
 ];
 

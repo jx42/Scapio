@@ -13,6 +13,7 @@ export const LESENDE_ROUTEN = {
   aufteilung: { pfad: '/api/aufteilung', parameter: [] },
   rebalancing: { pfad: '/api/rebalancing', parameter: ['ziel'] },
   top25: { pfad: '/api/top25', parameter: [] },
+  gewinnquellen: { pfad: '/api/gewinnquellen', parameter: [] },
   fluesse: { pfad: '/api/fluesse', parameter: ['fenster'] },
   sparplaene: { pfad: '/api/sparplaene', parameter: [] },
   lauf: { pfad: '/api/lauf', parameter: [] },

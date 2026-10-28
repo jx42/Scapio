@@ -291,6 +291,31 @@ export type Jahre = MitStand & {
   readonly benchmark: { readonly isin: string; readonly name: string } | null;
 };
 
+/** Eine Herkunft des Gesamtgewinns — siehe `core/gewinnquellen.ts`. */
+export type Gewinnquelle = {
+  readonly art: 'position' | 'uebrige' | 'ertraege' | 'steuern' | 'gebuehren';
+  readonly isin: string | null;
+  readonly name: string | null;
+  /** Bei `uebrige` die Zahl der zusammengefassten Positionen, sonst 1. */
+  readonly anzahl: number;
+  /** Zufluesse positiv, Abfluesse negativ. */
+  readonly betragCent: number;
+  /** Betrag als Anteil an `mitteCent`. */
+  readonly anteil: number;
+};
+
+export type Gewinnquellen = MitStand & {
+  readonly zufluesse: readonly Gewinnquelle[];
+  readonly abfluesse: readonly Gewinnquelle[];
+  readonly bruttoCent: number;
+  /** Negativ oder 0. */
+  readonly abzuegeCent: number;
+  readonly nettoCent: number;
+  /** Der mittlere Knoten: Zufluesse, bei Nettoverlust die Abfluesse. */
+  readonly mitteCent: number;
+  readonly nettoAnteil: number;
+};
+
 export type Sparplaene = MitStand & {
   readonly plaene: readonly Sparplan[];
   readonly summeCent: number;

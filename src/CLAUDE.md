@@ -1,6 +1,6 @@
 # Oberfläche
 
-Sechs Kacheln, eine Seite, dunkel, dicht. Rendert nur — gerechnet wird in `core/`.
+Sieben Kacheln, eine Seite, dunkel, dicht. Rendert nur — gerechnet wird in `core/`.
 
 ## Regeln
 - Kein `style`-Attribut. Ausnahmen: `<Balken>` (`--anteil`), `<ChartRahmen>`

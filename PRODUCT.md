@@ -56,7 +56,7 @@ kann das so nicht anbieten.
 
 ## Capabilities and Constraints
 
-Eine Seite mit sechs Kacheln, ohne Navigation. Jede Kachel beantwortet eine Frage:
+Eine Seite mit sieben Kacheln, ohne Navigation. Jede Kachel beantwortet eine Frage:
 
 | Kachel | Frage | Zeigt | Bewusst nicht |
 |---|---|---|---|
@@ -64,6 +64,7 @@ Eine Seite mit sechs Kacheln, ohne Navigation. Jede Kachel beantwortet eine Frag
 | Aufteilung | Worauf verteilt sich das Geld? | Ring und Tabelle der Positionen samt Verrechnungskonto, Link zu onvista; Rebalancing-Rechner: Betrag zum selbst gesetzten Ziel, kein Kaufvorschlag ([ADR-057](docs/entscheidungen/ADR-057-rebalancing-rechner.md)) | Sektoren, Länder (stehen in „Länder & Sektoren“) |
 | Kennzahlen | Wie gut, wie riskant, wie teuer? | Investiertes Kapital, Kursgewinn, realisierte Gewinne, Erträge, Steuern, Gebühren, TWR, IZF, Inflation, Realrendite, Risiko, Sparrate | Werte, die auf zu wenigen Daten beruhen (Volatilität und Sharpe erst ab 13 Monaten) |
 | Länder & Sektoren, Unternehmen (optional, zwei Karten) | In welchen Unternehmen, Ländern und Sektoren stecke ich über alle ETFs? | Länder und Sektoren je als Ring mit den zehn größten Gruppen, daneben die Top 25 als kompakte Tabelle, Fonds je Unternehmen bei Hover; fehlende Fonds benannt | Abrufe bei Fondsanbietern, solange der Schalter aus ist |
+| Woher kommt der Gewinn? | Welche Positionen und Töpfe tragen den Gesamtgewinn? | Sankey: Gewinne und Erträge links, rechts Verlustpositionen, Steuern, Gebühren und Nettogewinn; darüber Brutto, Abzüge und Netto | Zeitfenster; gezählt wird seit dem ersten Kauf |
 | Käufe & Verkäufe | Wie viel investiere ich? | Investition je Monat, Durchschnitt ([ADR-008](docs/entscheidungen/ADR-008-fluesse-kachel-zeigt-investition-statt-einzahlung.md)) | Einzahlungen aufs Konto |
 | Sparpläne | Was läuft automatisch? | Aktive Sparpläne | Bearbeiten, Anlegen, Löschen |
 

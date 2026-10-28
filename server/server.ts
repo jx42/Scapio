@@ -33,6 +33,7 @@ import { CSP, neuerToken, registriereSicherheit } from './sicherheit.ts';
 import { Sperre } from './sperre.ts';
 import { registriereAufteilung } from './routen/aufteilung.ts';
 import { registriereFluesse } from './routen/fluesse.ts';
+import { registriereGewinnquellen } from './routen/gewinnquellen.ts';
 import { registriereHealth } from './routen/health.ts';
 import { registriereJahre } from './routen/jahre.ts';
 import { registriereKennzahlen } from './routen/kennzahlen.ts';
@@ -273,6 +274,7 @@ export function baueServer(optionen: ServerOptionen): { app: FastifyInstance; to
   registriereAufteilung(app, ctx);
   registriereRebalancing(app, ctx);
   registriereTop25(app, ctx);
+  registriereGewinnquellen(app, ctx);
   registriereFluesse(app, ctx);
   registriereSparplaene(app, ctx);
   registriereLauf(app, ctx);

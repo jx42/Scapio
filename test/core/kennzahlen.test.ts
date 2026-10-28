@@ -82,6 +82,20 @@ describe('berechneKennzahlen — Summen', () => {
     expect(k.nettoEinzahlungCent).toBe(0n);
   });
 
+  it('zerlegt den Gesamtgewinn ohne Rest in Gewinnquellen, verkaufte Positionen eingeschlossen', () => {
+    const transaktionen: Tx[] = [
+      einzahlung('2025-08-26', '2000'),
+      kauf('2025-08-26', WELT, '10', '1000'),
+      kauf('2025-08-26', EUROPA, '5', '500'),
+      verkauf('2026-02-02', EUROPA, '5', '450'),
+      zins('2026-03-01', '12'),
+    ];
+    const k = berechneKennzahlen(standard({ transaktionen }));
+    const g = k.gewinnquellen;
+    expect(g.nettoCent).toBe(k.kursgewinnCent + k.realisiertCent + k.zinsenCent + k.steuernCent + k.gebuehrenCent);
+    expect(g.abfluesse.map((q) => q.isin)).toContain(EUROPA);
+  });
+
   it('weist Einstand und Buchgewinn getrennt aus', () => {
     const k = berechneKennzahlen(standard());
     expect(k.investiertCent).toBe(zuCent('1000'));
