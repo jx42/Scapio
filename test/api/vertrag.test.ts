@@ -17,6 +17,8 @@ import type {
   Aufteilung,
   Drift,
   Fluesse,
+  Gewinnquelle,
+  Gewinnquellen,
   Health,
   Jahre,
   Jahreszeile,
@@ -393,5 +395,42 @@ describe('Vertragstest: server/vertrag.ts gegen die tatsaechliche Antwort', () =
     );
     schluessel('jahre.benchmark', body.benchmark, ['isin', 'name']);
     schluessel('jahre.drift', body.drift, DRIFT);
+  });
+  it('GET /api/gewinnquellen', async () => {
+    // Mit Demodaten: die Quellen gehen erst mit Bestand ueber die Leitung.
+    const db = await testDatenbank();
+    const jetzt = new Date().toISOString();
+    const { heute } = seedeDatenbank(db, tagAus(jetzt), jetzt);
+    const { app } = baueServer({
+      db,
+      konfiguration: konfiguration(),
+      distPfad: join(tmpdir(), 'portfolio-kein-dist'),
+      heute,
+      protokoll: false,
+    });
+    const body = await holen(app, '/api/gewinnquellen');
+    schluessel(
+      'gewinnquellen',
+      body,
+      felder<Gewinnquellen>({
+        zufluesse: true,
+        abfluesse: true,
+        bruttoCent: true,
+        abzuegeCent: true,
+        nettoCent: true,
+        mitteCent: true,
+        nettoAnteil: true,
+        stand: true,
+        drift: true,
+      }),
+    );
+    const quellen = [...(body.zufluesse as unknown[]), ...(body.abfluesse as unknown[])];
+    expect(quellen.length).toBeGreaterThan(0);
+    schluessel(
+      'gewinnquellen.zufluesse[0]',
+      quellen[0],
+      felder<Gewinnquelle>({ art: true, isin: true, name: true, anzahl: true, betragCent: true, anteil: true }),
+    );
+    schluessel('gewinnquellen.drift', body.drift, DRIFT);
   });
 });

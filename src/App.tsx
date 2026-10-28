@@ -44,6 +44,7 @@ import { AufteilungKachel } from '@/features/aufteilung/AufteilungKachel';
 import { KennzahlenKachel } from '@/features/kennzahlen/KennzahlenKachel';
 import { LookThroughKacheln } from '@/features/top25/LookThroughKacheln';
 import { FluesseKachel } from '@/features/fluesse/FluesseKachel';
+import { GewinnquellenKachel } from '@/features/gewinnquellen/GewinnquellenKachel';
 import { SparplaeneKachel } from '@/features/sparplaene/SparplaeneKachel';
 
 // Zielgröße: ohne Innenabstand sind die Footer-Links nur 17 px hoch (WCAG 2.5.8).
@@ -186,6 +187,9 @@ function Seite() {
               <LookThroughKacheln />
             </div>
           ) : null}
+          <div className="xl:col-span-2">
+            <GewinnquellenKachel />
+          </div>
           <div className="flex flex-col self-stretch">
             <FluesseKachel />
           </div>

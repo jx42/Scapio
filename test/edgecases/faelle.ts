@@ -12,6 +12,7 @@ import type {
   Drift,
   FehlenderFonds,
   Fluesse,
+  Gewinnquellen,
   Health,
   Jahre,
   KennzahlenAntwort,
@@ -43,7 +44,7 @@ export type Antwort =
   /** Jeder Aufruf nimmt den naechsten Schritt, der letzte bleibt stehen. */
   | { readonly art: 'folge'; readonly schritte: readonly Antwort[] };
 
-export const ANSICHTEN = ['seite', 'verlauf', 'kennzahlen', 'aufteilung', 'top25', 'fluesse', 'sparplaene'] as const;
+export const ANSICHTEN = ['seite', 'verlauf', 'kennzahlen', 'aufteilung', 'top25', 'gewinnquellen', 'fluesse', 'sparplaene'] as const;
 export type Ansicht = (typeof ANSICHTEN)[number];
 
 export type Fall = {
@@ -583,6 +584,83 @@ export const FAELLE: readonly Fall[] = [
         laender: [],
         sektoren: [],
       })),
+    },
+  },
+
+  // --- Gewinnquellen
+  {
+    id: 'gewinnquellen-leer',
+    gruppe: 'gewinnquellen',
+    ansicht: 'gewinnquellen',
+    titel: 'Weder Gewinn noch Verlust',
+    routen: {
+      gewinnquellen: aendern<Gewinnquellen>((b) => ({
+        ...b,
+        zufluesse: [],
+        abfluesse: [],
+        bruttoCent: 0,
+        abzuegeCent: 0,
+        nettoCent: 0,
+        mitteCent: 0,
+        nettoAnteil: 0,
+      })),
+    },
+  },
+  {
+    id: 'gewinnquellen-nettoverlust',
+    gruppe: 'gewinnquellen',
+    ansicht: 'gewinnquellen',
+    titel: 'Nettoverlust: Abzüge in der Mitte',
+    routen: {
+      gewinnquellen: aendern<Gewinnquellen>((b) => ({
+        ...b,
+        zufluesse: [
+          { art: 'position', isin: 'IE00B4L5Y983', name: 'iShares Core MSCI World UCITS ETF USD (Acc)', anzahl: 1, betragCent: 120_00, anteil: 0.1 },
+          { art: 'ertraege', isin: null, name: null, anzahl: 1, betragCent: 30_00, anteil: 0.025 },
+        ],
+        abfluesse: [
+          { art: 'position', isin: 'US0378331005', name: 'Apple', anzahl: 1, betragCent: -1_150_00, anteil: 0.958 },
+          { art: 'gebuehren', isin: null, name: null, anzahl: 1, betragCent: -50_00, anteil: 0.042 },
+        ],
+        bruttoCent: 150_00,
+        abzuegeCent: -1_200_00,
+        nettoCent: -1_050_00,
+        mitteCent: 1_200_00,
+        nettoAnteil: 0.875,
+      })),
+    },
+  },
+  {
+    id: 'gewinnquellen-viele',
+    gruppe: 'gewinnquellen',
+    ansicht: 'gewinnquellen',
+    titel: 'Sieben Positionen, Übrige, Steuererstattung, lange Namen',
+    routen: {
+      gewinnquellen: aendern<Gewinnquellen>((b) => {
+        const name = (n: number) => (n === 1 ? 'Ein Fonds mit einem ausgesprochen langen Namen, der in keine Zeile passt' : `Position ${n}`);
+        const zufluesse = Array.from({ length: 7 }, (_, i) => ({
+          art: 'position' as const,
+          isin: `DE00000000${i}0`,
+          name: name(i + 1),
+          anzahl: 1,
+          betragCent: (8 - i) * 1_000_00,
+          anteil: (8 - i) / 40,
+        }));
+        return {
+          ...b,
+          zufluesse: [
+            ...zufluesse,
+            { art: 'uebrige', isin: null, name: null, anzahl: 12, betragCent: 2_00, anteil: 0.0005 },
+            { art: 'steuern', isin: null, name: null, anzahl: 1, betragCent: 20_00, anteil: 0.005 },
+          ],
+          abfluesse: [{ art: 'gebuehren', isin: null, name: null, anzahl: 1, betragCent: -10_00, anteil: 0.0025 }],
+          bruttoCent: 35_022_00,
+          abzuegeCent: -10_00,
+          nettoCent: 35_012_00,
+          mitteCent: 35_022_00,
+          nettoAnteil: 0.9997,
+        };
+      }),
     },
   },
 

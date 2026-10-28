@@ -21,7 +21,7 @@ neue ADR dorthin, nicht in einen Kommentar.
 | `core/` | reiner Rechenkern: XIRR, TWR, FIFO, Look-Through | `core/CLAUDE.md` |
 | `db/` | SQLite über `node:sqlite`, Migrationen, Repositories | `db/CLAUDE.md` |
 | `server/` | Fastify auf 127.0.0.1, API und Auslieferung | `server/CLAUDE.md` |
-| `src/` | React-Oberfläche, sechs Kacheln auf einer Seite | `src/CLAUDE.md` |
+| `src/` | React-Oberfläche, sieben Kacheln auf einer Seite | `src/CLAUDE.md` |
 | `test/` | vitest, Fixtures, Invariantentests | — |
 | `docs/` | Architektur, Datenmodell, Entwicklung, Glossar, Runbook, Sicherheit, ADRs | — |
 | `start/` | Einstiegspunkte hinter den `npm run`-Befehlen unten, plus `werkzeuge.ts` für Unterprozesse ohne Shell | — |

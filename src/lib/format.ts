@@ -256,6 +256,11 @@ export function betragOhneVorzeichen(wert: number, formatieren: (betrag: number)
   return formatieren(Math.abs(wert));
 }
 
+/** Kuerzt auf hoechstens `zeichen` Zeichen, mit Auslassungspunkten. Fuer Beschriftungen im Chart. */
+export function gekuerzt(text: string, zeichen: number): string {
+  return text.length <= zeichen ? text : `${text.slice(0, Math.max(1, zeichen - 1)).trimEnd()}…`;
+}
+
 /** Liest "YYYY-MM-DD" ohne Zeitzonenumrechnung. Gibt null bei allem anderen. */
 function tagAlsDatum(tag: string): Date | null {
   if (typeof tag !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(tag)) return null;

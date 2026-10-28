@@ -18,6 +18,8 @@ import type {
   FehlenderFondsFall,
   Fluesse,
   Fondsanteil,
+  Gewinnquelle,
+  Gewinnquellen,
   Gruppe,
   Health,
   Hinweis,
@@ -74,6 +76,8 @@ export type {
   FehlenderFondsFall,
   Fluesse,
   Fondsanteil,
+  Gewinnquelle,
+  Gewinnquellen,
   Gruppe,
   Health,
   Hinweis,
@@ -275,6 +279,8 @@ export const api = {
 
   top25: () => holen<Top25>(LESENDE_ROUTEN.top25.pfad),
 
+  gewinnquellen: () => holen<Gewinnquellen>(LESENDE_ROUTEN.gewinnquellen.pfad),
+
   fluesse: (fenster: Fenster) =>
     holen<Fluesse>(`${LESENDE_ROUTEN.fluesse.pfad}?fenster=${encodeURIComponent(fenster)}`),
 
@@ -349,6 +355,7 @@ export const schluessel = {
   rebalancing: (ziel: string) => ['rebalancing', ziel] as const,
   top25: ['top25'] as const,
   fluesse: (fenster: Fenster) => ['fluesse', fenster] as const,
+  gewinnquellen: ['gewinnquellen'] as const,
   sparplaene: ['sparplaene'] as const,
   lauf: ['lauf'] as const,
   mcpAnmeldung: ['mcpAnmeldung'] as const,

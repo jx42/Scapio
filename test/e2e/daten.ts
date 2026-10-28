@@ -1,7 +1,7 @@
 /**
  * Synthetisches Szenario fuer den Durchstich-Test und den Demo-Server: ein plausibles, in
- * sich stimmiges Depot ganz ohne SELL — FIFO-Bewertung ist bereits in core/ getestet, hier
- * geht es einzig darum, echten Recharts-Content unter der echten CSP zu rendern und in
+ * sich stimmiges Depot mit Teilverkaeufen, Steuern und Gebuehren — FIFO-Bewertung ist bereits
+ * in core/ getestet, hier geht es darum, echten Recharts-Content unter der echten CSP zu rendern und in
  * `npm run demo` plausible Kursverlaeufe zu zeigen, ohne ein echtes Depot preiszugeben.
  *
  * Das Depot haelt sieben Positionen: World-ETF (iShares), Schwellenlaender-ETF (Vanguard),
@@ -219,6 +219,9 @@ export function erzeugeSzenario(heute: Tag, jetzt: string): Szenario {
 
   const transaktionen: NeueTx[] = [];
   const mengenE8 = new Map<string, bigint>(POSITIONEN.map((p) => [p.isin, 0n]));
+  // Durchschnittlicher Einstand je Position, nur fuer die Steuer; der Kern rechnet FIFO.
+  const kostenCent = new Map<string, bigint>(POSITIONEN.map((p) => [p.isin, 0n]));
+  let verlusttopfCent = 0n;
   let cashGesamtCent = 0n;
 
   function fuege(t: Omit<NeueTx, 'id' | 'gesehenAm' | 'istExtern' | 'storniert' | 'status' | 'bezugIsin'>): void {
@@ -234,6 +237,18 @@ export function erzeugeSzenario(heute: Tag, jetzt: string): Szenario {
     cashGesamtCent += t.betragCent;
   }
 
+  /** Ordergebuehr wie beim Broker, nicht beim Sparplan. */
+  function ordergebuehr(ts: string, tag: Tag): void {
+    fuege({ ts, tag, art: 'CASH', typ: 'FEE', isin: null, mengeE8: null, betragCent: -99n as Cent, beschreibung: 'Ordergebuehr' });
+  }
+
+  /** Abgeltungsteuer samt Soli. */
+  function versteuere(ts: string, tag: Tag, isin: string, steuerpflichtigCent: bigint): void {
+    const steuerCent = (steuerpflichtigCent * 26_375n) / 100_000n;
+    if (steuerCent <= 0n) return;
+    fuege({ ts, tag, art: 'CASH', typ: 'TAX', isin, mengeE8: null, betragCent: -steuerCent as Cent, beschreibung: 'Kapitalertragsteuer und Soli' });
+  }
+
   /**
    * Ein Teilverkauf zum Kurs des Tages: `anteilProzent` des Bestands, der bis zu diesem
    * Aufruf gekauft wurde. Der Erloes geht aufs Verrechnungskonto. Nach `heute` faellt er aus.
@@ -243,9 +258,18 @@ export function erzeugeSzenario(heute: Tag, jetzt: string): Szenario {
     const kurs = kursAm(position.reihe, tag);
     const menge = ((mengenE8.get(position.isin) ?? 0n) * anteilProzent) / 100n;
     const erloesCent = (menge * kurs) / 10n ** 12n;
+    const kosten = ((kostenCent.get(position.isin) ?? 0n) * anteilProzent) / 100n;
     mengenE8.set(position.isin, (mengenE8.get(position.isin) ?? 0n) - menge);
+    kostenCent.set(position.isin, (kostenCent.get(position.isin) ?? 0n) - kosten);
+    const ts = `${tag}T${uhrzeit}${versatz}`;
+    ordergebuehr(ts, tag);
+    // Ein Verlust fuellt den Verlusttopf, ein Gewinn wird zuerst mit ihm verrechnet.
+    const gewinnCent = erloesCent - kosten;
+    const verrechnet = gewinnCent <= 0n ? gewinnCent : gewinnCent < verlusttopfCent ? gewinnCent : verlusttopfCent;
+    verlusttopfCent -= verrechnet;
+    versteuere(ts, tag, position.isin, gewinnCent - verrechnet);
     fuege({
-      ts: `${tag}T${uhrzeit}${versatz}`,
+      ts,
       tag,
       art: 'WERTPAPIER',
       typ: 'SELL',
@@ -265,6 +289,8 @@ export function erzeugeSzenario(heute: Tag, jetzt: string): Szenario {
     const kurs = kursAm(position.reihe, tag);
     const menge = mengeAusBetrag(betragCent, kurs);
     mengenE8.set(position.isin, (mengenE8.get(position.isin) ?? 0n) + menge);
+    kostenCent.set(position.isin, (kostenCent.get(position.isin) ?? 0n) + betragCent);
+    if (typ === 'BUY') ordergebuehr(`${tag}T${uhrzeit}+01:00`, tag);
     fuege({
       ts: `${tag}T${uhrzeit}+01:00`,
       tag,
@@ -343,11 +369,24 @@ export function erzeugeSzenario(heute: Tag, jetzt: string): Szenario {
       betragCent: betrag as Cent,
       beschreibung: 'Ausschuettung World',
     });
+    // Ohne Verlusttopf: die Schleife laeuft vor den Verkaeufen, der Topf waere nicht chronologisch.
+    versteuere(`${ausschuettung}T10:00:00+02:00`, ausschuettung, WELT_ISIN, betrag);
   }
 
-  // Teilverkaeufe: NVIDIA mit Gewinn (reicht ueber beide FIFO-Lose), Schwellenlaender mit
-  // Verlust kurz nach dem Kurssturz, Gold mit Gewinn. Nach dem letzten Kauf je Position.
+  // PRIME+-Abo, monatlich am Ersten.
+  for (const monat of monatsSpanne(START.slice(0, 7), letzterMoeglicheMonat)) {
+    const abbuchung = alsTag(`${monat}-01`);
+    if (vergleiche(abbuchung, START) < 0 || vergleiche(abbuchung, heute) > 0) continue;
+    fuege({ ts: `${abbuchung}T06:00:00+01:00`, tag: abbuchung, art: 'CASH', typ: 'FEE', isin: null, mengeE8: null, betragCent: -499n as Cent, beschreibung: 'PRIME+ Abo' });
+  }
+
+  // Teilverkaeufe: NVIDIA mit Gewinn (reicht ueber beide FIFO-Lose), Schwellenlaender,
+  // Technologiefonds und Bitcoin-ETP mit Verlust im Kurssturz — die beiden letzten so tief,
+  // dass die Position insgesamt im Minus bleibt —, Gold mit Gewinn. Nach dem letzten Kauf je
+  // Position, in zeitlicher Folge wegen des Verlusttopfs.
   verkaufe(alsTag('2025-04-08'), '10:15:00', '+02:00', emPosition, 25n, 'Verkauf Schwellenlaender (Teil)');
+  verkaufe(alsTag('2025-04-11'), '10:00:00', '+02:00', kryptoPosition, 50n, 'Verkauf Bitcoin-ETP (Teil)');
+  verkaufe(alsTag('2025-04-11'), '10:05:00', '+02:00', fondsPosition, 50n, 'Verkauf Technologiefonds (Teil)');
   verkaufe(alsTag('2025-10-15'), '11:00:00', '+02:00', aktiePosition, 55n, 'Verkauf NVIDIA (Teil)');
   verkaufe(alsTag('2025-12-15'), '09:45:00', '+01:00', goldPosition, 30n, 'Verkauf Gold (Teil)');
 
