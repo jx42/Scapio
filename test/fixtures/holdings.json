@@ -4,6 +4,9 @@
     {
       "isin": "ZZ0000000001",
       "name": "Beispiel Globalfonds A",
+      "fifoPrice": 101.234567891,
+      "valuation": 2129.6281,
+      "valuationCurrency": "EUR",
       "currentQuote": { "currency": "EUR", "midPrice": 123.4567, "timestamp": "2026-05-14T09:00:00+02:00" },
       "savingsPlan": { "amount": 75.0, "frequency": "MONTHLY" },
       "position": { "blocked": 0, "filled": 17.25, "pending": 0 }

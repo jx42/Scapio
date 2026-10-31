@@ -10,7 +10,9 @@ import { GRENZE, Geld, ISIN_MUSTER, Kurs, Menge, Zeitstempel } from './grundlage
  * der urspruengliche Auszug war eine Annahme, keine Beobachtung). Kein `cash` auf dieser
  * Ebene: der Kontostand kommt aus `get_portfolio_cash_breakdown`, siehe `CashBreakdownAntwort`.
  * `cryptoHoldings` wird deklariert, damit ein umbenanntes Feld auffaellt, aber nicht
- * ausgewertet — Krypto ist ausserhalb des Anwendungsbereichs.
+ * ausgewertet — Krypto ist ausserhalb des Anwendungsbereichs. Ebenso `fifoPrice`, `valuation`
+ * und `valuationCurrency`: Einstand und Wert rechnet der Kern selbst; optional, weil sie erst
+ * seit Oktober 2026 mitkommen.
  */
 export const HoldingsAntwort = z
   .object({
@@ -21,6 +23,9 @@ export const HoldingsAntwort = z
           .object({
             isin: z.string().regex(ISIN_MUSTER),
             name: z.string().max(200), // Fremdtext, nur Text  [INV-06]
+            fifoPrice: Kurs.optional(),
+            valuation: Geld.optional(),
+            valuationCurrency: z.string().max(8).optional(),
             currentQuote: z
               .object({
                 currency: z.string().max(8),

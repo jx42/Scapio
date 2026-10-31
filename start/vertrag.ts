@@ -81,6 +81,23 @@ function pfadText(pfad: readonly PropertyKey[]): string {
   return pfad.length === 0 ? '(Wurzel)' : harmlos(pfad.map(String).join('.'));
 }
 
+function knotenBei(block: unknown, pfad: readonly PropertyKey[]): unknown {
+  let knoten = block;
+  for (const schluessel of pfad) {
+    if (typeof knoten !== 'object' || knoten === null) return undefined;
+    knoten = (knoten as Record<PropertyKey, unknown>)[schluessel];
+  }
+  return knoten;
+}
+
+/** Nur die JSON-Art, nie der Wert — damit ein neues Feld ohne Blick in die Antwort deklariert werden kann. */
+function art(wert: unknown): string {
+  if (wert === null) return 'null';
+  if (Array.isArray(wert)) return 'array';
+  if (typeof wert === 'object') return `object{${Object.keys(wert).map(harmlos).sort().join(',')}}`;
+  return typeof wert;
+}
+
 // zod 4 nennt bei `invalid_type` den empfangenen Typ nicht mehr; ob ein Feld fehlt, steht im Block selbst.
 function fehlt(block: unknown, pfad: readonly PropertyKey[]): boolean {
   let knoten = block;
@@ -114,7 +131,8 @@ export function sammle(schema: z.ZodTypeAny, block: unknown, befund: Befund): bo
     const stelle = pfadText(problem.path);
     if (problem.code === 'unrecognized_keys') {
       for (const schluessel of problem.keys) {
-        befund.unbekannt.add(stelle === '(Wurzel)' ? harmlos(schluessel) : `${stelle}.${harmlos(schluessel)}`);
+        const name = stelle === '(Wurzel)' ? harmlos(schluessel) : `${stelle}.${harmlos(schluessel)}`;
+        befund.unbekannt.add(`${name} (${art(knotenBei(block, [...problem.path, schluessel]))})`);
       }
     } else if (problem.code === 'invalid_type' && fehlt(block, problem.path)) {
       befund.fehlend.add(stelle);
