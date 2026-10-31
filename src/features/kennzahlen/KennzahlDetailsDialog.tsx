@@ -1,9 +1,8 @@
 /*
- * Kachel 3, Detail: die Transaktionen hinter einer einzelnen Kennzahl.
+ * Die Buchungen hinter einem Knoten des Sankey (`GewinnquellenBuchungen`).
  *
- * Oeffnet sich aus einer Kennzahlzeile heraus (siehe `Kennzahlzeile`s `onDetails`) und
- * zeigt eine echte Tabelle, keine Liste aus <div> — dieselbe Begruendung wie bei der
- * Kennzahlentafel selbst. `zeilen` kommt bereits fertig aufbereitet herein: hier wird
+ * Eine echte Tabelle, keine Liste aus <div>: eine Vorlesehilfe sagt Datum, Bezug und
+ * Betrag als Zeile an. `zeilen` kommt bereits fertig aufbereitet herein: hier wird
  * nicht gerechnet, nur formatiert und gerendert.
  */
 
@@ -36,6 +35,8 @@ export type KennzahlDetailsDialogProps = {
   readonly zeilen: readonly DetailZeile[] | null;
   /** Kopf der mittleren Spalte: "Wofür" bei Ertraegen, "Position" bei Verkaeufen. */
   readonly spalteMitte: string;
+  /** Text bei leerer Liste; ohne Angabe `de.kennzahlen.detailsLeer`. */
+  readonly leer?: string | undefined;
   readonly onOpenChange: (offen: boolean) => void;
 };
 
@@ -84,7 +85,7 @@ export function realisierteZeilenAlsDetails(zeilen: readonly RealisierteZeile[])
   }));
 }
 
-export function KennzahlDetailsDialog({ titel, zeilen, spalteMitte, onOpenChange }: KennzahlDetailsDialogProps) {
+export function KennzahlDetailsDialog({ titel, zeilen, spalteMitte, leer, onOpenChange }: KennzahlDetailsDialogProps) {
   return (
     <Dialog open={zeilen !== null} onOpenChange={onOpenChange}>
       <DialogContent>
@@ -107,7 +108,7 @@ export function KennzahlDetailsDialog({ titel, zeilen, spalteMitte, onOpenChange
             {zeilen !== null && zeilen.length === 0 ? (
               <TableRow data-ruhig="">
                 <TableCell colSpan={3} className="py-4 text-center text-text-leise">
-                  {de.kennzahlen.detailsLeer}
+                  {leer ?? de.kennzahlen.detailsLeer}
                 </TableCell>
               </TableRow>
             ) : (

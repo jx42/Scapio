@@ -25,6 +25,8 @@ export type Gewinnquelle = {
   readonly name: string | null;
   /** Bei `uebrige` die Zahl der zusammengefassten Positionen, sonst 1. */
   readonly anzahl: number;
+  /** Die Positionen dahinter: bei `position` die eine, bei `uebrige` die zusammengefassten, sonst leer. */
+  readonly isins: readonly Isin[];
   /** Mit Vorzeichen: Zufluesse positiv, Abfluesse negativ. */
   readonly betragCent: Cent;
   /** Betrag als Anteil an `mitteCent`. */
@@ -81,6 +83,7 @@ function seite(positionen: readonly Roh[], toepfe: readonly Roh[]): Roh[] {
       isin: null,
       name: null,
       anzahl: rest.length,
+      isins: rest.flatMap((q) => (q.isin === null ? [] : [q.isin])),
       betragCent: summe(rest.map((q) => q.betragCent)),
     });
   }
@@ -90,7 +93,7 @@ function seite(positionen: readonly Roh[], toepfe: readonly Roh[]): Roh[] {
 export function gewinnquellen(e: GewinnquellenEingaben): Gewinnquellen {
   const positionen: Roh[] = e.positionen
     .filter((p) => p.gewinnCent !== 0n)
-    .map((p) => ({ art: 'position', isin: p.isin, name: p.name, anzahl: 1, betragCent: p.gewinnCent }));
+    .map((p) => ({ art: 'position', isin: p.isin, name: p.name, anzahl: 1, isins: [p.isin], betragCent: p.gewinnCent }));
   const toepfe: Roh[] = (
     [
       ['ertraege', e.ertraegeCent],
@@ -99,7 +102,7 @@ export function gewinnquellen(e: GewinnquellenEingaben): Gewinnquellen {
     ] as const
   )
     .filter(([, betrag]) => betrag !== 0n)
-    .map(([art, betrag]) => ({ art, isin: null, name: null, anzahl: 1, betragCent: betrag }));
+    .map(([art, betrag]) => ({ art, isin: null, name: null, anzahl: 1, isins: [], betragCent: betrag }));
 
   const zufluesse = seite(
     positionen.filter((q) => q.betragCent > 0n),

@@ -57,9 +57,11 @@ der Geschichte stehen. Eine neue ADR bekommt die nächste freie Nummer und eine 
 | [050](ADR-050-zeitzonen-in-der-ci-nur-unter-linux.md) | Zeitzonen in der CI nur unter Linux, ohne UTC | gilt |
 | [051](ADR-051-main-nur-ueber-pull-requests.md) | `main` nur über Pull Requests, ohne Bypass | Nachtrag: 055 |
 | [052](ADR-052-demo-band-mit-repository-link.md) | Demo-Band mit Link zum Repository | gilt |
-| [053](ADR-053-stichtag-und-isin-wechsel-im-kern.md) | Stichtag der Kennzahlen, ISIN-Wechsel und Selbstkontrolle ohne Cash | gilt |
+| [053](ADR-053-stichtag-und-isin-wechsel-im-kern.md) | Stichtag der Kennzahlen, ISIN-Wechsel und Selbstkontrolle ohne Cash | Nachtrag: 059 |
 | [054](ADR-054-agentensperre-in-den-einstellungen.md) | Agentensperre in den Einstellungen, Toolnamen ohne Präfix | gilt |
 | [055](ADR-055-update-und-release-kette.md) | Update- und Release-Kette geschlossen | gilt |
 | [056](ADR-056-datenverzeichnis-und-dateirechte-aus-einer-hand.md) | Datenverzeichnis und Dateirechte aus einer Hand | gilt |
 | [057](ADR-057-rebalancing-rechner.md) | Rebalancing-Rechner als Rechnung, nicht als Empfehlung | gilt |
-| [058](ADR-058-laender-und-sektoren-neben-den-unternehmen.md) | Länder und Sektoren neben den Unternehmen | gilt |
+| [058](ADR-058-laender-und-sektoren-neben-den-unternehmen.md) | Länder und Sektoren neben den Unternehmen | Nachtrag: 060 |
+| [059](ADR-059-kennzahlen-kachel-aufgeloest.md) | Kennzahlen-Kachel aufgelöst, jede Zahl an einem Ort | gilt |
+| [060](ADR-060-aufteilung-mit-reitern.md) | Eine Kachel Aufteilung mit den Reitern Aufteilung \| Analyse | gilt |

@@ -69,13 +69,22 @@ test('Durchstich: echte CSP, echter Browser, echtes Recharts-Rendering', async (
   expect(verstoesse).toEqual([]);
 });
 
-/** Wartet, bis alle sechs Kacheln ihre Daten haben und kein Skeleton mehr steht. */
+/** Wartet, bis alle Kacheln ihre Daten haben und kein Skeleton mehr steht. */
 async function warteAufKacheln(page: Page): Promise<void> {
   await page.goto('/');
   await expect(page.getByRole('img', { name: /Flächenchart/ })).toBeVisible();
   await expect(page.locator('[aria-busy="true"]')).toHaveCount(0);
-  // Aufteilung, Länder und Sektoren — erst dann prüft axe die ganze Seite.
-  await expect(page.locator('.recharts-pie')).toHaveCount(3);
+  // Der Ring der Aufteilung — erst dann prüft axe die ganze Seite; die Analyse liegt im zweiten Reiter.
+  await expect(page.locator('.recharts-pie')).toHaveCount(1);
+}
+
+/** Reiter der Kachel Aufteilung (ADR-060); die Demo hat den Look-Through. */
+const REITER = ['Aufteilung', 'Analyse'] as const;
+
+async function zeigeReiter(page: Page, name: (typeof REITER)[number]): Promise<void> {
+  await page.getByRole('tab', { name, exact: true }).click();
+  await expect(page.getByRole('tab', { name, exact: true })).toHaveAttribute('aria-selected', 'true');
+  await expect(page.locator('[aria-busy="true"]')).toHaveCount(0);
 }
 
 async function erwarteAxeOhneVerstoss(page: Page, nur?: string): Promise<void> {
@@ -87,12 +96,15 @@ async function erwarteAxeOhneVerstoss(page: Page, nur?: string): Promise<void> {
 }
 
 test.describe('Barrierefreiheit', () => {
-  // 375 px dazu: erst dort laeuft die Top25-Tabelle ueber und braucht ihre fokussierbare Region.
+  // 375 px dazu: erst dort stehen die drei Spalten der Analyse untereinander und braucht ihre fokussierbare Region.
   for (const breite of [1280, 375]) {
     test(`axe findet auf der fertig geladenen Seite nichts (WCAG 2.2 AA, ${String(breite)} px)`, async ({ page }) => {
       await page.setViewportSize({ width: breite, height: 900 });
       await warteAufKacheln(page);
-      await erwarteAxeOhneVerstoss(page);
+      for (const reiter of REITER) {
+        await zeigeReiter(page, reiter);
+        await erwarteAxeOhneVerstoss(page);
+      }
     });
   }
 
@@ -150,39 +162,39 @@ test.describe('Barrierefreiheit', () => {
     test(`bei ${String(breite)} px laeuft die Seite nicht waagerecht ueber`, async ({ page }) => {
       await page.setViewportSize({ width: breite, height: 900 });
       await warteAufKacheln(page);
-      const breiten = await page.evaluate(() => {
-        const liste = document.getElementById('kennzahlen-liste');
-        return {
+      for (const reiter of REITER) {
+        await zeigeReiter(page, reiter);
+        const breiten = await page.evaluate(() => ({
           inhalt: document.documentElement.scrollWidth,
           fenster: document.documentElement.clientWidth,
-          kennzahlenUeberlauf: liste === null ? 0 : liste.scrollWidth - liste.clientWidth,
-        };
-      });
-      expect(breiten.inhalt).toBe(breiten.fenster);
-      expect(breiten.kennzahlenUeberlauf).toBeLessThanOrEqual(0);
+        }));
+        expect(breiten.inhalt, reiter).toBe(breiten.fenster);
+      }
     });
   }
 
   test('die ueberlaufende Top25-Tabelle ist eine fokussierbare Region', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 900 });
     await warteAufKacheln(page);
+    await zeigeReiter(page, 'Analyse');
     const region = page.getByRole('region', { name: /^Unternehmen \d+ bis \d+/ });
     await expect(region).toHaveAttribute('tabindex', '0');
     await region.focus();
     await expect(region).toBeFocused();
   });
 
-  test('kein fokussierbares Element liegt unter der Blende der Kennzahlen', async ({ page }) => {
+  test('kein fokussierbares Element liegt unter einer Blende', async ({ page }) => {
     await warteAufKacheln(page);
-    const verdeckt = await page.evaluate(() => {
-      const rahmen = document.querySelector('.ausblenden-unten');
-      if (rahmen === null) return [];
-      const unten = rahmen.getBoundingClientRect().bottom;
-      const ziele = rahmen.querySelectorAll<HTMLElement>('a, button, [tabindex]');
-      return [...ziele]
-        .filter((z) => z.getBoundingClientRect().bottom > unten && !z.closest('[inert]') && getComputedStyle(z).visibility !== 'hidden')
-        .map((z) => z.getAttribute('aria-label') ?? z.textContent ?? '');
-    });
+    await zeigeReiter(page, 'Analyse');
+    const verdeckt = await page.evaluate(() =>
+      [...document.querySelectorAll('.ausblenden-unten')].flatMap((rahmen) => {
+        const unten = rahmen.getBoundingClientRect().bottom;
+        const ziele = rahmen.querySelectorAll<HTMLElement>('a, button, [tabindex]');
+        return [...ziele]
+          .filter((z) => z.getBoundingClientRect().bottom > unten && !z.closest('[inert]') && getComputedStyle(z).visibility !== 'hidden')
+          .map((z) => z.getAttribute('aria-label') ?? z.textContent ?? '');
+      }),
+    );
     expect(verdeckt).toEqual([]);
   });
 

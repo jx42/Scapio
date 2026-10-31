@@ -313,6 +313,9 @@ describe('Vertragstest: server/vertrag.ts gegen die tatsaechliche Antwort', () =
       felder<Top25>({
         zeilen: true,
         topAnteil: true,
+        andereCent: true,
+        andereAnteil: true,
+        andereAnzahl: true,
         abdeckung: true,
         durchschautCent: true,
         anzahlUnternehmen: true,
@@ -429,7 +432,7 @@ describe('Vertragstest: server/vertrag.ts gegen die tatsaechliche Antwort', () =
     schluessel(
       'gewinnquellen.zufluesse[0]',
       quellen[0],
-      felder<Gewinnquelle>({ art: true, isin: true, name: true, anzahl: true, betragCent: true, anteil: true }),
+      felder<Gewinnquelle>({ art: true, isin: true, name: true, anzahl: true, isins: true, betragCent: true, anteil: true }),
     );
     schluessel('gewinnquellen.drift', body.drift, DRIFT);
   });

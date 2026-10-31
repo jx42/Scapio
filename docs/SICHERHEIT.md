@@ -162,7 +162,7 @@ Windows — mit der Begründung im Dateikopf, damit niemand sie später für ver
 Abwägung**: dann gehört entweder `icacls` nachgezogen oder der Windows-Einstieg zurückgezogen.
 
 **3. Mit `top25` erfahren die Fondsanbieter, welche ETFs im Depot liegen.**
-Ist die Kachel eingeschaltet ([ADR-038](entscheidungen/ADR-038-top25-nur-auf-wunsch.md)), fragt
+Ist der Look-Through eingeschaltet ([ADR-038](entscheidungen/ADR-038-top25-nur-auf-wunsch.md)), fragt
 der Ingest bei iShares, Xtrackers und Amundi die Bestandsliste je gehaltenem Fonds ab: die ISIN
 steht im Pfad (`ingest/quellen/xtrackers.ts`) oder im Rumpf (`amundi.ts`, `productIds`); bei iShares
 steht statt ihrer die Produkt-ID des Fonds in der Query (`ishares.ts`, `portfolioId`). Zusammen mit IP-Adresse und Abrufzeit ergibt das beim Anbieter

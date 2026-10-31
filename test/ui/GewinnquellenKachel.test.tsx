@@ -1,28 +1,30 @@
 // @vitest-environment jsdom
 /*
- * Kachel „Woher kommt der Gewinn“: eine Abfrage ohne Parameter. Fremdtext (Wertpapiername)
+ * Kachel „Gewinne & Abzüge“: eine Abfrage ohne Parameter. Fremdtext (Wertpapiername)
  * landet in Tabelle und Beschriftung als Text, nie als Markup. [INV-06]
  */
 
 import { afterEach, describe, expect, it } from 'vitest';
 import { screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 import { de } from '@/i18n/de';
 import type { Gewinnquellen } from '@/lib/api';
 import { GewinnquellenKachel } from '@/features/gewinnquellen/GewinnquellenKachel';
+import { GewinnquellenBuchungen } from '@/features/gewinnquellen/GewinnquellenBuchungen';
 import { erwarteBarrierefrei, fetchErsatz, rendern, type Antwort } from './hilfen';
-import { drift } from './fixtures';
+import { drift, kennzahlenAntwort } from './fixtures';
 
 const GEWINNQUELLEN: Gewinnquellen = {
   stand: '2026-08-26T12:08:00+02:00',
   drift: drift(),
   zufluesse: [
-    { art: 'position', isin: 'IE00B4L5Y983', name: 'Welt <b>ETF</b>', anzahl: 1, betragCent: 900_00, anteil: 0.9 },
-    { art: 'ertraege', isin: null, name: null, anzahl: 1, betragCent: 100_00, anteil: 0.1 },
+    { art: 'position', isin: 'IE00B4L5Y983', name: 'Welt <b>ETF</b>', anzahl: 1, isins: ['IE00B4L5Y983'], betragCent: 900_00, anteil: 0.9 },
+    { art: 'ertraege', isin: null, name: null, anzahl: 1, isins: [], betragCent: 100_00, anteil: 0.1 },
   ],
   abfluesse: [
-    { art: 'position', isin: 'US0378331005', name: 'Einzelaktie', anzahl: 1, betragCent: -200_00, anteil: 0.2 },
-    { art: 'steuern', isin: null, name: null, anzahl: 1, betragCent: -50_00, anteil: 0.05 },
+    { art: 'position', isin: 'US0378331005', name: 'Einzelaktie', anzahl: 1, isins: ['US0378331005'], betragCent: -200_00, anteil: 0.2 },
+    { art: 'steuern', isin: null, name: null, anzahl: 1, isins: [], betragCent: -50_00, anteil: 0.05 },
   ],
   bruttoCent: 1_000_00,
   abzuegeCent: -250_00,
@@ -72,6 +74,38 @@ describe('GewinnquellenKachel', () => {
     expect(screen.queryByText(de.gewinnquellen.abzuege)).toBeNull();
   });
 
+  it('nennt Realisiert in der Kopfzeile und oeffnet die Verkaeufe (ADR-059)', async () => {
+    wiederherstellen = fetchErsatz((pfad) => {
+      if (pfad.startsWith('/api/kennzahlen')) return { body: kennzahlenAntwort() };
+      return abfrage(() => ({ body: GEWINNQUELLEN }))(pfad);
+    });
+    const { container } = rendern(<GewinnquellenKachel />);
+
+    const realisiert = await screen.findByRole('button', { name: new RegExp(de.kennzahlen.detailsOeffnen(de.kennzahlen.realisiert)) });
+    expect(screen.getByText(de.gewinnquellen.realisiert)).toBeInTheDocument();
+
+    await userEvent.click(realisiert);
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByText(de.kennzahlen.detailsLeer)).toBeInTheDocument();
+    await erwarteBarrierefrei(container);
+  });
+
+  it('zeigt bei einer Position nur ihre Verkaeufe, bei den uebrigen alle anderen', () => {
+    const verkauf = (isin: string, name: string) => ({ txId: isin, tag: '2026-05-04', isin, name, gewinnCent: 10_00 });
+    const daten = kennzahlenAntwort({ realisierteVerkaeufe: [verkauf('A', 'Alpha'), verkauf('B', 'Beta')] });
+    const { rerender } = rendern(
+      <GewinnquellenBuchungen daten={daten} auswahl={{ art: 'position', isin: 'A', name: 'Alpha' }} onSchliessen={() => undefined} />,
+    );
+    const dialog = screen.getByRole('dialog');
+    expect(within(dialog).getAllByText('Alpha')).not.toHaveLength(0);
+    expect(within(dialog).queryByText('Beta')).toBeNull();
+
+    rerender(
+      <GewinnquellenBuchungen daten={daten} auswahl={{ art: 'uebrige', isins: ['C'], name: '1 weitere' }} onSchliessen={() => undefined} />,
+    );
+    expect(within(screen.getByRole('dialog')).getByText(de.gewinnquellen.nichtsRealisiert)).toBeInTheDocument();
+  });
+
   it('zeigt das Skeleton, solange die Abfrage haengt', () => {
     wiederherstellen = fetchErsatz(abfrage(() => 'haengt'));
     const { container } = rendern(<GewinnquellenKachel />);
@@ -96,7 +130,7 @@ describe('GewinnquellenKachel', () => {
       abfrage(() => ({
         body: {
           ...GEWINNQUELLEN,
-          abfluesse: [{ art: 'position', isin: 'US0378331005', name: 'Einzelaktie', anzahl: 1, betragCent: -1_500_00, anteil: 1 }],
+          abfluesse: [{ art: 'position', isin: 'US0378331005', name: 'Einzelaktie', anzahl: 1, isins: ['US0378331005'], betragCent: -1_500_00, anteil: 1 }],
           abzuegeCent: -1_500_00,
           nettoCent: -500_00,
           mitteCent: 1_500_00,

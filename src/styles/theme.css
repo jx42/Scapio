@@ -168,7 +168,7 @@
 }
 
 /* Scrollbare Tabellen-Regionen: Ring nach innen. Aussen schnitte ihn jedes `overflow-hidden`
-   der Kachel darueber ab (Kennzahlen kuerzt so). */
+   der Kachel darueber ab (Unternehmen kuerzt so). */
 /* Der Fokusring in `fokus` hebt sich vom blauen Demo-Band nicht genug ab. */
 [data-demo-band] :focus-visible {
   outline-color: var(--color-demo-band-text);
@@ -329,14 +329,6 @@
   .chart-flaeche:has(> .verlauf-vorschau) :is(.recharts-line, .recharts-area, .recharts-reference-line) {
     filter: url(#verlauf-vorschau-unschaerfe);
   }
-
-  /*
-   * INV-05, Ausnahme 3: <Kachel hoehe> setzt --kachel-hoehe. Kennzahlen bindet sich
-   * damit an die zur Laufzeit gemessene Hoehe von Aufteilung.
-   */
-  .kachel-hoehe-fest {
-    height: var(--kachel-hoehe, auto);
-  }
 }
 
 /*
@@ -476,11 +468,13 @@
     border-bottom-right-radius: var(--radius-md);
   }
 
-  &:not([data-ruhig]):hover {
+  &:not([data-ruhig]):hover,
+  &[data-aktiv] {
     --color-text-leise: var(--color-text);
   }
 
-  &:not([data-ruhig]):hover > *::before {
+  &:not([data-ruhig]):hover > *::before,
+  &[data-aktiv] > *::before {
     background-color: var(--color-zeile);
   }
 }

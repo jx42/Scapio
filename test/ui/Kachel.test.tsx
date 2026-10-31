@@ -69,27 +69,6 @@ describe('Kachel: die Zustaende', () => {
   });
 });
 
-describe('Kachel: feste Hoehe [INV-05, Ausnahme 3]', () => {
-  it('setzt ohne `hoehe` keine feste Aussenhoehe', () => {
-    const { container } = render(
-      <Kachel titel="Aufteilung" id="aufteilung" zustand={{ art: 'bereit' }}>
-        <p>Inhalt</p>
-      </Kachel>,
-    );
-    const section = container.querySelector('section')!;
-    expect(section.style.getPropertyValue('--kachel-hoehe')).toBe('');
-  });
-
-  it('setzt mit `hoehe` --kachel-hoehe in Pixeln', () => {
-    const { container } = render(
-      <Kachel titel="Kennzahlen" id="kennzahlen" zustand={{ art: 'bereit' }} hoehe={412}>
-        <p>Inhalt</p>
-      </Kachel>,
-    );
-    const section = container.querySelector('section')!;
-    expect(section.style.getPropertyValue('--kachel-hoehe')).toBe('412px');
-  });
-});
 
 describe('Kachel: Fehlerisolation [P-06]', () => {
   it('ueberlebt einen Absturz beim Zeichnen, ohne die Nachbarkachel zu reissen', async () => {

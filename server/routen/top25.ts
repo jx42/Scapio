@@ -1,5 +1,5 @@
 /**
- * Kachel 4: der Blick durch die ETFs auf die Unternehmen dahinter.
+ * Reiter „Analyse“ der Aufteilung: der Blick durch die ETFs auf die Unternehmen dahinter.
  * `abdeckung` sagt, welcher Anteil des Depots ueberhaupt durchschaut werden konnte —
  * ohne diese Zahl waere die Liste eine Behauptung.
  */
@@ -46,6 +46,9 @@ const ANTWORT_SCHEMA = objektSchema<Top25>({
     }),
   },
   topAnteil: { type: 'number' },
+  andereCent: { type: 'number' },
+  andereAnteil: { type: 'number' },
+  andereAnzahl: { type: 'integer' },
   abdeckung: { type: 'number' },
   durchschautCent: { type: 'number' },
   anzahlUnternehmen: { type: 'integer' },
@@ -89,6 +92,9 @@ export function registriereTop25(app: FastifyInstance, ctx: Kontext): void {
         land: z.land,
       })),
       topAnteil: zahlOderNull(d.topAnteil) ?? 0,
+      andereCent: centAlsZahl(d.andereCent),
+      andereAnteil: zahlOderNull(d.andereAnteil) ?? 0,
+      andereAnzahl: d.andereAnzahl,
       abdeckung: zahlOderNull(d.abdeckung) ?? 0,
       durchschautCent: centAlsZahl(d.durchschautCent),
       anzahlUnternehmen: d.anzahlUnternehmen,

@@ -67,8 +67,7 @@ describe('FluesseKachel', () => {
   /*
    * Testet den Leerzustand von FluesseAnsicht (Kachelzustand bleibt 'bereit', `daten`
    * ist gesetzt) — nicht den Kachel-eigenen `art: 'leer'`, der bei FluesseKachel nur
-   * ueber `daten === undefined` entsteht und damit, wie bei KennzahlenKachel, toter
-   * Code ist. Siehe die Begruendung in KennzahlenKachel.test.tsx.
+   * ueber `daten === undefined` entsteht und damit toter Code ist.
    */
   it('zeigt den Leerzustand, wenn keine Monate vorliegen', async () => {
     wiederherstellen = fetchErsatz(

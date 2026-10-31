@@ -75,6 +75,22 @@ describe('lookThrough', () => {
     expect(e.topAnteil).toBeLessThan(e.abdeckung);
   });
 
+  it('fasst den Rest des Depots ausserhalb der Top als andereCent zusammen', () => {
+    const bestandteile = Array.from({ length: 30 }, (_, i) => teil(WELT, `X${String(i).padStart(11, '0')}`, `Nr ${i}`, (i + 1) / 1000));
+    // 100000 im Fonds, dazu 20000 ausserhalb (Cash, Gold, nicht durchschaute Fonds).
+    const e = lookThrough(werte([[WELT, '100000']]), bestandteile, zuCent('120000'), 25);
+    const summeTop = e.top.reduce((s, z) => s + z.exposure, 0n);
+    expect(e.andereCent + summeTop).toBe(zuCent('120000'));
+    expect(e.andereAnteil).toBeCloseTo(Number(e.andereCent) / Number(zuCent('120000')), 12);
+    expect(e.andereAnzahl).toBe(5);
+  });
+
+  it('setzt andereCent nie negativ, auch wenn die Top den Depotwert uebersteigen', () => {
+    const e = lookThrough(werte([[WELT, '1000']]), [teil(WELT, 'CH0038863350', 'Nestle SA', 1)], zuCent('500'));
+    expect(e.andereCent).toBe(0n);
+    expect(e.andereAnteil).toBe(0);
+  });
+
   it('zaehlt anzahlUnternehmen ueber die ISIN dedupliziert, unabhaengig von der Grenze', () => {
     // Nestlé steckt in beiden Fonds, zaehlt aber nur einmal.
     const e = lookThrough(

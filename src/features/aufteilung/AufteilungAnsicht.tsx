@@ -5,8 +5,8 @@
  * darin. Deshalb traegt jede Legendenzeile Prozent UND Betrag, und der Ring ist nur
  * das Bild dazu. [P-06]
  *
- * Die Zeilen sind Knoepfe, nicht nur Text: Hervorheben muss mit der Tastatur gehen,
- * ein Hover-Effekt allein waere fuer die halbe Bedienung unerreichbar.
+ * Der Name fuehrt zu onvista, Art und Werte sind ein Knopf: Hervorheben muss mit der Tastatur
+ * gehen, ein Hover-Effekt allein waere fuer die halbe Bedienung unerreichbar.
  */
 
 import { Cell, Label, Pie, PieChart, ResponsiveContainer } from 'recharts';
@@ -14,7 +14,7 @@ import { Wallet } from 'lucide-react';
 
 import { de } from '@/i18n/de';
 import type { PositionZeile } from '@/lib/api';
-import { AUFTEILUNG_CHART_HOEHE, LINIE_HAUPT, RING_AUSSEN, RING_INNEN, RING_LUECKE_GRAD } from '@/lib/chartmasse';
+import { AUFTEILUNG_CHART_HOEHE, DECKKRAFT_GEDIMMT, LINIE_HAUPT, RING_AUSSEN, RING_INNEN, RING_LUECKE_GRAD } from '@/lib/chartmasse';
 import { anteilProzent, betragOhneVorzeichen, euroAusCent, prozent } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { FARBE } from '@/lib/farben';
@@ -26,6 +26,12 @@ import { Farbtupfer, RingMitte, ringFarbe as farbe } from '@/components/Ring';
 import { LeerZustand } from '@/components/Zustaende';
 
 const CASH_SCHLUESSEL = 'cash';
+
+/**
+ * Raster einer Legendenzeile: breit Position | Gewinn in einer Zeile, schmal der Gewinn darunter,
+ * damit bei 375 px nichts überläuft. Nach Breite der Legende, nicht des Fensters.
+ */
+const ZEILE = 'grid grid-cols-1 items-baseline gap-x-3 @3xl/legende:grid-cols-[minmax(0,1fr)_11rem]';
 
 /** Die Art-Spalte: feste Breite, bricht Langes um statt es zu kürzen (WCAG 1.4.10) und entfällt auf schmalen Bildschirmen, damit der Name Platz behält. */
 const ART_SPALTE = 'hidden w-16 shrink-0 break-words sm:block';
@@ -83,133 +89,143 @@ export function AufteilungAnsicht({
   }
 
   if (stuecke.length === 0) return <LeerZustand text={de.aufteilung.leer} />;
+  // Ein überzogenes Verrechnungskonto hat keinen Platz im Ring — Recharts zeichnete das Stück
+  // rückwärts —, bleibt aber in der Legende. Die Farbe behält ihren Platz in der Reihe.
+  const ringStuecke = stuecke.map((s, farbIndex) => ({ ...s, farbIndex })).filter((s) => s.wertCent > 0);
 
   // grid-cols-1 statt der impliziten auto-Spalte: die waechst sonst auf die Breite der
   // Legende und schiebt die Kachel bei schmalem Fenster ueber den Rand hinaus.
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,18rem)_minmax(0,1fr)]">
-      <ChartRahmen
-        hoehe={AUFTEILUNG_CHART_HOEHE}
-        label={de.aufteilung.ring}
-        tabelle={{
-          beschriftung: de.aufteilung.tabelle,
-          spalten: [
-            de.aufteilung.spaltePosition,
-            de.aufteilung.spalteArt,
-            de.aufteilung.spalteAnteil,
-            de.aufteilung.spalteWert,
-            de.aufteilung.spalteDetails,
-          ],
-          zeilen: stuecke.map((s) => [
-            s.name,
-            s.position === null ? de.aufteilung.artCash : de.aufteilung.art(s.art),
-            anteilProzent(s.anteil),
-            euroAusCent(s.wertCent),
-            s.position?.isin ?? '',
-          ]),
-        }}
-      >
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart accessibilityLayer={false} aria-hidden="true">
-            {/* rootTabIndex -1: das SVG ist aria-hidden, ein Tabstopp darin waere fuer
-                Screenreader ein Loch. Bedient wird ueber die Legende. */}
-            <Pie
-              rootTabIndex={-1}
-              data={stuecke}
-              dataKey="wertCent"
-              nameKey="name"
-              onMouseEnter={(_, index) => onHover(stuecke[index]?.schluessel ?? null)}
-              onMouseLeave={() => onHover(null)}
-              innerRadius={RING_INNEN}
-              outerRadius={RING_AUSSEN}
-              paddingAngle={RING_LUECKE_GRAD}
-              stroke={FARBE.flaeche}
-              strokeWidth={LINIE_HAUPT}
-              isAnimationActive={false}
-            >
-              {stuecke.map((s, i) => (
-                <Cell
-                  key={s.schluessel}
-                  fill={farbe(i)}
-                  fillOpacity={hervorgehoben === null || hervorgehoben === s.schluessel ? 1 : 0.35}
-                />
-              ))}
-              {/* Ohne `position`: "center" liest in Recharts 3 nur die kartesische viewBox, die
-                  es im PieChart nicht gibt; RingMitte braucht nur cx/cy der polaren. */}
-              {gesamtCent === null ? null : (
-                <Label
-                  content={<RingMitte symbol={Wallet} beschriftung={de.aufteilung.gesamt} wert={euroAusCent(gesamtCent)} />}
-                />
-              )}
-            </Pie>
-          </PieChart>
-        </ResponsiveContainer>
-      </ChartRahmen>
-
-      <div>
-        <div
-          aria-hidden="true"
-          className="flex items-baseline gap-x-3 border-b border-rand/60 pb-2 text-xs font-medium text-text-leise"
+    <div className="@container">
+      <div className="grid grid-cols-1 gap-6 @3xl:grid-cols-[minmax(0,18rem)_minmax(0,1fr)]">
+        <ChartRahmen
+          hoehe={AUFTEILUNG_CHART_HOEHE}
+          label={de.aufteilung.ring}
+          tabelle={{
+            beschriftung: de.aufteilung.tabelle,
+            spalten: [
+              de.aufteilung.spaltePosition,
+              de.aufteilung.spalteArt,
+              de.aufteilung.spalteAnteil,
+              de.aufteilung.spalteWert,
+              de.aufteilung.spalteGewinn,
+              de.aufteilung.spalteDetails,
+            ],
+            zeilen: stuecke.map((s) => [
+              s.name,
+              s.position === null ? de.aufteilung.artCash : de.aufteilung.art(s.art),
+              anteilProzent(s.anteil),
+              euroAusCent(s.wertCent),
+              s.position === null ? '' : gewinnText(s.position),
+              s.position?.isin ?? '',
+            ]),
+          }}
         >
-          <span className="min-w-0 flex-1 break-words">{de.aufteilung.spaltePosition}</span>
-          <span className={ART_SPALTE}>{de.aufteilung.spalteArt}</span>
-          <span className="min-w-16 shrink-0 text-right">{de.aufteilung.spalteAnteil}</span>
-          <span className="min-w-24 shrink-0 text-right">{de.aufteilung.spalteWert}</span>
-        </div>
-        <ul className="flex flex-col">
-          {stuecke.map((s, i) => {
-            const aktiv = hervorgehoben === s.schluessel;
-            return (
-              <li
-                key={s.schluessel}
-                data-aktiv={aktiv ? '' : undefined}
-                className={cn('zeile-hover flex flex-col', i < stuecke.length - 1 && 'border-b border-rand/60')}
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart accessibilityLayer={false} aria-hidden="true">
+              {/* rootTabIndex -1: das SVG ist aria-hidden, ein Tabstopp darin waere fuer
+                  Screenreader ein Loch. Bedient wird ueber die Legende. */}
+              <Pie
+                rootTabIndex={-1}
+                data={ringStuecke}
+                dataKey="wertCent"
+                nameKey="name"
+                onMouseEnter={(_, index) => onHover(ringStuecke[index]?.schluessel ?? null)}
+                onMouseLeave={() => onHover(null)}
+                innerRadius={RING_INNEN}
+                outerRadius={RING_AUSSEN}
+                paddingAngle={RING_LUECKE_GRAD}
+                stroke={FARBE.flaeche}
+                strokeWidth={LINIE_HAUPT}
+                isAnimationActive={false}
               >
-                <button
-                  type="button"
-                  aria-pressed={ausgewaehlt === s.schluessel}
+                {ringStuecke.map((s) => (
+                  <Cell
+                    key={s.schluessel}
+                    fill={farbe(s.farbIndex)}
+                    fillOpacity={hervorgehoben === null || hervorgehoben === s.schluessel ? 1 : DECKKRAFT_GEDIMMT}
+                  />
+                ))}
+                {/* Ohne `position`: "center" liest in Recharts 3 nur die kartesische viewBox, die
+                    es im PieChart nicht gibt; RingMitte braucht nur cx/cy der polaren. */}
+                {gesamtCent === null ? null : (
+                  <Label
+                    content={<RingMitte symbol={Wallet} beschriftung={de.aufteilung.gesamt} wert={euroAusCent(gesamtCent)} />}
+                  />
+                )}
+              </Pie>
+            </PieChart>
+          </ResponsiveContainer>
+        </ChartRahmen>
+
+        <div className="@container/legende">
+          <div
+            aria-hidden="true"
+            className={cn(ZEILE, 'border-b border-rand/60 pb-2 text-xs font-medium text-text-leise')}
+          >
+            <span className="flex items-baseline gap-x-3">
+              <span className="min-w-0 flex-1 break-words">{de.aufteilung.spaltePosition}</span>
+              <span className={ART_SPALTE}>{de.aufteilung.spalteArt}</span>
+              <span className="min-w-16 shrink-0 text-right">{de.aufteilung.spalteAnteil}</span>
+              <span className="min-w-24 shrink-0 text-right">{de.aufteilung.spalteWert}</span>
+            </span>
+            <span className="hidden text-right @3xl/legende:block">{de.aufteilung.spalteGewinn}</span>
+          </div>
+          <ul className="flex flex-col">
+            {stuecke.map((s, i) => {
+              const aktiv = hervorgehoben === s.schluessel;
+              return (
+                // Die Zeile traegt Hover und Fokus, damit Link und Knopf gleich hervorheben.
+                // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- nur Hervorhebung; bedient wird ueber Link und Knopf darin.
+                <li
+                  key={s.schluessel}
+                  data-aktiv={aktiv ? '' : undefined}
                   onMouseEnter={() => onHover(s.schluessel)}
                   onMouseLeave={() => onHover(null)}
                   onFocus={() => onHover(s.schluessel)}
-                  onBlur={() => onHover(null)}
-                  onClick={() => {
-                    onHervorheben(ausgewaehlt === s.schluessel ? null : s.schluessel);
+                  // Beim Wechsel vom Link zum Knopf derselben Zeile nicht kurz loslassen.
+                  onBlur={(e) => {
+                    if (!(e.relatedTarget instanceof Node && e.currentTarget.contains(e.relatedTarget))) onHover(null);
                   }}
-                  className={cn(
-                    'pt-2 text-left',
-                    s.position === null && 'pb-2',
-                  )}
+                  className={cn('zeile-hover', ZEILE, i < stuecke.length - 1 && 'border-b border-rand/60')}
                 >
-                  <span className="flex items-baseline gap-x-3">
+                  <span className={cn('flex items-baseline gap-x-3 pt-2 @3xl/legende:pb-2', s.position === null && 'pb-2')}>
                     <Farbtupfer farbe={farbe(i)} />
-                    {/* Leerraum zwischen Flex-Kindern rendert nicht, trennt aber die Woerter im Namen des Knopfs. */}
                     <span className="min-w-0 flex-1 break-words text-text">
-                      {s.name}
-                    </span>{' '}
-                    <span className={cn(ART_SPALTE, 'text-text-leise')}>
-                      {s.position === null ? de.aufteilung.artCash : de.aufteilung.art(s.art)}
-                    </span>{' '}
-                    <LegendenWerte anteil={s.anteil} wertCent={s.wertCent} />
+                      {s.position === null ? (
+                        s.name
+                      ) : (
+                        <OnvistaLink variant="name" isin={s.position.isin} name={s.name}>
+                          {s.name}
+                        </OnvistaLink>
+                      )}
+                    </span>
+                    <button
+                      type="button"
+                      aria-pressed={ausgewaehlt === s.schluessel}
+                      onClick={() => {
+                        onHervorheben(ausgewaehlt === s.schluessel ? null : s.schluessel);
+                      }}
+                      className="flex min-h-6 shrink-0 items-baseline gap-x-3 text-left"
+                    >
+                      {/* Leerraum zwischen Flex-Kindern rendert nicht, trennt aber die Woerter im Namen des Knopfs. */}
+                      <span className="sr-only">{de.aufteilung.hervorheben(s.name)}</span>{' '}
+                      <span className={cn(ART_SPALTE, 'text-text-leise')}>
+                        {s.position === null ? de.aufteilung.artCash : de.aufteilung.art(s.art)}
+                      </span>{' '}
+                      <LegendenWerte anteil={s.anteil} wertCent={s.wertCent} />
+                    </button>
                   </span>
-                </button>
-                {s.position === null ? null : (
-                  // Der Link ist ein Geschwister des Knopfs, nicht sein Kind: `<a>` in `<button>` ist ungueltig.
-                  // eslint-disable-next-line jsx-a11y/no-static-element-interactions -- nur Zeiger-Hervorhebung; per Tastatur hebt der Knopf darueber hervor.
-                  <div
-                    onMouseEnter={() => onHover(s.schluessel)}
-                    onMouseLeave={() => onHover(null)}
-                    className="flex flex-wrap items-center gap-2 pt-2 pb-2"
-                  >
-                    <Positionsdetail position={s.position} />
-                    <OnvistaLink variant="link" isin={s.position.isin} name={s.name}>
-                      {de.aufteilung.onvista}
-                    </OnvistaLink>
-                  </div>
-                )}
-              </li>
-            );
-          })}
-        </ul>
+                  {s.position === null ? null : (
+                    <span className="flex pt-1 pb-2 @3xl/legende:justify-end @3xl/legende:pt-2">
+                      <Positionsdetail position={s.position} />
+                    </span>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
       </div>
     </div>
   );
@@ -228,7 +244,12 @@ function LegendenWerte({ anteil, wertCent }: { readonly anteil: number; readonly
   );
 }
 
-/** Zweite Zeile einer Legendenzeile: Gewinn (Euro und Prozent) als Badge mit Pfeil statt Vorzeichen. */
+/** Gewinn in Euro und Prozent, mit Vorzeichen — für die Tabellenalternative, wo der Pfeil fehlt. */
+function gewinnText(position: PositionZeile): string {
+  return de.satz.mitNebenwert(euroAusCent(position.gewinnCent, true), prozent(position.gewinnProzent, true));
+}
+
+/** Gewinnspalte: Euro und Prozent als Badge mit Pfeil statt Vorzeichen. */
 function Positionsdetail({ position }: { position: PositionZeile }) {
   const angezeigterGewinn = useZahlZaehler(
     de.satz.mitNebenwert(

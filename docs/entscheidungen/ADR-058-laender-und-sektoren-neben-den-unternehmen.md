@@ -51,3 +51,9 @@ sich damit ohne neuen Abruf beantworten.
 - Auf Touchgeräten und per Tastatur ohne Screenreader ist die Fondsliste nicht sichtbar.
 - Anbieter schreiben dasselbe Land unterschiedlich; gruppiert wird roh, also kann ein Land doppelt
   erscheinen (mit gleichem Namen und gleicher Flagge), bis die Zuordnung im Kern landet.
+
+## Nachtrag (ADR-060)
+
+Die Anordnung ist abgelöst: Länder, Sektoren und Unternehmen stehen in drei Spalten im Reiter
+Analyse der Aufteilung, die Unternehmen als Treemap über der Tabelle, ohne Höhenbindung. Inhalt und
+Rechnung gelten weiter.

@@ -47,7 +47,7 @@ export type Health = MitStand & {
   readonly ok: boolean;
   readonly version: string;
   readonly kernVersion: number;
-  /** `top25` aus `einstellungen.json`: ohne ihn zeigt die Oberflaeche die Kachel nicht [ADR-038]. */
+  /** `top25` aus `einstellungen.json`: ohne ihn hat die Aufteilung keinen Reiter Analyse [ADR-038, ADR-060]. */
   readonly top25: boolean;
   readonly lauf: {
     readonly id: number;
@@ -238,6 +238,10 @@ export type Gruppe = {
 export type Top25 = MitStand & {
   readonly zeilen: readonly UnternehmenZeile[];
   readonly topAnteil: number;
+  /** Depot ausserhalb der Top 25, für das Feld „Andere“ der Treemap. */
+  readonly andereCent: number;
+  readonly andereAnteil: number;
+  readonly andereAnzahl: number;
   readonly abdeckung: number;
   readonly durchschautCent: number;
   readonly anzahlUnternehmen: number;
@@ -298,6 +302,8 @@ export type Gewinnquelle = {
   readonly name: string | null;
   /** Bei `uebrige` die Zahl der zusammengefassten Positionen, sonst 1. */
   readonly anzahl: number;
+  /** Die Positionen dahinter: bei `position` die eine, bei `uebrige` die zusammengefassten, sonst leer. */
+  readonly isins: readonly string[];
   /** Zufluesse positiv, Abfluesse negativ. */
   readonly betragCent: number;
   /** Betrag als Anteil an `mitteCent`. */

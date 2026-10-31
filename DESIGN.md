@@ -50,17 +50,19 @@ Recharts bekommt nur `FARBE.*` aus `src/lib/farben.ts`. Jede Reihe hat eine fest
 - **chart-3** (Gelb): Ereignisse und Bezugslinien wie Kauf/Verkauf-Marken, Zuflüsse und den
   Durchschnitt der Investition.
 - **chart-4** (Magenta): der Vergleich (Benchmark).
-- **chart-5** (Grün-Türkis): nur reihum in Aufteilung und Länder & Sektoren.
+- **chart-5** (Grün-Türkis): nur reihum in Aufteilung und Analyse.
 - **chart-6** bis **chart-10** (Beere, Hellcyan, Oliv, Immergrün, Rosé): nur reihum in den Ringen der
-  Länder & Sektoren, die bis zu zehn Gruppen zeigen. Dunkel und hell wechseln sich ab, damit Nachbarn trennen.
+  Länder und Sektoren, die bis zu zehn Gruppen zeigen. Dunkel und hell wechseln sich ab, damit Nachbarn trennen.
 - Der Rendite-Chart verläuft von **gewinn** zu **verlust** und trennt sich an der Nulllinie.
 
 ### Named Rules
 **Die Eine-Bedeutung-Regel.** Eine Farbe bedeutet auf der ganzen Seite dasselbe. Magenta ist
 immer der Vergleich und Gelb immer ein Ereignis. Eine neue Reihe bekommt keine schon
-belegte Farbe.
+belegte Farbe. Die Treemap der Unternehmen färbt nach Sektor, mit genau der Farbe des
+Sektorrings daneben; was dort keine eigene Farbe hat, ist `rand`.
 
-**Die Nie-allein-Regel.** Gewinn und Verlust werden nie allein über Farbe gezeigt.
+**Die Nie-allein-Regel.** Gewinn und Verlust werden nie allein über Farbe gezeigt — auch nicht in
+der Gewinnspalte der Aufteilung, die Euro und Prozent als Badge mit Pfeil zeigt.
 
 ## Typography
 
@@ -83,9 +85,8 @@ Tailwinds Skala ist um je 1 px angehoben, die Zeilenhöhe im selben Maß.
 
 Eine Spalte bis `xl`, darüber ein Raster aus `1.45fr` und `0.55fr` (mindestens 19 rem),
 höchstens `max-w-8xl` (88 rem) mit `px-4` und `gap-4`. Die Reihenfolge ist Verlauf (volle
-Breite), Aufteilung neben Kennzahlen, Unternehmen neben Länder & Sektoren (2 : 3), Käufe & Verkäufe
-neben Sparplänen; Käufe und Sparpläne strecken sich auf gleiche Höhe. Unternehmen folgt der Höhe von Länder & Sektoren, solange es zugeklappt ist; die Höhe von Kennzahlen folgt der Aufteilung und umgekehrt, wenn Kennzahlen
-ausgeklappt ist. Kacheln lassen sich ausblenden
+Breite), Aufteilung (volle Breite, mit Look-Through die Reiter Aufteilung und Analyse rechts oben), Gewinne & Abzüge (volle
+Breite), Käufe & Verkäufe neben Sparplänen; die Paare strecken sich auf gleiche Höhe. Kacheln lassen sich ausblenden
 ([ADR-034](docs/entscheidungen/ADR-034-kachel-ausblenden-im-browser.md)). Die Untergrenze
 sind 375 px ohne Überlauf, Grids deshalb immer mit `grid-cols-1`.
 
@@ -131,7 +132,9 @@ Untertitel, `InfoKnopf` und Werkzeugen in der Kopfzeile. Sie hat genau drei Zust
 tun ist). Eine Fehlergrenze ist eingebaut.
 
 ### Kennzahlkarte
-Eine Glaskarte über dem Verlauf mit Bezeichnung, großer Zahl, Subline und `InfoKnopf`. Sie
+Eine Glaskarte über dem Verlauf mit Bezeichnung, großer Zahl, Subline, optional einer zweiten
+leisen Zeile (Inflation, Volatilität) und `InfoKnopf`; das Popover nennt die Werte, aus denen die
+Zahl entsteht. Sie
 ist mit `glas-ton-gewinn` bzw. `glas-ton-verlust` leicht nach der Richtung getönt.
 
 ### Charts

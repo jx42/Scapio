@@ -1,7 +1,6 @@
 /*
- * Ob der Max. Drawdown im Verlauf eingezeichnet ist. Zwei Kacheln schalten ihn — die
- * Drawdown-Karte im Verlauf und die Zeile in den Kennzahlen —, also liegt er ausserhalb
- * beider. Nicht gespeichert: er gilt fuer diesen Blick, nicht fuer den naechsten Start.
+ * Ob der Max. Drawdown im Verlauf eingezeichnet ist. Die Drawdown-Karte schaltet ihn, der
+ * Chart zeichnet ihn — zwei Komponenten ohne gemeinsamen Zustand. Nicht gespeichert: er gilt fuer diesen Blick, nicht fuer den naechsten Start.
  */
 
 import { beobachtbar, useBeobachtet } from './beobachtbar';

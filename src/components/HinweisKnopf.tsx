@@ -1,6 +1,6 @@
 /*
  * Hinweise einer Kachel: Warnsymbol und Anzahl rechts in der Titelzeile (`werkzeuge`),
- * die Hinweise selbst im Dialog. Kennzahlen und Top 25 teilen sich das, damit beide
+ * die Hinweise selbst im Dialog. Verlauf und Top 25 teilen sich das, damit beide
  * Kacheln gleich aussehen.
  */
 

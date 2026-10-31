@@ -1,8 +1,8 @@
 /*
- * Kachel 4, Dialog bei leerer Kachel ohne bekannte Fonds: Kurzanleitung zum Anlegen von
+ * Aufteilung, Dialog, wenn kein Fonds bekannt ist: Kurzanleitung zum Anlegen von
  * `funds.json` im Datenverzeichnis [ADR-037].
  *
- * Ohne diese Datei bleibt die Kachel leer — ein Laie findet sonst nirgends im laufenden
+ * Ohne diese Datei hat die Aufteilung keine Reiter — ein Laie findet sonst nirgends im laufenden
  * Programm einen Hinweis darauf, wie er sie befuellt. Dieselben Schritte stehen
  * ausfuehrlicher im `hinweis`-Feld von `ingest/funds.example.json`; hier die Kurzfassung,
  * dort wo sie im Moment des Bedarfs sichtbar ist.

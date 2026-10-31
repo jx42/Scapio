@@ -9,6 +9,7 @@
 import type {
   Drift,
   DriftStufe,
+  Health,
   KennzahlenAntwort,
   MaxDrawdownErgebnis,
   SharpeErgebnis,
@@ -124,5 +125,17 @@ export function unternehmenZeile(
     sektor: null,
     land: null,
     ...ueberschreibungen,
+  };
+}
+
+export function health(top25: boolean): Health {
+  return {
+    stand: '2026-08-26T12:08:00+02:00',
+    drift: drift(),
+    ok: true,
+    version: '0.0.0-test',
+    kernVersion: 1,
+    top25,
+    lauf: null,
   };
 }

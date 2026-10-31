@@ -30,7 +30,7 @@ export type SparplanListeProps = {
 export function SparplanListe({ plaene, summeCent }: SparplanListeProps) {
   const angezeigteSumme = useZahlZaehler(euroAusCent(summeCent));
   return (
-    <div className="-mx-2">
+    <div>
       <Table className="table-fixed">
         <TableCaption className="sr-only">{de.sparplaene.tabelle}</TableCaption>
         <TableHeader>

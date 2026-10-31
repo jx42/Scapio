@@ -27,7 +27,7 @@ die App offenlässt:
 3. **Wie unruhig ist mein Depot?** Volatilität, maximaler Drawdown, Sharpe-Ratio
    ([ADR-009](docs/entscheidungen/ADR-009-risikokennzahlen.md)).
 4. **Worin bin ich wirklich investiert?** Der Blick durch die ETFs auf Unternehmen, Länder und Sektoren
-   (Länder & Sektoren und Unternehmen, nur auf Wunsch, [ADR-038](docs/entscheidungen/ADR-038-top25-nur-auf-wunsch.md),
+   (Reiter Analyse der Aufteilung, nur auf Wunsch, [ADR-038](docs/entscheidungen/ADR-038-top25-nur-auf-wunsch.md),
    [ADR-058](docs/entscheidungen/ADR-058-laender-und-sektoren-neben-den-unternehmen.md)).
 5. **Was hat mich das gekostet, was hat es gebracht?** Erträge, Steuern und Gebühren einzeln.
 
@@ -56,19 +56,18 @@ kann das so nicht anbieten.
 
 ## Capabilities and Constraints
 
-Eine Seite mit sieben Kacheln, ohne Navigation. Jede Kachel beantwortet eine Frage:
+Eine Seite mit fünf Kacheln, ohne Navigation. Jede Kachel beantwortet eine Frage:
 
 | Kachel | Frage | Zeigt | Bewusst nicht |
 |---|---|---|---|
-| Verlauf | Wie hat sich mein Vermögen entwickelt, und wie stünde ich mit dem Vergleich? | Depotwert und eingezahltes Kapital oder Gesamtgewinn in %, Zeitraum 1W bis MAX oder frei per Regler, Vergleichslinie, Marken für Käufe, Verkäufe und Erträge. Darüber Karten mit Depotwert, Kursgewinn, Marktrendite p.a., Realrendite, Max. Drawdown und Sharpe | einen TWR-Chart ([ADR-011](docs/entscheidungen/ADR-011-kursgewinn-statt-twr-in-kachel-1.md)); der Gewinn zählt ab Fensterbeginn ([ADR-023](docs/entscheidungen/ADR-023-verlauf-zaehlt-ab-fensterbeginn.md)) |
-| Aufteilung | Worauf verteilt sich das Geld? | Ring und Tabelle der Positionen samt Verrechnungskonto, Link zu onvista; Rebalancing-Rechner: Betrag zum selbst gesetzten Ziel, kein Kaufvorschlag ([ADR-057](docs/entscheidungen/ADR-057-rebalancing-rechner.md)) | Sektoren, Länder (stehen in „Länder & Sektoren“) |
-| Kennzahlen | Wie gut, wie riskant, wie teuer? | Investiertes Kapital, Kursgewinn, realisierte Gewinne, Erträge, Steuern, Gebühren, TWR, IZF, Inflation, Realrendite, Risiko, Sparrate | Werte, die auf zu wenigen Daten beruhen (Volatilität und Sharpe erst ab 13 Monaten) |
-| Länder & Sektoren, Unternehmen (optional, zwei Karten) | In welchen Unternehmen, Ländern und Sektoren stecke ich über alle ETFs? | Länder und Sektoren je als Ring mit den zehn größten Gruppen, daneben die Top 25 als kompakte Tabelle, Fonds je Unternehmen bei Hover; fehlende Fonds benannt | Abrufe bei Fondsanbietern, solange der Schalter aus ist |
-| Woher kommt der Gewinn? | Welche Positionen und Töpfe tragen den Gesamtgewinn? | Sankey: Gewinne und Erträge links, rechts Verlustpositionen, Steuern, Gebühren und Nettogewinn; darüber Brutto, Abzüge und Netto | Zeitfenster; gezählt wird seit dem ersten Kauf |
+| Verlauf | Wie hat sich mein Vermögen entwickelt, und wie stünde ich mit dem Vergleich? | Depotwert und eingezahltes Kapital oder Gesamtgewinn in %, Zeitraum 1W bis MAX oder frei per Regler, Vergleichslinie, Marken für Käufe, Verkäufe und Erträge. Darüber Karten mit Depotwert (darunter investiertes Kapital), Kursgewinn, Marktrendite p.a., Realrendite (darunter Inflation), Max. Drawdown (darunter Volatilität) und Sharpe; Werte auf zu wenigen Daten fehlen (Volatilität und Sharpe erst ab 13 Monaten), [ADR-059](docs/entscheidungen/ADR-059-kennzahlen-kachel-aufgeloest.md) | einen TWR-Chart ([ADR-011](docs/entscheidungen/ADR-011-kursgewinn-statt-twr-in-kachel-1.md)); der Gewinn zählt ab Fensterbeginn ([ADR-023](docs/entscheidungen/ADR-023-verlauf-zaehlt-ab-fensterbeginn.md)) |
+| Aufteilung | Worauf verteilt sich das Geld? | Ring und Tabelle der Positionen samt Verrechnungskonto und Gewinn, der Name verlinkt zu onvista; Rebalancing-Rechner: Betrag zum selbst gesetzten Ziel, kein Kaufvorschlag ([ADR-057](docs/entscheidungen/ADR-057-rebalancing-rechner.md)) | Sektoren, Länder (stehen im Reiter Analyse) |
+| Aufteilung, Reiter Analyse (optional) | In welchen Unternehmen, Ländern und Sektoren stecke ich über alle ETFs? | Länder, Sektoren und Unternehmen in drei Spalten: je ein Ring mit den zehn größten Gruppen, die Top 25 als Treemap in den Farben der Sektoren, der Rest des Depots als „Andere“, mit kompakter Tabelle (Fonds je Unternehmen bei Hover); fehlende Fonds benannt ([ADR-060](docs/entscheidungen/ADR-060-aufteilung-mit-reitern.md)) | Abrufe bei Fondsanbietern, solange der Schalter aus ist; den Reiter ohne bekannte Fonds |
+| Gewinne & Abzüge | Welche Positionen und Töpfe tragen den Gesamtgewinn? | Sankey: Gewinne und Erträge links, rechts Verlustpositionen, Steuern, Gebühren und Nettogewinn; darüber Brutto, Realisiert, Abzüge und Netto; ein Klick auf Knoten oder Band öffnet die Buchungen dahinter | Zeitfenster; gezählt wird seit dem ersten Kauf |
 | Käufe & Verkäufe | Wie viel investiere ich? | Investition je Monat, Durchschnitt ([ADR-008](docs/entscheidungen/ADR-008-fluesse-kachel-zeigt-investition-statt-einzahlung.md)) | Einzahlungen aufs Konto |
 | Sparpläne | Was läuft automatisch? | Aktive Sparpläne | Bearbeiten, Anlegen, Löschen |
 
-Begriffe stehen in [docs/GLOSSAR.md](docs/GLOSSAR.md). Zwei Zahlen dürfen nie verwechselt werden: Der **Gesamtgewinn** (Verlauf) enthält Konto, Erträge, Steuern und Gebühren, der **Kursgewinn** (Kennzahlen) nur die gehaltenen Wertpapiere ([ADR-016](docs/entscheidungen/ADR-016-gesamtgewinn-statt-kursgewinn-im-verlauf.md)).
+Begriffe stehen in [docs/GLOSSAR.md](docs/GLOSSAR.md). Zwei Zahlen dürfen nie verwechselt werden: Der **Gesamtgewinn** (Verlauf) enthält Konto, Erträge, Steuern und Gebühren, der **Kursgewinn** (Karte über dem Verlauf) nur die gehaltenen Wertpapiere ([ADR-016](docs/entscheidungen/ADR-016-gesamtgewinn-statt-kursgewinn-im-verlauf.md)).
 
 **Nicht-Ziele**, auch auf Nachfrage nicht:
 

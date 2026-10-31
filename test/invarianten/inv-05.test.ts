@@ -1,9 +1,8 @@
 /**
- * INV-05 — Kein Inline-CSS ausser in `<Balken>`, `<ChartRahmen>` und `<Kachel>`.
+ * INV-05 — Kein Inline-CSS ausser in `<Balken>` und `<ChartRahmen>`.
  *
- * Drei Ausnahmen, alle unvermeidlich: ein Balken braucht eine berechnete Breite, ein
- * Diagrammrahmen eine gemessene Hoehe, eine Kachel mit `hoehe`-Vorgabe eine erst zur
- * Laufzeit per ResizeObserver gemessene Hoehe. Alles andere gehoert in Tailwind-Klassen
+ * Zwei Ausnahmen, beide unvermeidlich: ein Balken braucht eine berechnete Breite, ein
+ * Diagrammrahmen eine gemessene Hoehe. Alles andere gehoert in Tailwind-Klassen
  * — sonst stehen Abstaende und Farben an zwei Orten und driften auseinander.
  */
 
@@ -14,7 +13,6 @@ const OBERFLAECHE = dateien(['src']);
 const AUSNAHMEN = new Set([
   'src/components/Balken.tsx',
   'src/components/ChartRahmen.tsx',
-  'src/components/Kachel.tsx',
 ]);
 const UEBRIGE = OBERFLAECHE.filter((q) => !AUSNAHMEN.has(q.pfad));
 

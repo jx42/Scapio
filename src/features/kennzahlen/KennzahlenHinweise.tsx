@@ -1,5 +1,6 @@
 /*
- * Die Hinweise des Rechenkerns als `HinweisKnopf` in der Titelzeile der Kennzahlen-Kachel.
+ * Die Hinweise des Rechenkerns als `HinweisKnopf` in der Titelzeile des Verlaufs, der
+ * die Kennzahlenkarten traegt.
  * Codes ohne Satz in `de.kennzahlen.hinweis` erklaert schon eine andere Stelle der Seite.
  */
 

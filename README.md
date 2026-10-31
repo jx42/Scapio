@@ -71,12 +71,12 @@ Datenbank, Sicherungen, Cache und Anmeldung liegen dort, wo das Betriebssystem A
 
 ## 🏢 Länder, Sektoren und Unternehmen einschalten
 
-Die Kacheln „Länder & Sektoren“ und „Top 25 Unternehmen“ zeigen, in welche Länder, Sektoren und Unternehmen dein Geld fließt – über alle ETFs und Aktien zusammengerechnet. Sie sind standardmäßig deaktiviert, weil sie nur mit ETFs von iShares, Xtrackers und Amundi funktionieren und dafür deren inoffizielle Schnittstellen abfragen. Sind sie deaktiviert, fragt Scapio diese Anbieter gar nicht erst ab. Sind sie aktiviert, erfahren die Anbieter mit jedem Abruf, welche ihrer ETFs du hältst (nicht wie viel). Um die Kacheln zu aktivieren:
+Der Reiter „Analyse“ in der Kachel Aufteilung zeigt, in welche Länder, Sektoren und Unternehmen dein Geld fließt – über alle ETFs und Aktien zusammengerechnet. Er ist standardmäßig deaktiviert, weil sie nur mit ETFs von iShares, Xtrackers und Amundi funktionieren und dafür deren inoffizielle Schnittstellen abfragen. Sind sie deaktiviert, fragt Scapio diese Anbieter gar nicht erst ab. Sind sie aktiviert, erfahren die Anbieter mit jedem Abruf, welche ihrer ETFs du hältst (nicht wie viel). Um sie zu aktivieren:
 
 1. Die Datei `docs/einstellungen.example.json` aus dem Scapio-Ordner in den Datenordner kopieren (siehe [Wo liegen meine Daten?](#-wo-liegen-meine-daten)) und in `einstellungen.json` umbenennen. Liegt dort schon eine `einstellungen.json`, stattdessen die Zeile `"top25": true` in sie übernehmen.
 2. Scapio neu starten und auf „Aktualisieren“ klicken.
 
-ETFs von Xtrackers und Amundi erkennt Scapio selbst. Fehlen iShares-Fonds, nennen die Kacheln sie und erklären, wie du sie in einer `funds.json` einträgst. Ausschalten: in `einstellungen.json` `true` durch `false` ersetzen und neu starten.
+ETFs von Xtrackers und Amundi erkennt Scapio selbst. Fehlen iShares-Fonds, nennt die Kachel sie und erklären, wie du sie in einer `funds.json` einträgst. Ausschalten: in `einstellungen.json` `true` durch `false` ersetzen und neu starten.
 
 ## ⏹️ Beenden
 
@@ -119,7 +119,7 @@ Ohne das Skript: den Datenordner von Hand löschen (siehe [Wo liegen meine Daten
 | Scalable Capital, offizielle MCP-Schnittstelle                                                                                                                                                            | Dein Depot: Positionen, Transaktionen, Sparpläne; Kurshistorie der Benchmarks | dein eigener, ausschließlich lesender Zugriff auf deine eigenen Daten |
 | Eurostat, harmonisierter Verbraucherpreisindex ([`prc_hicp_midx`](https://ec.europa.eu/eurostat/databrowser/view/prc_hicp_midx), [`ei_cphi_m`](https://ec.europa.eu/eurostat/databrowser/view/ei_cphi_m)) | Inflation für die Realrendite                                                 | © Europäische Union; Weiterverwendung mit Quellenangabe erlaubt       |
 | Europäische Zentralbank, [€STR (`EST`)](https://data.ecb.europa.eu/data/datasets/EST)                                                                                                                     | Risikofreier Zins für die Sharpe-Ratio und als Benchmark                      | Weiterverwendung mit Quellenangabe erlaubt                            |
-| iShares, DWS Xtrackers, Amundi                                                                                                                                                                            | Bestandslisten der ETFs, nur mit eingeschalteten Look-Through-Kacheln         | Nutzungsbedingungen des jeweiligen Anbieters                          |
+| iShares, DWS Xtrackers, Amundi                                                                                                                                                                            | Bestandslisten der ETFs, nur mit eingeschaltetem Look-Through                 | Nutzungsbedingungen des jeweiligen Anbieters                          |
 
 Die Schnittstellen von iShares, Xtrackers und Amundi sind nicht offiziell dokumentiert und können sich jederzeit ändern. Fehlen Länder, Sektoren oder Unternehmen nach einem Update eines Anbieters, liegt das meist dort und nicht an deinem Depot.
 

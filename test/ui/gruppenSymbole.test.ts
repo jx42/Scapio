@@ -5,7 +5,7 @@
 import { Cpu, Earth, Landmark, ShoppingBag, ShoppingBasket } from 'lucide-react';
 import { describe, expect, it } from 'vitest';
 
-import { landSymbol, sektorSymbol } from '@/features/top25/gruppenSymbole';
+import { landSymbol, sektorSymbol } from '@/features/aufteilung/analyse/gruppenSymbole';
 import { flagge } from '@/lib/flaggen';
 
 describe('gruppenSymbole', () => {

@@ -8,7 +8,7 @@
  *
  * Diese Zahl heisst hier ueberall "Gesamtgewinn" und NICHT "Kursgewinn": sie ist
  * Depotwert minus eingezahltes Kapital und enthaelt damit Cash, Ertraege, Steuern und
- * Gebuehren, waehrend der Kursgewinn in Kachel 3 nur die gehaltenen Wertpapiere gegen
+ * Gebuehren, waehrend die Karte Kursgewinn nur die gehaltenen Wertpapiere gegen
  * ihren Einstand stellt. Beide Zahlen stehen auf derselben Seite uebereinander und
  * weichen um genau diese Posten voneinander ab — deshalb traegt jede hier gezeigte
  * Gewinnzahl eine Beschriftung und eine Erklaerung. [ADR-016]
