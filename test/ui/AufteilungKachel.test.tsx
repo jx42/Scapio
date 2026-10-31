@@ -202,7 +202,7 @@ describe('AufteilungKachel', () => {
     rendern(<AufteilungKachel />);
     await screen.findByText(de.aufteilung.tabelle);
 
-    const zeile = (name: string) => within(screen.getByRole('button', { name: new RegExp(`^${name.replace(/[()]/g, '\\$&')}`) }).closest('li')!);
+    const zeile = (name: string) => within(screen.getByRole('button', { name: new RegExp(`^${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`) }).closest('li')!);
     expect(zeile('iShares Core MSCI World').getByRole('img', { name: de.kennzahlen.richtungPositiv })).toBeInTheDocument();
     expect(zeile('iShares Core MSCI EM IMI').getByRole('img', { name: de.kennzahlen.richtungNegativ })).toBeInTheDocument();
     expect(zeile(de.aufteilung.cash).queryByRole('img')).not.toBeInTheDocument();
