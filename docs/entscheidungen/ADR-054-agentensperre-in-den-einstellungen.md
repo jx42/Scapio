@@ -42,3 +42,13 @@ vor jedem Aufruf wieder abschnitt.
 ## Nachtrag: die Strom-Fixtures sind entfernt
 
 Kein Test las sie mehr, seit es den `claude`-Kindprozess nicht mehr gibt.
+
+## Nachtrag: die laufende App
+
+Befund vom 2026-11-01: Die Liste sperrte die Datenbank, aber nicht die Seite, die sie anzeigt.
+`npm run dev` und `start/start.ts` direkt startet die echte App auf 4732; Browser, Bildschirmfoto,
+`curl` und WebFetch auf diesen Port brachten jeden Betrag in den Kontext. Neu unter `deny`:
+`npm run dev`, `npm run leak-pruefung`, `*start/start.ts*`, `curl` auf `:4732`, WebFetch auf
+`127.0.0.1` und `localhost`. Claude in Chrome und Playwright fängt keine Regel — dafür steht in
+AGENTS.md, dass Agenten nur Demo, Edgecases und e2e ansehen. Ein abweichender Port aus
+`einstellungen.json` ist nur durch diese Regel gedeckt.

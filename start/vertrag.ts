@@ -90,11 +90,20 @@ function knotenBei(block: unknown, pfad: readonly PropertyKey[]): unknown {
   return knoten;
 }
 
+// Schlüssel nur, wenn alle wie Feldnamen aussehen: ein Objekt, das nach ISIN oder Name
+// geschlüsselt ist, trüge sonst Depotdaten in die Ausgabe. [ADR-042]
+const FELDNAME = /^[a-z][A-Za-z0-9]{0,39}$/;
+
 /** Nur die JSON-Art, nie der Wert — damit ein neues Feld ohne Blick in die Antwort deklariert werden kann. */
 function art(wert: unknown): string {
   if (wert === null) return 'null';
   if (Array.isArray(wert)) return 'array';
-  if (typeof wert === 'object') return `object{${Object.keys(wert).map(harmlos).sort().join(',')}}`;
+  if (typeof wert === 'object') {
+    const schluessel = Object.keys(wert);
+    return schluessel.every((s) => FELDNAME.test(s))
+      ? `object{${schluessel.sort().join(',')}}`
+      : `object{${String(schluessel.length)} Schlüssel}`;
+  }
   return typeof wert;
 }
 

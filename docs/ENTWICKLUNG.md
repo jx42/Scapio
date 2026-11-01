@@ -34,7 +34,7 @@ npm start              # bauen (nur wenn nötig), servieren, Browser öffnen —
 npm run build          # typecheck + Vite-Bau nach dist/, ohne zu starten
 npm run update         # neue Version per git holen, alten Bau wegräumen — nur auf Knopfdruck
 npm run deinstallieren # Datenverzeichnis löschen, nach Rückfrage — Projektordner bleibt (ADR-049)
-npm run dev            # Entwicklung mit Neuladen
+npm run dev            # Entwicklung mit Neuladen, echte Datenbank — nicht für Agenten
 npm run demo           # Oberfläche mit erfundenen Daten, ohne echtes Depot — mit Neuladen
 npm run demo:export    # dieselbe Demo als statischer Abzug nach .demo-export/, für demo-worker/
 npm run edgecases      # alle Fehlermeldungen und Randfälle der Oberfläche auf einer Seite

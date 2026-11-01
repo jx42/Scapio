@@ -23,6 +23,12 @@ describe('Agentensperre [ADR-054]', () => {
         'Bash(npm start*)',
         'Bash(npm run ingest*)',
         'Bash(npm run verify)',
+        'Bash(npm run dev*)',
+        'Bash(npm run leak-pruefung*)',
+        'Bash(*start/start.ts*)',
+        'Bash(curl *:4732*)',
+        'WebFetch(domain:127.0.0.1)',
+        'WebFetch(domain:localhost)',
       ]),
     );
   });
