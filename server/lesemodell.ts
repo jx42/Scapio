@@ -199,7 +199,10 @@ export function baueLesemodell(
     const werte = positionswerte();
     if (werte.size === 0) return LEERER_DURCHBLICK;
     const gesamt = letzterTag()?.gesamtCent ?? 0n;
-    return lookThrough(werte, repository.etfBestandteil.aktuelle(db), gesamt, 25);
+    const direkt = wertpapierBestand()
+      .filter((b) => arten().get(b.isin) === 'STOCK')
+      .map((b) => ({ isin: b.isin, name: b.name }));
+    return lookThrough(werte, repository.etfBestandteil.aktuelle(db), gesamt, 25, direkt);
   });
 
   // Kachel 5 zeigt Investitionen in Wertpapiere, nicht externe Zahlungen ins Depot —

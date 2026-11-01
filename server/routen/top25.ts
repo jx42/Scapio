@@ -52,6 +52,7 @@ const ANTWORT_SCHEMA = objektSchema<Top25>({
   abdeckung: { type: 'number' },
   durchschautCent: { type: 'number' },
   anzahlUnternehmen: { type: 'integer' },
+  anzahlMindestens: { type: 'boolean' },
   laender: GRUPPEN_SCHEMA,
   sektoren: GRUPPEN_SCHEMA,
   fehlendeFonds: {
@@ -65,6 +66,8 @@ const ANTWORT_SCHEMA = objektSchema<Top25>({
   },
   ...umschlagSchemaEigenschaften,
 });
+
+const FONDSARTEN: readonly string[] = ['ETF', 'FUND'];
 
 export function registriereTop25(app: FastifyInstance, ctx: Kontext): void {
   app.get('/api/top25', { schema: { response: { 200: ANTWORT_SCHEMA } } }, (anfrage: FastifyRequest): Top25 => {
@@ -98,6 +101,9 @@ export function registriereTop25(app: FastifyInstance, ctx: Kontext): void {
       abdeckung: zahlOderNull(d.abdeckung) ?? 0,
       durchschautCent: centAlsZahl(d.durchschautCent),
       anzahlUnternehmen: d.anzahlUnternehmen,
+      // Gold, Krypto und unbekannte Arten halten keine oder unbekannt viele Unternehmen; nur ein
+      // ETF oder Fonds ohne Bestandsliste heisst sicher: es sind mehr.
+      anzahlMindestens: d.undurchschaut.some((isin) => FONDSARTEN.includes(lm.arten().get(isin) ?? '')),
       laender: d.laender.map(gruppe),
       sektoren: d.sektoren.map(gruppe),
       fehlendeFonds: lm.fehlendeFonds().map((f) => ({

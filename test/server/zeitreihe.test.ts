@@ -7,7 +7,7 @@ import { testDatenbank } from '../../db/verbindung.ts';
 import { baueServer } from '../../server/server.ts';
 import type { Zeitreihe } from '../../server/vertrag.ts';
 import { aufraeumen, eigeneHerkunft, konfiguration } from '../api/hilfen.ts';
-import { depotTag, kauf, T, WELT } from '../hilfen.ts';
+import { depotTag, einzahlung, kauf, T, WELT } from '../hilfen.ts';
 
 afterEach(() => {
   aufraeumen();
@@ -17,7 +17,7 @@ const ERSTER = T('2021-01-01');
 const LETZTER = T('2026-01-01');
 const MARKE = T('2023-06-14');
 
-async function anfrage(query: string) {
+async function anfrage(query: string, mitVergleich = false) {
   const db = await testDatenbank();
   const tage = [];
   for (let t = ERSTER; vergleiche(t, LETZTER) <= 0; t = plusTage(t, 1)) {
@@ -34,6 +34,15 @@ async function anfrage(query: string) {
     ...kauf(MARKE, WELT, '1', '100'),
     gesehenAm: `${MARKE}T18:00:00+01:00`,
   });
+
+  if (mitVergleich) {
+    repository.transaktion.schreibe(db, { ...einzahlung(ERSTER, '1000'), gesehenAm: `${ERSTER}T18:00:00+01:00` });
+    const kurse = [];
+    for (let t = ERSTER; vergleiche(t, LETZTER) <= 0; t = plusTage(t, 1)) {
+      kurse.push({ isin: WELT, tag: t, kurs: 100_000_000n + BigInt(tageZwischen(ERSTER, t)) * 10_000n, herkunft: 'chart_max' as const });
+    }
+    repository.kurs.schreibeViele(db, kurse);
+  }
 
   const { app } = baueServer({
     db,
@@ -109,5 +118,25 @@ describe('/api/zeitreihe, frei gewaehlter Zeitraum', () => {
     const antwort = await anfrage(query);
     expect(antwort.statusCode).toBe(400);
     expect((JSON.parse(antwort.body) as { fehler: { code: string } }).fehler.code).toBe('E_PARAMETER');
+  });
+});
+
+describe('/api/zeitreihe, Abstaende fuer die Benchmarkwahl', () => {
+  it('nennt jeden Vergleich mit Kursen, den gewaehlten wie seinen letzten Punkt', async () => {
+    const antwort = await anfrage(`zeitraum=1j&benchmark=${WELT}`, true);
+    expect(antwort.statusCode).toBe(200);
+    const r = JSON.parse(antwort.body) as Zeitreihe;
+    const letzter = r.punkte.at(-1)!;
+    expect(letzter.differenzCent).toEqual(expect.any(Number));
+    expect(r.abstaende).toEqual([
+      { isin: WELT, differenzCent: letzter.differenzCent, differenzProzent: letzter.differenzProzent },
+    ]);
+  });
+
+  it('haengt nicht an der Auswahl', async () => {
+    const mit = JSON.parse((await anfrage(`zeitraum=1j&benchmark=${WELT}`, true)).body) as Zeitreihe;
+    const ohne = JSON.parse((await anfrage('zeitraum=1j', true)).body) as Zeitreihe;
+    expect(ohne.benchmark).toBeNull();
+    expect(ohne.abstaende).toEqual(mit.abstaende);
   });
 });

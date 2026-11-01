@@ -1,5 +1,10 @@
 # ADR-016: Die Zahl über dem Verlauf heißt Gesamtgewinn, nicht Kursgewinn
 
+> **Nachtrag (November 2026).** Der Vergleich steht nicht mehr als zwei beschriftete Zahlen
+> (Benchmark, Differenz), sondern als ein Satz „+X € (+Y %) mehr als …“ mit eigenem
+> Infoknopf; der Gewinn des Vergleichsdepots steht in dessen Erklärung. Gesamtgewinn
+> behält Beschriftung und Infoknopf.
+
 ## Kontext
 
 Auf derselben Seite standen zwei verschiedene Zahlen unter demselben Namen. Beobachtung im

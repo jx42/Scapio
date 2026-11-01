@@ -8,6 +8,10 @@
  * erst die Summe zeigt die echte Position. Der Name der ersten Fundstelle gewinnt fuer
  * die Anzeige. [P-05]
  *
+ * Eine direkt gehaltene Aktie zaehlt mit Gewicht 1 als ihr eigener Bestandteil: in `ausFonds`
+ * unter ihrer eigenen ISIN, in der Abdeckung als durchschaut. Sonst stuende NVIDIA aus dem
+ * World-ETF in der Liste, die direkt gehaltene NVIDIA-Aktie daneben aber nicht.
+ *
  * Gold und Cash haben keine Bestandteile. Die Abdeckungsquote nennt genau das —
  * ohne sie waeren die Prozentwerte irrefuehrend.
  *
@@ -33,7 +37,15 @@ export type Bestandteil = {
   readonly land: string | null;
 };
 
+/** Eine direkt gehaltene Aktie; ihr Wert steht in `werte`. */
+export type Direktbestand = {
+  readonly isin: Isin;
+  /** Fremdtext aus dem Bestand. Nur Text, nie Markup. [INV-06] */
+  readonly name: string;
+};
+
 export type Fondsanteil = {
+  /** Fonds-ISIN; gleich der Unternehmens-ISIN, wenn die Aktie direkt gehalten wird. */
   readonly isin: Isin;
   readonly anteil: Cent;
 };
@@ -73,6 +85,8 @@ export type LookThroughErgebnis = {
   readonly durchschautCent: Cent;
   /** Alle Unternehmen mit Exposure > 0, dedupliziert ueber die ISIN — vor der Grenze. */
   readonly anzahlUnternehmen: number;
+  /** Positionen mit Wert, aber ohne bekannte Bestandteile — Gold und Fonds ohne Liste gleichermassen. */
+  readonly undurchschaut: readonly Isin[];
   readonly laender: readonly Gruppe[];
   readonly sektoren: readonly Gruppe[];
 };
@@ -86,6 +100,7 @@ export const LEERES_ERGEBNIS: LookThroughErgebnis = {
   abdeckung: 0,
   durchschautCent: 0n,
   anzahlUnternehmen: 0,
+  undurchschaut: [],
   laender: [],
   sektoren: [],
 };
@@ -107,12 +122,14 @@ function gewichtAlsGanzzahl(gewicht: number): bigint {
  * @param gesamtCent   Gesamter Depotwert inklusive Gold und Cash — die Bezugsgroesse
  *                     fuer `anteilDepot` und `abdeckung`.
  * @param grenze       Wie viele Zeilen zurueckkommen. 25 fuer Kachel 4.
+ * @param direkt       Direkt gehaltene Aktien.
  */
 export function lookThrough(
   werte: ReadonlyMap<Isin, Cent>,
   bestandteile: readonly Bestandteil[],
   gesamtCent: Cent,
   grenze = 25,
+  direkt: readonly Direktbestand[] = [],
 ): LookThroughErgebnis {
   const gesammelt = new Map<
     string,
@@ -123,18 +140,7 @@ export function lookThrough(
   const laender = new Map<string | null, Cent>();
   const sektoren = new Map<string | null, Cent>();
 
-  for (const b of bestandteile) {
-    const fondswert = werte.get(b.fondsIsin);
-    if (fondswert === undefined || fondswert === 0n) continue;
-
-    fondsMitBestandteilen.add(b.fondsIsin);
-
-    const gewicht = gewichtAlsGanzzahl(b.gewicht);
-    if (gewicht === 0n) continue;
-
-    const anteil = rundeAufCent(fondswert * gewicht, GEWICHT_SKALA);
-    if (anteil === 0n) continue;
-
+  const buche = (b: Bestandteil, anteil: Cent): void => {
     let eintrag = gesammelt.get(b.unternehmenIsin);
     if (eintrag === undefined) {
       // Der Name der ersten Fundstelle gewinnt.
@@ -153,6 +159,38 @@ export function lookThrough(
 
     eintrag.exposure += anteil;
     eintrag.ausFonds.set(b.fondsIsin, (eintrag.ausFonds.get(b.fondsIsin) ?? 0n) + anteil);
+  };
+
+  for (const b of bestandteile) {
+    const fondswert = werte.get(b.fondsIsin);
+    if (fondswert === undefined || fondswert === 0n) continue;
+
+    fondsMitBestandteilen.add(b.fondsIsin);
+
+    const gewicht = gewichtAlsGanzzahl(b.gewicht);
+    if (gewicht === 0n) continue;
+
+    const anteil = rundeAufCent(fondswert * gewicht, GEWICHT_SKALA);
+    if (anteil === 0n) continue;
+    buche(b, anteil);
+  }
+
+  // Sektor und Land einer Aktie kennt nur ein Fonds, der sie haelt — gehalten oder nicht.
+  const einordnung = new Map<string, Bestandteil>();
+  for (const b of bestandteile) {
+    const bisher = einordnung.get(b.unternehmenIsin);
+    if (bisher === undefined || (bisher.sektor === null && bisher.land === null)) einordnung.set(b.unternehmenIsin, b);
+  }
+
+  for (const d of direkt) {
+    const wert = werte.get(d.isin);
+    if (wert === undefined || wert <= 0n || fondsMitBestandteilen.has(d.isin)) continue;
+    fondsMitBestandteilen.add(d.isin);
+    const fonds = einordnung.get(d.isin);
+    buche(
+      { fondsIsin: d.isin, unternehmenIsin: d.isin, name: d.name, gewicht: 1, sektor: fonds?.sektor ?? null, land: fonds?.land ?? null },
+      wert,
+    );
   }
 
   let durchschaut = 0n;
@@ -186,6 +224,10 @@ export function lookThrough(
     abdeckung: gesamtCent === 0n ? 0 : Number(durchschaut) / Number(gesamtCent),
     durchschautCent: durchschaut,
     anzahlUnternehmen: gesammelt.size,
+    undurchschaut: [...werte.entries()]
+      .filter(([isin, wert]) => wert > 0n && !fondsMitBestandteilen.has(isin))
+      .map(([isin]) => isin)
+      .sort(),
     laender: gruppen(laender),
     sektoren: gruppen(sektoren),
   };

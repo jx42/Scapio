@@ -62,3 +62,51 @@ export function Gewinnwert({
     </span>
   );
 }
+
+export type VergleichswertProps = {
+  readonly benchmarkName: string;
+  /** Differenz Depot minus Vergleich, `betrag` und `prozentwert` ohne Vorzeichen. */
+  readonly betrag: string;
+  readonly prozentwert: string;
+  readonly wert: number;
+  readonly prozentVorn: boolean;
+  /** Gewinn des Vergleichs selbst, fertig formatiert; steht nur noch im Popover. */
+  readonly vergleichGewinn: ReactNode;
+  readonly quelle?: ReactNode;
+};
+
+/**
+ * Die Differenz zum Vergleich als Satz: „↑ 474 € (2,26 %) mehr als MSCI ACWI“. Der Gewinn
+ * des Vergleichs stand frueher als eigener Wert davor; die Differenz war dann nur noch die
+ * Subtraktion zweier sichtbarer Zahlen. Er bleibt im Popover und im Tooltip. [ADR-016]
+ */
+export function Vergleichswert({
+  benchmarkName,
+  betrag,
+  prozentwert,
+  wert,
+  prozentVorn,
+  vergleichGewinn,
+  quelle,
+}: VergleichswertProps) {
+  const angezeigterBetrag = useZahlZaehler(betrag);
+  const angezeigterProzentwert = useZahlZaehler(prozentwert);
+  return (
+    <span className="flex flex-wrap items-center gap-1.5">
+      <RichtungsBadge wert={wert}>
+        {prozentVorn
+          ? de.satz.mitNebenwert(angezeigterProzentwert, angezeigterBetrag)
+          : de.satz.mitNebenwert(angezeigterBetrag, angezeigterProzentwert)}
+      </RichtungsBadge>
+      <span className="text-sm text-text-leise">{de.verlauf.vergleichSatz(wert, benchmarkName)}</span>
+      <InfoKnopf bezeichnung={de.verlauf.differenz} inhaltKlasse="max-w-sm">
+        <p>{de.verlauf.erklaerungDifferenz}</p>
+        <p className="mt-2 flex flex-wrap items-center gap-1.5">
+          {de.satz.beschriftung(benchmarkName)} {vergleichGewinn}
+        </p>
+        <p className="mt-2">{de.verlauf.erklaerungBenchmarkGewinn(benchmarkName)}</p>
+        {quelle === undefined ? null : <p className="mt-2">{quelle}</p>}
+      </InfoKnopf>
+    </span>
+  );
+}

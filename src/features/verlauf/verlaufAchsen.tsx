@@ -158,9 +158,11 @@ export function rasterSchritt(spanne: number, abschnitte = Y_ACHSE_ABSCHNITTE): 
 }
 
 /**
- * Wertebereich plus Rand, auf das 1-2-5-Raster gerundet: die Kurve fuellt die Chart-Hoehe
+ * Wertebereich plus Rand, Ticks im 1-2-5-Raster: die Kurve fuellt die Chart-Hoehe
  * unabhaengig vom Zeitraum, statt in einer bei 0 beginnenden Achse zu verschwinden, und die
  * Ticks sind runde Zahlen statt 8.851 / 13.351 €. Liegt 0 im Bereich, ist 0 ein Tick.
+ * Die Enden der Domain bleiben ungerundet: auf den Schritt gerundet lag bei 10.000–25.000 €
+ * die Achse ab 5.000 €, ein Fuenftel der Hoehe blieb leer.
  */
 export function yAchseImRaster(werte: readonly number[]): YAchse {
   if (werte.length === 0) return { domain: ['auto', 'auto'] };
@@ -172,12 +174,12 @@ export function yAchseImRaster(werte: readonly number[]): YAchse {
   const unten = min >= 0 ? Math.max(0, min - puffer) : min - puffer;
   const oben = max <= 0 ? Math.min(0, max + puffer) : max + puffer;
   const schritt = rasterSchritt(oben - unten);
-  const von = Math.floor(unten / schritt);
-  const bis = Math.ceil(oben / schritt);
+  const von = Math.ceil(unten / schritt);
+  const bis = Math.floor(oben / schritt);
   // Ueber ganze Zahlen geteilt: 3 × 0,1 ist sonst 0,30000000000000004.
   const skala = 10 ** Math.max(0, -Math.floor(Math.log10(schritt)));
-  const ticks = Array.from({ length: bis - von + 1 }, (_, i) => Math.round((von + i) * schritt * skala) / skala);
-  return { domain: [ticks[0] ?? min, ticks.at(-1) ?? max], ticks };
+  const ticks = Array.from({ length: Math.max(0, bis - von + 1) }, (_, i) => Math.round((von + i) * schritt * skala) / skala);
+  return { domain: [unten, oben], ticks };
 }
 
 /** Beschriftungen an den Enden einer Y-Domain, fuer `yAchsenBreite`. */

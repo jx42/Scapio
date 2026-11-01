@@ -9,7 +9,7 @@
  * der Kursabfrage beim MCP.
  */
 
-export const ZEITRAEUME = ['1w', '1m', 'ytd', '1j', '3j', '5j', 'max'] as const;
+export const ZEITRAEUME = ['1m', 'ytd', '1j', '3j', '5j', 'max'] as const;
 export type Zeitraum = (typeof ZEITRAEUME)[number];
 
 export const FENSTER = ['3m', '6m', '12m', '36m', '60m', 'max'] as const;

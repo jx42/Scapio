@@ -20,7 +20,7 @@ export type Top25DialogProps = {
 export function Top25Dialog({ offen, onOpenChange, titel, beschreibung, children }: Top25DialogProps) {
   return (
     <Dialog open={offen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[85vh] overflow-y-auto">
+      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{titel}</DialogTitle>
           <DialogDescription className="sr-only">{beschreibung}</DialogDescription>

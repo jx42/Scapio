@@ -90,6 +90,7 @@ export function AnalyseAnsicht({ daten }: AnalyseAnsichtProps) {
             andereCent={daten.andereCent}
             andereAnteil={daten.andereAnteil}
             andereAnzahl={daten.andereAnzahl}
+            andereMindestens={daten.anzahlMindestens}
             sektoren={sektoren}
             hervorgehoben={unternehmen}
             sektorHervorgehoben={vorhandeneGruppe(sektoren, sektorHover ?? sektorAuswahl)}

@@ -11,27 +11,31 @@
  */
 
 import { de } from '@/i18n/de';
-import { ZEITRAEUME, type Zeitraum } from '@/lib/api';
+import type { Zeitraum } from '@/lib/api';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 export type ZeitraumwahlProps = {
   /** `null`: frei gewaehlt ueber den Zeitraumregler, kein Segment aktiv. */
   readonly gewaehlt: Zeitraum | null;
+  /** Vom Server: nur Zeitraeume, die ein anderes Fenster als `max` zeigen, und `max`. */
+  readonly angeboten: readonly Zeitraum[];
   readonly onWahl: (zeitraum: Zeitraum) => void;
 };
 
-export function Zeitraumwahl({ gewaehlt, onWahl }: ZeitraumwahlProps) {
+export function Zeitraumwahl({ gewaehlt, angeboten, onWahl }: ZeitraumwahlProps) {
+  // Ein gemerkter Zeitraum ohne Knopf zeigt dasselbe Fenster wie `max`.
+  const aktiv = gewaehlt === null ? '' : angeboten.includes(gewaehlt) ? gewaehlt : 'max';
   return (
     <ToggleGroup
       type="single"
       aria-label={de.verlauf.zeitraum}
       className="max-sm:w-full max-sm:flex-nowrap"
-      value={gewaehlt ?? ''}
+      value={aktiv}
       onValueChange={(wert) => {
         if (wert !== '') onWahl(wert as Zeitraum);
       }}
     >
-      {ZEITRAEUME.map((zeitraum) => (
+      {angeboten.map((zeitraum) => (
         <ToggleGroupItem className="max-sm:min-w-0 max-sm:flex-1 max-sm:px-1" key={zeitraum} value={zeitraum}>
           {de.verlauf.zeitraeume[zeitraum]}
         </ToggleGroupItem>

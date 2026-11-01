@@ -79,6 +79,7 @@ export function AufteilungKachel() {
       ladehoehe={analyse ? 'gross' : 'mittel'}
       werkzeuge={
         <>
+          {fondsHinweise}
           {!analyse && zustand.art === 'bereit' && daten !== undefined ? (
             <RebalancingDialog
               positionen={daten.positionen}
@@ -91,7 +92,6 @@ export function AufteilungKachel() {
               festesZiel={istDemoModus() && !tokenVorhanden() ? DEMO_REBALANCING_ZIEL : null}
             />
           ) : null}
-          {fondsHinweise}
           {mitReitern ? (
             <TabsList aria-label={de.aufteilung.ansicht}>
               {REITER.map((r) => (

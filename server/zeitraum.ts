@@ -5,7 +5,7 @@
  */
 
 import type { Tag } from '../core/kalender.ts';
-import { alsTag, plusTage, tageImMonat } from '../core/kalender.ts';
+import { alsTag, tageImMonat } from '../core/kalender.ts';
 import type { Fenster, Zeitraum } from '../shared/zeitfenster.ts';
 import { FENSTER, ZEITRAEUME } from '../shared/zeitfenster.ts';
 import { parameterAbgelehnt } from './fehler.ts';
@@ -59,8 +59,6 @@ export function minusMonate(t: Tag, monate: number): Tag {
 /** Erster Tag eines Zeitraums, kalendarisch bestimmt. */
 export function beginnVon(zeitraum: Zeitraum, heute: Tag, erster: Tag): Tag {
   switch (zeitraum) {
-    case '1w':
-      return plusTage(heute, -7);
     case '1m':
       return minusMonate(heute, 1);
     case 'ytd':

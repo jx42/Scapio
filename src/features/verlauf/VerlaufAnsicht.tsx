@@ -26,11 +26,12 @@ import { betragOhneVorzeichen, datumKurz, euroAusCent, maxDrawdownAnzeige, proze
 import { linkVariants } from '@/lib/linkStil';
 import { cn } from '@/lib/utils';
 import { OnvistaLink } from '@/components/OnvistaLink';
+import { RichtungsBadge } from '@/components/RichtungsBadge';
 import { LeerZustand } from '@/components/Zustaende';
 import { TabsContent } from '@/components/ui/tabs';
 import { Zeitraumregler } from '@/features/verlauf/Zeitraumregler';
 import { Zeitraumwahl } from '@/features/verlauf/Zeitraumwahl';
-import { Gewinnwert } from '@/features/verlauf/VerlaufGewinnwert';
+import { Gewinnwert, Vergleichswert } from '@/features/verlauf/VerlaufGewinnwert';
 import { VerlaufRenditeChart } from '@/features/verlauf/VerlaufRenditeChart';
 import { VerlaufVermoegenChart } from '@/features/verlauf/VerlaufVermoegenChart';
 import { useZeitraumVorschau } from '@/features/verlauf/useZeitraumVorschau';
@@ -45,6 +46,8 @@ export type VerlaufAnsichtProps = {
   readonly marken: readonly Marke[];
   /** `null`, solange der Zeitraumregler einen freien Zeitraum haelt. */
   readonly zeitraum: Zeitraum | null;
+  /** Die Knoepfe der Zeitraumwahl, vom Server. */
+  readonly zeitraeume: readonly Zeitraum[];
   /** Das tatsaechlich gezeigte Fenster, wie der Server es begrenzt hat. */
   readonly ausschnitt: { readonly von: string; readonly bis: string } | null;
   /** Stufen des Zeitraumreglers; leer heisst: kein Regler. */
@@ -89,6 +92,7 @@ export function VerlaufAnsicht({
   punkte,
   marken,
   zeitraum,
+  zeitraeume,
   ausschnitt,
   tage,
   reglerGesperrt,
@@ -168,28 +172,30 @@ export function VerlaufAnsicht({
           vergleichGewinnProzent === undefined ||
           differenzCent === undefined ||
           differenzProzent === undefined ? null : (
-            <>
-              <Gewinnwert
-                bezeichnung={benchmarkName}
-                erklaerung={de.verlauf.erklaerungBenchmarkGewinn(benchmarkName)}
-                quelle={benchmark === null ? undefined : <BenchmarkQuelle isin={benchmark.isin} name={benchmark.name} />}
-                betrag={betragOhneVorzeichen(vergleichGewinnCent, euroAusCent)}
-                prozentwert={betragOhneVorzeichen(vergleichGewinnProzent, prozent)}
-                wert={vergleichGewinnCent}
-                prozentVorn={modus === 'rendite'}
-              />
-              <Gewinnwert
-                bezeichnung={de.verlauf.differenz}
-                erklaerung={de.verlauf.erklaerungDifferenz}
-                betrag={betragOhneVorzeichen(differenzCent, euroAusCent)}
-                prozentwert={betragOhneVorzeichen(differenzProzent, prozent)}
-                wert={differenzCent}
-                prozentVorn={modus === 'rendite'}
-              />
-            </>
+            <Vergleichswert
+              benchmarkName={benchmarkName}
+              betrag={betragOhneVorzeichen(differenzCent, euroAusCent)}
+              prozentwert={betragOhneVorzeichen(differenzProzent, prozent)}
+              wert={differenzCent}
+              prozentVorn={modus === 'rendite'}
+              vergleichGewinn={
+                <RichtungsBadge wert={vergleichGewinnCent}>
+                  {modus === 'rendite'
+                    ? de.satz.mitNebenwert(
+                        betragOhneVorzeichen(vergleichGewinnProzent, prozent),
+                        betragOhneVorzeichen(vergleichGewinnCent, euroAusCent),
+                      )
+                    : de.satz.mitNebenwert(
+                        betragOhneVorzeichen(vergleichGewinnCent, euroAusCent),
+                        betragOhneVorzeichen(vergleichGewinnProzent, prozent),
+                      )}
+                </RichtungsBadge>
+              }
+              quelle={benchmark === null ? undefined : <BenchmarkQuelle isin={benchmark.isin} name={benchmark.name} />}
+            />
           )}
         </p>
-        <Zeitraumwahl gewaehlt={zeitraum} onWahl={onZeitraum} />
+        <Zeitraumwahl gewaehlt={zeitraum} angeboten={zeitraeume} onWahl={onZeitraum} />
       </div>
 
       <TabsContent value="vermoegen">
