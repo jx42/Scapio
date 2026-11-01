@@ -222,7 +222,7 @@ function Seite() {
           </a>{' '}
           ·{' '}
           <a
-            href="https://ec.europa.eu/eurostat" /* INV-AUSNAHME: feste Adresse, kein Wert — ADR-021 */
+            href="https://ec.europa.eu/eurostat/databrowser/view/prc_hicp_aind/default/table?lang=de" /* INV-AUSNAHME: feste Adresse, kein Wert — ADR-021 */
             target="_blank"
             rel="noopener noreferrer"
             aria-label={de.seite.fussEurostatOeffnen}
@@ -232,7 +232,7 @@ function Seite() {
           </a>{' '}
           ·{' '}
           <a
-            href="https://data.ecb.europa.eu/" /* INV-AUSNAHME: feste Adresse, kein Wert — ADR-021 */
+            href="https://data.ecb.europa.eu/data/datasets/EST/EST.B.EU000A2X2A25.WT" /* INV-AUSNAHME: feste Adresse, kein Wert — ADR-021 */
             target="_blank"
             rel="noopener noreferrer"
             aria-label={de.seite.fussEzbOeffnen}

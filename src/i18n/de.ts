@@ -113,9 +113,9 @@ export const de = {
     fussScalable: 'Scalable Capital (Kurse)',
     fussScalableOeffnen: 'Scalable Capital öffnen, neuer Tab',
     fussEurostat: 'Eurostat (Inflation)',
-    fussEurostatOeffnen: 'Eurostat öffnen, neuer Tab',
+    fussEurostatOeffnen: 'Jährliche Inflationsraten (HVPI) bei Eurostat öffnen, neuer Tab',
     fussEzb: 'EZB (Zins)',
-    fussEzbOeffnen: 'Statistical Data Warehouse der EZB öffnen, neuer Tab',
+    fussEzbOeffnen: '€STR-Zeitreihe im Datenportal der EZB öffnen, neuer Tab',
   },
 
   /** Zeichensetzung um fertige Werte — Bezeichnung mit Doppelpunkt, Nebenwert in Klammern. */
@@ -562,7 +562,7 @@ export const de = {
     vergleichSatz: (differenz: number, benchmark: string) =>
       differenz > 0 ? `mehr als ${benchmark}` : differenz < 0 ? `weniger als ${benchmark}` : `genau wie ${benchmark}`,
     risikofreiKurz: '€STR',
-    risikofreiOeffnen: 'Statistical Data Warehouse der EZB (€STR) öffnen, neuer Tab',
+    risikofreiOeffnen: '€STR-Zeitreihe im Datenportal der EZB öffnen, neuer Tab',
     erklaerungBenchmarkGewinn: (benchmark: string) =>
       `Was aus denselben Ein- und Auszahlungen geworden wäre, hättest du sie am selben Tag in ${benchmark} statt ins Depot investiert: der Gewinn dieses Vergleichsdepots im gewählten Zeitraum, bezogen auf dasselbe eingezahlte Kapital wie beim Depot. Chart und Tooltip zählen ab Beginn des Zeitraums, die Vergleichslinie startet dort beim Depotwert. Simuliert mit den Kursen des Vergleichs, ohne Steuern und Gebühren.`,
     chartVermoegen: (zeitraum: string, benchmark: string | null) =>
