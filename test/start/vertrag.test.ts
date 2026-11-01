@@ -21,9 +21,9 @@ describe('sammle', () => {
     expect(befund.fehlend.size).toBe(0);
   });
 
-  it('meldet unbekannte Schlüssel mit Pfad', () => {
+  it('meldet unbekannte Schlüssel mit Pfad und JSON-Art, ohne den Wert', () => {
     const befund = leererBefund();
-    sammle(Schema, { name: 'x', kind: { tiefe: 1, neu: 1 }, oben: 1 }, befund);
-    expect([...befund.unbekannt].sort()).toEqual(['kind.neu', 'oben']);
+    sammle(Schema, { name: 'x', kind: { tiefe: 1, neu: 4711 }, oben: { b: 'geheim', a: null } }, befund);
+    expect([...befund.unbekannt].sort()).toEqual(['kind.neu (number)', 'oben (object{a,b})']);
   });
 });
