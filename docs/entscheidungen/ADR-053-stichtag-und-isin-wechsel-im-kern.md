@@ -50,3 +50,5 @@ Ein Kennzahlen-Hinweis ist jetzt `{ code, anzahl }` wie ein Lauf-Hinweis; den Sa
 (`HinweisKnopf`, wie die fehlenden Fonds der Top 25).
 `H_KEIN_VPI` und `H_DRIFT_AUSGESETZT` bleiben dort still: die Inflationszeile und das
 Drift-Banner sagen dasselbe schon.
+
+Seit [ADR-059](ADR-059-kennzahlen-kachel-aufgeloest.md) steht der `HinweisKnopf` im Kopf der Verlaufskachel.

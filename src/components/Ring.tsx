@@ -1,5 +1,5 @@
 /*
- * Bausteine der Ringdiagramme in Aufteilung und Länder & Sektoren: Farbe je Segment, Farbpunkt der
+ * Bausteine der Ringdiagramme in Aufteilung und Analyse: Farbe je Segment, Farbpunkt der
  * Legende, Beschriftung in der Mitte.
  */
 

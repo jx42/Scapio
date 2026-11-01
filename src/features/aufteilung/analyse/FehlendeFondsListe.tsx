@@ -1,5 +1,5 @@
 /*
- * Kachel 4: Inhalt fuer die gehaltenen Fonds, zu denen diese Auswertung keine
+ * Aufteilung (Look-Through): Inhalt fuer die gehaltenen Fonds, zu denen diese Auswertung keine
  * Bestandteile zeigen kann. Rein darstellend, ohne eigene Abfrage — Inhalt von
  * `HinweisKnopf`, ob einige oder alle Fonds fehlen.
  */
@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/button';
 // Typ von der Rechenkern-Seite — nur `import type`, kein Serverpfad im Bundle. [INV-11]
 // Der Laufzeit-Array bleibt hier eigens stehen (die Kachel rechnet nicht, importiert aber
 // auch nichts aus `db/`/`ingest/`); `satisfies` haelt ihn deckungsgleich mit der Typquelle.
-import type { FundsJsonAnbieter } from '../../../db/repository/fondsAufloesung.ts';
+import type { FundsJsonAnbieter } from '../../../../db/repository/fondsAufloesung.ts';
 
 const FUNDS_JSON_ANBIETER = ['ishares', 'xtrackers', 'amundi'] as const satisfies readonly FundsJsonAnbieter[];
 

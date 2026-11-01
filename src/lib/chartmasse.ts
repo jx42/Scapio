@@ -5,9 +5,28 @@
  * Literale in der JSX.
  */
 
+/** Was beim Hervorheben zurücktritt: Ringstücke, Treemap-Felder, Balken. */
+export const DECKKRAFT_GEDIMMT = 0.35;
+
 export const AUFTEILUNG_CHART_HOEHE = 260;
-/** Ringe in „Länder & Sektoren“: neben der Legende statt darüber, passt zu `w-66`, so hoch wie die zugeklappte Legende. */
-export const GRUPPEN_RING_HOEHE = 264;
+/** Ringe und Treemap im Reiter Analyse: gleich hoch, damit die Tabellen darunter auf einer Linie beginnen. */
+export const ANALYSE_CHART_HOEHE = 280;
+/** Felder der Treemap: beschriftet erst ab dieser Größe, Schrift wie die Ringbeschriftung. */
+export const TREEMAP_BESCHRIFTUNG_MIN_BREITE = 56;
+export const TREEMAP_BESCHRIFTUNG_MIN_HOEHE = 34;
+export const TREEMAP_SCHRIFTGROESSE = 12;
+export const TREEMAP_INNENABSTAND = 6;
+/** Grundlinien der Zeilen, von der Oberkante des Felds; die dritte nur, wo das Feld hoch genug ist. */
+export const TREEMAP_ZEILE_1 = 16;
+export const TREEMAP_ZEILE_2 = 30;
+export const TREEMAP_ZEILE_3 = 44;
+export const TREEMAP_DREI_ZEILEN_MIN_HOEHE = 50;
+export const TREEMAP_RUNDUNG = 3;
+
+/** Wie viele Zeichen in ein Feld dieser Breite passen, geschätzt wie bei `yAchsenBreite`. */
+export function treemapZeichen(breite: number): number {
+  return Math.floor((breite - 2 * TREEMAP_INNENABSTAND) / (TREEMAP_SCHRIFTGROESSE * ACHSEN_ZEICHENBREITE_EM));
+}
 /** Ringmitte von oben nach unten: Symbol, Wert, Beschriftung — Versatz vom Mittelpunkt aus. */
 export const RING_SYMBOL_GROESSE = 28;
 export const RING_SYMBOL_VERSATZ = -38;
@@ -83,10 +102,12 @@ export const GEWINN_BESCHRIFTUNG_ABSTAND = 8;
 export const GEWINN_BESCHRIFTUNG_HOEHE = 44;
 /** Ab dieser Knotenhoehe stehen Name und Betrag untereinander, darunter in einer Zeile. */
 export const GEWINN_ZWEIZEILIG_AB = 36;
-/** Schriftgroesse der Beschriftung in px — muss `text-sm` entsprechen, wie in Top 25 und Länder & Sektoren. */
+/** Schriftgroesse der Beschriftung in px — muss `text-sm` entsprechen, wie in der Analyse. */
 export const GEWINN_SCHRIFT = 14;
 // Beim Überfahren tritt das Aktive nur leicht hervor, der Rest bleibt lesbar.
 export const GEWINN_BAND_DECKKRAFT = { normal: 0.32, aktiv: 0.48, gedimmt: 0.16 } as const;
+/** Trefferbreite eines Bandes; knapp unter dem Knotenabstand, damit Nachbarn sich nicht ueberdecken. */
+export const GEWINN_BAND_KLICKBREITE = 16;
 export const GEWINN_KNOTEN_DECKKRAFT_GEDIMMT = 0.55;
 /** Unter so vielen Zeichen ist ein Name nicht mehr zu erkennen. */
 export const GEWINN_NAME_MINDESTZEICHEN = 8;

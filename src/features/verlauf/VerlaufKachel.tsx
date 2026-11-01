@@ -17,7 +17,7 @@
  * der Reihe, die mit jedem Lauf weiterwandert. In der Demo steht der Regler gesperrt da —
  * der statische Abzug kennt nur die festen Zeitraeume. [ADR-048]
  *
- * Die Drawdown-Karte und die Zeile in den Kennzahlen schalten das Einzeichnen um. Der
+ * Die Drawdown-Karte schaltet das Einzeichnen um. Der
  * Drawdown zaehlt die ganze Historie, also springt der Verlauf dafuer auf „Max“; ein
  * anderer Zeitraum nimmt die Markierung wieder weg.
  *
@@ -49,6 +49,7 @@ import { InfoKnopf } from '@/components/InfoKnopf';
 import { Driftfussnote, chartGesperrt, sperrtext } from '@/components/Driftbanner';
 import { LeerZustand } from '@/components/Zustaende';
 import { Tabs } from '@/components/ui/tabs';
+import { KennzahlenHinweise, kennzahlenHinweisSaetze } from '@/features/kennzahlen/KennzahlenHinweise';
 import { Benchmarkwahl } from '@/features/verlauf/Benchmarkwahl';
 import { DARSTELLUNGEN, Darstellungswahl, type Darstellung } from '@/features/verlauf/Darstellungswahl';
 import { JahresTabelle } from '@/features/verlauf/JahresTabelle';
@@ -123,6 +124,7 @@ export function VerlaufKachel() {
     setZeitraum('max');
   }
   const gesamtDrawdown = kennzahlenAbfrage.data?.maxDrawdown;
+  const hinweisSaetze = kennzahlenHinweisSaetze(kennzahlenAbfrage.data?.hinweise);
   const drawdown =
     drawdownZeigen && gesamtDrawdown?.art === 'ok' && gesamtDrawdown.anteil < 0 ? gesamtDrawdown : null;
 
@@ -197,6 +199,7 @@ export function VerlaufKachel() {
                   {tabelle ? null : <Verlaufwahl />}
                 </>
               )}
+              {hinweisSaetze.length === 0 ? null : <KennzahlenHinweise saetze={hinweisSaetze} />}
               <Darstellungswahl gewaehlt={darstellung} onWahl={waehleDarstellung} />
             </>
           }

@@ -14,7 +14,7 @@ import type { Jahre, Zeitreihe } from '@/lib/api';
 import { VerlaufKachel } from '@/features/verlauf/VerlaufKachel';
 import { JahresTabelle } from '@/features/verlauf/JahresTabelle';
 import { erwarteBarrierefrei, euro, fetchErsatz, fokussieren, prozentText, rendern } from './hilfen';
-import { drift, kennzahlenAntwort, sharpeOhne } from './fixtures';
+import { drift, kennzahlenAntwort, sharpeOhne, volatilitaetOhne } from './fixtures';
 
 const FIXTURE: Zeitreihe = {
   stand: '2026-08-26T12:08:00+02:00',
@@ -362,12 +362,13 @@ describe('VerlaufKachel', () => {
 
     // Kopfwert beim Kursgewinn ist der Euro-Betrag, die Subline zeigt den %-Wert.
     // TWR- und Realrendite-Karte zeigen die annualisierte Zahl als Kopfwert; die
-    // Realrendite-Subline nennt den IZF.
-    // Dazu Zeitpunkt des Max Drawdowns und Einordnung der Sharpe-Ratio.
+    // Realrendite-Subline nennt IZF und Inflation. Dazu die Einordnung der Sharpe-Ratio.
     expect(screen.getByText(prozentText(KENNZAHLEN_FIXTURE.kursgewinnProzent))).toBeInTheDocument();
     expect(screen.getByText(de.kennzahlen.sublineTwrGesamt(prozentText(KENNZAHLEN_FIXTURE.twr!)))).toBeInTheDocument();
-    expect(screen.getByText(de.kennzahlen.sublineXirr('5,80 %'))).toBeInTheDocument();
-    expect(screen.getByText('15.02.26 – 20.03.26')).toBeInTheDocument();
+    expect(
+      screen.getByText(de.kennzahlen.sublineReal('5,80 %', prozentText(KENNZAHLEN_FIXTURE.inflation!))),
+    ).toBeInTheDocument();
+    expect(screen.queryByText('15.02.26 – 20.03.26')).not.toBeInTheDocument();
     expect(screen.getByText(de.kennzahlen.sharpeBewertung.gut)).toBeInTheDocument();
 
     // Die Richtung tragen Lucide-Icons, nur an den Kopfwerten: Kursgewinn, TWR, Real; die
@@ -375,6 +376,24 @@ describe('VerlaufKachel', () => {
     // einziger negativ.
     expect(screen.getAllByRole('img', { name: de.kennzahlen.richtungPositiv }).length).toBeGreaterThanOrEqual(3);
     expect(screen.getAllByRole('img', { name: de.kennzahlen.richtungNegativ }).length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('nennt investiertes Kapital, Inflation und Volatilitaet auf den Karten (ADR-059)', async () => {
+    wiederherstellen = fetchErsatz(mitKennzahlen(FIXTURE));
+    rendern(<VerlaufKachel />);
+    await screen.findByText(de.verlauf.tabelleVermoegen);
+
+    expect(screen.getByText(de.kennzahlen.sublineInvestiert(euro(KENNZAHLEN_FIXTURE.investiertCent)))).toBeInTheDocument();
+    expect(screen.getByText(de.kennzahlen.sublineVolatilitaet('14,20 %'))).toBeInTheDocument();
+  });
+
+  it('laesst die Volatilitaetszeile weg, wenn sie nicht berechenbar ist', async () => {
+    wiederherstellen = fetchErsatz(mitKennzahlen(FIXTURE, { volatilitaetProJahr: volatilitaetOhne('zu_wenig_daten') }));
+    rendern(<VerlaufKachel />);
+    await screen.findByText(de.verlauf.tabelleVermoegen);
+
+    expect(screen.getByText(de.kennzahlen.maxDrawdownKurz)).toBeInTheDocument();
+    expect(screen.queryByText(/^Volatilität:/)).not.toBeInTheDocument();
   });
 
   it('blendet die Sharpe-Karte aus, wenn die Sharpe-Ratio nicht berechenbar ist', async () => {

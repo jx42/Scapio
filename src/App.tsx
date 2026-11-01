@@ -1,5 +1,5 @@
 /*
- * Die ganze Anwendung: eine Seite, sechs Kacheln, kein Router.
+ * Die ganze Anwendung: eine Seite, fünf Kacheln, kein Router.
  *
  * Es gibt nichts zu navigieren — alles, was das Dashboard weiss, passt untereinander.
  * Ein Router waere eine Abhaengigkeit fuer null Zustaende. [P-06]
@@ -16,7 +16,7 @@
  * nur ueber `onAnmeldungStatus` mitgelesen, nicht verdoppelt.
  */
 
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
 import { ArrowUpRight, ChartLine, RefreshCw } from 'lucide-react';
 
@@ -27,8 +27,6 @@ import { tokenVorhanden } from '@/lib/token';
 import { zeitpunktKurz } from '@/lib/format';
 import { linkVariants } from '@/lib/linkStil';
 import { cn } from '@/lib/utils';
-import { useElementHoehe } from '@/hooks/useElementHoehe';
-import { useMedienAbfrage } from '@/hooks/useMedienAbfrage';
 import { Aktualisieren, type McpAnmeldungStatus } from '@/components/Aktualisieren';
 import { AktualisierenHinweise } from '@/components/AktualisierenHinweise';
 import { Driftbanner } from '@/components/Driftbanner';
@@ -41,8 +39,6 @@ import { Button } from '@/components/ui/button';
 import { Toaster } from '@/components/ui/sonner';
 import { VerlaufKachel } from '@/features/verlauf/VerlaufKachel';
 import { AufteilungKachel } from '@/features/aufteilung/AufteilungKachel';
-import { KennzahlenKachel } from '@/features/kennzahlen/KennzahlenKachel';
-import { LookThroughKacheln } from '@/features/top25/LookThroughKacheln';
 import { FluesseKachel } from '@/features/fluesse/FluesseKachel';
 import { GewinnquellenKachel } from '@/features/gewinnquellen/GewinnquellenKachel';
 import { SparplaeneKachel } from '@/features/sparplaene/SparplaeneKachel';
@@ -85,16 +81,6 @@ function Seite() {
     onAnmelden: () => {},
     onAktualisieren: () => {},
   });
-  const aufteilungRef = useRef<HTMLDivElement>(null);
-  const aufteilungHoehe = useElementHoehe(aufteilungRef);
-  // Ausgeklappt kehrt die Hoehen-Bindung zwischen Aufteilung und Kennzahlen bewusst um:
-  // normalerweise fuehrt Aufteilung, hier fuehrt die aufgeklappte, ungebundene Kennzahlen-
-  // Kachel, und Aufteilung waechst mit, damit die beiden Nachbarkacheln nicht auseinanderfallen.
-  const kennzahlenRef = useRef<HTMLDivElement>(null);
-  const kennzahlenHoehe = useElementHoehe(kennzahlenRef);
-  const [kennzahlenAusgeklappt, setKennzahlenAusgeklappt] = useState(false);
-  // Entspricht `xl:` im Grid unten: erst ab dort stehen die beiden nebeneinander.
-  const nebeneinander = useMedienAbfrage('(width >= 80rem)');
   // Ohne `erfolg` und `fehler`: deren Alerts bieten schon selbst die naechste Aktion an.
   const willkommen =
     health.data?.drift.stufe === 'leer' &&
@@ -172,21 +158,9 @@ function Seite() {
           <div className="xl:col-span-2">
             <VerlaufKachel />
           </div>
-          <div ref={aufteilungRef}>
-            <AufteilungKachel hoehe={nebeneinander && kennzahlenAusgeklappt ? kennzahlenHoehe : null} />
+          <div className="xl:col-span-2">
+            <AufteilungKachel />
           </div>
-          <div ref={kennzahlenRef}>
-            <KennzahlenKachel
-              hoehe={nebeneinander ? aufteilungHoehe : null}
-              onAusgeklapptAendern={setKennzahlenAusgeklappt}
-            />
-          </div>
-          {/* Nur mit `top25` in einstellungen.json [ADR-038]. */}
-          {health.data?.top25 === true ? (
-            <div className="xl:col-span-2">
-              <LookThroughKacheln />
-            </div>
-          ) : null}
           <div className="xl:col-span-2">
             <GewinnquellenKachel />
           </div>

@@ -24,6 +24,7 @@ import { de } from '@/i18n/de';
 import type { Fenster, Monatsfluss } from '@/lib/api';
 import {
   CHART_ACHSEN_SCHRIFTGROESSE,
+  DECKKRAFT_GEDIMMT,
   FLUESSE_BALKEN_RUNDUNG,
   FLUESSE_CHART_HOEHE,
   FLUESSE_MARGIN,
@@ -126,7 +127,7 @@ export function FluesseAnsicht({ monate, schnittCent, fenster }: FluesseAnsichtP
                     key={entry.monat}
                     fill={FARBE.chart1}
                     fillOpacity={
-                      hervorgehoben === null || hervorgehoben === entry.monat ? 1 : 0.35
+                      hervorgehoben === null || hervorgehoben === entry.monat ? 1 : DECKKRAFT_GEDIMMT
                     }
                   />
                 ))}

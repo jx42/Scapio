@@ -1,5 +1,5 @@
 /**
- * Woher kommt der Gewinn: die Zerlegung kommt fertig aus `core/gewinnquellen.ts`, hier wird
+ * Gewinne & Abzüge: die Zerlegung kommt fertig aus `core/gewinnquellen.ts`, hier wird
  * nur uebersetzt.
  */
 
@@ -16,6 +16,7 @@ const QUELLE_SCHEMA = objektSchema<Gewinnquelle>({
   isin: { type: ['string', 'null'] },
   name: { type: ['string', 'null'] },
   anzahl: { type: 'integer' },
+  isins: { type: 'array', items: { type: 'string' } },
   betragCent: { type: 'number' },
   anteil: { type: 'number' },
 });
@@ -38,6 +39,7 @@ function quelle(q: KernQuelle): Gewinnquelle {
     // Fremdtext. [INV-06]
     name: q.name,
     anzahl: q.anzahl,
+    isins: q.isins,
     betragCent: centAlsZahl(q.betragCent),
     anteil: q.anteil,
   };

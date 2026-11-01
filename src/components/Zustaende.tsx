@@ -4,7 +4,7 @@
  *
  * <Kachel> setzt sie fuer jede Kachel; `LeerZustand` steht zusaetzlich in Ansichten, die
  * innerhalb einer bereiten Kachel leer sein koennen. Keine Kachel baut ein eigenes
- * Ladebild; sonst sehen sechs Kacheln sechs verschiedene.
+ * Ladebild; sonst sieht jede Kachel ein anderes.
  */
 
 import type { ReactNode } from 'react';
@@ -25,7 +25,7 @@ const HOEHEN: Record<Ladehoehe, string> = {
 /**
  * Skeleton in der Groesse der spaeteren Kachel — das Layout darf beim Nachladen
  * nicht springen. [P-06] Keine Live-Region: sie kaeme schon befuellt ins DOM und
- * wuerde dann unzuverlaessig, bei sechs Kacheln zugleich sechsfach vorgelesen.
+ * wuerde dann unzuverlaessig, bei allen Kacheln zugleich mehrfach vorgelesen.
  */
 export function LadeZustand({ hoehe = 'mittel' }: { hoehe?: Ladehoehe }) {
   return (

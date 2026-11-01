@@ -18,11 +18,15 @@ export function rendern(ui: ReactElement) {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false, staleTime: Infinity } },
   });
-  return render(
-    <QueryClientProvider client={client}>
-      {ui}
-    </QueryClientProvider>,
-  );
+  // `client` für Tests, die einen Refetch auslösen.
+  return {
+    ...render(
+      <QueryClientProvider client={client}>
+        {ui}
+      </QueryClientProvider>,
+    ),
+    client,
+  };
 }
 
 /**

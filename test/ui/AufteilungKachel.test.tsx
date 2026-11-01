@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 /*
- * Kachel 2: zwei Abfragen (Aufteilung traegt, Kennzahlen liefert nur die Ringmitte),
- * eine Auswahl (Hervorheben). Derselbe Sechser-Satz wie ueberall in test/ui/.
+ * Kachel 2 ohne Look-Through: zwei Abfragen (Aufteilung traegt, Kennzahlen liefert nur die
+ * Ringmitte), eine Auswahl (Hervorheben). Derselbe Sechser-Satz wie ueberall in test/ui/;
+ * die Reiter in AufteilungReiter.test.tsx.
  */
 
 import { afterEach, describe, expect, it } from 'vitest';
@@ -12,7 +13,7 @@ import { de } from '@/i18n/de';
 import type { Aufteilung } from '@/lib/api';
 import { AufteilungKachel } from '@/features/aufteilung/AufteilungKachel';
 import { erwarteBarrierefrei, euro, fetchErsatz, fokussieren, rendern, type Antwort } from './hilfen';
-import { drift, kennzahlenAntwort, maxDrawdownOhne, realFixture, sharpeOhne, volatilitaetOhne, xirrOhne, xirrOk } from './fixtures';
+import { drift, health, kennzahlenAntwort, maxDrawdownOhne, realFixture, sharpeOhne, volatilitaetOhne, xirrOhne, xirrOk } from './fixtures';
 
 const AUFTEILUNG: Aufteilung = {
   stand: '2026-08-26T12:08:00+02:00',
@@ -63,6 +64,7 @@ function planZweiAbfragen(aufteilung: () => Antwort) {
   return (pfad: string) => {
     if (pfad === '/api/aufteilung') return aufteilung();
     if (pfad === '/api/kennzahlen') return { body: KENNZAHLEN_MINIMAL };
+    if (pfad === '/api/health') return { body: health(false) };
     throw new Error(`unerwarteter Pfad im Test: ${pfad}`);
   };
 }
@@ -107,6 +109,16 @@ describe('AufteilungKachel', () => {
     expect(await screen.findByText(de.aufteilung.leer)).toBeInTheDocument();
   });
 
+  it('überzogenes Verrechnungskonto: Cash bleibt in Legende und Tabelle', async () => {
+    wiederherstellen = fetchErsatz(planZweiAbfragen(() => ({ body: { ...AUFTEILUNG, cashCent: -50_000, cashAnteil: -0.001 } })));
+    rendern(<AufteilungKachel />);
+
+    const legende = within(await screen.findByRole('list'));
+    expect(legende.getByText(de.aufteilung.cash)).toBeInTheDocument();
+    expect(legende.getByText(euro(-50_000))).toBeInTheDocument();
+    expect(screen.getByRole('rowheader', { name: de.aufteilung.cash })).toBeInTheDocument();
+  });
+
   it('steht trotzdem, wenn nur die Kennzahlen-Nebenabfrage scheitert', async () => {
     wiederherstellen = fetchErsatz((pfad) => {
       if (pfad === '/api/aufteilung') return { body: AUFTEILUNG };
@@ -115,6 +127,7 @@ describe('AufteilungKachel', () => {
           status: 500,
           body: { fehler: { code: 'E_DB', text: 'kaputt' } },
         };
+      if (pfad === '/api/health') return { body: health(false) };
       throw new Error(`unerwarteter Pfad im Test: ${pfad}`);
     });
     rendern(<AufteilungKachel />);
@@ -162,7 +175,7 @@ describe('AufteilungKachel', () => {
     expect(ersteZeile.closest('li')).not.toHaveAttribute('data-aktiv');
   });
 
-  it('verlinkt jede Position zu ihrer ISIN bei onvista, Cash nicht', async () => {
+  it('verlinkt jeden Positionsnamen zu seiner ISIN bei onvista, Cash nicht', async () => {
     wiederherstellen = fetchErsatz(planZweiAbfragen(() => ({ body: AUFTEILUNG })));
     rendern(<AufteilungKachel />);
     await screen.findByText(de.aufteilung.tabelle);
@@ -173,12 +186,29 @@ describe('AufteilungKachel', () => {
     expect(linkErsterEtf).toHaveAttribute('href', 'https://www.onvista.de/suche?searchValue=IE00B4L5Y983');
     expect(linkErsterEtf).toHaveAttribute('target', '_blank');
     expect(linkErsterEtf).toHaveAttribute('rel', 'noopener noreferrer');
+    // Der Name ist der Link; eine eigene onvista-Spalte gibt es nicht mehr.
+    expect(linkErsterEtf).toHaveTextContent('iShares Core MSCI World');
+    expect(screen.queryByText('onvista')).not.toBeInTheDocument();
 
     expect(
       screen.queryByRole('link', {
         name: de.aufteilung.onvistaOeffnen(de.aufteilung.cash),
       }),
     ).not.toBeInTheDocument();
+  });
+
+  it('zeigt den Gewinn je Position mit Pfeil, Cash ohne Gewinn', async () => {
+    wiederherstellen = fetchErsatz(planZweiAbfragen(() => ({ body: AUFTEILUNG })));
+    rendern(<AufteilungKachel />);
+    await screen.findByText(de.aufteilung.tabelle);
+
+    const zeile = (name: string) => within(screen.getByRole('button', { name: new RegExp(`^${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`) }).closest('li')!);
+    expect(zeile('iShares Core MSCI World').getByRole('img', { name: de.kennzahlen.richtungPositiv })).toBeInTheDocument();
+    expect(zeile('iShares Core MSCI EM IMI').getByRole('img', { name: de.kennzahlen.richtungNegativ })).toBeInTheDocument();
+    expect(zeile(de.aufteilung.cash).queryByRole('img')).not.toBeInTheDocument();
+
+    const tabelle = screen.getByRole('table', { name: de.aufteilung.tabelle });
+    expect(within(tabelle).getByRole('columnheader', { name: de.aufteilung.spalteGewinn })).toBeInTheDocument();
   });
 
   it('zeigt die Art je Position', async () => {

@@ -15,8 +15,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Toaster } from '@/components/ui/sonner';
 import { VerlaufKachel } from '@/features/verlauf/VerlaufKachel';
 import { AufteilungKachel } from '@/features/aufteilung/AufteilungKachel';
-import { KennzahlenKachel } from '@/features/kennzahlen/KennzahlenKachel';
-import { LookThroughKacheln } from '@/features/top25/LookThroughKacheln';
 import { FluesseKachel } from '@/features/fluesse/FluesseKachel';
 import { GewinnquellenKachel } from '@/features/gewinnquellen/GewinnquellenKachel';
 import { SparplaeneKachel } from '@/features/sparplaene/SparplaeneKachel';
@@ -36,9 +34,8 @@ import { installiereStub, type Basis } from './stub.ts';
 
 const KACHELN: Record<Exclude<Ansicht, 'seite'>, ComponentType> = {
   verlauf: VerlaufKachel,
-  kennzahlen: KennzahlenKachel,
   aufteilung: AufteilungKachel,
-  top25: LookThroughKacheln,
+  top25: AufteilungKachel,
   gewinnquellen: GewinnquellenKachel,
   fluesse: FluesseKachel,
   sparplaene: SparplaeneKachel,
@@ -93,7 +90,10 @@ async function starteFall(fall: Fall, ziel: HTMLElement): Promise<void> {
     // haengt noch am Platzhalter-Handler aus dem ersten Render.
     if ((await warteAuf(suche)) === undefined) break;
     await new Promise((fertig) => setTimeout(fertig, i === 0 ? 1000 : 200));
-    suche()?.click();
+    const knopf = suche();
+    // Radix-Reiter schalten auf mousedown, nicht auf click.
+    if (knopf?.getAttribute('role') === 'tab') knopf.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, button: 0 }));
+    else knopf?.click();
   }
 }
 
@@ -152,8 +152,8 @@ const TABS: readonly Tab[] = [
   { id: 'kennzahlen', titel: 'Kennzahlen', inhalt: rahmen('kennzahlen') },
   { id: 'aufteilung', titel: 'Aufteilung', inhalt: rahmen('aufteilung') },
   { id: 'rebalancing', titel: 'Rebalancing', inhalt: rahmen('rebalancing') },
-  { id: 'top25', titel: 'Länder & Unternehmen', inhalt: rahmen('top25') },
-  { id: 'gewinnquellen', titel: 'Woher kommt der Gewinn', inhalt: rahmen('gewinnquellen') },
+  { id: 'top25', titel: 'Analyse', inhalt: rahmen('top25') },
+  { id: 'gewinnquellen', titel: 'Gewinne & Abzüge', inhalt: rahmen('gewinnquellen') },
   { id: 'fluesse', titel: 'Käufe & Sparpläne', inhalt: rahmen('fluesse') },
 ];
 

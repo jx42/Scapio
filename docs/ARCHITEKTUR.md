@@ -176,7 +176,7 @@ Der Start zieht beide einmalig aus dem Projektordner um (`start/uebernahme.ts`)
 | `inflationsquelle` | `eurostat` | siehe [ADR-003](entscheidungen/ADR-003-eurostat-statt-destatis.md) |
 | `zinsquelle` | `ecb` | siehe [ADR-009](entscheidungen/ADR-009-risikokennzahlen.md) |
 | `driftSchwellen` | `{ hinweis: 0.001, banner: 0.005, abbruch: 0.02 }` | müssen aufsteigend sein, siehe [`docs/RUNBOOK.md`](RUNBOOK.md) |
-| `top25` | `false` | Kacheln „Länder & Sektoren“ und „Unternehmen“ und der Abruf der Fondsbestandslisten; der Server meldet den Wert in `/api/health` [ADR-038](entscheidungen/ADR-038-top25-nur-auf-wunsch.md) |
+| `top25` | `false` | Reiter „Analyse“ der Aufteilung und der Abruf der Fondsbestandslisten; der Server meldet den Wert in `/api/health` [ADR-038](entscheidungen/ADR-038-top25-nur-auf-wunsch.md) |
 
 `port` und `driftSchwellen` liest der Server, `erlaubteHosts`/die Zeitlimits liest der
 Ingest, `top25` lesen beide, `datenverzeichnis` lesen beide über `start/` — `core/` liest `config.json`
@@ -227,7 +227,7 @@ vollständige Neuberechnung aus `raw_snapshot`, sobald `KERN_VERSION` steigt.
 
 Dateien in dieser Reihenfolge; was der Compiler nicht bindet, ist vermerkt.
 
-**Neue Kennzahl** (Rechnung im Kern, Anzeige in der Kennzahlen-Kachel)
+**Neue Kennzahl** (Rechnung im Kern, Anzeige auf einer Karte über dem Verlauf oder im Fuß der Sankey-Kachel)
 
 | # | Datei | Was |
 |---|---|---|
@@ -238,7 +238,7 @@ Dateien in dieser Reihenfolge; was der Compiler nicht bindet, ist vermerkt.
 | 5 | `server/vertrag.ts` | Feld in `KennzahlenAntwort` — die eine Typquelle |
 | 6 | `server/routen/kennzahlen.ts` | Schema und Handler; ein fehlendes Schemafeld meldet `tsc` |
 | 7 | `src/lib/format.ts`, `src/i18n/de.ts` | Format und Text |
-| 8 | `src/features/kennzahlen/KennzahlenAnsicht.tsx`, `src/features/verlauf/VerlaufKennzahlen.tsx` | Zeile in Kachel 3; Karte in der Verlaufskachel, falls sie dort erscheint |
+| 8 | `src/features/verlauf/VerlaufKennzahlen.tsx` oder `src/features/gewinnquellen/GewinnquellenBuchungen.tsx` | Karte, Kartenzeile oder Popover-Wert; Buchungsliste hinter einem Sankey-Knoten |
 | 9 | `test/core/` | Rechentest |
 | 10 | `test/api/vertrag.test.ts` | `felder<…>()` des Ergebnistyps; ein fehlendes Feld meldet `tsc` |
 | 11 | `test/ui/fixtures.ts` | Grundwert in `kennzahlenAntwort()`; `tsc` meldet ihn |

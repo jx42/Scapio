@@ -6,26 +6,19 @@
  * darunter, hier nur vorangestellt, damit die Seite mit dem Gesamtwert beginnt, bevor
  * sie ihn aufschluesselt.
  *
- * Dieselben Werte wie in Kachel 3 (Kennzahlen), hier die Kopfzahl je Karte samt
- * Erklaerungs-Tooltip direkt am Kartentitel — naeher an der Zahl als ein Info-i im
- * Kopf der Verlauf-Kachel darunter. Der Tooltip-Text kommt aus derselben Konstante
- * (`de.kennzahlen.erklaerung`), die auch Kachel 3 fuellt: eine Quelle, zwei Stellen,
- * keine zweite, moeglicherweise abweichende Formulierung. Reine Ansicht: keine
- * Query, keine Rechnung.
- *
- * Kursgewinn zeigt den Euro-Betrag als Kopfzahl, den Prozentwert als Subline — hier
- * zaehlt die absolute Zahl, waehrend die Tabelle in Kachel 3 beide gleichrangig zeigt.
+ * Die Karten sind der einzige Ort fuer Rendite- und Risikokennzahlen (ADR-059): was frueher
+ * eine eigene Kennzahlen-Kachel zeigte, steht als Subline, zweite Zeile oder im Popover der
+ * passenden Karte. Reine Ansicht: keine Query, keine Rechnung.
  *
  * Kopfzahl bei TWR und IZF ist jeweils die annualisierte Zahl — `twrProJahr` bzw.
- * die Realrendite p.a. (`realRendite`, dieselbe Wahl wie in Kachel 3) —, die Subline traegt
+ * die Realrendite p.a. (`realRendite`) —, die Subline traegt
  * die zugehoerige Gesamt- bzw. Nominalzahl ohne Richtungspfeil, einzeilig. Die Gewichtung
  * (zeit- bzw. geldgewichtet) steht im Erklaertext — sonst wirkt eine Realrendite ueber der
  * Marktrendite wie ein Fehler, obwohl beide anders gewichten. So sind beide Kopfzahlen der Karten untereinander vergleichbar
  * (beide p.a.), waehrend die jeweils andere Zahl nicht verloren geht.
  *
  * Auch unter `sm` bleiben alle sechs Karten gross, zwei je Reihe. Damit das bei 390 px
- * traegt, ist jede Subline einzeilig und so kurz gehalten, dass sie in die halbe Breite
- * passt: Stand ohne Uhrzeit, Drawdown-Zeitraum mit zweistelligem Jahr.
+ * traegt, ist jede Subline einzeilig und kurz gehalten ("Inflat.").
  *
  * Die Drawdown-Karte schaltet das Einzeichnen im Verlauf um. Der Knopf liegt
  * als Flaeche ueber der Karte statt um sie herum: ein `<button>` darf den Info-Knopf nicht
@@ -37,14 +30,17 @@ import type { KennzahlenAntwort } from '@/lib/api';
 import {
   betragOhneVorzeichen,
   euroAusCent,
+  jahrAusMonat,
   maxDrawdownAnzeige,
+  monatLang,
   prozent,
   realRendite,
   richtungPfeil,
   richtungswert,
   sharpeAnzeige,
+  volatilitaetAnzeige,
   xirrAnzeige,
-  zeitpunktNurTag,
+  zahl,
   type Richtung,
 } from '@/lib/format';
 import { richtungTon } from '@/lib/farben';
@@ -76,12 +72,16 @@ type Karte = {
   readonly pfeil: string;
   readonly subline: string | null;
   /**
-   * `false`, wenn `subline` keine zaehlenswerte einzelne Zahl ist — ein Datumsbereich
-   * (MaxDrawdown) oder ein Satz mit zwei Zahlen (Real mit Inflation), wo der Zaehler
-   * nur die erste erwischen und die zweite hart springen lassen wuerde.
+   * `false`, wenn `subline` keine zaehlenswerte einzelne Zahl ist — ein Satz mit zwei Zahlen
+   * (Real mit Inflation), wo der Zaehler nur die erste erwischen und die zweite hart springen
+   * lassen wuerde, oder eine Zahl hinter Text (Volatilitaet).
    */
   readonly sublineAnimiert?: boolean;
   readonly erklaerung: string;
+  /** Erklaerungen der Zahlen aus der Subline, im selben Popover. */
+  readonly ergaenzungen?: readonly { readonly bezeichnung: string; readonly text: string }[];
+  /** Warum eine Zahl fehlt oder woran sie krankt; leise unter den Erklaerungen. */
+  readonly anmerkungen?: readonly string[];
   readonly aktion?: { readonly bezeichnung: string; readonly gedrueckt: boolean; readonly onKlick: () => void };
 };
 
@@ -90,9 +90,9 @@ function karten(daten: KennzahlenAntwort, drawdownGezeigt: boolean, onDrawdownZe
   const izf = xirr.rate === null ? xirr.wert : prozent(xirr.rate);
   const real = realRendite(daten.real);
   const maxDrawdown = maxDrawdownAnzeige(daten.maxDrawdown);
+  const volatilitaet = volatilitaetAnzeige(daten.volatilitaetProJahr);
   const sharpe = sharpeAnzeige(daten.sharpe);
-
-  const standTag = zeitpunktNurTag(daten.stand);
+  const laufendesJahr = daten.real.teuerungLaufendesJahr;
 
   return [
     {
@@ -100,9 +100,9 @@ function karten(daten: KennzahlenAntwort, drawdownGezeigt: boolean, onDrawdownZe
       wert: euroAusCent(daten.gesamtCent),
       richtung: 'neutral',
       pfeil: '',
-      subline: standTag === null ? de.seite.standUnbekannt : de.seite.stand(standTag),
-      sublineAnimiert: false,
+      subline: de.kennzahlen.sublineInvestiert(euroAusCent(daten.investiertCent)),
       erklaerung: de.kennzahlen.erklaerung.gesamt,
+      ergaenzungen: [{ bezeichnung: de.kennzahlen.einstand, text: de.kennzahlen.erklaerung.einstand }],
     },
     {
       bezeichnung: de.kennzahlen.kursgewinn,
@@ -115,21 +115,48 @@ function karten(daten: KennzahlenAntwort, drawdownGezeigt: boolean, onDrawdownZe
       ...richtungswert(daten.twrProJahr, prozent),
       subline: de.kennzahlen.sublineTwrGesamt(daten.twr === null ? de.xirr.nichtBerechenbar : prozent(daten.twr)),
       erklaerung: de.kennzahlen.erklaerung.twrProJahr,
+      ergaenzungen: [{ bezeichnung: de.kennzahlen.twr, text: de.kennzahlen.erklaerung.twr }],
+      anmerkungen: [
+        ...(daten.twrProJahr === null ? [de.kennzahlen.twrProJahrZuKurz] : []),
+        ...(daten.twrGrob ? [de.kennzahlen.twrGrob] : []),
+      ],
     },
     {
       bezeichnung: de.kennzahlen.real,
       ...richtungswert(real.rate, prozent),
-      subline: de.kennzahlen.sublineXirr(izf),
+      subline: de.kennzahlen.sublineReal(izf, daten.inflation === null ? de.xirr.nichtBerechenbar : prozent(daten.inflation)),
+      sublineAnimiert: false,
       erklaerung: de.kennzahlen.erklaerung.real,
+      ergaenzungen: [
+        { bezeichnung: de.kennzahlen.xirr, text: de.kennzahlen.erklaerung.xirr },
+        { bezeichnung: de.kennzahlen.inflation, text: de.kennzahlen.erklaerung.inflation },
+      ],
+      anmerkungen: [
+        realAnmerkung(
+          real.rate === null ? (xirr.satz ?? de.kennzahlen.inflationFehlt) : null,
+          real.ersatz,
+          daten.real.teuerungBisMonat,
+          daten.real.basisMonat,
+          daten.real.fortgeschriebeneMonate.length,
+        ),
+        ...(real.rate !== null && xirr.satz !== null ? [xirr.satz] : []),
+        ...(daten.inflation === null && real.rate !== null ? [de.kennzahlen.inflationFehlt] : []),
+        ...(laufendesJahr === null
+          ? []
+          : [`${de.kennzahlen.inflationLaufendesJahr(jahrAusMonat(daten.real.basisMonat), prozent(laufendesJahr))}.`]),
+      ],
     },
     {
       bezeichnung: de.kennzahlen.maxDrawdownKurz,
       wert: maxDrawdown.wert,
       richtung: daten.maxDrawdown.art === 'ok' ? 'ab' : 'neutral',
       pfeil: daten.maxDrawdown.art === 'ok' ? richtungPfeil(daten.maxDrawdown.anteil) : '',
-      subline: maxDrawdown.zeitraumKurz,
+      subline: volatilitaet === null ? null : de.kennzahlen.sublineVolatilitaet(volatilitaet),
       sublineAnimiert: false,
       erklaerung: de.kennzahlen.erklaerung.maxDrawdown,
+      ergaenzungen:
+        volatilitaet === null ? [] : [{ bezeichnung: de.kennzahlen.volatilitaet, text: de.kennzahlen.erklaerung.volatilitaet }],
+      anmerkungen: maxDrawdown.satz === null ? [] : [maxDrawdown.satz],
       aktion: { bezeichnung: de.verlauf.drawdownZeigen, gedrueckt: drawdownGezeigt, onKlick: onDrawdownZeigen },
     },
     ...(sharpe === null
@@ -145,6 +172,25 @@ function karten(daten: KennzahlenAntwort, drawdownGezeigt: boolean, onDrawdownZe
           },
         ]),
   ];
+}
+
+function realAnmerkung(
+  fehltSatz: string | null,
+  ersatz: boolean,
+  teuerungBisMonat: string | null,
+  basisMonat: string,
+  fortgeschrieben: number,
+): string {
+  if (fehltSatz !== null) return fehltSatz;
+  const teile: string[] = [];
+  if (ersatz) {
+    teile.push(de.kennzahlen.realUeberTeuerung);
+    if (teuerungBisMonat !== null && teuerungBisMonat < basisMonat) teile.push(de.kennzahlen.realTeuerungBis(monatLang(teuerungBisMonat)));
+  } else if (basisMonat !== '') {
+    teile.push(`${de.kennzahlen.realBasis(monatLang(basisMonat))}.`);
+    if (fortgeschrieben > 0) teile.push(de.kennzahlen.realFortgeschrieben(zahl(fortgeschrieben)));
+  }
+  return de.kennzahlen.anmerkungTeile(teile);
 }
 
 export function VerlaufKennzahlen({ daten, laedt, drawdownGezeigt, onDrawdownZeigen }: VerlaufKennzahlenProps) {
@@ -195,8 +241,20 @@ function Kennzahlkarte({ karte }: { readonly karte: Karte }) {
         <CardTitle>
           <span className="relative z-10 inline-flex items-center gap-1.5">
             {karte.bezeichnung}
-            <InfoKnopf bezeichnung={karte.bezeichnung}>
+            <InfoKnopf bezeichnung={karte.bezeichnung} inhaltKlasse="max-h-[70vh] overflow-y-auto">
               <p>{karte.erklaerung}</p>
+              {(karte.ergaenzungen ?? []).map((e) => (
+                <p key={e.bezeichnung} className="mt-2">
+                  <span className="font-medium">{de.satz.beschriftung(e.bezeichnung)}</span> {e.text}
+                </p>
+              ))}
+              {(karte.anmerkungen ?? [])
+                .filter((a) => a !== '')
+                .map((a) => (
+                  <p key={a} className="mt-2 text-text-leise">
+                    <TextMitPfeil text={a} />
+                  </p>
+                ))}
             </InfoKnopf>
           </span>
         </CardTitle>

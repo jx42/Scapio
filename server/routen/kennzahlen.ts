@@ -1,5 +1,5 @@
 /**
- * Kachel 3: die Zahlen unter dem Verlauf. Der Server holt nur die Eingaben zusammen
+ * Die Kennzahlenkarten ueber dem Verlauf und die Summen unter dem Sankey. Der Server holt nur die Eingaben zusammen
  * und ruft `berechneKennzahlen` — eine einzige reine Funktion. [INV-04]
  *
  * XIRR und die reale Rendite behalten ihre `art`: sagt der Kern "kein

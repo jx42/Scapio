@@ -63,6 +63,7 @@ describe('gewinnquellen', () => {
     expect(g.zufluesse).toHaveLength(HOECHSTENS_JE_SEITE + 1);
     const uebrige = g.zufluesse.find((q) => q.art === 'uebrige');
     expect(uebrige?.anzahl).toBe(4);
+    expect(uebrige?.isins).toHaveLength(4);
     expect(uebrige?.betragCent).toBe(zuCent(String(10 + 20 + 30 + 40)));
     expect(g.zufluesse.at(-1)?.art).toBe('ertraege');
     expect(g.bruttoCent).toBe(zuCent(String((11 * 12 * 10) / 2 + 5)));

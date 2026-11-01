@@ -61,6 +61,12 @@ export type LookThroughErgebnis = {
   readonly top: readonly Unternehmenszeile[];
   /** Summe von `anteilDepot` ueber `top` — nicht ueber alle Unternehmen. */
   readonly topAnteil: number;
+  /** Depotwert ausserhalb von `top` — durchschaut oder nicht, samt Gold und Cash; nie negativ. */
+  readonly andereCent: Cent;
+  /** `andereCent` am gesamten Depot, 0..1. */
+  readonly andereAnteil: number;
+  /** Unternehmen ausserhalb von `top`. */
+  readonly andereAnzahl: number;
   /** Anteil des Depots mit bekannten Bestandteilen, 0..1. */
   readonly abdeckung: number;
   /** Depotwert, der durchschaut werden konnte. */
@@ -74,6 +80,9 @@ export type LookThroughErgebnis = {
 export const LEERES_ERGEBNIS: LookThroughErgebnis = {
   top: [],
   topAnteil: 0,
+  andereCent: 0n,
+  andereAnteil: 0,
+  andereAnzahl: 0,
   abdeckung: 0,
   durchschautCent: 0n,
   anzahlUnternehmen: 0,
@@ -164,10 +173,16 @@ export function lookThrough(
   alle.sort((a, b) => vergleiche(b.exposure, a.exposure) || vergleiche(a.unternehmenIsin, b.unternehmenIsin));
 
   const top = alle.slice(0, grenze);
+  let andere = gesamtCent;
+  for (const z of top) andere -= z.exposure;
+  if (andere < 0n) andere = 0n;
 
   return {
     top,
     topAnteil: summeAnteile(top.map((z) => z.anteilDepot)),
+    andereCent: andere,
+    andereAnteil: gesamtCent === 0n ? 0 : Number(andere) / Number(gesamtCent),
+    andereAnzahl: gesammelt.size - top.length,
     abdeckung: gesamtCent === 0n ? 0 : Number(durchschaut) / Number(gesamtCent),
     durchschautCent: durchschaut,
     anzahlUnternehmen: gesammelt.size,

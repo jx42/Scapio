@@ -21,7 +21,7 @@ neue ADR dorthin, nicht in einen Kommentar.
 | `core/` | reiner Rechenkern: XIRR, TWR, FIFO, Look-Through | `core/CLAUDE.md` |
 | `db/` | SQLite über `node:sqlite`, Migrationen, Repositories | `db/CLAUDE.md` |
 | `server/` | Fastify auf 127.0.0.1, API und Auslieferung | `server/CLAUDE.md` |
-| `src/` | React-Oberfläche, sieben Kacheln auf einer Seite | `src/CLAUDE.md` |
+| `src/` | React-Oberfläche, fünf Kacheln auf einer Seite | `src/CLAUDE.md` |
 | `test/` | vitest, Fixtures, Invariantentests | — |
 | `docs/` | Architektur, Datenmodell, Entwicklung, Glossar, Runbook, Sicherheit, ADRs | — |
 | `start/` | Einstiegspunkte hinter den `npm run`-Befehlen unten, plus `werkzeuge.ts` für Unterprozesse ohne Shell | — |
@@ -74,7 +74,7 @@ Jede hat einen Test in `test/invarianten/`; begründet sind sie in den verlinkte
 | INV-02 | Kein Geldbetrag als Fließkommazahl. `bigint` in Cent, `parseFloat` verboten. |
 | INV-03 | Ein Kalendertag ist `YYYY-MM-DD` in **Europe/Berlin**, immer über `core/kalender.ts`. |
 | INV-04 | `core/` ist rein: kein I/O, keine Uhr, kein Zufall. |
-| INV-05 | Kein Inline-CSS außer in `<Balken>`, `<ChartRahmen>` und `<Kachel>`. |
+| INV-05 | Kein Inline-CSS außer in `<Balken>` und `<ChartRahmen>`. |
 | INV-06 | Fremdtext wird nie als HTML gerendert und nie in ein `href` gesetzt. |
 | INV-07 | Der Server bindet ausschließlich an `127.0.0.1`. |
 | INV-08 | Genau **zwei** mutierende Routen: `POST /api/refresh` und `POST /api/mcp-anmeldung`, beide ohne Parameter. |

@@ -1,11 +1,10 @@
 # Oberfläche
 
-Sieben Kacheln, eine Seite, dunkel, dicht. Rendert nur — gerechnet wird in `core/`.
+Fünf Kacheln, eine Seite, dunkel, dicht. Rendert nur — gerechnet wird in `core/`.
 
 ## Regeln
-- Kein `style`-Attribut. Ausnahmen: `<Balken>` (`--anteil`), `<ChartRahmen>`
-  (`--chart-hoehe`) und `<Kachel>` (`--kachel-hoehe`), alle mit begründetem
-  eslint-disable. [INV-05]
+- Kein `style`-Attribut. Ausnahmen: `<Balken>` (`--anteil`) und `<ChartRahmen>`
+  (`--chart-hoehe`), beide mit begründetem eslint-disable. [INV-05]
 - Kein Hex-Wert, keine Farbe, kein px-Literal in einer Komponente, keine Tailwind-Standardpalette
   (sie ist abgeschaltet). Tokens aus `styles/theme.css`, Maße der Charts aus `lib/chartmasse.ts`.
 - Kein `dangerouslySetInnerHTML`, kein Fremdtext in `href`. [INV-06] Ausnahme: geprüfte ISIN

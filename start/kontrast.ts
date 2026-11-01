@@ -97,7 +97,8 @@ type Untergrund =
   | 'bedien'
   | 'bedien-aktiv'
   | 'rand-licht'
-  | 'chart-1'
+  | `chart-${number}`
+  | 'rand'
   | 'demo-band'
   | ToastFlaeche;
 
@@ -122,7 +123,7 @@ export type Paarung = {
   readonly wofuer: string;
 };
 
-const CHART_TOKENS = Array.from({ length: 10 }, (_, i) => `chart-${String(i + 1)}`);
+const CHART_TOKENS = Array.from({ length: 10 }, (_, i) => `chart-${String(i + 1)}` as `chart-${number}`);
 
 const PAARUNGEN: readonly Paarung[] = [
   ...(['grund', 'glas', 'flaeche', 'glas-hoch', 'bedien-aktiv'] as const).map(
@@ -157,6 +158,11 @@ const PAARUNGEN: readonly Paarung[] = [
   ...(['bedien-aktiv', 'glas'] as const).map(
     (hinten): Paarung => ({ vorne: 'chart-1', deckkraft: 0.7, hinten, mindestens: 3, wofuer: 'Reglerspanne' }),
   ),
+  // Beschriftung der Treemap im Reiter Analyse: dunkel auf den Chartfarben, hell auf dem grauen „Übrige“.
+  ...CHART_TOKENS.map(
+    (hinten): Paarung => ({ vorne: 'grund', hinten, mindestens: 4.5, wofuer: 'Treemap-Beschriftung' }),
+  ),
+  { vorne: 'text', hinten: 'rand', mindestens: 4.5, wofuer: 'Treemap-Beschriftung' },
   ...(Object.entries(TOAST_FLAECHEN) as [ToastFlaeche, (typeof TOAST_FLAECHEN)[ToastFlaeche]][]).flatMap(
     ([hinten, { farbe }]): Paarung[] => [
       { vorne: farbe, hinten, mindestens: 4.5, wofuer: 'Toast' },

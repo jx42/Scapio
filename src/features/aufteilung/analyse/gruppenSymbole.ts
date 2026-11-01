@@ -1,5 +1,5 @@
 /*
- * Symbol in der Ringmitte von „Länder & Sektoren“, je Gruppe. Gesucht wird unter dem Rohnamen und
+ * Symbol in der Ringmitte der Länder und Sektoren, je Gruppe. Gesucht wird unter dem Rohnamen und
  * unter dem angezeigten Namen: die Anbieter liefern GICS-Sektoren englisch, iShares deutsch und in
  * eigenen Kurzformen. „Übrige“ bekommt die Erdkugel, ein unbekannter Sektor ebenso, ein Land seine Flagge.
  */

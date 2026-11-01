@@ -8,20 +8,20 @@ Stelle, an der sie geprüft werden.
 | Regel | Grund | Wo |
 |---|---|---|
 | Nie `aria-hidden` über Fokussierbarem. Ein SVG mit `aria-hidden` braucht `rootTabIndex={-1}` (Recharts-`Pie` setzt sonst `tabindex=0`). | axe `aria-hidden-focus`: der Tabstopp läge im ausgeblendeten Baum, ein Screenreader landet im Nichts. | `AufteilungAnsicht.tsx` |
-| Nichts Fokussierbares hinter einer Blende. Was die Maske `ausblenden-unten` abschneidet, ist `invisible` oder `inert`. | WCAG 2.4.11 (Fokus nicht verdeckt): ein Fokus, den man nicht sieht, ist keiner. Die angeschnittene Zeile bleibt als Andeutung stehen und ist deshalb `inert`. | `KennzahlenAnsicht.tsx`, `Kennzahlzeile` (`inert`) |
+| Nichts Fokussierbares hinter einer Blende. Was die Maske `ausblenden-unten` abschneidet, ist `invisible` oder `inert`. | WCAG 2.4.11 (Fokus nicht verdeckt): ein Fokus, den man nicht sieht, ist keiner. Die angeschnittene Zeile bleibt als Andeutung stehen und ist deshalb `inert`. | `AnalyseAnsicht.tsx` |
 | Sprungziele sind fokussierbar: `<main id="kacheln" tabIndex={-1}>`. | Ohne `tabindex` springt der Sprunglink zwar, verschiebt aber den Fokus nicht (WCAG 2.4.3). | `App.tsx` |
 | Klickziele mindestens 24 × 24 px (`min-h-6`, Tailwind, kein px-Literal). Ausgenommen: Inline-Textlinks im Fließtext (WCAG 2.5.8) und die onvista-Badges, die bewusst bei ihrer Optik bleiben. | Zielgröße. | — |
 | Kein Inhalt läuft bei 375 px waagerecht über. Ein Grid, das schrumpfen soll, bekommt `grid-cols-1` (`minmax(0,1fr)`), nie die implizite `auto`-Spalte. | Die auto-Spalte wächst auf die Breite der Legende und schiebt die Kachel aus dem Fenster (WCAG 1.4.10). | `AufteilungAnsicht.tsx` |
-| Spaltenköpfe haben Luft für vergrößerten Zeichenabstand (`w-12` bei „Rang“). | WCAG 1.4.12 Text Spacing. | `Top25Ansicht.tsx` |
+| Der Rang-Kopf zeigt „#“, „Rang“ steht `sr-only` daneben; so bleibt die Spalte auch bei vergrößertem Zeichenabstand `w-6`. | WCAG 1.4.12 Text Spacing. | `AnalyseAnsicht.tsx` |
 | Die Datentabelle hinter einem Chart hat die Auflösung des Fensters, nicht der Reihe: bis 62 Punkte täglich, bis 400 wöchentlich, darüber monatlich; erster und letzter Punkt bleiben. Ein Satz (`hinweis`) nennt die Verdichtung. | Ein Jahr täglich vorzulesen ist keine Alternative, sondern eine zweite Hürde, und ein Vielfaches an DOM-Knoten. Gewählt wird nach Punktzahl: die Reihe ist eine lückenlose Tagesreihe. | `verlaufTabellen.ts`, `ChartRahmen` |
 | Das Chart selbst ist nicht fokussierbar (`accessibilityLayer={false}`, seit Recharts 3 Vorgabe an). Im Vermögensmodus trägt die verborgene Tabelle die Vorgänge (Käufe, Sparplan, Erträge) der Marken als eigene Spalte. | WCAG 4.1.2: ein fokussierbares `role="application"` in `role="img"` kostete zwei leere Tabstopps. Die Marken standen sonst nur im Tooltip. | `VerlaufChartGeruest.tsx`, `verlaufTabellen.ts` |
 | Kontrast wird aus den Farb-Tokens gerechnet, nicht gemessen: `test/invarianten/kontrast.test.ts` prüft jede Paarung aus `PAARUNGEN` (`start/kontrast.ts`), `npm run kontrast` schreibt die Tabelle [unten](#kontrast). Ein neues Token gehört in `PAARUNGEN`. Die Toast-Flächen sind `color-mix`; `TOAST_FLAECHEN` in `start/kontrast.ts` muss die Anteile aus `theme.css` mitziehen. | axe meldet Kontrast unter der Glas-Lichtkante (ADR-029) nur als „incomplete“, jsdom layoutet nicht. | `theme.css` |
 | Zustand nicht allein über Fläche: das gewählte Segment trägt den Rand `--color-bedien-rand` (3 : 1). | WCAG 1.4.11: die Fläche allein hebt sich mit 1,19 : 1 ab. | `ui/toggle.tsx` |
 | Fehlerzustände tragen `role="alert"` — außer bei `E_NETZ`: dann meldet die Seite den Ausfall einmal (`App.tsx`), die Kacheln zeigen ihn `still`; Dialoge geben den Fokus an ihren Auslöser zurück; eine Erklärung („i“) und der Demo-Grund am Aktualisieren-Knopf sind Popover; `ui/tooltip.tsx` gibt es nicht (`test/keinTooltip.test.ts`). | WCAG 4.1.3, 2.4.3; ein Tooltip erscheint auf Touch nicht und verschwindet, bevor man ihn liest (1.4.13). | `Kachel`, `ui/dialog.tsx`, `InfoKnopf` |
 | Eine überlaufende Tabelle ist eine benannte, fokussierbare Region (`bereich`), damit sie per Tastatur scrollt. | axe `scrollable-region-focusable` bei 375 px. | `ui/table.tsx`, `Top25Ansicht.tsx` |
-| Die Fonds eines Unternehmens zeigt eine Hover-Karte (`ui/hover-card.tsx`); dieselbe Liste steht `sr-only` in der Zeile. | WCAG 1.4.13: die Karte bleibt beim Zeigen darauf offen und schließt mit Escape — anders als ein Tooltip, den `test/keinTooltip.test.ts` weiter ausschließt. | `Top25Ansicht.tsx` |
+| Die Fonds eines Unternehmens zeigt eine Hover-Karte (`ui/hover-card.tsx`); dieselbe Liste steht `sr-only` in der Zeile. | WCAG 1.4.13: die Karte bleibt beim Zeigen darauf offen und schließt mit Escape — anders als ein Tooltip, den `test/keinTooltip.test.ts` weiter ausschließt. | `AnalyseAnsicht.tsx` |
 | Eine Live-Region steht von Anfang an leer im DOM und bekommt erst dann Text (`Aktualisieren`: `role="status"`). Der Ladezustand einer Kachel ist `aria-busy`, nicht `aria-live`. | Eine bereits gefüllt eingefügte Region wird nicht vorgelesen; sechs ladende Kacheln, die gleichzeitig ansagen, sind Lärm (WCAG 4.1.3). | `Aktualisieren.tsx`, `Zustaende.tsx` |
-| Ausklappzustand („Mehr zeigen“) steht mit `aria-expanded`/`aria-controls` am Knopf und bleibt über ein Neuladen (`useGespeicherterSchalter`). | WCAG 4.1.2; wer aufklappt, will es beim nächsten Mal nicht wieder tun. | `KennzahlenAnsicht.tsx`, `Top25Ansicht.tsx` |
+| Ausklappzustand („Mehr zeigen“) steht mit `aria-expanded`/`aria-controls` am Knopf und bleibt über ein Neuladen (`useGespeicherterSchalter`). | WCAG 4.1.2; wer aufklappt, will es beim nächsten Mal nicht wieder tun. | `AnalyseAnsicht.tsx` |
 | Toasts: Region und Schließen-Knopf tragen deutsche Namen aus `de.ts`; ein Fehlertoast bleibt stehen (`duration: Infinity`). Texte fremder Bibliotheken (Sonner, Radix) kommen immer über deren Props aus `de.ts`. | Sonst sagt der Screenreader „Notifications“ und „Close toast“; ein Fehler, der nach vier Sekunden verschwindet, ist für Langsame nie da gewesen (WCAG 2.2.1, 3.1.2). | `ui/sonner.tsx`, `Aktualisieren.tsx` |
 | Vorgelesener Text (`aria-label`, `aria-valuetext`, …) ist nie ein Literal, sondern kommt aus `de.ts` (`ARIA_TEXT_REGEL` in `eslint.config.js`). | `react/jsx-no-literals` prüft Props nicht; so blieben englische oder veraltete Namen unbemerkt. | — |
 | Die Bau- und die Anmeldeseite haben `<main>` und eine Region `role="status"`. Die Bauseite lädt sich nicht neu, sondern fragt `/` ab und ersetzt nur den Inhalt der Region; erst wenn die Anwendung da ist, lädt sie. | Ein Neuladen alle drei Sekunden setzt Fokus und Lesestelle zurück und sagt nichts an (WCAG 2.2.2, 4.1.3). | `shared/statusseite.ts`, `server/server.ts` (`nachfrageSkript`) |
@@ -39,8 +39,8 @@ Stelle, an der sie geprüft werden.
   Menü, Popover und Dialog läuft axe zusätzlich auf der offenen Ebene allein: den Rest legt Radix
   unter `aria-hidden` und hinter die Fokusfalle.
 - Daneben stehen dort die Prüfungen, die axe nicht kann: Sprunglink setzt den Fokus,
-  bei 375 und 320 px kein waagerechter Überlauf (auch nicht in der Kennzahlenliste), kein fokussierbares
-  Element unter der Blende der Kennzahlen, Fokusrückgabe des Dialogs, fokussierbare Top-25-Region,
+  bei 375 und 320 px kein waagerechter Überlauf, kein fokussierbares
+  Element unter einer Blende, Fokusrückgabe des Dialogs, fokussierbare Top-25-Region,
   bei 320 px mit Textabstand nach 1.4.12 weder Überlauf noch Abschneiden.
 - Die Randschichten laufen eigens: axe im Demo-Modus (1280 und 375 px), Sprunglink über dem
   Demo-Band, ohne Server genau ein `alert`, die Bauseite sagt den neuen Schritt an, ohne neu zu laden.
@@ -113,6 +113,17 @@ stimmt; `npm run kontrast` schreibt sie neu.
 | `--color-chart-10` | `--color-flaeche` | 11,51 : 1 | Ringsegment ≥ 3 : 1 |
 | `--color-chart-1` / 70 % | `--color-bedien-aktiv` | 3,92 : 1 | Reglerspanne ≥ 3 : 1 |
 | `--color-chart-1` / 70 % | `--color-glas` | 4,32 : 1 | Reglerspanne ≥ 3 : 1 |
+| `--color-grund` | `--color-chart-1` | 8,16 : 1 | Treemap-Beschriftung ≥ 4,5 : 1 |
+| `--color-grund` | `--color-chart-2` | 7,48 : 1 | Treemap-Beschriftung ≥ 4,5 : 1 |
+| `--color-grund` | `--color-chart-3` | 10,51 : 1 | Treemap-Beschriftung ≥ 4,5 : 1 |
+| `--color-grund` | `--color-chart-4` | 7,52 : 1 | Treemap-Beschriftung ≥ 4,5 : 1 |
+| `--color-grund` | `--color-chart-5` | 10,51 : 1 | Treemap-Beschriftung ≥ 4,5 : 1 |
+| `--color-grund` | `--color-chart-6` | 5,08 : 1 | Treemap-Beschriftung ≥ 4,5 : 1 |
+| `--color-grund` | `--color-chart-7` | 13,46 : 1 | Treemap-Beschriftung ≥ 4,5 : 1 |
+| `--color-grund` | `--color-chart-8` | 6,51 : 1 | Treemap-Beschriftung ≥ 4,5 : 1 |
+| `--color-grund` | `--color-chart-9` | 5,75 : 1 | Treemap-Beschriftung ≥ 4,5 : 1 |
+| `--color-grund` | `--color-chart-10` | 12,65 : 1 | Treemap-Beschriftung ≥ 4,5 : 1 |
+| `--color-text` | `--color-rand` | 13,82 : 1 | Treemap-Beschriftung ≥ 4,5 : 1 |
 | `--color-gewinn` | `--success-bg` | 8,09 : 1 | Toast ≥ 4,5 : 1 |
 | `--color-text` | `--success-bg` | 14,68 : 1 | Toast ≥ 4,5 : 1 |
 | `--color-warnung` | `--warning-bg` | 9,25 : 1 | Toast ≥ 4,5 : 1 |

@@ -6,14 +6,10 @@
  * Jede Kachel benutzt sie; keine baut ihre Zustaende selbst nach. Der Vertrag steht in
  * Abschnitt 10.2 der Bauanleitung:
  *
- * Mit `hoehe` ist sie zugleich INV-05, Ausnahme 3: Kennzahlen bindet seine Hoehe per
- * ResizeObserver an Aufteilung (App.tsx, useElementHoehe) — eine Groesse, die erst zur
- * Laufzeit feststeht, kann kein Tailwind-Utility ausdruecken.
- *
  *   <Kachel titel="Verlauf" id="verlauf" zustand={…}>…</Kachel>
  */
 
-import type { CSSProperties, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
 import { cn } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
@@ -42,12 +38,6 @@ export type KachelProps = {
   readonly werkzeuge?: ReactNode;
   /** Fussnoten unter dem Inhalt, etwa der Drift-Hinweis oder die Grob-Anmerkung. */
   readonly fussnoten?: ReactNode;
-  /**
-   * Erzwingt die Aussenhoehe in Pixeln, etwa gemessen an einer Nachbarkachel per
-   * `useElementHoehe` — der Inhalt wird dann nicht gestaucht, sondern faellt gedeckelt
-   * ab (kein Scrollbalken). Ohne Vorgabe waechst die Kachel wie bisher mit dem Inhalt.
-   */
-  readonly hoehe?: number | null;
   /** Zusätzliche CSS-Klassen für die Section. */
   readonly className?: string;
   readonly children: ReactNode;
@@ -63,19 +53,15 @@ export function Kachel({
   ladehoehe = 'mittel',
   werkzeuge,
   fussnoten,
-  hoehe = null,
   className,
   children,
 }: KachelProps) {
   const titelId = `${id}-titel`;
-  const hoeheFest = hoehe !== null;
 
   return (
     <Card
       asChild
-      className={cn('flex flex-col p-4 pb-0', hoeheFest && 'kachel-hoehe-fest', className)}
-      // eslint-disable-next-line react/forbid-component-props -- INV-05, Ausnahme 3: Kennzahlen misst sich an der Hoehe von Aufteilung (useElementHoehe); gesetzt wird nur --kachel-hoehe, die Hoehe selbst steht in theme.css.
-      style={hoeheFest ? ({ '--kachel-hoehe': `${hoehe}px` } as CSSProperties) : undefined}
+      className={cn('flex flex-col p-4 pb-0', className)}
     >
       <section id={id} aria-labelledby={titelId}>
         <header className="mb-4 flex flex-wrap items-center justify-between gap-3 px-2">
@@ -99,11 +85,7 @@ export function Kachel({
         </header>
 
         <div
-          className={cn(
-            'px-2',
-            hoeheFest && 'min-h-0 flex-1 overflow-hidden',
-            zustand.art === 'leer' && 'flex flex-1 flex-col pb-4',
-          )}
+          className={cn('px-2', zustand.art === 'leer' && 'flex flex-1 flex-col pb-4')}
         >
           <Fehlergrenze>
             {zustand.art === 'laedt' ? <LadeZustand hoehe={ladehoehe} /> : null}

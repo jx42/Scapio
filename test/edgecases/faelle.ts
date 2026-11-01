@@ -44,7 +44,7 @@ export type Antwort =
   /** Jeder Aufruf nimmt den naechsten Schritt, der letzte bleibt stehen. */
   | { readonly art: 'folge'; readonly schritte: readonly Antwort[] };
 
-export const ANSICHTEN = ['seite', 'verlauf', 'kennzahlen', 'aufteilung', 'top25', 'gewinnquellen', 'fluesse', 'sparplaene'] as const;
+export const ANSICHTEN = ['seite', 'verlauf', 'aufteilung', 'top25', 'gewinnquellen', 'fluesse', 'sparplaene'] as const;
 export type Ansicht = (typeof ANSICHTEN)[number];
 
 export type Fall = {
@@ -358,7 +358,7 @@ export const FAELLE: readonly Fall[] = [
   {
     id: 'kennzahlen-nicht-berechenbar',
     gruppe: 'kennzahlen',
-    ansicht: 'kennzahlen',
+    ansicht: 'verlauf',
     titel: 'Nichts berechenbar',
     beschreibung: 'TWR null, XIRR zu wenige Flüsse, Inflation null, Drawdown/Volatilität/Sharpe zu wenig Daten.',
     routen: { kennzahlen: kennzahlenNichtBerechenbar },
@@ -366,7 +366,7 @@ export const FAELLE: readonly Fall[] = [
   {
     id: 'kennzahlen-sonderfaelle',
     gruppe: 'kennzahlen',
-    ansicht: 'kennzahlen',
+    ansicht: 'verlauf',
     titel: 'Übrige Sonderfälle',
     beschreibung: 'XIRR ohne Vorzeichenwechsel, Real nicht konvergiert, Sharpe ohne Streuung, TWR grob, fortgeschriebene Monate.',
     routen: {
@@ -383,10 +383,10 @@ export const FAELLE: readonly Fall[] = [
   {
     id: 'kennzahlen-hinweise',
     gruppe: 'kennzahlen',
-    ansicht: 'kennzahlen',
+    ansicht: 'verlauf',
     titel: 'Hinweise aus der Berechnung',
     beschreibung:
-      'Alle Codes des Kerns als Fußnoten, je einmal Einzahl und Mehrzahl. H_KEIN_VPI und H_DRIFT_AUSGESETZT bleiben dort still (Inflationszeile, Banner).',
+      'Alle Codes des Kerns als Fußnoten, je einmal Einzahl und Mehrzahl. H_KEIN_VPI und H_DRIFT_AUSGESETZT bleiben dort still (Inflationsangabe der Realrendite-Karte, Banner).',
     routen: {
       kennzahlen: aendern<KennzahlenAntwort>((b) => ({
         ...b,
@@ -405,7 +405,7 @@ export const FAELLE: readonly Fall[] = [
   {
     id: 'kennzahlen-hinweis-ausbuchung',
     gruppe: 'kennzahlen',
-    ansicht: 'kennzahlen',
+    ansicht: 'verlauf',
     titel: 'Ausbuchung als Totalverlust',
     beschreibung: 'Ein über mehrere Tage gebuchter ISIN-Wechsel (H_AUSBUCHUNG, Einzahl).',
     routen: {
@@ -415,14 +415,14 @@ export const FAELLE: readonly Fall[] = [
   {
     id: 'kennzahlen-kein-zins',
     gruppe: 'kennzahlen',
-    ansicht: 'kennzahlen',
+    ansicht: 'verlauf',
     titel: 'Sharpe ohne Zins',
     routen: { kennzahlen: aendern<KennzahlenAntwort>((b) => ({ ...b, sharpe: sharpeOhne('kein_zins') })) },
   },
   {
     id: 'kennzahlen-absturz',
     gruppe: 'kennzahlen',
-    ansicht: 'kennzahlen',
+    ansicht: 'verlauf',
     titel: 'Antwort mit falscher Form (Fehlergrenze)',
     beschreibung: 'Kennzahlen ohne Felder.',
     routen: { kennzahlen: aendern<KennzahlenAntwort>((b) => ({ stand: b.stand, drift: b.drift }) as KennzahlenAntwort) },
@@ -535,8 +535,17 @@ export const FAELLE: readonly Fall[] = [
     gruppe: 'top25',
     ansicht: 'seite',
     titel: 'Top 25 ausgeschaltet (Vorgabe)',
-    beschreibung: 'Ohne "top25": true in einstellungen.json fehlt die Kachel ganz.',
+    beschreibung: 'Ohne "top25": true in einstellungen.json hat die Aufteilung keine Reiter.',
     routen: { health: aendern<Health>((b) => ({ ...b, top25: false })) },
+  },
+  {
+    id: 'top25-analyse',
+    gruppe: 'top25',
+    ansicht: 'top25',
+    titel: 'Reiter Analyse',
+    beschreibung: 'Länder, Sektoren und Unternehmen in drei Spalten; die Treemap in den Farben des Sektorrings.',
+    klick: 'Analyse',
+    mindesthoehe: 900,
   },
   {
     id: 'top25-fonds-fehlen',
@@ -545,7 +554,7 @@ export const FAELLE: readonly Fall[] = [
     titel: 'Einige Fonds fehlen, Dialog offen',
     beschreibung: 'Jeder Anbieter, beide Fälle, ein unbekannter Anbieter.',
     routen: { top25: aendern<Top25>((b) => ({ ...b, fehlendeFonds: FEHLENDE_FONDS, abdeckung: 0.62 })) },
-    klick: 'Details von',
+    klick: ['Analyse', 'Details von'],
     mindesthoehe: 900,
   },
   {
@@ -553,6 +562,7 @@ export const FAELLE: readonly Fall[] = [
     gruppe: 'top25',
     ansicht: 'top25',
     titel: 'Alle Fonds fehlen',
+    beschreibung: 'Keine Reiter; der Hinweis auf die fehlenden Fonds steht im Kopf der Aufteilung.',
     routen: {
       top25: aendern<Top25>((b) => ({
         ...b,
@@ -562,6 +572,9 @@ export const FAELLE: readonly Fall[] = [
         durchschautCent: 0,
         anzahlUnternehmen: 0,
         topAnteil: 0,
+        andereCent: 0,
+        andereAnteil: 0,
+        andereAnzahl: 0,
         laender: [],
         sektoren: [],
       })),
@@ -572,6 +585,7 @@ export const FAELLE: readonly Fall[] = [
     gruppe: 'top25',
     ansicht: 'top25',
     titel: 'Keine Fonds hinterlegt (Anleitung)',
+    beschreibung: 'Keine Reiter; die Anleitung zu funds.json steht im Kopf der Aufteilung.',
     routen: {
       top25: aendern<Top25>((b) => ({
         ...b,
@@ -581,6 +595,9 @@ export const FAELLE: readonly Fall[] = [
         durchschautCent: 0,
         anzahlUnternehmen: 0,
         topAnteil: 0,
+        andereCent: 0,
+        andereAnteil: 0,
+        andereAnzahl: 0,
         laender: [],
         sektoren: [],
       })),
@@ -615,12 +632,12 @@ export const FAELLE: readonly Fall[] = [
       gewinnquellen: aendern<Gewinnquellen>((b) => ({
         ...b,
         zufluesse: [
-          { art: 'position', isin: 'IE00B4L5Y983', name: 'iShares Core MSCI World UCITS ETF USD (Acc)', anzahl: 1, betragCent: 120_00, anteil: 0.1 },
-          { art: 'ertraege', isin: null, name: null, anzahl: 1, betragCent: 30_00, anteil: 0.025 },
+          { art: 'position', isin: 'IE00B4L5Y983', name: 'iShares Core MSCI World UCITS ETF USD (Acc)', anzahl: 1, isins: ['IE00B4L5Y983'], betragCent: 120_00, anteil: 0.1 },
+          { art: 'ertraege', isin: null, name: null, anzahl: 1, isins: [], betragCent: 30_00, anteil: 0.025 },
         ],
         abfluesse: [
-          { art: 'position', isin: 'US0378331005', name: 'Apple', anzahl: 1, betragCent: -1_150_00, anteil: 0.958 },
-          { art: 'gebuehren', isin: null, name: null, anzahl: 1, betragCent: -50_00, anteil: 0.042 },
+          { art: 'position', isin: 'US0378331005', name: 'Apple', anzahl: 1, isins: ['US0378331005'], betragCent: -1_150_00, anteil: 0.958 },
+          { art: 'gebuehren', isin: null, name: null, anzahl: 1, isins: [], betragCent: -50_00, anteil: 0.042 },
         ],
         bruttoCent: 150_00,
         abzuegeCent: -1_200_00,
@@ -643,6 +660,7 @@ export const FAELLE: readonly Fall[] = [
           isin: `DE00000000${i}0`,
           name: name(i + 1),
           anzahl: 1,
+          isins: [`DE00000000${i}0`],
           betragCent: (8 - i) * 1_000_00,
           anteil: (8 - i) / 40,
         }));
@@ -650,10 +668,10 @@ export const FAELLE: readonly Fall[] = [
           ...b,
           zufluesse: [
             ...zufluesse,
-            { art: 'uebrige', isin: null, name: null, anzahl: 12, betragCent: 2_00, anteil: 0.0005 },
-            { art: 'steuern', isin: null, name: null, anzahl: 1, betragCent: 20_00, anteil: 0.005 },
+            { art: 'uebrige', isin: null, name: null, anzahl: 12, isins: [], betragCent: 2_00, anteil: 0.0005 },
+            { art: 'steuern', isin: null, name: null, anzahl: 1, isins: [], betragCent: 20_00, anteil: 0.005 },
           ],
-          abfluesse: [{ art: 'gebuehren', isin: null, name: null, anzahl: 1, betragCent: -10_00, anteil: 0.0025 }],
+          abfluesse: [{ art: 'gebuehren', isin: null, name: null, anzahl: 1, isins: [], betragCent: -10_00, anteil: 0.0025 }],
           bruttoCent: 35_022_00,
           abzuegeCent: -10_00,
           nettoCent: 35_012_00,
