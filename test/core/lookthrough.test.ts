@@ -267,6 +267,49 @@ describe('lookThrough: Laender und Sektoren', () => {
   });
 });
 
+describe('lookThrough mit Einzelaktien', () => {
+  const NVIDIA = 'US67066G1040';
+
+  it('addiert die direkt gehaltene Aktie zum Fondsanteil und zaehlt sie als durchschaut', () => {
+    const e = lookThrough(
+      werte([[WELT, '1000'], [NVIDIA, '200'], [GOLD, '300']]),
+      [teil(WELT, NVIDIA, 'NVIDIA Corp.', 0.05, 'Information Technology', 'United States')],
+      zuCent('1500'),
+      25,
+      [{ isin: NVIDIA, name: 'NVIDIA' }],
+    );
+    expect(e.top).toHaveLength(1);
+    expect(e.top[0]!.name).toBe('NVIDIA Corp.');
+    expect(e.top[0]!.exposure).toBe(zuCent('250'));
+    expect(e.top[0]!.ausFonds).toEqual([
+      { isin: NVIDIA, anteil: zuCent('200') },
+      { isin: WELT, anteil: zuCent('50') },
+    ]);
+    expect(e.durchschautCent).toBe(zuCent('1200'));
+    expect(e.undurchschaut).toEqual([GOLD]);
+    expect(e.sektoren).toEqual([{ name: 'Information Technology', exposure: zuCent('250'), anteil: 1 }]);
+  });
+
+  it('nimmt Sektor und Land aus der Liste eines nicht gehaltenen Fonds, sonst ohne Angabe', () => {
+    const e = lookThrough(
+      werte([[NVIDIA, '200'], ['US0378331005', '100']]),
+      [teil(EUROPA, NVIDIA, 'NVIDIA Corp.', 0.05, 'Information Technology', 'United States')],
+      zuCent('300'),
+      25,
+      [{ isin: NVIDIA, name: 'NVIDIA' }, { isin: 'US0378331005', name: 'Apple' }],
+    );
+    expect(e.top.map((z) => [z.name, z.sektor])).toEqual([['NVIDIA', 'Information Technology'], ['Apple', null]]);
+    expect(e.anzahlUnternehmen).toBe(2);
+    expect(e.abdeckung).toBe(1);
+  });
+
+  it('uebergeht eine Aktie ohne Wert', () => {
+    const e = lookThrough(werte([[WELT, '1000']]), [], zuCent('1000'), 25, [{ isin: NVIDIA, name: 'NVIDIA' }]);
+    expect(e.top).toEqual([]);
+    expect(e.durchschautCent).toBe(0n);
+  });
+});
+
 describe('gewichtsSumme', () => {
   it('summiert nur die Gewichte des gefragten Fonds', () => {
     const bestandteile = [teil(WELT, 'A', 'a', 0.6), teil(WELT, 'B', 'b', 0.4), teil(EUROPA, 'C', 'c', 1)];

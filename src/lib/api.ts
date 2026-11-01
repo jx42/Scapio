@@ -49,6 +49,7 @@ import type {
   XirrErgebnis,
   Zeitpunkt,
   Zeitraum,
+  VergleichAbstand,
   Zeitreihe,
   ErtragsZeile,
 } from '../../server/vertrag.ts';
@@ -107,6 +108,7 @@ export type {
   XirrErgebnis,
   Zeitpunkt,
   Zeitraum,
+  VergleichAbstand,
   Zeitreihe,
   ErtragsZeile,
 };

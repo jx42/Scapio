@@ -21,8 +21,8 @@
  * Drawdown zaehlt die ganze Historie, also springt der Verlauf dafuer auf „Max“; ein
  * anderer Zeitraum nimmt die Markierung wieder weg.
  *
- * Die Jahrestabelle ersetzt Chart, Zeitraumwahl und Regler: sie hat kein Fenster, und
- * Vermoegen/Rendite unterscheidet sie nicht. Der Vergleich bleibt waehlbar, auch der
+ * Die Jahrestabelle ist der dritte Reiter neben Vermoegen und Rendite: sie hat kein Fenster und
+ * unterscheidet Vermoegen/Rendite nicht, ersetzt also Chart, Zeitraumwahl und Regler. Der Vergleich bleibt waehlbar, auch der
  * risikofreie — eine Jahresrendite ist eine Rendite.
  */
 
@@ -48,15 +48,14 @@ import { Kachel } from '@/components/Kachel';
 import { InfoKnopf } from '@/components/InfoKnopf';
 import { Driftfussnote, chartGesperrt, sperrtext } from '@/components/Driftbanner';
 import { LeerZustand } from '@/components/Zustaende';
-import { Tabs } from '@/components/ui/tabs';
+import { Tabs, TabsContent } from '@/components/ui/tabs';
 import { KennzahlenHinweise, kennzahlenHinweisSaetze } from '@/features/kennzahlen/KennzahlenHinweise';
 import { Benchmarkwahl } from '@/features/verlauf/Benchmarkwahl';
-import { DARSTELLUNGEN, Darstellungswahl, type Darstellung } from '@/features/verlauf/Darstellungswahl';
 import { JahresTabelle } from '@/features/verlauf/JahresTabelle';
 import { Linienwahl } from '@/features/verlauf/Linienwahl';
 import { VERLAUF_MODI, VerlaufAnsicht, type VerlaufAnsichtModus } from '@/features/verlauf/VerlaufAnsicht';
 import { VerlaufKennzahlen } from '@/features/verlauf/VerlaufKennzahlen';
-import { Verlaufwahl } from '@/features/verlauf/Verlaufwahl';
+import { JAHRE, Verlaufwahl } from '@/features/verlauf/Verlaufwahl';
 
 /**
  * `useGespeichert` nimmt nur `string`-Werte — `null` ("kein Vergleich") braucht also
@@ -67,7 +66,12 @@ const KEIN_BENCHMARK = 'keiner';
 const BENCHMARK_AUSWAHL = [KEIN_BENCHMARK, ...BENCHMARKS.map((b) => b.isin), RISIKOFREI.isin] as const;
 type BenchmarkAuswahl = (typeof BENCHMARK_AUSWAHL)[number];
 
-/** Selbe `string`-Beschraenkung wie oben. */
+/**
+ * Gespeichert getrennt vom Modus: wer aus den Jahren zurueckkommt, landet im zuletzt
+ * gewaehlten Chart.
+ */
+const DARSTELLUNGEN = ['verlauf', 'tabelle'] as const;
+type Darstellung = (typeof DARSTELLUNGEN)[number];
 
 export function VerlaufKachel() {
   const [zeitraum, setZeitraum] = useGespeichert<Zeitraum>('zeitraum', 'max', ZEITRAEUME);
@@ -133,13 +137,6 @@ export function VerlaufKachel() {
     : kachelZustand(abfrage, (d) => d.reiheLeer);
   const jahre = jahreAbfrage.data;
 
-  // Wie beim Tabwechsel: zurueck im Vermoegen-Chart waere der risikofreie Vergleich nicht abwaehlbar.
-  const waehleDarstellung = (neu: Darstellung) => {
-    setDarstellung(neu);
-    if (neu === 'verlauf' && modus !== 'rendite' && benchmarkAuswahl === RISIKOFREI.isin) {
-      setBenchmarkAuswahl(KEIN_BENCHMARK);
-    }
-  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -150,11 +147,16 @@ export function VerlaufKachel() {
         onDrawdownZeigen={schalteDrawdown}
       />
       <Tabs
-        value={modus}
+        value={tabelle ? JAHRE : modus}
         onValueChange={(wert) => {
+          if (wert === JAHRE) {
+            setDarstellung('tabelle');
+            return;
+          }
           const neu = wert as VerlaufAnsichtModus;
+          setDarstellung('verlauf');
           setModus(neu);
-          // Der risikofreie Zins ist nur im Rendite-Tab waehlbar (ADR-026): eine
+          // Der risikofreie Zins ist nur unter Rendite und Jahre waehlbar (ADR-026): eine
           // Auswahl, die beim Verlassen stehen bliebe, waere im Vermoegen-Tab nicht
           // mehr abwaehlbar.
           if (neu !== 'rendite' && benchmarkAuswahl === RISIKOFREI.isin) {
@@ -195,27 +197,31 @@ export function VerlaufKachel() {
                       setBenchmarkAuswahl((isin ?? KEIN_BENCHMARK) as BenchmarkAuswahl);
                     }}
                     zeigeRisikofrei={zeigeRisikofrei}
+                    abstaende={daten?.abstaende ?? []}
+                    inProzent={modus === 'rendite'}
                   />
-                  {tabelle ? null : <Verlaufwahl />}
                 </>
               )}
               {hinweisSaetze.length === 0 ? null : <KennzahlenHinweise saetze={hinweisSaetze} />}
-              <Darstellungswahl gewaehlt={darstellung} onWahl={waehleDarstellung} />
+              <Verlaufwahl />
             </>
           }
           fussnoten={<Driftfussnote drift={tabelle ? jahre?.drift : daten?.drift} />}
         >
           {tabelle ? (
-            jahre === undefined ? null : chartGesperrt(jahre.drift) ? (
-              <LeerZustand ton="verlust" titel={de.drift.chartUnterdrueckt} text={sperrtext(jahre.drift)} />
-            ) : (
-              <JahresTabelle daten={jahre} />
-            )
+            <TabsContent value={JAHRE}>
+              {jahre === undefined ? null : chartGesperrt(jahre.drift) ? (
+                <LeerZustand ton="verlust" titel={de.drift.chartUnterdrueckt} text={sperrtext(jahre.drift)} />
+              ) : (
+                <JahresTabelle daten={jahre} />
+              )}
+            </TabsContent>
           ) : daten === undefined ? null : (
             <VerlaufAnsicht
               punkte={daten.punkte}
               marken={daten.marken}
               zeitraum={frei === null ? zeitraum : null}
+              zeitraeume={daten.zeitraeume}
               ausschnitt={daten.ausschnitt}
               tage={daten.tage}
               reglerGesperrt={istDemoModus()}

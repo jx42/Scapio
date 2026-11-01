@@ -6,10 +6,10 @@
  *
  * Das Depot haelt sieben Positionen: World-ETF (iShares), Schwellenlaender-ETF (Vanguard),
  * Euro-Anleihe-ETF (State Street), Gold-ETC (Invesco), NVIDIA, dazu ein Technologiefonds
- * (BlackRock) und ein Bitcoin-ETP (21Shares) fuer die Arten FUND und CRYPTO_ETP. Nur der
- * iShares-Fonds ist durchschaubar — Vanguard und State Street
- * fuehren keinen abrufbaren Katalog (ADR-018), ETC, ETP, Fonds und Einzelaktie haben keine
- * Bestandteile. Genau deshalb steht die Abdeckungsquote auf der Top-25-Kachel bei rund 50 %:
+ * (BlackRock) und ein Bitcoin-ETP (21Shares) fuer die Arten FUND und CRYPTO_ETP. Durchschaubar
+ * sind nur der iShares-Fonds und die Einzelaktie — Vanguard und State Street
+ * fuehren keinen abrufbaren Katalog (ADR-018), ETC, ETP und Fonds haben keine
+ * Bestandteile. Genau deshalb steht die Abdeckungsquote auf der Top-25-Kachel bei rund 60 %:
  * das ist der Zustand, den die Anwendung abbilden soll, keine Luecke im Szenario.
  *
  * Alle Kurse kommen aus `kurshistorie-modelliert.json`, Tagesraster 2025-01-02 bis 2026-02-27.
@@ -470,9 +470,10 @@ export function erzeugeSzenario(heute: Tag, jetzt: string): Szenario {
     { fondsIsin: WELT_ISIN, unternehmenIsin: 'DK0062498333', name: 'Novo Nordisk A/S', gewicht: 0.003, sektor: 'Health Care', land: 'Denmark' },
     { fondsIsin: WELT_ISIN, unternehmenIsin: 'JP3633400001', name: 'Toyota Motor Corp.', gewicht: 0.003, sektor: 'Consumer Discretionary', land: 'Japan' },
   ];
+  weltBestandteile.push(...weltRest(WELT_ISIN));
   // Nur der iShares-Fonds hat Bestandteile. Vanguard und State Street fuehren keinen
-  // abrufbaren Katalog (ADR-018), Gold-ETC und Einzelaktie haben keine — die Top-25-Kachel
-  // zeigt das als Abdeckungsquote von rund 50 %, nicht als Fehler.
+  // abrufbaren Katalog (ADR-018), der Gold-ETC hat keine — die Top-25-Kachel zeigt das samt
+  // direkt gehaltener NVIDIA-Aktie als Abdeckungsquote von rund 60 %, nicht als Fehler.
   const bestandteile = new Map<Isin, readonly Bestandteil[]>([[WELT_ISIN, weltBestandteile]]);
 
   /**
@@ -523,4 +524,60 @@ export function erzeugeSzenario(heute: Tag, jetzt: string): Szenario {
     arten: new Map(POSITIONEN.map((p) => [p.isin, ARTEN_DEMO[p.isin] ?? 'ETF'])),
     lauf: { gestartet: jetzt, beendet: jetzt },
   };
+}
+
+/**
+ * Der Rest des World-ETFs hinter den 33 benannten Unternehmen: rund 1.300 erfundene, je unter
+ * 0,1 % — so viele Unternehmen, wie ein echter MSCI World haelt, und Laender und Sektoren
+ * ungefaehr wie im Index. Keins reicht in die Top 25. Die ISIN traegt `SYN` statt einer
+ * Kennnummer, damit niemand sie fuer echt haelt.
+ */
+function weltRest(fondsIsin: Isin): Bestandteil[] {
+  // Land, Kuerzel, Anzahl, Gewicht in Prozent — zusammen mit den 33 benannten rund 99,5 %.
+  const laender: readonly (readonly [string, string, number, number])[] = [
+    ['United States', 'US', 560, 27.8],
+    ['Japan', 'JP', 185, 5.2],
+    ['United Kingdom', 'GB', 80, 3.2],
+    ['Canada', 'CA', 85, 3.0],
+    ['France', 'FR', 60, 2.5],
+    ['Germany', 'DE', 55, 1.7],
+    ['Australia', 'AU', 60, 1.7],
+    ['Switzerland', 'CH', 42, 1.35],
+    ['Sweden', 'SE', 40, 0.8],
+    ['Spain', 'ES', 20, 0.7],
+    ['Italy', 'IT', 20, 0.7],
+    ['Netherlands', 'NL', 22, 0.65],
+    ['Hong Kong', 'HK', 30, 0.5],
+    ['Singapore', 'SG', 15, 0.4],
+    ['Denmark', 'DK', 14, 0.3],
+    ['Finland', 'FI', 12, 0.3],
+    ['Belgium', 'BE', 10, 0.3],
+    ['Israel', 'IL', 10, 0.2],
+    ['Norway', 'NO', 10, 0.2],
+    ['Ireland', 'IE', 8, 0.2],
+  ];
+  // Je Sektor so viele Plaetze im Umlauf, wie er ungefaehr Gewicht im Rest hat.
+  const umlauf: readonly string[] = [
+    ['Financials', 12], ['Industrials', 11], ['Health Care', 6], ['Information Technology', 4],
+    ['Consumer Staples', 4], ['Materials', 4], ['Energy', 3], ['Consumer Discretionary', 3],
+    ['Utilities', 3], ['Real Estate', 2], ['Communication', 1],
+  ].flatMap(([sektor, plaetze]) => Array.from({ length: plaetze as number }, () => sektor as string));
+
+  const teile: Bestandteil[] = [];
+  let lauf = 0;
+  for (const [land, kuerzel, anzahl, prozent] of laender) {
+    // Fallend von gross nach klein: Gewicht ~ (anzahl - i), zusammen `prozent`.
+    const nenner = (anzahl * (anzahl + 1)) / 2;
+    for (let i = 0; i < anzahl; i++) {
+      teile.push({
+        fondsIsin,
+        unternehmenIsin: `${kuerzel}SYN${String(i + 1).padStart(7, '0')}`,
+        name: `Unternehmen ${kuerzel} ${String(i + 1)}`,
+        gewicht: ((prozent / 100) * (anzahl - i)) / nenner,
+        sektor: umlauf[lauf++ % umlauf.length]!,
+        land,
+      });
+    }
+  }
+  return teile;
 }

@@ -138,6 +138,13 @@ describe('Y-Achse im 1-2-5-Raster', () => {
     expect(ticks?.map(String).every((tick) => tick.length <= 5)).toBe(true);
   });
 
+  it('beginnt am Datenbereich, nicht am naechsten Rasterschritt darunter', () => {
+    const { domain, ticks } = yAchseImRaster([1_000_000, 2_450_000]);
+    expect(domain[0]).toBeGreaterThan(800_000);
+    expect(ticks?.[0]).toBe(1_000_000);
+    expect(ticks?.every((tick) => tick >= (domain[0] as number) && tick <= (domain[1] as number))).toBe(true);
+  });
+
   it('bleibt ohne Werte automatisch', () => {
     expect(yAchseImRaster([]).domain).toEqual(['auto', 'auto']);
   });

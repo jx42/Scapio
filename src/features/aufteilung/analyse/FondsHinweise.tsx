@@ -28,6 +28,7 @@ export function FondsHinweise({ daten }: FondsHinweiseProps) {
         anzahl={daten.fehlendeFonds.length}
         titel={de.top25.fehlendeFondsTitel}
         beschreibung={de.top25.fehlendeFondsBeschreibung}
+        breit
       >
         <FehlendeFondsListe abdeckung={daten.abdeckung} fehlendeFonds={daten.fehlendeFonds} />
       </HinweisKnopf>

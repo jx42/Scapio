@@ -519,7 +519,6 @@ export const de = {
     rendite: 'Rendite',
     zeitraum: 'Zeitraum',
     zeitraeume: {
-      '1w': '1W',
       '1m': '1M',
       ytd: 'YTD',
       '1j': '1J',
@@ -528,7 +527,6 @@ export const de = {
       max: 'MAX',
     },
     zeitraumLang: {
-      '1w': 'eine Woche',
       '1m': 'ein Monat',
       ytd: 'seit Jahresbeginn',
       '1j': 'ein Jahr',
@@ -560,6 +558,9 @@ export const de = {
       'Wie viel Gesamtgewinn im gewählten Zeitraum dazugekommen ist: der Gesamtgewinn am Ende des Zeitraums minus dem an seinem Anfang. Der Prozentwert setzt ihn ins Verhältnis zum gesamten eingezahlten Kapital am Ende des Zeitraums — nicht nur zu dem, was im Zeitraum dazukam. Mit Einzahlungen im Zeitraum fällt er deshalb anders aus als die Marktrendite (TWR) desselben Zeitraums. Chart und Tooltip zählen ebenfalls ab Beginn des Zeitraums, am letzten Tag stimmen sie mit dieser Zahl überein. Gesamtgewinn heißt dabei Depotwert minus eingezahltes Kapital, also inklusive Verrechnungskonto, Erträgen, Steuern und Gebühren — anders als der „Kursgewinn“ in der Karte oben, der nur die heute gehaltenen Wertpapiere mit dem investierten Kapital vergleicht.',
     erklaerungDifferenz:
       'Gesamtgewinn Depot minus Gewinn des Vergleichs im gewählten Zeitraum. Positiv heißt: Das Depot war besser als die Anlage in den Vergleich.',
+    /** Hinter der Differenz-Badge: „↑ 474 € (2,26 %) mehr als MSCI ACWI“. */
+    vergleichSatz: (differenz: number, benchmark: string) =>
+      differenz > 0 ? `mehr als ${benchmark}` : differenz < 0 ? `weniger als ${benchmark}` : `genau wie ${benchmark}`,
     risikofreiKurz: '€STR',
     risikofreiOeffnen: 'Statistical Data Warehouse der EZB (€STR) öffnen, neuer Tab',
     erklaerungBenchmarkGewinn: (benchmark: string) =>
@@ -597,9 +598,7 @@ export const de = {
     linien: 'Einzahlungen',
     marken: 'Käufe, Verkäufe & Erträge',
     differenz: 'Differenz',
-    darstellung: 'Darstellung',
-    darstellungVerlauf: 'Als Verlauf zeigen',
-    darstellungTabelle: 'Als Jahrestabelle zeigen',
+    jahreReiter: 'Jahre',
     jahre: {
       tabelle: 'Jahresübersicht: Rendite, Inflation und Geldflüsse je Kalenderjahr',
       spalteJahr: 'Jahr',
@@ -637,7 +636,7 @@ export const de = {
     spalteArt: 'Art',
     spalteAnteil: 'Anteil',
     spalteWert: 'Wert',
-    spalteGewinn: 'Gewinn',
+    spalteGewinn: 'Kursgewinn',
     spalteDetails: 'Details',
     /** Anzeigename je Wertpapierart der Bank; alles andere erscheint unverändert, ohne Art als Strich. */
     art: (art: string | null) => (art === null ? '–' : (ARTEN[art] ?? art)),
@@ -804,7 +803,7 @@ export const de = {
     /** Feld der Treemap für das Depot ausserhalb der Top 25. */
     andere: 'Andere',
     andereHinweis: 'Alles außerhalb der Top 25, auch Cash und nicht durchschaute Positionen',
-    andereAnzahl: (anzahl: string) => `${anzahl} Unternehmen`,
+    andereAnzahl: (anzahl: string, mindestens: boolean) => `${mindestens ? 'mindestens ' : ''}${anzahl} Unternehmen`,
     andereWerte: (anteil: string, exposure: string) => `${anteil} · ${exposure}`,
     ringLaender: 'Ringdiagramm der Länder nach Exposure',
     ringSektoren: 'Ringdiagramm der Sektoren nach Exposure',
@@ -825,20 +824,26 @@ export const de = {
     spalteName: 'Unternehmen',
     spalteExposure: 'Exposure',
     spalteAnteil: 'Anteil',
-    fondsListe: (namen: readonly string[]) => (namen.length === 0 ? '–' : namen.join(', ')),
+    /** Woher das Exposure kommt; ein Eintrag mit der ISIN des Unternehmens ist die direkt gehaltene Aktie. */
+    fondsListe: (ausFonds: readonly { readonly isin: string; readonly name?: string }[], unternehmenIsin: string) =>
+      ausFonds.length === 0
+        ? '–'
+        : ausFonds.map((f) => (f.isin === unternehmenIsin ? 'Direktanlage' : (f.name ?? f.isin))).join(', '),
     /** Für Screenreader in der Zeile; sehend steht die Liste in der Hover-Karte. */
     fondsHinweis: (liste: string) => `, enthalten in ${liste}`,
     mehrZeigen: 'Mehr zeigen',
     wenigerZeigen: 'Weniger zeigen',
     leer: 'Es liegen keine Fondsbestandteile vor.',
-    leerAnleitungTitel: 'So bekommst du diese Ansicht',
+    leerAnleitungTitel: 'Analyseansicht hinzufügen',
     leerAnleitungBeschreibung: 'Schritte, um die Fondsliste „funds.json“ anzulegen.',
     leerAnleitungSchritte: [
       `„ingest/funds.example.json“ aus dem Scapio-Ordner als „funds.json“ ${DATENORDNER} ablegen.`,
       'Für jeden gehaltenen ETF einen Eintrag mit der ISIN eintragen. Bei „xtrackers“ oder „amundi“ als Anbieter reicht das schon — die Adresse wird automatisch abgefragt.',
-      'Bei „ishares“ zusätzlich die Produkt-ID eintragen: Produktseite des Fonds auf ishares.com öffnen → die Zahl hinter „/produkte/“ in der Adressleiste kopieren.',
+      'Bei „ishares“ zusätzlich die Produkt-ID eintragen: Produktseite des Fonds auf ishares.com öffnen → die Zahl hinter „/produkte/“ in der Adressleiste kopieren. Beispiel: ishares.com/de/privatanleger/de/produkte/251882/… → „251882“.',
       'Danach oben auf „Aktualisieren“ klicken.',
     ],
+    leerAnleitungAndereAnbieter:
+      'Nur ETFs von iShares, Xtrackers und Amundi lassen sich aufschlüsseln. Für ETFs anderer Anbieter ist die Analyse leider nicht möglich.',
 
     fehlendeFondsIsin: (isin: string) => `(${isin})`,
     fehlendeFondsTitel: 'Diese Fonds fehlen in der Auswertung',

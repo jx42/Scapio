@@ -96,6 +96,8 @@ export type Zeitreihe = MitStand & {
   readonly reiheLeer: boolean;
   /** `null` beim frei gewaehlten Zeitraum (`von`/`bis`). */
   readonly zeitraum: Zeitraum | null;
+  /** Die festen Zeitraeume, die ein anderes Fenster als `max` zeigen, und `max` selbst. */
+  readonly zeitraeume: readonly Zeitraum[];
   /** Tatsaechlich gezeigtes Fenster, auf die Reihe begrenzt; `null` ohne Reihe. */
   readonly ausschnitt: { readonly von: string; readonly bis: string } | null;
   /** Jeder Tag der gesamten Reihe — die Stufen des Zeitraumreglers. */
@@ -103,6 +105,15 @@ export type Zeitreihe = MitStand & {
   readonly fensterGewinnCent: number;
   readonly fensterGewinnProzent: number;
   readonly benchmark: { readonly isin: string; readonly name: string } | null;
+  /** Abstand des Depots zu jedem Vergleich mit Kursen am Fensterende, unabhaengig von `benchmark`. */
+  readonly abstaende: readonly VergleichAbstand[];
+};
+
+export type VergleichAbstand = {
+  readonly isin: string;
+  /** Wie `Zeitpunkt.differenzCent` und `differenzProzent` am letzten Tag des Fensters. */
+  readonly differenzCent: number;
+  readonly differenzProzent: number;
 };
 
 export type ErtragsZeile = {
@@ -203,6 +214,7 @@ export type Rebalancing = MitStand & {
 };
 
 export type Fondsanteil = {
+  /** Fonds-ISIN; gleich der Unternehmens-ISIN, wenn die Aktie direkt gehalten wird. */
   readonly isin: string;
   readonly name?: string;
   readonly anteilCent: number;
@@ -245,6 +257,8 @@ export type Top25 = MitStand & {
   readonly abdeckung: number;
   readonly durchschautCent: number;
   readonly anzahlUnternehmen: number;
+  /** Ein ETF oder Fonds im Depot ist nicht durchschaut: es sind mehr Unternehmen, als gezählt. */
+  readonly anzahlMindestens: boolean;
   readonly laender: readonly Gruppe[];
   readonly sektoren: readonly Gruppe[];
   readonly fehlendeFonds: readonly FehlenderFonds[];

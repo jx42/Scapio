@@ -106,7 +106,7 @@ function Top25Zeile({ zeile, angeschnitten, aktiv, onHover }: Top25ZeileProps) {
   const angezeigterRang = useZahlZaehler(zahl(zeile.rang));
   const angezeigtesExposure = useZahlZaehler(euroAusCent(zeile.exposureCent));
   const angezeigterAnteil = useZahlZaehler(anteilProzent(zeile.anteilDepot));
-  const fonds = de.top25.fondsListe(zeile.ausFonds.map((f) => f.name ?? f.isin));
+  const fonds = de.top25.fondsListe(zeile.ausFonds, zeile.isin);
   return (
     <TableRow
       inert={angeschnitten}

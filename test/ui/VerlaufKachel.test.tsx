@@ -22,6 +22,7 @@ const FIXTURE: Zeitreihe = {
   grob: false,
   reiheLeer: false,
   zeitraum: 'max',
+  zeitraeume: ['1m', 'ytd', '1j', 'max'],
   ausschnitt: { von: '2024-01-01', bis: '2026-08-26' },
   tage: ['2024-01-01', '2024-01-15', '2025-06-01', '2026-08-26'],
   // Gesamtgewinn im Fenster: (37_805_537 - 28_759_296) - (30_000_000 - 28_000_000),
@@ -31,6 +32,7 @@ const FIXTURE: Zeitreihe = {
   // 7_046_241 / 28_759_296 — bezogen auf die Einzahlung zu Fensterende, nicht -beginn.
   fensterGewinnProzent: 0.24500742299116085,
   benchmark: null,
+  abstaende: [],
   marken: [
     {
       tag: '2024-01-15',
@@ -166,9 +168,9 @@ describe('VerlaufKachel', () => {
     // Regression: der leere Zeitraum darf keine Sackgasse sein. Wurde die ganze Ansicht
     // durch den Leerzustand ersetzt, verschwand mit ihr die Zeitraumwahl — und der im
     // localStorage gemerkte Zeitraum hielt die Kachel ueber jedes Neuladen hinweg leer.
-    // Genau die Lage aus dem Demo-Betrieb: "1W" steht gemerkt im localStorage und das
+    // Genau die Lage aus dem Demo-Betrieb: "1M" steht gemerkt im localStorage und das
     // Fenster liegt hinter dem letzten Datenpunkt.
-    localStorage.setItem('portfolio.zeitraum', '1w');
+    localStorage.setItem('portfolio.zeitraum', '1m');
     wiederherstellen = fetchErsatz(mitKennzahlen({ ...FIXTURE, punkte: [], marken: [] }));
     rendern(<VerlaufKachel />);
 
@@ -309,17 +311,17 @@ describe('VerlaufKachel', () => {
     rendern(<VerlaufKachel />);
     await screen.findByText(de.verlauf.tabelleVermoegen);
 
-    const einWocheName = de.verlauf.zeitraeume['1w'];
-    fokussieren(screen.getByRole('radio', { name: einWocheName }));
+    const einMonatName = de.verlauf.zeitraeume['1m'];
+    fokussieren(screen.getByRole('radio', { name: einMonatName }));
     await userEvent.keyboard('{Enter}');
 
     // Der Zeitraumwechsel loest eine neue, ungecachte Abfrage aus — die Kachel faellt
     // kurz auf das Skeleton zurueck und baut Ansicht samt Knopf danach neu auf.
-    expect(await screen.findByRole('radio', { name: einWocheName })).toHaveAttribute(
+    expect(await screen.findByRole('radio', { name: einMonatName })).toHaveAttribute(
       'aria-checked',
       'true',
     );
-    expect(localStorage.getItem('portfolio.zeitraum')).toBe('1w');
+    expect(localStorage.getItem('portfolio.zeitraum')).toBe('1m');
 
     const rendite = screen.getByRole('tab', { name: de.verlauf.rendite });
     await userEvent.click(rendite);
@@ -429,7 +431,7 @@ describe('VerlaufKachel', () => {
     });
   });
 
-  it('stellt den Gewinn des Vergleichs neben den des Depots', async () => {
+  it('nennt die Differenz zum Vergleich als Satz, den Vergleich selbst im Popover', async () => {
     const letzter = FIXTURE.punkte[2]!;
     wiederherstellen = fetchErsatz(
       mitKennzahlen({
@@ -452,13 +454,50 @@ describe('VerlaufKachel', () => {
     await screen.findByText(de.verlauf.tabelleVermoegen);
 
     expect(screen.getByText(`${de.verlauf.gesamtgewinnDepot}:`)).toBeInTheDocument();
-    expect(screen.getByText('MSCI Europe:')).toBeInTheDocument();
-    expect(screen.getByText(`${euro(1_234_500)} (${prozentText(0.0429)})`)).toBeInTheDocument();
-    // Depot minus Vergleich: 7.046.241 - (-1.234.500) Cent, 0,2450... - (-0,0429).
-    expect(screen.getByText(`${de.verlauf.differenz}:`)).toBeInTheDocument();
-    expect(
-      screen.getByText(`${euro(8_280_741)} (${prozentText(FIXTURE.fensterGewinnProzent + 0.0429)})`),
-    ).toBeInTheDocument();
+    // Depot minus Vergleich: 7.046.241 - (-1.234.500) Cent, 0,2450... - (-0,0429) = 28,79 %.
+    expect(screen.getByText(de.verlauf.vergleichSatz(8_280_741, 'MSCI Europe'))).toBeInTheDocument();
+    expect(screen.getByText(`${euro(8_280_741)} (${prozentText(FIXTURE.fensterGewinnProzent + 0.0429)})`)).toBeInTheDocument();
+    expect(screen.queryByText(`${euro(1_234_500)} (${prozentText(0.0429)})`)).toBeNull();
+
+    await userEvent.click(screen.getByRole('button', { name: `${de.erklaerungOeffnen}: ${de.verlauf.differenz}` }));
+    expect(await screen.findByText(`${euro(1_234_500)} (${prozentText(0.0429)})`)).toBeInTheDocument();
+  });
+
+  it('nennt im Vergleichsmenue den Abstand zu jedem Vergleich mit Kursen', async () => {
+    wiederherstellen = fetchErsatz(
+      mitKennzahlen({
+        ...FIXTURE,
+        abstaende: [
+          { isin: 'IE00B4L5Y983', differenzCent: 47_400, differenzProzent: 0.0226 },
+          { isin: 'CH0454664001', differenzCent: -120_000, differenzProzent: -0.31 },
+        ],
+      }),
+    );
+    rendern(<VerlaufKachel />);
+    await screen.findByText(de.verlauf.tabelleVermoegen);
+
+    // Vorausgewaehlt ist MSCI World; der Knopf traegt dann dessen Namen.
+    fokussieren(screen.getByRole('button', { name: 'MSCI World' }));
+    await userEvent.keyboard('{Enter}');
+    const welt = await screen.findByRole('menuitemcheckbox', { name: /MSCI World/ });
+    expect(welt).toHaveTextContent(`${euro(47_400)} (${prozentText(0.0226)})`);
+    expect(within(welt).getByRole('img', { name: de.kennzahlen.richtungPositiv })).toBeInTheDocument();
+    const bitcoin = screen.getByRole('menuitemcheckbox', { name: /Bitcoin/ });
+    expect(bitcoin).toHaveTextContent(euro(120_000));
+    expect(within(bitcoin).getByRole('img', { name: de.kennzahlen.richtungNegativ })).toBeInTheDocument();
+    expect(screen.getAllByRole('menuitemcheckbox').map((e) => e.firstElementChild?.nextElementSibling?.textContent)).toEqual([
+      'Bitcoin',
+      'DAX',
+      'EU Anleihen',
+      'Gold',
+      'MSCI ACWI',
+      'MSCI Emerging Markets',
+      'MSCI Europe',
+      'MSCI World',
+      'S&P 500',
+    ]);
+    // Ohne Kurse kein Abstand, statt einer erfundenen Null.
+    expect(screen.getByRole('menuitemcheckbox', { name: /DAX/ })).not.toHaveTextContent('€');
   });
 
   it('nennt die Kopfzahl im Modus "Rendite" fensterbezogen', async () => {
@@ -482,12 +521,12 @@ describe('VerlaufKachel', () => {
     ).not.toBeInTheDocument();
   });
 
-  it('schaltet auf die Jahrestabelle um, ohne Chart, Zeitraum und Moduswahl, und merkt es sich', async () => {
+  it('schaltet ueber den Reiter Jahre auf die Jahrestabelle um, ohne Chart und Zeitraum, und merkt es sich', async () => {
     wiederherstellen = fetchErsatz(mitKennzahlen(FIXTURE));
     rendern(<VerlaufKachel />);
     await screen.findByText(de.verlauf.tabelleVermoegen);
 
-    await userEvent.click(screen.getByRole('radio', { name: de.verlauf.darstellungTabelle }));
+    await userEvent.click(screen.getByRole('tab', { name: de.verlauf.jahreReiter }));
     const bereich = await screen.findByRole('region', { name: de.verlauf.jahre.tabelle });
     const tabelle = within(bereich).getByRole('table');
     expect(localStorage.getItem('portfolio.verlaufDarstellung')).toBe('tabelle');
@@ -500,14 +539,15 @@ describe('VerlaufKachel', () => {
     expect(within(zeilen[1]!).getAllByRole('img', { name: de.kennzahlen.richtungNegativ }).length).toBeGreaterThan(0);
     expect(within(zeilen[2]!).getByTitle(/Inflation bis Juni 2026/)).toBeInTheDocument();
 
-    expect(screen.queryByRole('tab', { name: de.verlauf.rendite })).toBeNull();
+    expect(screen.getByRole('tab', { name: de.verlauf.jahreReiter })).toHaveAttribute('aria-selected', 'true');
     expect(screen.queryByRole('radiogroup', { name: de.verlauf.zeitraum })).toBeNull();
     expect(screen.queryByRole('table', { name: de.verlauf.tabelleVermoegen })).toBeNull();
     expect(screen.queryByRole('slider')).toBeNull();
     await erwarteBarrierefrei(document.body);
 
-    await userEvent.click(screen.getByRole('radio', { name: de.verlauf.darstellungVerlauf }));
+    await userEvent.click(screen.getByRole('tab', { name: de.verlauf.vermoegen }));
     expect(await screen.findByRole('table', { name: de.verlauf.tabelleVermoegen })).toBeInTheDocument();
+    expect(localStorage.getItem('portfolio.verlaufDarstellung')).toBe('verlauf');
   });
 
   it('nennt den Inflationsstand auch bei einem abgeschlossenen Jahr ohne Dezemberzahl', () => {

@@ -16,10 +16,12 @@ export type HinweisKnopfProps = {
   readonly anzahl: number;
   readonly titel: string;
   readonly beschreibung: string;
+  /** Für Dialoge mit langen Listen oder Anleitungen. */
+  readonly breit?: boolean;
   readonly children: ReactNode;
 };
 
-export function HinweisKnopf({ anzahl, titel, beschreibung, children }: HinweisKnopfProps) {
+export function HinweisKnopf({ anzahl, titel, beschreibung, breit = false, children }: HinweisKnopfProps) {
   const [offen, setOffen] = useState(false);
   return (
     <>
@@ -33,7 +35,7 @@ export function HinweisKnopf({ anzahl, titel, beschreibung, children }: HinweisK
         {de.hinweisKnopf.anzahl(anzahl, zahl(anzahl))}
       </Button>
       <Dialog open={offen} onOpenChange={setOffen}>
-        <DialogContent className="max-h-[85vh] overflow-y-auto">
+        <DialogContent className={breit ? 'max-h-[85vh] overflow-y-auto sm:max-w-2xl' : 'max-h-[85vh] overflow-y-auto'}>
           <DialogHeader>
             <DialogTitle>{titel}</DialogTitle>
             <DialogDescription className="sr-only">{beschreibung}</DialogDescription>

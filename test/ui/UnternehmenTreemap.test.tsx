@@ -34,9 +34,9 @@ function feld(felder: readonly Feld[], aktiv = true, knoten = GROSS) {
 
 describe('andereFeld', () => {
   it('gibt es nur mit Rest im Depot', () => {
-    expect(andereFeld(0, 0, 0)).toBeNull();
-    expect(andereFeld(-1, 0, 0)).toBeNull();
-    expect(andereFeld(100, 0.4, 3)?.art).toBe('andere');
+    expect(andereFeld(0, 0, 0, false)).toBeNull();
+    expect(andereFeld(-1, 0, 0, false)).toBeNull();
+    expect(andereFeld(100, 0.4, 3, false)?.art).toBe('andere');
   });
 });
 
@@ -52,14 +52,14 @@ describe('unternehmenFeld', () => {
 });
 
 describe('FeldForm', () => {
-  const andere = andereFeld(20_000_000, 0.4, 1832);
+  const andere = andereFeld(20_000_000, 0.4, 1832, true);
   if (andere === null) throw new Error('Fixture');
 
   it('„Andere“: Name, Zahl der Unternehmen, Anteil und Exposure', () => {
     const zeilen = [...feld([andere]).querySelectorAll('tspan')].map((t) => t.textContent);
     expect(zeilen).toEqual([
       de.top25.andere,
-      de.top25.andereAnzahl(zahl(1832)),
+      de.top25.andereAnzahl(zahl(1832), true),
       de.top25.andereWerte(anteilProzent(0.4), euroAusCent(20_000_000)),
     ]);
   });

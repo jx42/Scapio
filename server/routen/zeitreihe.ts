@@ -18,9 +18,11 @@ import { baueLesemodell } from '../lesemodell.ts';
 import { markenAus } from '../marken.ts';
 import { alsTagParameter, alsZeitraum, beginnVon, minusMonate } from '../zeitraum.ts';
 import { LESENDE_ROUTEN } from '../../shared/routen.ts';
+import { ZEITRAEUME } from '../../shared/zeitfenster.ts';
 import type { Kontext } from '../server.ts';
 import { alsBenchmarkIsin, vergleichsdepot } from '../vergleichsdepot.ts';
-import type { Marke, MarkenVorgang, Zeitpunkt, Zeitreihe } from '../vertrag.ts';
+import { BENCHMARKS, RISIKOFREI } from '../vertrag.ts';
+import type { Marke, MarkenVorgang, VergleichAbstand, Zeitpunkt, Zeitreihe } from '../vertrag.ts';
 
 /**
  * Ueber drei Jahren reicht ein Punkt je Woche: taeglich waere „max“ ein Megabyte, das
@@ -85,6 +87,7 @@ const ANTWORT_SCHEMA = objektSchema<Zeitreihe>({
    */
   reiheLeer: { type: 'boolean' },
   zeitraum: { type: ['string', 'null'] },
+  zeitraeume: { type: 'array', items: { type: 'string' } },
   ausschnitt: oderNull(
     objektSchema<NonNullable<Zeitreihe['ausschnitt']>>({
       von: { type: 'string' },
@@ -100,6 +103,14 @@ const ANTWORT_SCHEMA = objektSchema<Zeitreihe>({
       name: { type: 'string' },
     }),
   ),
+  abstaende: {
+    type: 'array',
+    items: objektSchema<VergleichAbstand>({
+      isin: { type: 'string' },
+      differenzCent: { type: 'number' },
+      differenzProzent: { type: 'number' },
+    }),
+  },
   ...umschlagSchemaEigenschaften,
 });
 
@@ -128,11 +139,13 @@ export function registriereZeitreihe(app: FastifyInstance, ctx: Kontext): void {
         grob: false,
         reiheLeer: true,
         zeitraum,
+        zeitraeume: ['max'],
         ausschnitt: null,
         tage: [],
         fensterGewinnCent: 0,
         fensterGewinnProzent: 0,
         benchmark: null,
+        abstaende: [],
         ...umschlag,
       };
     }
@@ -151,6 +164,14 @@ export function registriereZeitreihe(app: FastifyInstance, ctx: Kontext): void {
       depot === null || depot.reihe === null
         ? null
         : new Map(vergleichImFenster(reihe, depot.reihe, von, bis).map((p) => [p.tag, p]));
+
+    // Fuer die Benchmarkwahl: jeder Vergleich auf einen Blick, nicht erst nach dem Klick.
+    const abstaende = [...BENCHMARKS, RISIKOFREI].flatMap((b): VergleichAbstand[] => {
+      const anderes = b.isin === benchmarkIsin ? depot : vergleichsdepot(ctx.db, b.isin, lm.externeFluesse(), erster, letzter, von, bis);
+      const ende = anderes === null || anderes.reihe === null ? undefined : vergleichImFenster(reihe, anderes.reihe, von, bis).at(-1);
+      if (ende === undefined) return [];
+      return [{ isin: b.isin, differenzCent: centAlsZahl(ende.differenzCent), differenzProzent: ende.differenzProzent }];
+    });
 
     const marken = markenAus(lm.transaktionen(), von, bis);
     const woechentlich = vergleiche(von, minusMonate(bis, 36)) < 0;
@@ -197,11 +218,14 @@ export function registriereZeitreihe(app: FastifyInstance, ctx: Kontext): void {
       grob: lm.twr().grob || lueckenhaft,
       reiheLeer: false,
       zeitraum,
+      // Reicht die Historie nicht so weit zurueck, zeigte der Knopf dasselbe wie `max`.
+      zeitraeume: ZEITRAEUME.filter((z) => z === 'max' || vergleiche(beginnVon(z, lm.heute, erster), erster) > 0),
       ausschnitt: { von: tagAlsText(von), bis: tagAlsText(bis) },
       tage: reihe.map((t) => tagAlsText(t.tag)),
       fensterGewinnCent: centAlsZahl(kursgewinnErgebnis.fensterGewinnCent),
       fensterGewinnProzent: kursgewinnErgebnis.fensterGewinnProzent,
       benchmark: benchmarkInfo,
+      abstaende,
       ...umschlag,
     };
   });

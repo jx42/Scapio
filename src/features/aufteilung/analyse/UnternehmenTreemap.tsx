@@ -45,6 +45,8 @@ export type Feld = {
   readonly anteil: string;
   /** Unternehmen hinter dem Feld: eins, bei „Andere“ alle ausserhalb der Top 25. */
   readonly anzahl: number;
+  /** Nur bei „Andere“: nicht durchschaute Fonds halten weitere Unternehmen. */
+  readonly mindestens: boolean;
   readonly fonds: string;
   readonly farbe: string;
   /** Schlüssel des Sektors im Ring (`gruppenSchluessel`); `null` ohne Gruppe und bei „Andere“. */
@@ -62,14 +64,15 @@ export function unternehmenFeld(z: UnternehmenZeile, sektoren: readonly Gruppe[]
     exposureCent: z.exposureCent,
     anteil: anteilProzent(z.anteilDepot),
     anzahl: 1,
-    fonds: de.top25.fondsListe(z.ausFonds.map((f) => f.name ?? f.isin)),
+    mindestens: false,
+    fonds: de.top25.fondsListe(z.ausFonds, z.isin),
     farbe: gruppenFarbe(sektoren, z.sektor),
     gruppe: sektor === undefined ? null : gruppenSchluessel(sektor),
   };
 }
 
 /** Das graue Feld für den Rest des Depots; ohne Rest keins. */
-export function andereFeld(exposureCent: number, anteil: number, anzahl: number): Feld | null {
+export function andereFeld(exposureCent: number, anteil: number, anzahl: number, mindestens: boolean): Feld | null {
   if (exposureCent <= 0) return null;
   return {
     art: 'andere',
@@ -78,6 +81,7 @@ export function andereFeld(exposureCent: number, anteil: number, anzahl: number)
     exposureCent,
     anteil: anteilProzent(anteil),
     anzahl,
+    mindestens,
     fonds: de.top25.andereHinweis,
     farbe: FARBE.rand,
     gruppe: null,
@@ -90,6 +94,7 @@ export type UnternehmenTreemapProps = {
   readonly andereCent: number;
   readonly andereAnteil: number;
   readonly andereAnzahl: number;
+  readonly andereMindestens: boolean;
   readonly sektoren: readonly Gruppe[];
   readonly hervorgehoben: string | null;
   /** Schlüssel des hervorgehobenen Sektors (`gruppenSchluessel`). */
@@ -102,12 +107,13 @@ export const UnternehmenTreemap = memo(function UnternehmenTreemap({
   andereCent,
   andereAnteil,
   andereAnzahl,
+  andereMindestens,
   sektoren,
   hervorgehoben,
   sektorHervorgehoben,
   onHover,
 }: UnternehmenTreemapProps) {
-  const andere = andereFeld(andereCent, andereAnteil, andereAnzahl);
+  const andere = andereFeld(andereCent, andereAnteil, andereAnzahl, andereMindestens);
   const felder = [...zeilen.map((z) => unternehmenFeld(z, sektoren)), ...(andere === null ? [] : [andere])];
   const aktiv = (f: Feld): boolean =>
     hervorgehoben !== null ? f.schluessel === hervorgehoben : sektorHervorgehoben === null || f.gruppe === sektorHervorgehoben;
@@ -201,7 +207,7 @@ export function FeldForm({
             {gekuerzt(feld.name, treemapZeichen(width))}
           </tspan>
           <tspan x={x + TREEMAP_INNENABSTAND} y={y + TREEMAP_ZEILE_2}>
-            {andere ? de.top25.andereAnzahl(zahl(feld.anzahl)) : feld.anteil}
+            {andere ? de.top25.andereAnzahl(zahl(feld.anzahl), feld.mindestens) : feld.anteil}
           </tspan>
           {/* „Andere“ hat keine Tabellenzeile; die Werte stehen deshalb auch im Feld. */}
           {andere && height >= TREEMAP_DREI_ZEILEN_MIN_HOEHE ? (
@@ -229,7 +235,7 @@ function TreemapTooltip(props: {
   return (
     <ChartTooltipFlaeche>
       <p className="font-medium">{feld.name}</p>
-      {feld.art === 'andere' ? <p className="text-text-leise">{de.top25.andereAnzahl(zahl(feld.anzahl))}</p> : null}
+      {feld.art === 'andere' ? <p className="text-text-leise">{de.top25.andereAnzahl(zahl(feld.anzahl), feld.mindestens)}</p> : null}
       <p className="text-text-leise">{de.top25.treemapWerte(feld.anteil, euroAusCent(feld.exposureCent))}</p>
       <p className="text-text-leise">{feld.fonds}</p>
     </ChartTooltipFlaeche>

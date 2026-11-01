@@ -69,6 +69,7 @@ const TOP25: Top25 = {
   abdeckung: 0.83,
   durchschautCent: 37_805_537,
   anzahlUnternehmen: 1842,
+  anzahlMindestens: false,
   laender: LAENDER,
   sektoren: [
     { name: 'Information Technology', exposureCent: 20_000_000, anteil: 0.56 },

@@ -12,10 +12,13 @@ import { de } from '@/i18n/de';
 
 export function Top25FondsAnleitung() {
   return (
-    <ol className="list-decimal space-y-1 pl-5 text-sm text-text-leise">
-      {de.top25.leerAnleitungSchritte.map((schritt) => (
-        <li key={schritt}>{schritt}</li>
-      ))}
-    </ol>
+    <>
+      <ol className="list-decimal space-y-1 pl-5 text-sm text-text-leise">
+        {de.top25.leerAnleitungSchritte.map((schritt) => (
+          <li key={schritt}>{schritt}</li>
+        ))}
+      </ol>
+      <p className="text-sm text-text-leise">{de.top25.leerAnleitungAndereAnbieter}</p>
+    </>
   );
 }
