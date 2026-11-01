@@ -26,4 +26,10 @@ describe('sammle', () => {
     sammle(Schema, { name: 'x', kind: { tiefe: 1, neu: 4711 }, oben: { b: 'geheim', a: null } }, befund);
     expect([...befund.unbekannt].sort()).toEqual(['kind.neu (number)', 'oben (object{a,b})']);
   });
+
+  it('nennt Schlüssel, die keine Feldnamen sind, nur als Anzahl', () => {
+    const befund = leererBefund();
+    sammle(Schema, { name: 'x', kind: { tiefe: 1 }, depot: { IE00B4L5Y983: 1, 'Beispiel AG': 2 } }, befund);
+    expect([...befund.unbekannt]).toEqual(['depot (object{2 Schlüssel})']);
+  });
 });
