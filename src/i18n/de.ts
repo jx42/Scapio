@@ -604,7 +604,7 @@ export const de = {
       spalteJahr: 'Jahr',
       spalteRendite: 'Marktrendite (TWR)',
       spalteVergleich: (benchmark: string) => `Vergleich ${benchmark}`,
-      spalteIzf: 'IZF',
+      spalteIzf: 'Interner Zinsfuß',
       spalteInflation: 'Inflation',
       spalteReal: 'Realrendite',
       spalteGewinn: 'Gesamtgewinn',

@@ -20,7 +20,7 @@ Die Realrendite der Jahrestabelle beruhte auf der TWR, die gleichnamige Karte au
 - **Karten über dem Verlauf: Beschriftung und Unterzeile je eine Zeile.** Deshalb bleiben dort
   die Kurzformen „Marktrendite p.a.“, „Realrendite p.a.“ und „IZF: … – Inflat.: …“; die
   Langformen stehen im Popover.
-- **Realrendite rechnet überall über den IZF.** Die Jahrestabelle bekommt eine Spalte „IZF“
+- **Realrendite rechnet überall über den IZF.** Die Jahrestabelle bekommt eine Spalte „Interner Zinsfuß“
   und rechnet die Realrendite wie die Karte: IZF über Flüsse in Kaufkraft des letzten Monats
   der Zeile, statt Fisher auf die TWR. Je Jahr zählt der Depotwert am Vorjahresende als
   Einzahlung; IZF und Realrendite gelten wie die TWR für den Zeitraum der Zeile, nicht p.a.
