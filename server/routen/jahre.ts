@@ -1,5 +1,5 @@
 /**
- * Kachel 1, Tabellenansicht: je Kalenderjahr Rendite, Vergleich, Teuerung und Fluesse.
+ * Kachel 1, Tabellenansicht: je Kalenderjahr Marktrendite, Vergleich, IZF, Teuerung und Fluesse.
  * Gerechnet wird in `core/jahre.ts`; hier werden nur die Eingaben zusammengetragen.
  */
 
@@ -25,6 +25,7 @@ const ANTWORT_SCHEMA = objektSchema<Jahre>({
       vergleich: { type: ['number', 'null'] },
       teuerung: { type: ['number', 'null'] },
       teuerungBisMonat: { type: ['string', 'null'] },
+      izf: { type: ['number', 'null'] },
       real: { type: ['number', 'null'] },
       gewinnCent: { type: 'number' },
       einzahlungCent: { type: 'number' },
@@ -73,6 +74,7 @@ export function registriereJahre(app: FastifyInstance, ctx: Kontext): void {
         vergleich: zahlOderNull(j.vergleich),
         teuerung: zahlOderNull(j.teuerung),
         teuerungBisMonat: j.teuerungBisMonat,
+        izf: zahlOderNull(j.izf),
         real: zahlOderNull(j.real),
         gewinnCent: centAlsZahl(j.gewinnCent),
         einzahlungCent: centAlsZahl(j.einzahlungCent),

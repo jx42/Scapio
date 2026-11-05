@@ -78,7 +78,8 @@ const JAHRE_FIXTURE: Jahre = {
       vergleich: null,
       teuerung: 0.021,
       teuerungBisMonat: '2025-12',
-      real: 0.96 / 1.021 - 1,
+      izf: -0.035,
+      real: 0.965 / 1.021 - 1,
       gewinnCent: -1_200_000,
       einzahlungCent: 30_000_000,
       endwertCent: 28_800_000,
@@ -91,7 +92,8 @@ const JAHRE_FIXTURE: Jahre = {
       vergleich: null,
       teuerung: 0.012,
       teuerungBisMonat: '2026-06',
-      real: 1.08 / 1.012 - 1,
+      izf: 0.075,
+      real: 1.075 / 1.012 - 1,
       gewinnCent: 2_500_000,
       einzahlungCent: 600_000,
       endwertCent: 37_805_537,
@@ -568,14 +570,15 @@ describe('VerlaufKachel', () => {
     const daten: Jahre = {
       ...JAHRE_FIXTURE,
       benchmark: { isin: 'IE00B4L5Y983', name: 'MSCI World' },
-      jahre: [{ ...aelter!, twr: null, vergleich: null, real: null }, { ...neuer!, teuerung: null, real: null }],
+      jahre: [{ ...aelter!, twr: null, vergleich: null, izf: null, real: null }, { ...neuer!, teuerung: null, real: null }],
     };
     rendern(<JahresTabelle daten={daten} />);
     const [, erste, zweite] = screen.getAllByRole('row');
     const j = de.verlauf.jahre;
     expect(within(erste!).getByTitle(j.ohneRendite)).toHaveTextContent(de.xirr.nichtBerechenbar);
     expect(within(erste!).getByTitle(j.ohneVergleich('MSCI World'))).toBeInTheDocument();
-    expect(within(erste!).getByTitle(j.realOhneRendite)).toBeInTheDocument();
+    expect(within(erste!).getByTitle(j.ohneIzf)).toHaveTextContent(de.xirr.nichtBerechenbar);
+    expect(within(erste!).getByTitle(j.realOhneIzf)).toBeInTheDocument();
     expect(within(zweite!).getByTitle(j.ohneInflation)).toBeInTheDocument();
     expect(within(zweite!).getByTitle(j.realOhneInflation)).toBeInTheDocument();
   });

@@ -297,6 +297,7 @@ export type Jahreszeile = {
   readonly vergleich: number | null;
   readonly teuerung: number | null;
   readonly teuerungBisMonat: string | null;
+  readonly izf: number | null;
   readonly real: number | null;
   readonly gewinnCent: number;
   readonly einzahlungCent: number;

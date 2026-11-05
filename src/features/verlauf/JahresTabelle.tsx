@@ -90,6 +90,9 @@ export function JahresTabelle({ daten }: { readonly daten: Jahre }) {
             </TableHead>
           ) : null}
           <TableHead scope="col" className="text-right">
+            {t.spalteIzf}
+          </TableHead>
+          <TableHead scope="col" className="text-right">
             {t.spalteInflation}
           </TableHead>
           <TableHead scope="col" className="text-right">
@@ -114,6 +117,7 @@ export function JahresTabelle({ daten }: { readonly daten: Jahre }) {
             {mitVergleich ? (
               <Gerichtet wert={z.vergleich} formatieren={prozent} grund={t.ohneVergleich(daten.benchmark!.name)} />
             ) : null}
+            <Gerichtet wert={z.izf} formatieren={prozent} grund={t.ohneIzf} />
             <TableCell className={ZAHL}>
               {z.teuerung === null ? (
                 <MitGrund grund={t.ohneInflation}>{de.xirr.nichtBerechenbar}</MitGrund>
@@ -124,7 +128,7 @@ export function JahresTabelle({ daten }: { readonly daten: Jahre }) {
             <Gerichtet
               wert={z.real}
               formatieren={prozent}
-              grund={z.twr === null ? t.realOhneRendite : t.realOhneInflation}
+              grund={z.izf === null ? t.realOhneIzf : t.realOhneInflation}
             />
             <Gerichtet wert={z.gewinnCent} formatieren={euroAusCent} />
             <TableCell className={ZAHL}>{euroAusCent(z.einzahlungCent, true)}</TableCell>

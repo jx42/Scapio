@@ -393,6 +393,7 @@ describe('Vertragstest: server/vertrag.ts gegen die tatsaechliche Antwort', () =
         vergleich: true,
         teuerung: true,
         teuerungBisMonat: true,
+        izf: true,
         real: true,
         gewinnCent: true,
         einzahlungCent: true,
