@@ -1,9 +1,9 @@
 /*
  * Gewinne & Abzüge, Ansicht: Gewinne je Position und Ertraege fliessen links zusammen
- * und teilen sich rechts in Nettogewinn, Positionsverluste, Steuern und Gebuehren.
+ * und teilen sich rechts in Gesamtgewinn, Positionsverluste, Steuern und Gebuehren.
  *
- * Bei einem Nettoverlust kehrt sich die Mitte um: Was die Abzuege nicht aus Gewinnen decken,
- * fliesst links als Nettoverlust zu, und die Mitte ist die Summe der Abzuege. So bleibt jeder
+ * Bei einem Gesamtverlust kehrt sich die Mitte um: Was die Abzuege nicht aus Gewinnen decken,
+ * fliesst links als Gesamtverlust zu, und die Mitte ist die Summe der Abzuege. So bleibt jeder
  * Fluss positiv, und links steht immer, was hereinkam, rechts, was abging.
  *
  * Alle Betraege und Anteile kommen fertig aus `core/gewinnquellen.ts`; hier werden nur
@@ -244,7 +244,7 @@ export function GewinnquellenAnsicht({ daten, realisiertCent, onAuswahl }: Gewin
   const nettoSumme = (
     <Summe
       tupfer={daten.nettoCent < 0 ? 'bg-verlust' : 'bg-chart-1'}
-      bezeichnung={de.gewinnquellen.netto}
+      bezeichnung={daten.nettoCent < 0 ? de.gewinnquellen.nettoverlust : de.gewinnquellen.nettogewinn}
       wert={nettoAnzeige}
       pfeil={netto.pfeil}
     />

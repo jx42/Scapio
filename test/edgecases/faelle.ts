@@ -629,7 +629,7 @@ export const FAELLE: readonly Fall[] = [
     id: 'gewinnquellen-nettoverlust',
     gruppe: 'gewinnquellen',
     ansicht: 'gewinnquellen',
-    titel: 'Nettoverlust: Abzüge in der Mitte',
+    titel: 'Gesamtverlust: Abzüge in der Mitte',
     routen: {
       gewinnquellen: aendern<Gewinnquellen>((b) => ({
         ...b,

@@ -580,7 +580,7 @@ export const de = {
     spalteTag: 'Tag',
     spalteDepotwert: 'Depotwert',
     spalteEinzahlung: 'Eingezahltes Kapital',
-    spalteRendite: 'Gesamtgewinn',
+    spalteRendite: 'Gesamtgewinn in %',
     spalteBenchmark: 'Vergleich',
     spalteVorgaenge: 'Vorgänge',
     vorgangZelle: (typ: string, wertpapier: string | undefined, betrag: string) =>
@@ -602,7 +602,7 @@ export const de = {
     jahre: {
       tabelle: 'Jahresübersicht: Rendite, Inflation und Geldflüsse je Kalenderjahr',
       spalteJahr: 'Jahr',
-      spalteRendite: 'Rendite (TWR)',
+      spalteRendite: 'Marktrendite (TWR)',
       spalteVergleich: (benchmark: string) => `Vergleich ${benchmark}`,
       spalteInflation: 'Inflation',
       spalteReal: 'Realrendite',
@@ -880,10 +880,10 @@ export const de = {
   gewinnquellen: {
     titel: 'Gewinne & Abzüge',
     abzuege: 'Abzüge',
-    netto: 'Netto',
-    brutto: 'Brutto',
-    nettogewinn: 'Nettogewinn',
-    nettoverlust: 'Nettoverlust',
+    brutto: 'Vor Abzügen',
+    /** Dieselbe Zahl wie der Gesamtgewinn über dem Verlauf, gezählt seit dem ersten Kauf. [ADR-062] */
+    nettogewinn: 'Gesamtgewinn',
+    nettoverlust: 'Gesamtverlust',
     ertraege: 'Erträge',
     steuern: 'Steuern',
     gebuehren: 'Gebühren',
@@ -892,7 +892,7 @@ export const de = {
     nichtsRealisiert: 'Noch nichts verkauft: Der Gewinn steht bisher nur im Kurs.',
     betragUndAnteil: (betrag: string, anteil: string) => `${betrag} · ${anteil}`,
     chart: (netto: string) =>
-      `Flussdiagramm: Gewinne und Erträge je Herkunft fließen zusammen und teilen sich in Nettoergebnis (${netto}), Verluste, Steuern und Gebühren.`,
+      `Flussdiagramm: Gewinne und Erträge je Herkunft fließen zusammen und teilen sich in Gesamtgewinn (${netto}), Verluste, Steuern und Gebühren.`,
     tabelle: 'Herkunft des Gewinns',
     spalteHerkunft: 'Herkunft',
     spalteBetrag: 'Betrag',

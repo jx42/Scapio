@@ -63,14 +63,14 @@ describe('GewinnquellenKachel', () => {
     await erwarteBarrierefrei(container);
   });
 
-  it('nennt Brutto, Abzuege und Netto, Abzuege nur, wenn es welche gibt', async () => {
+  it('nennt Vor Abzuegen, Abzuege und Gesamtgewinn, Abzuege nur, wenn es welche gibt', async () => {
     wiederherstellen = fetchErsatz(
       abfrage(() => ({ body: { ...GEWINNQUELLEN, abfluesse: [], abzuegeCent: 0, nettoCent: 1_000_00, nettoAnteil: 1 } })),
     );
     rendern(<GewinnquellenKachel />);
 
     expect(await screen.findAllByText(de.gewinnquellen.brutto)).not.toHaveLength(0);
-    expect(screen.getByText(de.gewinnquellen.netto)).toBeInTheDocument();
+    expect(screen.getAllByText(de.gewinnquellen.nettogewinn)).not.toHaveLength(0);
     expect(screen.queryByText(de.gewinnquellen.abzuege)).toBeNull();
   });
 
@@ -125,7 +125,7 @@ describe('GewinnquellenKachel', () => {
     expect(await screen.findByText(de.gewinnquellen.leer)).toBeInTheDocument();
   });
 
-  it('nennt bei einem Nettoverlust den Nettoverlust', async () => {
+  it('nennt bei einem Gesamtverlust den Gesamtverlust', async () => {
     wiederherstellen = fetchErsatz(
       abfrage(() => ({
         body: {

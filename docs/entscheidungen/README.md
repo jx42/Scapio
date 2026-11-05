@@ -66,3 +66,4 @@ der Geschichte stehen. Eine neue ADR bekommt die nächste freie Nummer und eine 
 | [059](ADR-059-kennzahlen-kachel-aufgeloest.md) | Kennzahlen-Kachel aufgelöst, jede Zahl an einem Ort | gilt |
 | [060](ADR-060-aufteilung-mit-reitern.md) | Eine Kachel Aufteilung mit den Reitern Aufteilung \| Analyse | gilt |
 | [061](ADR-061-einzelaktien-im-durchblick.md) | Einzelaktien im Durchblick | gilt |
+| [062](ADR-062-gewinn-in-euro-rendite-in-prozent.md) | Gewinn heißt Euro, Rendite heißt Prozent | gilt |
