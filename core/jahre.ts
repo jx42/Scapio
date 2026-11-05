@@ -9,15 +9,20 @@
  * Die Teuerung eines Jahres ist Dezember gegen Dezember, im ersten Jahr ab dem Monat vor
  * dem ersten Tag, im laufenden bis zum letzten Monat mit echter Zahl. Fortgeschrieben wird
  * nichts: eine unterstellte Nullinflation waere eine erfundene Realrendite. [P-05]
- * Die Realrendite ist hier die Fisher-Gleichung — ueber ein Jahr unterstellt sie nichts,
- * was der TWR nicht schon unterstellt.
+ *
+ * Der IZF eines Jahres laeuft vom Depotwert am Vorjahresende (als Einzahlung) ueber die
+ * externen Fluesse bis zum Depotwert am Jahresende. Wie die TWR gilt er fuer den Zeitraum
+ * der Zeile, nicht aufs Jahr hochgerechnet. Die Realrendite rechnet wie die Karte ueber dem
+ * Verlauf: derselbe IZF ueber Fluesse in Kaufkraft des letzten Monats der Zeile. [ADR-062]
  */
 
 import type { Cent } from './dezimal.ts';
 import type { Vpi } from './inflation.ts';
+import { deflationiere } from './inflation.ts';
 import type { Tag } from './kalender.ts';
-import { alsTag, monatVon, vergleiche } from './kalender.ts';
+import { alsTag, monatVon, tageZwischen, vergleiche } from './kalender.ts';
 import { twr } from './twr.ts';
+import { TAGE_IM_JAHR, renditeFluesse, xirr } from './xirr.ts';
 import type { DepotTag, Fluss } from './typen.ts';
 
 export type Jahreszeile = {
@@ -33,6 +38,9 @@ export type Jahreszeile = {
   readonly teuerung: number | null;
   /** Letzter Monat, den `teuerung` abdeckt. */
   readonly teuerungBisMonat: string | null;
+  /** Geldgewichtete Rendite des Zeitraums der Zeile; null, wenn der IZF nicht loesbar ist. */
+  readonly izf: number | null;
+  /** IZF ueber inflationsbereinigte Fluesse; null ohne IZF oder ohne Teuerung. */
   readonly real: number | null;
   /** Gesamtgewinn des Jahres: Veraenderung von Depotwert minus eingezahltem Kapital. */
   readonly gewinnCent: Cent;
@@ -96,6 +104,14 @@ function teuerungImJahr(vpi: Vpi, ab: Tag | null, bis: Tag, jahr: string): { teu
   return { teuerung: vpi.get(endeMonat)! / basis - 1, bisMonat: endeMonat };
 }
 
+/** IZF ueber den Zeitraum der Fluesse, zurueckgerechnet von p.a. auf diesen Zeitraum. */
+function periodenIzf(fluesse: readonly Fluss[]): number | null {
+  const ergebnis = xirr(fluesse);
+  if (ergebnis.art !== 'ok') return null;
+  const tage = tageZwischen(fluesse[0]!.tag, fluesse[fluesse.length - 1]!.tag);
+  return (1 + ergebnis.rate) ** (tage / TAGE_IM_JAHR) - 1;
+}
+
 /** Eine Zeile je Kalenderjahr der Reihe, aeltestes zuerst. */
 export function jahresuebersicht(e: JahreEingaben): Jahreszeile[] {
   const reihe = [...e.reihe].sort((a, b) => vergleiche(a.tag, b.tag));
@@ -132,6 +148,18 @@ export function jahresuebersicht(e: JahreEingaben): Jahreszeile[] {
     const gewinnVorher = vorher === null ? 0n : vorher.gesamtCent - vorher.nettoEinzahlungKumCent;
     const einzahlungVorher = vorher === null ? 0n : vorher.nettoEinzahlungKumCent;
 
+    // Fluesse am Tag von `vorher` stecken schon in dessen Depotwert.
+    const imJahr = e.externe.filter(
+      (f) => (vorher === null || vergleiche(f.tag, vorher.tag) > 0) && vergleiche(f.tag, letzter.tag) <= 0,
+    );
+    const start: Fluss[] = vorher === null ? [] : [{ tag: vorher.tag, betrag: vorher.gesamtCent }];
+    const fluesse = renditeFluesse([...start, ...imJahr], letzter.gesamtCent, letzter.tag);
+    const izf = periodenIzf(fluesse);
+    const real =
+      izf === null || teuerung === null
+        ? null
+        : periodenIzf(deflationiere(fluesse, e.vpi, monatVon(letzter.tag)).fluesse);
+
     zeilen.push({
       jahr,
       ab,
@@ -141,7 +169,8 @@ export function jahresuebersicht(e: JahreEingaben): Jahreszeile[] {
         vergleichsIndex === null || !vergleichsJahre.has(jahr) ? null : jahresrendite(vergleichsIndex, jahr),
       teuerung,
       teuerungBisMonat: bisMonat,
-      real: rendite === null || teuerung === null ? null : (1 + rendite) / (1 + teuerung) - 1,
+      izf,
+      real,
       gewinnCent: letzter.gesamtCent - letzter.nettoEinzahlungKumCent - gewinnVorher,
       einzahlungCent: letzter.nettoEinzahlungKumCent - einzahlungVorher,
       endwertCent: letzter.gesamtCent,

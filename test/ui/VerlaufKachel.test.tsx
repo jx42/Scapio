@@ -78,7 +78,8 @@ const JAHRE_FIXTURE: Jahre = {
       vergleich: null,
       teuerung: 0.021,
       teuerungBisMonat: '2025-12',
-      real: 0.96 / 1.021 - 1,
+      izf: -0.035,
+      real: 0.965 / 1.021 - 1,
       gewinnCent: -1_200_000,
       einzahlungCent: 30_000_000,
       endwertCent: 28_800_000,
@@ -91,7 +92,8 @@ const JAHRE_FIXTURE: Jahre = {
       vergleich: null,
       teuerung: 0.012,
       teuerungBisMonat: '2026-06',
-      real: 1.08 / 1.012 - 1,
+      izf: 0.075,
+      real: 1.075 / 1.012 - 1,
       gewinnCent: 2_500_000,
       einzahlungCent: 600_000,
       endwertCent: 37_805_537,
@@ -181,6 +183,27 @@ describe('VerlaufKachel', () => {
     expect(localStorage.getItem('portfolio.zeitraum')).toBe('max');
   });
 
+  it('zeigt den Regler erst mit „Von–bis“ und nimmt ihn mit einem festen Zeitraum wieder weg', async () => {
+    const pfade: string[] = [];
+    const antworten = mitKennzahlen(FIXTURE);
+    wiederherstellen = fetchErsatz((pfad: string) => {
+      pfade.push(pfad);
+      return antworten(pfad);
+    });
+    rendern(<VerlaufKachel />);
+    await screen.findByText(de.verlauf.tabelleVermoegen);
+    expect(screen.queryByRole('slider')).toBeNull();
+
+    const anzahl = pfade.length;
+    await userEvent.click(screen.getByRole('radio', { name: de.verlauf.zeitraumEigen }));
+    expect(screen.getByRole('slider', { name: de.verlauf.reglerBeginn })).toHaveAttribute('aria-valuetext', '01.01.2024');
+    // Oeffnen allein fragt nichts Neues ab.
+    expect(pfade.slice(anzahl).some((p) => p.startsWith('/api/zeitreihe'))).toBe(false);
+
+    await userEvent.click(screen.getByRole('radio', { name: de.verlauf.zeitraeume.max }));
+    expect(screen.queryByRole('slider')).toBeNull();
+  });
+
   it('fragt nach dem Verschieben des Reglers den freien Zeitraum ab, ohne Segment', async () => {
     const pfade: string[] = [];
     const antworten = mitKennzahlen(FIXTURE);
@@ -190,6 +213,7 @@ describe('VerlaufKachel', () => {
     });
     rendern(<VerlaufKachel />);
     await screen.findByText(de.verlauf.tabelleVermoegen);
+    await userEvent.click(screen.getByRole('radio', { name: de.verlauf.zeitraumEigen }));
 
     const beginn = screen.getByRole('slider', { name: de.verlauf.reglerBeginn });
     expect(beginn).toHaveAttribute('aria-valuetext', '01.01.2024');
@@ -199,8 +223,7 @@ describe('VerlaufKachel', () => {
     await waitFor(() => {
       expect(pfade).toContain('/api/zeitreihe?von=2024-01-15&bis=2026-08-26&benchmark=IE00B4L5Y983');
     });
-    const zeitraumwahl = screen.getByRole('radiogroup', { name: de.verlauf.zeitraum });
-    for (const radio of within(zeitraumwahl).getAllByRole('radio')) expect(radio).toHaveAttribute('aria-checked', 'false');
+    expect(screen.getByRole('radio', { name: de.verlauf.zeitraumEigen })).toBeChecked();
     // Der freie Zeitraum ueberlebt kein Neuladen, der gemerkte feste bleibt unberuehrt.
     expect(localStorage.getItem('portfolio.zeitraum')).toBeNull();
   });
@@ -243,6 +266,7 @@ describe('VerlaufKachel', () => {
     });
     rendern(<VerlaufKachel />);
     await screen.findByText(de.verlauf.tabelleVermoegen);
+    await userEvent.click(screen.getByRole('radio', { name: de.verlauf.zeitraumEigen }));
 
     const beginn = screen.getByRole('slider', { name: de.verlauf.reglerBeginn });
     fokussieren(beginn);
@@ -252,9 +276,9 @@ describe('VerlaufKachel', () => {
       expect(frei).toBe(1);
     });
     await waitFor(() => {
-      expect(screen.getByRole('slider', { name: de.verlauf.reglerBeginn })).toHaveAttribute('aria-valuetext', '01.01.2024');
+      expect(screen.getByRole('radio', { name: de.verlauf.zeitraeume.max })).toHaveAttribute('aria-checked', 'true');
     });
-    expect(screen.getByRole('radio', { name: de.verlauf.zeitraeume.max })).toHaveAttribute('aria-checked', 'true');
+    expect(screen.queryByRole('slider')).toBeNull();
     expect(screen.queryByRole('alert')).toBeNull();
   });
 
@@ -271,6 +295,7 @@ describe('VerlaufKachel', () => {
       wiederherstellen = fetchErsatz(mitKennzahlen(FIXTURE));
       rendern(<VerlaufKachel />);
       await screen.findByText(de.verlauf.tabelleVermoegen);
+      await userEvent.click(screen.getByRole('radio', { name: de.verlauf.zeitraumEigen }));
 
       const griffe = screen.getAllByRole('slider');
       for (const griff of griffe) {
@@ -568,14 +593,15 @@ describe('VerlaufKachel', () => {
     const daten: Jahre = {
       ...JAHRE_FIXTURE,
       benchmark: { isin: 'IE00B4L5Y983', name: 'MSCI World' },
-      jahre: [{ ...aelter!, twr: null, vergleich: null, real: null }, { ...neuer!, teuerung: null, real: null }],
+      jahre: [{ ...aelter!, twr: null, vergleich: null, izf: null, real: null }, { ...neuer!, teuerung: null, real: null }],
     };
     rendern(<JahresTabelle daten={daten} />);
     const [, erste, zweite] = screen.getAllByRole('row');
     const j = de.verlauf.jahre;
     expect(within(erste!).getByTitle(j.ohneRendite)).toHaveTextContent(de.xirr.nichtBerechenbar);
     expect(within(erste!).getByTitle(j.ohneVergleich('MSCI World'))).toBeInTheDocument();
-    expect(within(erste!).getByTitle(j.realOhneRendite)).toBeInTheDocument();
+    expect(within(erste!).getByTitle(j.ohneIzf)).toHaveTextContent(de.xirr.nichtBerechenbar);
+    expect(within(erste!).getByTitle(j.realOhneIzf)).toBeInTheDocument();
     expect(within(zweite!).getByTitle(j.ohneInflation)).toBeInTheDocument();
     expect(within(zweite!).getByTitle(j.realOhneInflation)).toBeInTheDocument();
   });

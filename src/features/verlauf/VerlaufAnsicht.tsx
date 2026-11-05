@@ -44,8 +44,12 @@ export const VERLAUF_MODI: readonly VerlaufAnsichtModus[] = ['vermoegen', 'rendi
 export type VerlaufAnsichtProps = {
   readonly punkte: readonly Zeitpunkt[];
   readonly marken: readonly Marke[];
-  /** `null`, solange der Zeitraumregler einen freien Zeitraum haelt. */
+  /** `null`, solange der Zeitraumregler offen ist — mit oder ohne frei gewaehltes Fenster. */
   readonly zeitraum: Zeitraum | null;
+  /** Ein frei gewaehltes Fenster liegt an; sonst zeigt die Kopfzeile den festen Zeitraum. */
+  readonly freiGewaehlt: boolean;
+  /** Der feste Zeitraum, dessen Fenster gilt, solange der offene Regler nicht bewegt wurde. */
+  readonly festerZeitraum: Zeitraum;
   /** Die Knoepfe der Zeitraumwahl, vom Server. */
   readonly zeitraeume: readonly Zeitraum[];
   /** Das tatsaechlich gezeigte Fenster, wie der Server es begrenzt hat. */
@@ -77,6 +81,7 @@ export type VerlaufAnsichtProps = {
   readonly sperrgrund?: string | null;
   readonly onZeitraum: (zeitraum: Zeitraum) => void;
   readonly onFreierZeitraum: (von: string, bis: string) => void;
+  readonly onReglerOeffnen: () => void;
   /** Der aktiv verglichene Benchmark, oder `null` — bestimmt Namen in Legende/Tooltip/Tabelle. */
   readonly benchmark: { readonly isin: string; readonly name: string } | null;
   /** Aus Linienwahl, per Default aus: nur im Vermoegen-Chart gezeichnet. */
@@ -92,6 +97,8 @@ export function VerlaufAnsicht({
   punkte,
   marken,
   zeitraum,
+  freiGewaehlt,
+  festerZeitraum,
   zeitraeume,
   ausschnitt,
   tage,
@@ -104,14 +111,14 @@ export function VerlaufAnsicht({
   sperrgrund,
   onZeitraum,
   onFreierZeitraum,
+  onReglerOeffnen,
   benchmark,
   zeigeEinzahlung,
   zeigeZufluesse,
   drawdown,
 }: VerlaufAnsichtProps) {
-  const zeitraumLang =
-    zeitraum !== null
-      ? de.verlauf.zeitraumLang[zeitraum]
+  const zeitraumLang = !freiGewaehlt
+      ? de.verlauf.zeitraumLang[zeitraum ?? festerZeitraum]
       : ausschnitt === null
         ? ''
         : de.verlauf.zeitraumFrei(datumKurz(ausschnitt.von), datumKurz(ausschnitt.bis));
@@ -132,8 +139,9 @@ export function VerlaufAnsicht({
 
   const { fenster, anschluss, melde } = useZeitraumVorschau(ausschnitt, tage, auswahlRunde);
 
+  const reglerMoeglich = ausschnitt !== null && tage.length >= 2;
   const regler =
-    ausschnitt === null || tage.length < 2 ? undefined : (
+    zeitraum !== null || ausschnitt === null || !reglerMoeglich ? undefined : (
       <Zeitraumregler
         tage={tage}
         fenster={fenster}
@@ -195,7 +203,13 @@ export function VerlaufAnsicht({
             />
           )}
         </p>
-        <Zeitraumwahl gewaehlt={zeitraum} angeboten={zeitraeume} onWahl={onZeitraum} />
+        <Zeitraumwahl
+          gewaehlt={zeitraum}
+          angeboten={zeitraeume}
+          eigenMoeglich={reglerMoeglich}
+          onWahl={onZeitraum}
+          onEigen={onReglerOeffnen}
+        />
       </div>
 
       <TabsContent value="vermoegen">
