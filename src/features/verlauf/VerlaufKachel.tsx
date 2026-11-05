@@ -13,7 +13,8 @@
  * Diagramm auch die Bedienung, mit der man das leere Fenster wieder verlassen koennte —
  * der gespeicherte Zeitraum haelt die Kachel dann ueber jedes Neuladen hinweg leer.
  *
- * Der frei gewaehlte Zeitraum des Reglers wird nicht gespeichert: er haengt an den Tagen
+ * Der Regler steht nur da, wenn in der Segmentleiste „Von–bis“ gewaehlt ist; bis er bewegt wird,
+ * bleibt das Fenster des festen Zeitraums. Der frei gewaehlte Zeitraum wird nicht gespeichert: er haengt an den Tagen
  * der Reihe, die mit jedem Lauf weiterwandert. In der Demo steht der Regler gesperrt da —
  * der statische Abzug kennt nur die festen Zeitraeume. [ADR-048]
  *
@@ -75,6 +76,7 @@ type Darstellung = (typeof DARSTELLUNGEN)[number];
 
 export function VerlaufKachel() {
   const [zeitraum, setZeitraum] = useGespeichert<Zeitraum>('zeitraum', 'max', ZEITRAEUME);
+  const [reglerOffen, setReglerOffen] = useState(false);
   const [frei, setFrei] = useState<{ readonly von: string; readonly bis: string } | null>(null);
   const [auswahlRunde, setAuswahlRunde] = useState(0);
   const auswahl: ZeitraumAuswahl = frei ?? zeitraum;
@@ -117,13 +119,15 @@ export function VerlaufKachel() {
   // Regler noch Segmentleiste, und ohne Neuladen kaeme man nicht mehr heraus.
   if (frei !== null && abfrage.isError) {
     setFrei(null);
+    setReglerOffen(false);
     setAuswahlRunde((n) => n + 1);
   }
 
   const daten = abfrage.data;
 
-  if (drawdownZeigen && (frei !== null || zeitraum !== 'max')) {
+  if (drawdownZeigen && (reglerOffen || zeitraum !== 'max')) {
     setFrei(null);
+    setReglerOffen(false);
     setAuswahlRunde((n) => n + 1);
     setZeitraum('max');
   }
@@ -220,7 +224,9 @@ export function VerlaufKachel() {
             <VerlaufAnsicht
               punkte={daten.punkte}
               marken={daten.marken}
-              zeitraum={frei === null ? zeitraum : null}
+              zeitraum={reglerOffen ? null : zeitraum}
+              freiGewaehlt={frei !== null}
+              festerZeitraum={zeitraum}
               zeitraeume={daten.zeitraeume}
               ausschnitt={daten.ausschnitt}
               tage={daten.tage}
@@ -234,8 +240,13 @@ export function VerlaufKachel() {
               onZeitraum={(neu) => {
                 setzeDrawdownGezeigt(false);
                 setFrei(null);
+                setReglerOffen(false);
                 setAuswahlRunde((n) => n + 1);
                 setZeitraum(neu);
+              }}
+              onReglerOeffnen={() => {
+                setzeDrawdownGezeigt(false);
+                setReglerOffen(true);
               }}
               onFreierZeitraum={(von, bis) => {
                 setzeDrawdownGezeigt(false);

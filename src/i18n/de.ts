@@ -526,6 +526,7 @@ export const de = {
       '5j': '5J',
       max: 'MAX',
     },
+    zeitraumEigen: 'Von–bis',
     zeitraumLang: {
       '1m': 'ein Monat',
       ytd: 'seit Jahresbeginn',
