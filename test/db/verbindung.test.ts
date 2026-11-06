@@ -198,6 +198,22 @@ describe('sichereWennFaellig [ADR-045]', () => {
     db.close();
   });
 
+  it('raeumt Reste einer abgebrochenen Sicherung, aber keine frischen und keine fremden Dateien', async () => {
+    const db = await testDatenbank();
+    const v = temp();
+    const jetzt = Date.now();
+    const alt = 'portfolio-auto-1-2026-01-01T00-00-00-000.db.tmp';
+    for (const rest of [alt, `${alt}-wal`, `${alt}-shm`]) alteSicherung(v, rest, 1, jetzt);
+    // Eine Sicherung, die gerade in einem zweiten Prozess laeuft (`npm run backup`).
+    alteSicherung(v, 'portfolio-2-2026-01-02T00-00-00-000.db.tmp', 0, jetzt);
+    alteSicherung(v, 'portfolio-1-2026-01-01T00-00-00-000.db', 1, jetzt);
+    alteSicherung(v, 'notiz.db.tmp', 1, jetzt);
+
+    expect(await sichereWennFaellig(db, v, jetzt)).toBeNull();
+    expect(readdirSync(v).sort()).toEqual(['notiz.db.tmp', 'portfolio-1-2026-01-01T00-00-00-000.db', 'portfolio-2-2026-01-02T00-00-00-000.db.tmp']);
+    db.close();
+  });
+
   it('sichert nach sieben Tagen und zaehlt dabei nur eigene Dateien', async () => {
     const db = await testDatenbank();
     const v = temp();

@@ -224,6 +224,8 @@ selben Verzeichnis, werden von `alteSicherungenLoeschen` aber getrennt gezählt:
 bleiben die **letzten fünf** Dateien stehen, dazu die neueste je Monat der letzten zwölf Monate
 und die neueste je Jahr ([ADR-056](entscheidungen/ADR-056-datenverzeichnis-und-dateirechte-aus-einer-hand.md)). Mehrfaches manuelles Sichern kurz vor einer
 Migration kann die automatische Migrationssicherung also nicht mehr aus der Rotation drängen.
+Reste einer abgebrochenen Sicherung (`portfolio-….db.tmp`, `-wal`, `-shm`) löscht der nächste
+Start, sobald sie älter als eine Stunde sind.
 
 Nach einer Schemaänderung:
 
