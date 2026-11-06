@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { Fremdtext, GRENZE, Geld, ISIN_MUSTER, Kurs, Menge, Zeitstempel } from './grundlagen.ts';
+import { Euro, Fremdtext, GRENZE, Geld, ISIN_MUSTER, Kurs, Menge, Zeitstempel } from './grundlagen.ts';
 
 // ---------------------------------------------------------------------------
 // list_portfolio_transactions
@@ -48,7 +48,7 @@ export const Transaktionszeile = z
     kind: z.enum(['security', 'cash', 'non_trade_security']),
     category: z.string().min(1).max(GRENZE.typ),
     status: z.string().min(1).max(GRENZE.typ),
-    currency: z.string().max(8),
+    currency: Euro,
     isCancellation: z.boolean(),
     lastEventAt: Zeitstempel,
     description: Fremdtext.nullable(),

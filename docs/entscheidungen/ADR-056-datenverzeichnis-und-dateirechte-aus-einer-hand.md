@@ -56,3 +56,10 @@ lässt sie sich zurückrechnen; sie hält den Klartext nur aus Profilsicherung u
 Ebenso nennt das Fehlerprotokoll des Servers nur die Route, nicht die Query
 (`GET /api/rebalancing?ziel=` trägt ISINs und Zielanteile), und `pruefe.ts` filtert auch die
 Pfadelemente einer zod-Meldung — der Schlüssel eines `z.record` ist fremder Text.
+
+## Nachtrag: Reste abgebrochener Sicherungen
+
+Endet der Prozess zwischen `backup` und `rename`, bleibt `<name>.db.tmp` samt `-wal`/`-shm` als
+volle Kopie des Depots liegen, außerhalb jeder Rotation. `sichereWennFaellig` räumt beim Start
+solche Reste (`raeumeTempReste` in `db/verbindung.ts`), sofern sie älter als eine Stunde sind —
+jünger kann eine Sicherung sein, die `npm run backup` gerade schreibt.

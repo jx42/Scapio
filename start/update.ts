@@ -360,4 +360,20 @@ export async function holeNeueVersion(wurzel: string, gegenstelle: Gegenstelle =
   return true;
 }
 
-if (import.meta.filename === resolve(process.argv[1] ?? '')) await haupt();
+/**
+ * Wie `start.ts`: ein unerwarteter Fehler (git fehlt, Rechte, volle Platte) endet als ein Satz
+ * mit Verweis aufs Runbook und Exit-Code 1, nicht als Stacktrace, den `Aktualisieren.*` zeigt.
+ */
+export async function lesbarScheitern(
+  arbeit: () => Promise<void>,
+  schreibe: (text: string) => void = (text) => process.stderr.write(text),
+): Promise<void> {
+  try {
+    await arbeit();
+  } catch (fehler) {
+    schreibe(`❌  Das Update ist gescheitert: ${(fehler as Error).message}\nSiehe docs/RUNBOOK.md.\n`);
+    process.exitCode = 1;
+  }
+}
+
+if (import.meta.filename === resolve(process.argv[1] ?? '')) await lesbarScheitern(() => haupt());

@@ -25,6 +25,7 @@ import {
   gitLocator,
   gleicheAdresse,
   holeNeueVersion,
+  lesbarScheitern,
   schlusssaetze,
   ZIP_ADRESSE,
   zipHinweis,
@@ -138,6 +139,29 @@ describe('schlusssaetze', () => {
     const text = schlusssaetze(false, 'darwin').join('\n');
     expect(text).toContain('npm ci --ignore-scripts');
     expect(text.indexOf('npm ci')).toBeLessThan(text.indexOf('npm start'));
+  });
+});
+
+describe('lesbarScheitern', () => {
+  afterEach(() => {
+    process.exitCode = undefined;
+  });
+
+  it('meldet einen Fehler als einen Satz mit Verweis aufs Runbook, statt als Stacktrace', async () => {
+    const zeilen: string[] = [];
+    await lesbarScheitern(
+      () => Promise.reject(new Error('Werkzeug fehlt')),
+      (text) => zeilen.push(text),
+    );
+    expect(zeilen).toEqual(['❌  Das Update ist gescheitert: Werkzeug fehlt\nSiehe docs/RUNBOOK.md.\n']);
+    expect(process.exitCode).toBe(1);
+  });
+
+  it('laesst einen gelungenen Lauf in Ruhe', async () => {
+    const zeilen: string[] = [];
+    await lesbarScheitern(() => Promise.resolve(), (text) => zeilen.push(text));
+    expect(zeilen).toEqual([]);
+    expect(process.exitCode).toBeUndefined();
   });
 });
 
