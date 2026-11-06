@@ -82,7 +82,7 @@ describe('GewinnquellenKachel', () => {
     const { container } = rendern(<GewinnquellenKachel />);
 
     const realisiert = await screen.findByRole('button', { name: new RegExp(de.kennzahlen.detailsOeffnen(de.kennzahlen.realisiert)) });
-    expect(screen.getByText(de.gewinnquellen.realisiert)).toBeInTheDocument();
+    expect(screen.getByText(de.satz.beschriftung(de.gewinnquellen.realisiert))).toBeInTheDocument();
 
     await userEvent.click(realisiert);
     const dialog = await screen.findByRole('dialog');
