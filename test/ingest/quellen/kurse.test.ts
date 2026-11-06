@@ -1,7 +1,6 @@
 /** `ingest/quellen/kurse.ts`: was die Quelle aus einer Antwort macht. Rahmen in `hilfen.ts`. */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { PlausibilitaetsFehler } from '../../../ingest/plausibilitaet.ts';
 import { FIXTURE, json } from '../../fixtures/index.ts';
 import { WELT } from '../../hilfen.ts';
 import { EM, SYNTHETISCHER_GLOBALFONDS, antwort, kontext, leeresFenster, mcp, netz } from './hilfen.ts';
@@ -76,17 +75,27 @@ describe('holeKurse', () => {
     expect(ctx.befunde.hinweise).toContainEqual({ art: 'kursfensterAndereIsin', werte: { fenster: 'max', isin: WELT } });
   });
 
-  it('bricht bei Kurs <= 0 innerhalb eines Fensters ab', async () => {
-    mcp.mockResolvedValue(
-      antwort({
-        isin: WELT,
-        timeframe: 'max',
-        currency: 'EUR',
-        source: 'ubs',
-        closingReferencePoint: { timestampUtc: '2026-01-01T00:00:00+01:00', midPrice: 0 },
-        dataPoints: [{ timestampUtc: '2026-01-01T00:00:00+01:00', midPrice: 0 }],
-      }),
-    );
-    await expect(holeKurse(kontext(), WELT)).rejects.toThrow(PlausibilitaetsFehler);
+  it('verwirft einen Kurs <= 0 einzeln und behaelt die uebrigen Punkte des Fensters', async () => {
+    mcp.mockImplementation(async (_tool: string, optionen?: { ergaenzung?: { fenster?: string } }) => {
+      const fenster = optionen?.ergaenzung?.fenster;
+      const dataPoints =
+        fenster === 'max'
+          ? [
+              { timestampUtc: '2026-01-02T00:00:00+01:00', midPrice: 0 },
+              { timestampUtc: '2026-01-05T00:00:00+01:00', midPrice: 101.5 },
+              { timestampUtc: '2026-01-06T00:00:00+01:00', midPrice: -3 },
+            ]
+          : fenster === 'one_year'
+            ? [{ timestampUtc: '2026-01-07T00:00:00+01:00', midPrice: 0 }]
+            : [];
+      return antwort({ ...leeresFenster(WELT, fenster), dataPoints });
+    });
+
+    const ctx = kontext();
+    const ernte = await holeKurse(ctx, WELT);
+
+    expect(ernte.daten.kurspunkte.map((p) => p.tag)).toEqual(['2026-01-05']);
+    expect(ernte.daten.fehlendeFenster).toEqual([]);
+    expect(ctx.befunde.hinweise).toEqual([{ art: 'kurspunkteUngueltig', werte: { isin: WELT, anzahl: 3 } }]);
   });
 });

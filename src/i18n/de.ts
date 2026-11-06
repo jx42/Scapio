@@ -307,6 +307,7 @@ export const de = {
       kursfensterNichtAbrufbar: 'Kurse nicht abgerufen',
       kursfensterSchema: 'Kurse verworfen',
       kursfensterAndereIsin: 'Kurse verworfen',
+      kurspunkteUngueltig: 'Einzelne Kurse verworfen',
       zinsLuecken: 'Lücken in den Zinsdaten',
       vpiLuecken: 'Lücken im Preisindex',
       vpiRandLuecken: 'Lücken im Preisindex',
@@ -353,6 +354,7 @@ export const de = {
         'Drücke später erneut „Aktualisieren“. Bleibt der Hinweis, hilft eine neue Version von Scapio (Aktualisieren.command bzw. .bat).',
       kursfensterAndereIsin:
         'Drücke später erneut „Aktualisieren“. Bleibt der Hinweis, hilft eine neue Version von Scapio (Aktualisieren.command bzw. .bat).',
+      kurspunkteUngueltig: 'Du musst nichts tun; die übrigen Kurse sind übernommen.',
       zinsLuecken: 'Du musst nichts tun.',
       vpiLuecken: 'Du musst nichts tun.',
       vpiRandLuecken: 'Du musst nichts tun.',
@@ -408,6 +410,7 @@ export const de = {
         `Kursfenster ${fenster} für ${isin} hatte eine unerwartete Form und wurde verworfen.`,
       kursfensterAndereIsin: (fenster: string, isin: string) =>
         `Kursfenster ${fenster}: Die Antwort betraf ein anderes Papier als ${isin} und wurde verworfen.`,
+      kurspunkteUngueltig: (isin: string, anzahl: string) => `${isin}: ${anzahl} Kurse von null oder darunter verworfen.`,
       zinsLuecken: (tage: string) => `Zins: ${tage} Tage ohne Wert übersprungen.`,
       vpiLuecken: (monate: string) => `Preisindex: ${monate} Monate ohne Wert übersprungen.`,
       vpiRandLuecken: (monate: string) => `Preisindex, jüngste Monate: ${monate} Monate ohne Wert übersprungen.`,

@@ -133,6 +133,7 @@ export const ALLE_HINWEISE: LaufHinweis[] = [
   { art: 'kursfensterNichtAbrufbar', werte: { fenster: '1j', isin: ISIN_WORLD, grund: 'HTTP 404' } },
   { art: 'kursfensterSchema', werte: { fenster: 'max', isin: ISIN_WORLD } },
   { art: 'kursfensterAndereIsin', werte: { fenster: '5j', isin: ISIN_WORLD } },
+  { art: 'kurspunkteUngueltig', werte: { isin: ISIN_WORLD, anzahl: 2 } },
   { art: 'zinsLuecken', werte: { tage: 6 } },
   { art: 'vpiLuecken', werte: { monate: 2 } },
   { art: 'vpiRandLuecken', werte: { monate: 1 } },

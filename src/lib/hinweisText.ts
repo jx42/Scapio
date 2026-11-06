@@ -90,6 +90,8 @@ export function hinweisText(h: LaufHinweis): string {
       return t.kursfensterSchema(text(w.fenster), text(w.isin));
     case 'kursfensterAndereIsin':
       return t.kursfensterAndereIsin(text(w.fenster), text(w.isin));
+    case 'kurspunkteUngueltig':
+      return t.kurspunkteUngueltig(text(w.isin), anzahl(w.anzahl));
     case 'zinsLuecken':
       return t.zinsLuecken(anzahl(w.tage));
     case 'vpiLuecken':

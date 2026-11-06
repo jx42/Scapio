@@ -5,7 +5,8 @@
  *
  * | Pruefung                                    | Bei Verstoss                          |
  * |---------------------------------------------|---------------------------------------|
- * | Menge >= 0, Kurs > 0                        | Abbruch                               |
+ * | Menge >= 0, Kurs > 0 im Bestand             | Abbruch                               |
+ * | Kurs > 0 in der Kurshistorie                | Punkt verwerfen, Hinweis              |
  * | Datum nicht in der Zukunft, nicht vor 2015  | Punkt verwerfen, Hinweis              |
  * | Summe Positionswerte + Cash = Gesamt +- 1 € | Hinweis, nur bei gleichem Stand [ADR-015] |
  * | Tagessprung eines Kurses > 30 %             | `kurs.auffaellig = 1`, Hinweis        |
@@ -15,8 +16,9 @@
  *
  * Befunde werden GESAMMELT, nicht geworfen — sonst reisst der erste Schoenheitsfehler den
  * ganzen Lauf ab, und das Dashboard zeigt lieber eine Zahl mit Fussnote als gar keine.
- * Die beiden Abbruchfaelle sind die Ausnahme: eine negative Menge oder ein Kurs <= 0 ist
- * kein Schoenheitsfehler, sondern ein kaputter Datensatz.
+ * Die beiden Abbruchfaelle sind die Ausnahme: eine negative Menge oder ein Kurs <= 0 im
+ * Bestand ist kein Schoenheitsfehler, sondern ein kaputter Datensatz. Ein einzelner Punkt
+ * der Kurshistorie dagegen kostet nur seinen Tag (`quellen/kurse.ts`).
  *
  * Kein I/O. Die Hinweistexte enthalten Anzahlen und ISINs, nie Betraege. Eine Ausnahme:
  * `meldeSpruenge` nennt den Fondsnamen — Fremdtext, aber nur angezeigt (React-Kindknoten,
