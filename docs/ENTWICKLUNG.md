@@ -21,7 +21,7 @@ npm start
 
 `npm start` baut die Oberfläche nur, wenn `dist/` älter ist als eine der Quellen, und macht keinen Typecheck. Der gehört in `npm run check` und in die CI, wo er auch etwas findet; auf dem Rechner eines Benutzers, der keinen Code angefasst hat, kostet er nur Zeit bis zur ersten Zahl.
 
-`npm run audit` läuft bewusst **nicht** in `npm run check`: `check` muss ohne Netz grün werden können, und ein neu veröffentlichter Fund in einer Abhängigkeit sagt nichts über den gerade geänderten Code. In der CI ist es ein eigener Job.
+`npm run audit` läuft bewusst **nicht** in `npm run check`: `check` muss ohne Netz grün werden können, und ein neu veröffentlichter Fund in einer Abhängigkeit sagt nichts über den gerade geänderten Code. In der CI ist es ein eigener Job. Es prüft auch das Lockfile von `demo-worker/` (wrangler), ohne es zu installieren.
 
 ## Befehle
 
@@ -40,13 +40,13 @@ npm run demo:export    # dieselbe Demo als statischer Abzug nach .demo-export/, 
 npm run edgecases      # alle Fehlermeldungen und Randfälle der Oberfläche auf einer Seite
 npm run pr-bild -- <nr> <id>… # Kacheln der laufenden Demo fotografieren, für den Skill /push (ADR-042)
 npm run mcp-login      # einmalige, interaktive OAuth/PKCE-Anmeldung am Scalable-MCP
-npm run check          # typecheck + lint + tests (die Invarianten laufen darin mit) — muss vor jeder Übergabe grün sein
+npm run check          # typecheck + lint + tests mit Abdeckungsschwellen (die Invarianten laufen darin mit) — muss vor jeder Übergabe grün sein
 npm run check:kurz     # dieselbe Prüfung, aber still: drei Zeilen statt tausend, Volltext im Log
 npm run check:geaendert # tsc ganz, eslint und vitest für Geändertes gegenüber origin/main, dazu Invarianten und Tests aus der Pfadtabelle in start/pruefung.ts — für Zwischenschritte
 npm run test:tz        # dieselbe Suite unter drei Zeitzonen
 npm run test:invarianten # nur die zwölf Invariantentests, dazu der Kontrasttest der Farb-Tokens
 npm run test:e2e       # der eine Playwright-Durchstich, echter Chromium
-npm run test:abdeckung # Testabdeckung, nicht Teil von check
+npm run test:abdeckung # alle Tests mit Abdeckung je Ordner, der Testschritt von check; je Datei: -- --coverage.reporter=text
 npm run verify         # Historie komplett neu rechnen und mit der gespeicherten vergleichen — mit Beträgen, nicht für Agenten
 npm run verify:zaehlung # dasselbe, aber nur Tag und Feld — der Weg für Agenten
 npm run ingest         # Ingest einmalig, für die Fehlersuche — nicht für Agenten
@@ -56,7 +56,7 @@ npm run abdruck        # Hash über core/ neu schreiben, nach einer KERN_VERSION
 npm run kern:version   # KERN_VERSION einmal je Branch gegenüber origin/main erhöhen und den Abdruck schreiben — beliebig oft aufrufbar
 npm run backup         # Sicherung der Datenbank
 npm run leak-pruefung  # Depotwerte, Token, Pfade im Repository suchen — vor jedem Release, nur der Nutzer
-npm run audit          # Schwachstellen in den Laufzeitabhängigkeiten — nicht Teil von check, aber Pflicht vor jedem Push
+npm run audit          # Schwachstellen in den Laufzeitabhängigkeiten und in demo-worker/ — nicht Teil von check, aber Pflicht vor jedem Push
 ```
 
 `npm run demo` und der Ende-zu-Ende-Test zeigen modellierte Tageskurse aus `test/e2e/kurshistorie-modelliert.json`, keine echten Börsenkurse. Wie sie entstehen, steht in der Datei selbst, wozu sie dienen, im Dateikopf von `test/e2e/daten.ts`.
@@ -64,6 +64,11 @@ npm run audit          # Schwachstellen in den Laufzeitabhängigkeiten — nicht
 ## Automatische Prüfung
 
 `.github/workflows/pruefung.yml` fährt bei jedem Push und Pull Request `npm run check` auf macOS, Linux und Windows, dazu als eigene Jobs `npm run audit` und `npm run test:tz` unter Linux mit nur den beiden fremden Zonen ([ADR-050](entscheidungen/ADR-050-zeitzonen-in-der-ci-nur-unter-linux.md)). Windows ist dabei, weil das Projekt Pfade, Dateirechte und Unterprozesse anfasst – genau dort sitzen die Unterschiede, die auf dem Rechner des Autors unsichtbar bleiben.
+
+Zwei Schwellen stehen in `vite.config.ts` und greifen in `check`, lokal wie in der CI:
+
+- **Abdeckung je Ordner** (`ABDECKUNG`): Anweisungen, Zweige, Funktionen, Zeilen, knapp unter dem Ist — eine Ratsche. Steigt das Ist, die Zahl im selben PR nachziehen; gesenkt wird nur bewusst, mit Grund in der Commit-Nachricht. Bei `shared/` und `start/` zwei Punkte Luft statt einem, weil dort die Plattformzweige liegen. `check:geaendert` misst nicht — ein Teillauf läge immer darunter. Ein neuer Quellordner braucht einen Eintrag, sonst wird `test/pruefschwellen.test.ts` rot.
+- **Bundle-Budget** (`BUNDLE_KB`, 1200 kB je JS-Chunk): statt Code-Splitting, denn die Oberfläche wird lokal ausgeliefert und rendert alle Kacheln sofort. Vite warnt erst darüber; `test/pruefschwellen.test.ts` prüft `dist/`, wenn es gebaut ist — in der CI immer.
 
 `npm run test:tz` setzt `TZ=…` deshalb nicht als POSIX-Präfix (das kennt die Windows-Kommandozeile nicht), sondern als Umgebung des Kindprozesses in `start/zeitzonen.ts`. Das Paket `cross-env` wäre die Alternative gewesen; drei Zeilen eigener Code sind hier billiger. Ohne Argumente laufen alle drei Zonen, mit Argumenten nur die genannten.
 
@@ -80,7 +85,8 @@ ist. Der Ablauf wird ohne Rückfrage durchlaufen:
    danach `npm ci --ignore-scripts` (der Fix räumt die devDependencies aus `node_modules`) und
    `npm run check` erneut — die Abhängigkeiten haben sich geändert. Hilft nur `npm audit fix --force`, wird es
    nicht erzwungen: das ist ein Breaking Change in einer Abhängigkeit, also melden und auf
-   Ansage warten.
+   Ansage warten. Ein Fund in `demo-worker/` heißt: `wrangler` in `demo-worker/package.json`
+   heben ([ADR-055](entscheidungen/ADR-055-update-und-release-kette.md)).
 3. **Branch und PR:** `git switch -c <thema>`, committen, `git push -u origin <thema>`,
    `gh pr create` mit Warum-Zeile und Label (`neu`, `korrektur`, `intern` oder `ohne-notiz`,
    siehe [Release](#release)). Weitere Korrekturen kommen als neue Commits auf denselben Branch.
