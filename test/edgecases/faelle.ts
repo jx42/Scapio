@@ -137,7 +137,7 @@ export const ALLE_HINWEISE: LaufHinweis[] = [
   { art: 'vpiLuecken', werte: { monate: 2 } },
   { art: 'vpiRandLuecken', werte: { monate: 1 } },
   { art: 'bestandteileSumme', werte: { isin: ISIN_WORLD, prozent: 92.3, positionen: 1500, ohneIsin: 12 } },
-  { art: 'transaktionenSeitenGrenze', werte: { seiten: 43, hoechstens: 50 } },
+  { art: 'transaktionenSeitenGrenze', werte: { seiten: 850, hoechstens: 1000 } },
   // Eine Art aus einer neueren Version, die diese Oberflaeche noch nicht kennt.
   { art: 'ausDerZukunft', werte: {} } as unknown as LaufHinweis,
 ];
@@ -169,6 +169,7 @@ export const LAUF_FEHLER: [string, string | null][] = [
   ['E_MCP_SEITEN', 'mehr als 200 Seiten'],
   ['E_MCP_UNVOLLSTAENDIG', 'Feld positions fehlt'],
   ['E_SCHEMA', 'transactions[3].amount: Expected string'],
+  ['E_WAEHRUNG', 'transactions.3.currency: invalid_value'],
   ['E_STORNO_BREMSE', '1200 statt 1480 Transaktionen'],
   ['E_SEED_KAPUTT', 'Unexpected token } in JSON at position 42'],
   ['E_PLAUSIBEL', 'Menge negativ'],

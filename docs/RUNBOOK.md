@@ -100,8 +100,11 @@ kennt vier Werte: `laufend`, `erfolg`, `teilweise`, `fehler`.
     jedem Lauf, hat sich vermutlich die Schnittstelle geändert.
   - `E_MCP_ARGUMENT`: der Ingest wollte ein Werkzeug außerhalb der Allowlist oder mit
     ungültiger ISIN aufrufen [INV-01]. Immer ein Programmfehler, nie ein Bedienfehler.
-  - `E_MCP_SEITEN`: die Transaktionsliste braucht mehr Seiten als `HOECHSTENS_SEITEN`
-    (`ingest/mcp.ts`). Die Decke anheben, nicht abschalten.
+  - `E_MCP_SEITEN`: die Blätterung der Transaktionsliste endet nicht. Die Decke folgt aus
+    `totalCount` und der Seitengröße der ersten Seite plus Reserve; außerdem bricht ein doppelter
+    Cursor ab, und `totalCount` über `HOECHSTENS_SEITEN` (`ingest/mcp.ts`, 1000 Seiten) bricht vor
+    dem Blättern ab. Bleibt es dabei, blättert die Schnittstelle anders als erwartet — ein echter
+    Befund; die Decke nicht abschalten.
   - `E_MCP_UNVOLLSTAENDIG`: eine Seite der Transaktionsliste hatte weniger oder mehr Zeilen,
     als ihr `returnedCount` sagt. Der Lauf übernimmt nichts; später erneut aktualisieren.
   - `E_SCHEMA`: eine Antwort hat die zod-Prüfung nicht bestanden [INV-12]. Die Form der
