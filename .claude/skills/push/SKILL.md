@@ -36,13 +36,18 @@ nie mergen, nie Auto-Merge.
      Commit enthält nur das neue Bild, eingebunden wird es über seinen Hash — so bleibt der
      Branch klein und `pruefung.yml` läuft dort nicht:
      ```sh
+     # ${…} statt $…: unter zsh wäre "$commit:r…" ein Modifier, und ${alt:+-p "$alt"} bliebe ein Argument.
      alt=$(git ls-remote origin refs/heads/pr-bilder | cut -f1)
-     [ -n "$alt" ] && git fetch -q origin pr-bilder
      blob=$(git hash-object -w .start/pr-<nr>-<id>.png)
      baum=$(printf '100644 blob %s\tpr-<nr>-<id>.png\n' "$blob" | git mktree)
-     commit=$(git commit-tree "$baum" ${alt:+-p "$alt"} -m "Bild zu PR #<nr>")
-     git push -q origin "$commit:refs/heads/pr-bilder"
-     gh pr comment <nr> --body "![<Kachel>](https://raw.githubusercontent.com/jx42/Scapio/$commit/pr-<nr>-<id>.png)"
+     if [ -n "$alt" ]; then
+       git fetch -q origin pr-bilder
+       commit=$(git commit-tree "$baum" -p "$alt" -m "Bild zu PR #<nr>")
+     else
+       commit=$(git commit-tree "$baum" -m "Bild zu PR #<nr>")
+     fi
+     git push -q origin "${commit}:refs/heads/pr-bilder"
+     gh pr comment <nr> --body "![<Kachel>](https://raw.githubusercontent.com/jx42/Scapio/${commit}/pr-<nr>-<id>.png)"
      ```
 6. **CI begleiten:** `gh pr checks <nr> --watch > .start/ci.log 2>&1; tail -15 .start/ci.log`.
    Danach `gh run view <lauf-id>` auf Annotationen prüfen — eine Deprecation-Warnung ist ein
