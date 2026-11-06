@@ -396,7 +396,7 @@ export const de = {
       zeileOhneZeitstempel: (quelle: string) => `${quelle}: Zeile mit unlesbarem Zeitstempel verworfen.`,
       zeileOhneZweig: (quelle: string) => `${quelle}: Zeile ohne passenden Zweig verworfen.`,
       unbekannteTypen: (typen: string) =>
-        `Unbekannte Transaktionstypen: ${typen}. Sie zählen nicht zur Rendite, bis sie eingeordnet sind.`,
+        `Unbekannte Transaktionstypen: ${typen}. Bis sie eingeordnet sind, zählen sie als Gewinn oder Verlust, nicht als Einzahlung.`,
       seedUebernommen: (zeilen: string) => `${zeilen} Zeilen Anfangsbestand aus seed.json übernommen.`,
       kursfensterNichtAbrufbar: (fenster: string, isin: string) =>
         `Kursfenster ${fenster} für ${isin} war nicht abrufbar.`,
@@ -766,12 +766,16 @@ export const de = {
     hinweis: {
       H_UNBEKANNTER_TYP: (anzahl: number, text: string) =>
         anzahl === 1
-          ? 'Eine unbekannte Buchungsart zählt als interne Umbuchung und ändert die Rendite nicht.'
-          : `${text} unbekannte Buchungsarten zählen als interne Umbuchungen und ändern die Rendite nicht.`,
+          ? 'Eine unbekannte Buchungsart zählt mit ihrem Betrag als Gewinn oder Verlust, nicht als Einzahlung, und ändert damit die Rendite. Unter „Gewinne & Abzüge“ steht sie bei „Nicht zugeordnet“.'
+          : `${text} unbekannte Buchungsarten zählen mit ihrem Betrag als Gewinn oder Verlust, nicht als Einzahlung, und ändern damit die Rendite. Unter „Gewinne & Abzüge“ stehen sie bei „Nicht zugeordnet“.`,
       H_KURSLUECKE: (anzahl: number, text: string) =>
         `In den letzten ${JUNGE_SPANNE_TAGE} Tagen fehlten ${anzahl === 1 ? 'an einem Tag' : `an ${text} Tagen`} vollständige Kurse; der Verlauf ist dort geschätzt.`,
       H_AUSBUCHUNG: (anzahl: number, text: string) =>
         `${anzahl === 1 ? 'Ein Abgang ohne Betrag und ohne Zugang am selben Tag zählt' : `${text} Abgänge ohne Betrag und ohne Zugang am selben Tag zählen`} als Totalverlust, eine spätere Einbuchung als geschenkte Anteile. Meist steckt ein über mehrere Tage gebuchter ISIN-Wechsel dahinter; Kursgewinn und Rendite der Position sind dann verzerrt.`,
+      H_UEBERVERKAUF: (anzahl: number, text: string) =>
+        `${anzahl === 1 ? 'Ein Verkauf geht' : `${text} Verkäufe gehen`} über den bekannten Bestand hinaus, meist weil frühere Käufe fehlen. Der Bestand bleibt bei null; der Erlös ohne bekannten Einstand zählt als realisierter Gewinn.`,
+      H_CASH_NEGATIV:
+        'Die Positionen sind zusammen mehr wert als das ganze Depot, das Verrechnungskonto steht also im Minus. Der Cash-Anteil wird mit 0 % gezeigt.',
       H_KEIN_ZINS: 'Die Sharpe-Ratio fehlt: Für den risikofreien Zins (EZB €STR) liegen keine Werte vor.',
     } satisfies Record<Exclude<HinweisCode, 'H_KEIN_VPI' | 'H_DRIFT_AUSGESETZT'>, unknown>,
     hinweiseTitel: 'Hinweise aus der Berechnung',
@@ -890,6 +894,8 @@ export const de = {
     ertraege: 'Erträge',
     steuern: 'Steuern',
     gebuehren: 'Gebühren',
+    /** Rest gegen den Gesamtgewinn: Buchungen ohne Topf, etwa unbekannter Art. [ADR-062] */
+    nichtZugeordnet: 'Nicht zugeordnet',
     uebrige: (anzahl: number) => `${anzahl} weitere`,
     realisiert: 'Realisiert',
     nichtsRealisiert: 'Noch nichts verkauft: Der Gewinn steht bisher nur im Kurs.',

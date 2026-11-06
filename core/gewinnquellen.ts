@@ -6,6 +6,11 @@
  * TYP wie in den Kennzahlen [ADR-014]. Was positiv ist, fliesst zu, was negativ ist, ab;
  * eine Steuererstattung ueber dem Abzug fliesst also zu, ein Positionsverlust ab.
  *
+ * Was sich keiner Quelle zuordnen laesst — eine Cash-Buchung unbekannten Typs, eine
+ * Wertpapierbuchung ohne Menge —, steht als `nichtZugeordnet` daneben. Der Aufrufer
+ * rechnet es als Rest gegen den Gesamtgewinn aus; damit ist `nettoCent` derselbe
+ * Gesamtgewinn wie ueber dem Verlauf, nicht nur meistens. [ADR-062]
+ *
  * Mehr als `HOECHSTENS_JE_SEITE` Positionen je Seite fasst `uebrige` zusammen: mit dreissig
  * Baendern liest niemand mehr, woher der Gewinn kommt.
  */
@@ -15,7 +20,7 @@ import type { Isin } from './typen.ts';
 
 export const HOECHSTENS_JE_SEITE = 8;
 
-export type GewinnquelleArt = 'position' | 'uebrige' | 'ertraege' | 'steuern' | 'gebuehren';
+export type GewinnquelleArt = 'position' | 'uebrige' | 'ertraege' | 'steuern' | 'gebuehren' | 'nichtZugeordnet';
 
 export type Gewinnquelle = {
   readonly art: GewinnquelleArt;
@@ -62,6 +67,8 @@ export type GewinnquellenEingaben = {
   readonly ertraegeCent: Cent;
   readonly steuernCent: Cent;
   readonly gebuehrenCent: Cent;
+  /** Gesamtgewinn abzueglich aller anderen Quellen. */
+  readonly nichtZugeordnetCent: Cent;
 };
 
 type Roh = Omit<Gewinnquelle, 'anteil'>;
@@ -99,6 +106,7 @@ export function gewinnquellen(e: GewinnquellenEingaben): Gewinnquellen {
       ['ertraege', e.ertraegeCent],
       ['steuern', e.steuernCent],
       ['gebuehren', e.gebuehrenCent],
+      ['nichtZugeordnet', e.nichtZugeordnetCent],
     ] as const
   )
     .filter(([, betrag]) => betrag !== 0n)

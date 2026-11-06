@@ -13,7 +13,9 @@
  * World-ETF in der Liste, die direkt gehaltene NVIDIA-Aktie daneben aber nicht.
  *
  * Gold und Cash haben keine Bestandteile. Die Abdeckungsquote nennt genau das —
- * ohne sie waeren die Prozentwerte irrefuehrend.
+ * ohne sie waeren die Prozentwerte irrefuehrend. Ein Fonds zaehlt darin mit der Summe
+ * seiner Gewichte, hoechstens 1: listet der Anbieter nur 60 % (Cash, Futures ohne ISIN),
+ * ist auch nur 60 % des Fondswerts durchschaut.
  *
  * Laender und Sektoren laufen ueber ALLE Bestandteile, nicht nur ueber die Top 25, und
  * beziehen sich auf den durchschauten Teil: ein Gold-ETC hat kein Land. Gruppiert wird
@@ -137,6 +139,7 @@ export function lookThrough(
   >();
 
   const fondsMitBestandteilen = new Set<Isin>();
+  const gewichtJeFonds = new Map<Isin, bigint>();
   const laender = new Map<string | null, Cent>();
   const sektoren = new Map<string | null, Cent>();
 
@@ -169,6 +172,7 @@ export function lookThrough(
 
     const gewicht = gewichtAlsGanzzahl(b.gewicht);
     if (gewicht === 0n) continue;
+    gewichtJeFonds.set(b.fondsIsin, (gewichtJeFonds.get(b.fondsIsin) ?? 0n) + gewicht);
 
     const anteil = rundeAufCent(fondswert * gewicht, GEWICHT_SKALA);
     if (anteil === 0n) continue;
@@ -186,6 +190,7 @@ export function lookThrough(
     const wert = werte.get(d.isin);
     if (wert === undefined || wert <= 0n || fondsMitBestandteilen.has(d.isin)) continue;
     fondsMitBestandteilen.add(d.isin);
+    gewichtJeFonds.set(d.isin, GEWICHT_SKALA);
     const fonds = einordnung.get(d.isin);
     buche(
       { fondsIsin: d.isin, unternehmenIsin: d.isin, name: d.name, gewicht: 1, sektor: fonds?.sektor ?? null, land: fonds?.land ?? null },
@@ -194,7 +199,10 @@ export function lookThrough(
   }
 
   let durchschaut = 0n;
-  for (const isin of fondsMitBestandteilen) durchschaut += werte.get(isin) ?? 0n;
+  for (const isin of fondsMitBestandteilen) {
+    const summe = gewichtJeFonds.get(isin) ?? 0n;
+    durchschaut += rundeAufCent((werte.get(isin) ?? 0n) * (summe < GEWICHT_SKALA ? summe : GEWICHT_SKALA), GEWICHT_SKALA);
+  }
 
   const alle = [...gesammelt.entries()].map(([unternehmenIsin, e]) => ({
     unternehmenIsin,

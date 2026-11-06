@@ -12,7 +12,7 @@ import type { Kontext } from '../server.ts';
 import type { Gewinnquelle, Gewinnquellen } from '../vertrag.ts';
 
 const QUELLE_SCHEMA = objektSchema<Gewinnquelle>({
-  art: { type: 'string', enum: ['position', 'uebrige', 'ertraege', 'steuern', 'gebuehren'] },
+  art: { type: 'string', enum: ['position', 'uebrige', 'ertraege', 'steuern', 'gebuehren', 'nichtZugeordnet'] },
   isin: { type: ['string', 'null'] },
   name: { type: ['string', 'null'] },
   anzahl: { type: 'integer' },

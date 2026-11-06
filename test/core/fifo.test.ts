@@ -75,11 +75,13 @@ describe('fifo', () => {
   it('vergiftet die Rechnung nicht mit einem negativen Bestand', () => {
     // Unvollstaendige Historie: verkauft wird mehr, als bekannt ist.
     const txe = [kauf('2026-01-05', WELT, '1', '100'), verkauf('2026-02-05', WELT, '3', '300')];
-    const e = fifo(txe, ausgeglicheneUebertraege(txe)).einstaende.get(WELT)!;
+    const r = fifo(txe, ausgeglicheneUebertraege(txe));
+    const e = r.einstaende.get(WELT)!;
     expect(e.menge).toBe(0n);
     expect(e.einstand).toBe(0n);
-    // Nur der Anteil, der einen Einstand hatte, geht in den realisierten Gewinn.
-    expect(e.realisiert).toBe(zuCent('100') - zuCent('100'));
+    // Der ganze Erloes liegt als Cash im Depot; ohne Einstand ist der Teil darueber Gewinn. [ADR-043]
+    expect(e.realisiert).toBe(zuCent('300') - zuCent('100'));
+    expect(r.ueberverkaeufe).toBe(1);
   });
 
   it('haelt ISINs getrennt', () => {
@@ -104,7 +106,20 @@ describe('fifo', () => {
     const txe = [verkauf('2026-02-05', WELT, '1', '130')];
     const e = fifo(txe, ausgeglicheneUebertraege(txe)).einstaende.get(WELT)!;
     expect(e.menge).toBe(0n);
-    expect(e.realisiert).toBe(0n);
+    expect(e.realisiert).toBe(zuCent('130'));
+  });
+
+  it('bucht am selben Tag Zugaenge vor Abgaengen, egal welcher Zeitstempel frueher ist', () => {
+    // Der Tag ist die Einheit der Mengenreihe; ein Verkauf vor dem Kauf desselben Tages
+    // liefe sonst ins Leere und liesse die gekauften Stuecke offen. [ADR-043]
+    const txe = [
+      kauf('2026-01-05', WELT, '10', '1000', { ts: '2026-01-05T15:00:00+01:00' }),
+      verkauf('2026-01-05', WELT, '10', '1010', { ts: '2026-01-05T09:00:00+01:00' }),
+    ];
+    const r = fifo(txe, ausgeglicheneUebertraege(txe));
+    expect(r.einstaende.get(WELT)!.menge).toBe(0n);
+    expect(r.einstaende.get(WELT)!.realisiert).toBe(zuCent('10'));
+    expect(r.ueberverkaeufe).toBe(0);
   });
 
   it('sortiert nach Zeitstempel unabhaengig von der Eingabereihenfolge', () => {

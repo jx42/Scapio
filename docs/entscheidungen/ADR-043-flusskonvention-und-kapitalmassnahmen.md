@@ -83,3 +83,11 @@ weichen die Ergebnisse ab:
   Lösung ab.
 - Der tote Code `durchschnittlicheSparrate` ist entfernt; die Sparrate kommt aus `monatsFluesse`. In
   Fixture F0 wird ZZ0000000003 jetzt vor dem Verkauf gekauft.
+- **Nachtrag (`KERN_VERSION` 46): eine Überverkaufsregel.** Verkauft eine Buchung mehr, als
+  bekannt ist, ist der Bestand danach null. Das gilt in `fifo()` und in der Mengenreihe
+  gleichermaßen. Der Erlös über dem bekannten Einstand zählt ganz als realisierter Gewinn, und
+  die Kennzahlen melden `H_UEBERVERKAUF`. Vorher bilanzierte FIFO nur den anteiligen Erlös,
+  während die Mengenreihe negativ weiterlief. So stand eine negative Position im Depotwert,
+  und die Sankey lief am Gesamtgewinn vorbei. Innerhalb eines Tages gehen Zugänge vor Abgängen,
+  unabhängig vom Zeitstempel: Ein Verkauf mit früherem `ts` als der Kauf desselben Tages ist
+  sonst ein Überverkauf. Kapitalmaßnahmen wirken weiter zum Tagesbeginn.

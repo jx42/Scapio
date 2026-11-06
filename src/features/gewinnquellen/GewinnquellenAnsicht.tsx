@@ -94,6 +94,8 @@ function quellenName(q: Gewinnquelle): string {
       return de.gewinnquellen.steuern;
     case 'gebuehren':
       return de.gewinnquellen.gebuehren;
+    case 'nichtZugeordnet':
+      return de.gewinnquellen.nichtZugeordnet;
   }
 }
 
@@ -103,6 +105,9 @@ function quellenAuswahl(q: Gewinnquelle, name: string): Auswahl | null {
       return q.isin === null ? null : { art: 'position', isin: q.isin, name };
     case 'uebrige':
       return { art: 'uebrige', isins: q.isins, name };
+    case 'nichtZugeordnet':
+      // Ein Rest gegen den Gesamtgewinn, keine Liste von Buchungen.
+      return null;
     default:
       return { art: q.art };
   }
