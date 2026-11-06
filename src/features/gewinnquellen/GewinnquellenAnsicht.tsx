@@ -258,7 +258,7 @@ export function GewinnquellenAnsicht({ daten, realisiertCent, onAuswahl }: Gewin
           <Summe tupfer="bg-gewinn" bezeichnung={de.gewinnquellen.brutto} wert={brutto} pfeil="" />
           {realisiertCent === null ? null : (
             <span className="inline-flex items-baseline">
-              <span className="mr-1.5 text-sm text-text-leise">{de.gewinnquellen.realisiert}</span>
+              <span className="mr-1.5 text-sm text-text-leise">{de.satz.beschriftung(de.gewinnquellen.realisiert)}</span>
               <InfoKnopf bezeichnung={de.kennzahlen.realisiert}>
                 <p>{de.kennzahlen.erklaerung.realisiert}</p>
               </InfoKnopf>
@@ -342,7 +342,7 @@ function Summe({
   return (
     <span className="inline-flex items-baseline">
       <span aria-hidden="true" className={cn('mr-2 size-2 self-center rounded-full', tupfer)} />
-      <span className="mr-1.5 text-sm text-text-leise">{bezeichnung}</span>
+      <span className="mr-1.5 text-sm text-text-leise">{de.satz.beschriftung(bezeichnung)}</span>
       <span className="text-sm font-medium tabular-nums text-text">
         <RichtungsPfeil pfeil={pfeil} className="mr-0.5" />
         {wert}
