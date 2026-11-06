@@ -78,6 +78,11 @@ describe('rebalanciere, Randfaelle', () => {
     expect(summeDelta(e)).toBe(0n);
   });
 
+  it('meldet einen negativen Zielanteil, auch wenn die Summe 10 000 ergibt', () => {
+    const e = rebalanciere(ist({ [WELT]: 100, [EM]: 100 }), ziel({ [WELT]: BP_GANZ, [EM]: 500, [GOLD]: -500 }));
+    expect(e.art).toBe('zielUngueltig');
+  });
+
   it('meldet ein Depot ohne Wert', () => {
     expect(rebalanciere(new Map(), ziel({ [KONTO]: BP_GANZ })).art).toBe('ohneWert');
   });
