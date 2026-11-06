@@ -203,7 +203,9 @@ async function rechneNachUpdateNeu(db: DatabaseSync, sperre: Sperre): Promise<vo
   let modul: { berechneNeu: (db: DatabaseSync, heute: Tag) => { neuBerechneteTage: number } };
   try {
     modul = (await import('../ingest/neuberechnung.ts')) as unknown as typeof modul;
-  } catch {
+  } catch (fehler) {
+    process.stdout.write(`❗  Die Neuberechnung ist gescheitert: ${(fehler as Error).message}\n`);
+    process.stdout.write('    Der Server startet trotzdem. Siehe docs/RUNBOOK.md.\n');
     return;
   }
 
