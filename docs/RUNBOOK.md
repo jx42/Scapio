@@ -274,7 +274,7 @@ unter macOS einem anderen Benutzer. Geöffnet wird sie dann nicht — eine Verkn
 Depotdaten oder den Token an einen synchronisierten Ort umleiten [ADR-056].
 
 - Verknüpfung: durch die echte Datei ersetzen (Ziel hineinkopieren, Verknüpfung löschen).
-  Das Datenverzeichnis selbst verlegt `SCAPIO_DATENVERZEICHNIS`, nicht eine Verknüpfung.
+  Das Datenverzeichnis selbst verlegt `datenverzeichnis` in `config.json`, nicht eine Verknüpfung.
 - Fremder Eigentümer (meist nach `sudo npm start`): `sudo chown "$USER" <Datei>`.
 - Token oder Client: Datei löschen und `npm run mcp-login` erneut ausführen.
 

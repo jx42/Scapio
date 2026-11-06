@@ -26,6 +26,7 @@ import {
   zielLesen,
   zielParameter,
   zielSchreiben,
+  zielSpeicherUmstellen,
 } from '@/features/aufteilung/zielaufteilung';
 
 export type RebalancingErgebnisZustand = {
@@ -51,6 +52,7 @@ export type RebalancingDialogProps = {
 
 export function RebalancingDialog({ anfangsOffen = false, ...props }: RebalancingDialogProps) {
   const [offen, setOffen] = useState(anfangsOffen);
+  useEffect(zielSpeicherUmstellen, []);
   return (
     <>
       <Button type="button" variant="outline" size="sm" onClick={() => setOffen(true)} className="gap-1.5">
@@ -87,10 +89,10 @@ function anfang(zeilen: readonly Zeile[], festesZiel: string | null): Anfang {
     for (const [schluessel, bp] of ziel) if (vorhanden.has(schluessel)) eingaben[schluessel] = zielEingabe(bp);
     return { eingaben, ausgeschlossen: new Set([...vorhanden].filter((s) => !ziel.has(s))) };
   }
-  // Eine verkaufte Position faellt heraus; eine neue beginnt leer, also mit 0 %.
-  const gespeichert = zielLesen();
-  for (const [schluessel, bp] of gespeichert.ziel) if (vorhanden.has(schluessel)) eingaben[schluessel] = zielEingabe(bp);
-  return { eingaben, ausgeschlossen: new Set(gespeichert.ausgeschlossen.filter((s) => vorhanden.has(s))) };
+  // Eine neue Position beginnt leer, also mit 0 %.
+  const gespeichert = zielLesen([...vorhanden]);
+  for (const [schluessel, bp] of gespeichert.ziel) eingaben[schluessel] = zielEingabe(bp);
+  return { eingaben, ausgeschlossen: new Set(gespeichert.ausgeschlossen) };
 }
 
 function RebalancingInhalt({

@@ -31,7 +31,7 @@ unterschiedlich entschieden werden.
 | **Marktrendite (TWR)** | Die zeitgewichtete Rendite (*Time-Weighted Return*) über die komplette Anlagedauer bzw. auf ein Jahr umgerechnet. Auf der Karte über dem Verlauf „Marktrendite p.a.“ mit „Gesamt:“ darunter. Im Code `twr`. |
 | **Interner Zinsfuß (IZF)** | Die geldgewichtete Rendite pro Jahr — englisch *XIRR* (Extended Internal Rate of Return). So heißt er im Popover der Realrendite-Karte; im Code heißt dieselbe Größe `xirr`, siehe Grenzfälle. |
 | **Aufteilung** | Die Verteilung des Depotwerts nach Look-Through-Kriterien (Land, Sektor, Unternehmen). |
-| **Zielaufteilung** | Die vom Nutzer gesetzten Zielanteile je ISIN und für das Verrechnungskonto, in Prozent mit einer Nachkommastelle; im Code Basispunkte (`zielBp`). Liegt nur im Browser (`portfolio.zielaufteilung`) [ADR-057]. |
+| **Zielaufteilung** | Die vom Nutzer gesetzten Zielanteile je ISIN und für das Verrechnungskonto, in Prozent mit einer Nachkommastelle; im Code Basispunkte (`zielBp`). Liegt nur im Browser (`portfolio.zielaufteilung`), je Zeile als Prüfsumme statt ISIN [ADR-057, ADR-056]. |
 | **Betrag zum Ziel** | Was je Zeile gekauft oder verkauft werden müsste, damit das Depot auf der Zielaufteilung steht — in €, nie in Stück. Im Code `deltaCent`. |
 | **Rebalancing** | Der Rechner in der Kachel Aufteilung, der den Betrag zum Ziel ausgibt. Eine Rechnung, kein Kaufvorschlag; Fremdwort bleibt, weil es so in jedem Broker steht. |
 | **Drift** | Die Abweichung zwischen rekonstruierter und gemeldeter Wahrheit (`core/drift.ts`). International übliches Finanzvokabular, siehe Grenzfälle. |

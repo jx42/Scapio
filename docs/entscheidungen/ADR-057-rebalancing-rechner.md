@@ -51,3 +51,10 @@ Position, wie viel bis zu einem Ziel fehlt. Gleichzeitig rechnet die Oberfläche
 - Der Abzug wächst um eine Datei.
 - Wer mit dem Ergebnis handelt, tut das außerhalb von Scapio; Kosten, Steuern und Mindestordergrößen
   bleiben unberücksichtigt.
+
+## Nachtrag: Speicherformat
+
+Seit 2026-11-06 hat `portfolio.zielaufteilung` die Fassung 2, `{ fassung, ziel, ausgeschlossen }`
+mit Prüfsummen statt ISINs ([ADR-056](ADR-056-datenverzeichnis-und-dateirechte-aus-einer-hand.md),
+Nachtrag). Ein Eintrag der Fassung 1 wird beim Laden der Seite umgeschrieben, das Ziel bleibt
+erhalten; ungültige Zeilen fallen weg.

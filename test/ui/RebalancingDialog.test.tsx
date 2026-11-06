@@ -12,7 +12,7 @@ import { de } from '@/i18n/de';
 import { prozent } from '@/lib/format';
 import type { Aufteilung, Rebalancing } from '@/lib/api';
 import { AufteilungKachel } from '@/features/aufteilung/AufteilungKachel';
-import { bpAusEingabe, zielLesen } from '@/features/aufteilung/zielaufteilung';
+import { bpAusEingabe, zielLesen, zielPruefsumme, zielSchreiben } from '@/features/aufteilung/zielaufteilung';
 import { anteilText, erwarteBarrierefrei, euro, fetchErsatz, rendern, type Antwort } from './hilfen';
 import { drift, kennzahlenAntwort, xirrOk } from './fixtures';
 
@@ -90,6 +90,8 @@ async function fuenfzigFuenfzig(user: ReturnType<typeof userEvent.setup>, dialog
 }
 
 const feld = (dialog: HTMLElement, name: string) => within(dialog).getByLabelText(de.rebalancing.zielFeld(name));
+const ALLE = ['KONTO', WORLD, EM];
+const roh = () => localStorage.getItem('portfolio.zielaufteilung') ?? '';
 
 beforeEach(() => {
   localStorage.clear();
@@ -117,16 +119,38 @@ describe('Eingabehilfen', () => {
   it('verwirft einen manipulierten Speicher zeilenweise', () => {
     localStorage.setItem(
       'portfolio.zielaufteilung',
-      JSON.stringify({ ziel: { KONTO: 500, [WORLD]: 1.5, quatsch: 100, [EM]: 20_000 }, ausgeschlossen: ['X', 7, EM] }),
+      JSON.stringify({
+        fassung: 2,
+        ziel: { [zielPruefsumme('KONTO')]: 500, [zielPruefsumme(WORLD)]: 1.5, 'nicht-base36!': 100, [zielPruefsumme(EM)]: 20_000 },
+        ausgeschlossen: ['X!', 7, zielPruefsumme(EM)],
+      }),
     );
-    const z = zielLesen();
+    const z = zielLesen(ALLE);
     expect([...z.ziel]).toEqual([['KONTO', 500]]);
     expect(z.ausgeschlossen).toEqual([EM]);
   });
 
   it('kaputtes JSON ergibt ein leeres Ziel', () => {
     localStorage.setItem('portfolio.zielaufteilung', '{');
-    expect(zielLesen().ziel.size).toBe(0);
+    expect(zielLesen(ALLE).ziel.size).toBe(0);
+  });
+
+  it('legt keine ISIN im Klartext ab [ADR-056]', () => {
+    zielSchreiben({ ziel: new Map([[WORLD, 6000], [EM, 4000]]), ausgeschlossen: [EM] });
+    expect(roh()).not.toMatch(/[A-Z]{2}[A-Z0-9]{9}\d/);
+    expect(zielLesen(ALLE)).toEqual({ ziel: new Map([[WORLD, 6000], [EM, 4000]]), ausgeschlossen: [EM] });
+  });
+
+  it('schreibt einen Eintrag der Fassung 1 beim Lesen um und behaelt sein Ziel', () => {
+    localStorage.setItem(
+      'portfolio.zielaufteilung',
+      JSON.stringify({ ziel: { KONTO: 500, [WORLD]: 1.5, quatsch: 100, [EM]: 9500 }, ausgeschlossen: ['X', 7, EM] }),
+    );
+    const z = zielLesen(ALLE);
+    expect([...z.ziel]).toEqual([['KONTO', 500], [EM, 9500]]);
+    expect(z.ausgeschlossen).toEqual([EM]);
+    expect(roh()).not.toContain(EM);
+    expect(JSON.parse(roh())).toMatchObject({ fassung: 2 });
   });
 });
 
@@ -167,7 +191,8 @@ describe('RebalancingDialog', () => {
     expect(within(dialog).getByText(de.rebalancing.betrag(euro(-1_000_000, true), de.rebalancing.richtung.vomKonto))).toBeInTheDocument();
     expect(within(dialog).getByText(anteilText(-0.3, true))).toBeInTheDocument();
     expect(anfragen).toEqual([`/api/rebalancing?ziel=${encodeURIComponent(`KONTO:0,${WORLD}:5000,${EM}:5000`)}`]);
-    expect(zielLesen().ziel.get(EM)).toBe(5000);
+    expect(zielLesen(ALLE).ziel.get(EM)).toBe(5000);
+    expect(roh()).not.toContain(EM);
     await erwarteBarrierefrei(dialog);
   });
 
@@ -196,7 +221,7 @@ describe('RebalancingDialog', () => {
 
     await user.click(within(dialog).getByRole('button', { name: de.rebalancing.berechnen }));
     expect(anfragen).toEqual([`/api/rebalancing?ziel=${encodeURIComponent(`${WORLD}:10000,${EM}:0`)}`]);
-    const gemerkt = zielLesen();
+    const gemerkt = zielLesen(ALLE);
     expect(gemerkt.ausgeschlossen).toEqual(['KONTO']);
     expect(gemerkt.ziel.get('KONTO')).toBe(2000);
   });
@@ -226,6 +251,7 @@ describe('RebalancingDialog', () => {
     expect(within(dialog).getByRole('button', { name: de.rebalancing.berechnen })).toBeDisabled();
     expect(await within(dialog).findByText(de.rebalancing.betrag(euro(-2_000_000, true), de.rebalancing.richtung.verkaufen))).toBeInTheDocument();
     expect(anfragen).toEqual([`/api/rebalancing?ziel=${encodeURIComponent(`KONTO:1000,${WORLD}:9000`)}`]);
+    expect(roh()).not.toContain(WORLD);
   });
 
   it('ein unvollstaendiges gemerktes Ziel rechnet beim Oeffnen nicht', async () => {

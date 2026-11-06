@@ -14,7 +14,10 @@ import {
   PROJEKTWURZEL,
   synchronisierteWurzel,
   vorgabeDatenverzeichnis,
+  WERKZEUGPORTS,
 } from '../shared/konfiguration.ts';
+import { DEMO_PORT } from '../start/demoServer.ts';
+import { E2E_PORT } from './e2e/config.ts';
 
 describe('pfadAufloesen', () => {
   it('loest ~/ auf und nimmt absolute Pfade ausserhalb des Projekts an', () => {
@@ -117,6 +120,19 @@ describe('einstellungen.json im Datenverzeichnis [ADR-037]', () => {
     mitDateien({}, vorlage, (c, e) => {
       expect(ladeKonfiguration(c, e).top25).toBe(true);
       expect(ladeKonfiguration(c, e)).not.toHaveProperty('hinweis');
+    });
+  });
+
+  it('deckt die Ports von Demo und e2e', () => {
+    for (const port of [DEMO_PORT, E2E_PORT]) {
+      expect(port).toBeGreaterThanOrEqual(WERKZEUGPORTS.von);
+      expect(port).toBeLessThanOrEqual(WERKZEUGPORTS.bis);
+    }
+  });
+
+  it.each([4790, 4791, 4793])('lehnt den Werkzeugport %i fuer die echte App ab [ADR-042]', (port) => {
+    mitDateien({}, { port }, (c, e) => {
+      expect(() => ladeKonfiguration(c, e)).toThrow(/port: 4790–4793/);
     });
   });
 

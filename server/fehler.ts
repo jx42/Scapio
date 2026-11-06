@@ -136,8 +136,10 @@ export function registriereFehlerbehandlung(app: FastifyInstance): void {
       return antwort.code(f.status).send(f.koerper());
     }
 
-    // Nur hier, nur lokal, nie in der Antwort.
-    anfrage.log.error({ pfad: anfrage.url }, (fehler as Error)?.message ?? 'unbekannter Fehler');
+    // Nur hier, nur lokal, nie in der Antwort. Ohne Query: `/api/rebalancing?ziel=` traegt
+    // ISINs und Zielanteile.
+    const pfad = anfrage.routeOptions.url ?? anfrage.url.split('?')[0];
+    anfrage.log.error({ pfad }, (fehler as Error)?.message ?? 'unbekannter Fehler');
 
     const f = new ApiFehler(
       'E_INTERN',

@@ -42,3 +42,11 @@ echte Beträge im Kontext, ohne dass jemand das entschieden hätte.
 Seit [ADR-054](ADR-054-agentensperre-in-den-einstellungen.md) verbietet `.claude/settings.json`
 MCP-Connector, Datenverzeichnis, `lauf.log`, `sqlite3`, `npm start`, `ingest` und `verify` per
 `deny`. Der letzte Punkt unter „Folgen“ gilt damit nur noch für Wege außerhalb dieser Liste.
+
+## Nachtrag: PR-Bilder nur aus der Demo
+
+Audit vom 2026-11-06: Der Skill `/push` fotografierte, was auf 4791 lief, und `einstellungen.json`
+konnte die echte App dorthin legen. Jetzt lehnt `shared/konfiguration.ts` die Werkzeugports
+4790–4793 (`WERKZEUGPORTS`) als App-Port ab, und `npm run pr-bild` (`start/prBild.ts`) fotografiert
+nur eine Seite mit `<meta name="demo-modus" content="true">`, das allein der Server im Demo-Modus
+einfügt. Der Skill ruft nur noch dieses Skript.

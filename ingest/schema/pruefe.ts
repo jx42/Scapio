@@ -38,7 +38,8 @@ export function pruefe<T>(quelle: string, schema: z.ZodType<T, unknown>, roh: un
   // und aehnlichen uebernimmt zods eigene Meldung sonst den fremden Wert woertlich in den
   // Text; dort bleibt es bei `code`. [INV-12]
   const stellen = ergebnis.error.issues.slice(0, 10).map((i) => {
-    const pfad = i.path.map(String).join('.') || '(Wurzel)';
+    // Auch ein Pfadelement kann fremder Text sein: der Schluessel eines `z.record`.
+    const pfad = i.path.map((teil) => (typeof teil === 'number' ? String(teil) : schluesselName(String(teil)))).join('.') || '(Wurzel)';
     if (i.code === 'custom') return `${pfad}: ${i.message}`;
     if (i.code === 'unrecognized_keys') {
       return `${pfad}: unrecognized_keys (${i.keys.slice(0, MAX_SCHLUESSEL).map(schluesselName).join(', ')})`;

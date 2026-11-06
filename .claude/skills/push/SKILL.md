@@ -25,19 +25,12 @@ nie mergen, nie Auto-Merge.
 5. **Bildschirmfoto**, nur wenn `git diff --name-only origin/main...HEAD -- src/` etwas nennt.
    Ausschließlich aus der Demo — das Repository ist öffentlich, ein echtes Depot gehört nie
    ins Bild (ADR-042).
-   - Demo: Ist Port 4791 belegt, die laufende nehmen. Sonst `npm run demo` im Hintergrund
-     starten, bis `curl -s -o /dev/null http://127.0.0.1:4791/` antwortet, danach beenden.
+   - Demo: `npm run demo` im Hintergrund starten, bis `curl -s -o /dev/null http://127.0.0.1:4791/`
+     antwortet, danach beenden. Läuft dort schon etwas, entscheidet erst `pr-bild`, ob es die
+     Demo ist.
    - Je geänderte Kachel ein Bild, `<id>` aus dem `id` ihres `<Kachel>`:
-     ```sh
-     node --input-type=module -e "
-     import { chromium } from 'playwright';
-     const b = await chromium.launch();
-     const p = await b.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2 });
-     await p.goto('http://127.0.0.1:4791/');
-     const k = p.locator('#<id>'); await k.waitFor(); await p.waitForTimeout(1500);
-     await k.screenshot({ path: '.start/pr-<nr>-<id>.png' });
-     await b.close();"
-     ```
+     `npm run pr-bild -- <nr> <id>…`. Bricht ohne Bild ab, wenn der Seite das Demo-Merkmal
+     fehlt; dann nichts anderes versuchen, sondern melden.
      Das Bild ansehen (Read), bevor es hochgeht.
    - Hochladen als eigener Commit auf den Branch `pr-bilder`, nie auf den PR-Branch. Der
      Commit enthält nur das neue Bild, eingebunden wird es über seinen Hash — so bleibt der

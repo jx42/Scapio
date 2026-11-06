@@ -44,3 +44,15 @@ Wertpapiernamen in den `localStorage`, den die Deinstallation nicht erreicht.
 - Bis zu 5 + 12 + Jahre Sicherungen je Anlass statt fünf; bei wöchentlicher Sicherung nach zehn
   Jahren rund 27 je Anlass.
 - Weggeklickte Hinweise des laufenden Laufs erscheinen nach dem Update einmal wieder.
+
+## Nachtrag: Zielaufteilung
+
+Audit vom 2026-11-06: `portfolio.zielaufteilung` ([ADR-057](ADR-057-rebalancing-rechner.md)) trug
+die ISINs weiter im Klartext. Seit Fassung 2 stehen dort nur FNV-1a-Prüfsummen der Schlüssel
+(`zielPruefsumme`); die Oberfläche ordnet sie den angezeigten Zeilen zu. Das gilt auch für die
+Hinweis-Schlüssel: Die Prüfsumme pseudonymisiert, sie schützt nicht. Gegen die Liste aller ISINs
+lässt sie sich zurückrechnen; sie hält den Klartext nur aus Profilsicherung und Browser-Sync.
+
+Ebenso nennt das Fehlerprotokoll des Servers nur die Route, nicht die Query
+(`GET /api/rebalancing?ziel=` trägt ISINs und Zielanteile), und `pruefe.ts` filtert auch die
+Pfadelemente einer zod-Meldung — der Schlüssel eines `z.record` ist fremder Text.
