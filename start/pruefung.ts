@@ -54,7 +54,7 @@ export const SCHRITTE: readonly Schritt[] = [
 /** Vergleichsstand fuer `--geaendert`: was dieser Branch gegenueber `main` anfasst. */
 const BASIS = 'origin/main';
 
-/** Geaenderte und neue, nicht ignorierte Quelldateien gegenueber `basis`, ohne geloeschte. */
+/** Geaenderte und neue, nicht ignorierte Dateien gegenueber `basis`, ohne geloeschte. */
 export function geaenderteDateien(basis: string = BASIS): string[] {
   const git = (...argumente: string[]): string[] =>
     execFileSync('git', argumente, { cwd: PROJEKTWURZEL, encoding: 'utf8' }).split('\n').filter(Boolean);
@@ -62,20 +62,49 @@ export function geaenderteDateien(basis: string = BASIS): string[] {
     ...git('diff', '--name-only', '--diff-filter=d', basis),
     ...git('ls-files', '--others', '--exclude-standard'),
   ]);
-  return [...alle].filter((d) => /\.(ts|tsx|js|mjs)$/.test(d)).sort();
+  return [...alle].sort();
+}
+
+/*
+ * Tests, die ihre Eingabe per `readFileSync`/`readdirSync` lesen: `vitest --changed` folgt
+ * nur dem Modulgraphen und sieht diese Abhaengigkeit nicht. Die Invarianten und der
+ * Kontrasttest lesen fast jeden Quellordner und laufen deshalb bei jeder Aenderung (0,6 s).
+ * Ein neuer Test dieser Art gehoert hier eingetragen.
+ */
+export const ZUSATZTESTS: readonly { readonly pfad: RegExp; readonly tests: readonly string[] }[] = [
+  { pfad: /./, tests: ['test/invarianten/'] },
+  { pfad: /^src\/styles\/theme\.css$/, tests: ['test/ui/farben.test.ts', 'test/ui/VerlaufVorschau.test.tsx'] },
+  { pfad: /^db\/migrationen\//, tests: ['test/db/'] },
+  { pfad: /^test\/fixtures\//, tests: ['test/ingest/', 'test/db/', 'test/ui/'] },
+  { pfad: /\.(command|bat)$|^package\.json$|^start\/nodeVersion\.mjs$/, tests: ['test/start/mindestNode.test.ts'] },
+  { pfad: /^package\.json$/, tests: ['test/pruefung.test.ts'] },
+  { pfad: /^\.claude\/settings\.json$/, tests: ['test/agentensperre.test.ts'] },
+  { pfad: /^src\/App\.tsx$/, tests: ['test/drittlizenzen.test.ts'] },
+  { pfad: /^docs\/RUNBOOK\.md$/, tests: ['test/laufFehler.test.ts'] },
+  { pfad: /^docs\/DATENMODELL\.md$|^ingest\/quellen\//, tests: ['test/ingest/quellenNamen.test.ts'] },
+  { pfad: /^docs\/einstellungen\.example\.json$|^(ingest|db|core)\//, tests: ['test/konfiguration.test.ts'] },
+];
+
+/** Die Zusatztests fuer `dateien`, ohne Doppelte, in der Reihenfolge der Tabelle. */
+export function zusatztests(dateien: readonly string[]): string[] {
+  return [...new Set(ZUSATZTESTS.filter((z) => dateien.some((d) => z.pfad.test(d))).flatMap((z) => z.tests))];
 }
 
 /*
  * `npm run check:geaendert` — fuer Zwischenschritte, nicht fuer die Uebergabe. tsc laeuft
  * ganz, weil eine Typaenderung beliebig weit traegt; eslint nur ueber die geaenderten
- * Dateien, vitest nur ueber die Tests, die von ihnen abhaengen.
+ * Quelldateien, vitest ueber die Tests, die von ihnen abhaengen, plus `ZUSATZTESTS`.
+ * Zwei vitest-Laeufe, weil `--changed` zusammen mit Dateifiltern die Schnittmenge bildet.
  */
 export function geaenderteSchritte(dateien: readonly string[], basis: string = BASIS): Schritt[] {
   const [typecheck, lint, test] = SCHRITTE as readonly [Schritt, Schritt, Schritt];
+  const quellen = dateien.filter((d) => /\.(ts|tsx|js|mjs)$/.test(d));
+  const zusatz = zusatztests(dateien);
   return [
     typecheck,
-    ...(dateien.length > 0 ? [{ ...lint, argumente: [...dateien, '--max-warnings', '0'] }] : []),
+    ...(quellen.length > 0 ? [{ ...lint, argumente: [...quellen, '--max-warnings', '0'] }] : []),
     { ...test, argumente: ['run', '--changed', basis, '--passWithNoTests'] },
+    ...(zusatz.length > 0 ? [{ ...test, name: 'test:zusatz', argumente: ['run', ...zusatz] }] : []),
   ];
 }
 
@@ -101,6 +130,7 @@ export function haupt(schritte: readonly Schritt[] = SCHRITTE): void {
   const beginn = Date.now();
   const mitschrift: string[] = [];
   const erledigt: string[] = [];
+  const bilanzen: string[] = [];
 
   for (const schritt of schritte) {
     const lauf = spawnSync(process.execPath, werkzeugArgumente(schritt.werkzeug, ...schritt.argumente), {
@@ -142,13 +172,13 @@ export function haupt(schritte: readonly Schritt[] = SCHRITTE): void {
     }
 
     erledigt.push(schritt.name);
+    if (schritt.werkzeug === 'vitest') bilanzen.push(...bilanz(ausgabe).map((z) => `${schritt.name}: ${z}`));
   }
 
   schreibeLog(mitschrift);
   const sekunden = ((Date.now() - beginn) / 1000).toFixed(1);
-  const letzte = mitschrift.at(-1) ?? '';
   process.stdout.write(`✓ ${erledigt.join(', ')} — gruen in ${sekunden}s\n`);
-  for (const zeile of bilanz(letzte)) process.stdout.write(`  ${zeile}\n`);
+  for (const zeile of bilanzen) process.stdout.write(`  ${zeile}\n`);
 }
 
 function schreibeLog(mitschrift: readonly string[]): void {

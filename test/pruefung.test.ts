@@ -7,11 +7,11 @@
  * wert als der lange. Dieser Test macht das Driften zu einem roten Lauf.
  */
 
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { PROJEKTWURZEL } from '../shared/konfiguration.ts';
-import { geaenderteSchritte, SCHRITTE } from '../start/pruefung.ts';
+import { geaenderteSchritte, SCHRITTE, ZUSATZTESTS, zusatztests } from '../start/pruefung.ts';
 
 const skripte = (
   JSON.parse(readFileSync(join(PROJEKTWURZEL, 'package.json'), 'utf8')) as {
@@ -46,16 +46,39 @@ describe('check und check:kurz', () => {
 });
 
 describe('check:geaendert', () => {
-  it('typisiert alles, lintet nur die geaenderten Dateien, testet nur die betroffenen', () => {
+  it('typisiert alles, lintet nur die geaenderten Quelldateien, testet die betroffenen', () => {
     const schritte = geaenderteSchritte(['core/xirr.ts', 'src/App.tsx'], 'origin/main');
     expect(schritte.map((s) => [s.name, s.argumente.join(' ')])).toEqual([
       ['typecheck', '--noEmit'],
       ['lint', 'core/xirr.ts src/App.tsx --max-warnings 0'],
       ['test', 'run --changed origin/main --passWithNoTests'],
+      ['test:zusatz', 'run test/invarianten/ test/drittlizenzen.test.ts test/konfiguration.test.ts'],
     ]);
   });
 
-  it('laesst eslint ohne geaenderte Datei weg — sonst lintete es das ganze Projekt', () => {
+  it('laesst eslint und Zusatztests ohne geaenderte Datei weg — sonst liefe das ganze Projekt', () => {
     expect(geaenderteSchritte([]).map((s) => s.name)).toEqual(['typecheck', 'test']);
+  });
+
+  // Beide Faelle meldeten vor der Pfadtabelle gruen, obwohl inv-10 bzw. der Kontrasttest rot war.
+  it('faehrt INV-10 bei einer Kernaenderung, die kein Test importiert', () => {
+    expect(zusatztests(['core/xirr.ts'])).toContain('test/invarianten/');
+  });
+
+  it('faehrt Kontrast- und Farbtests bei einer Aenderung an theme.css, ohne eslint', () => {
+    const schritte = geaenderteSchritte(['src/styles/theme.css']);
+    expect(schritte.map((s) => s.name)).toEqual(['typecheck', 'test', 'test:zusatz']);
+    expect(schritte.at(-1)?.argumente).toEqual([
+      'run',
+      'test/invarianten/',
+      'test/ui/farben.test.ts',
+      'test/ui/VerlaufVorschau.test.tsx',
+    ]);
+  });
+
+  it('zeigt in der Pfadtabelle nur auf Tests, die es gibt', () => {
+    for (const test of ZUSATZTESTS.flatMap((z) => z.tests)) {
+      expect(existsSync(join(PROJEKTWURZEL, test)), test).toBe(true);
+    }
   });
 });

@@ -42,7 +42,7 @@ npm run pr-bild -- <nr> <id>… # Kacheln der laufenden Demo fotografieren, für
 npm run mcp-login      # einmalige, interaktive OAuth/PKCE-Anmeldung am Scalable-MCP
 npm run check          # typecheck + lint + tests (die Invarianten laufen darin mit) — muss vor jeder Übergabe grün sein
 npm run check:kurz     # dieselbe Prüfung, aber still: drei Zeilen statt tausend, Volltext im Log
-npm run check:geaendert # tsc ganz, eslint und vitest nur für Geändertes gegenüber origin/main — für Zwischenschritte
+npm run check:geaendert # tsc ganz, eslint und vitest für Geändertes gegenüber origin/main, dazu Invarianten und Tests aus der Pfadtabelle in start/pruefung.ts — für Zwischenschritte
 npm run test:tz        # dieselbe Suite unter drei Zeitzonen
 npm run test:invarianten # nur die zwölf Invariantentests, dazu der Kontrasttest der Farb-Tokens
 npm run test:e2e       # der eine Playwright-Durchstich, echter Chromium
@@ -53,7 +53,7 @@ npm run ingest         # Ingest einmalig, für die Fehlersuche — nicht für Ag
 npm run vertrag        # zod-Schemata des Ingest gegen den echten MCP prüfen (ruft die Bank, nur lesend)
 npm run kontrast       # Kontrasttabelle in docs/BARRIEREFREIHEIT.md aus theme.css neu schreiben
 npm run abdruck        # Hash über core/ neu schreiben, nach einer KERN_VERSION-Erhöhung
-npm run kern:version   # KERN_VERSION um eins erhöhen und den Abdruck im selben Schritt schreiben
+npm run kern:version   # KERN_VERSION einmal je Branch gegenüber origin/main erhöhen und den Abdruck schreiben — beliebig oft aufrufbar
 npm run backup         # Sicherung der Datenbank
 npm run leak-pruefung  # Depotwerte, Token, Pfade im Repository suchen — vor jedem Release, nur der Nutzer
 npm run audit          # Schwachstellen in den Laufzeitabhängigkeiten — nicht Teil von check, aber Pflicht vor jedem Push

@@ -10,11 +10,13 @@
  * wurde: das Skript nimmt die Version, wie sie dasteht, und fragt nicht nach. Es soll
  * den Abdruck festhalten, nicht die Entscheidung treffen.
  *
- * `npm run kern:version` (`--erhoehen`) erhoeht `KERN_VERSION` um eins und schreibt den
- * Abdruck im selben Schritt — die Entscheidung bleibt der Aufruf, nur der vergessliche
- * zweite Schritt faellt weg.
+ * `npm run kern:version` (`--erhoehen`) erhoeht `KERN_VERSION` und schreibt den Abdruck im
+ * selben Schritt — die Entscheidung bleibt der Aufruf, nur der vergessliche zweite Schritt
+ * faellt weg. Erhoeht wird hoechstens einmal je Branch gegenueber `origin/main`, also darf
+ * man es nach jeder weiteren Kernaenderung erneut aufrufen.
  */
 
+import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
@@ -65,21 +67,51 @@ function schreibeAbdruck(kernVersion: number): Abdruckdatei {
 const VERSION_DATEI = join(WURZEL, 'core', 'version.ts');
 const VERSION_ZEILE = /^export const KERN_VERSION = (\d+);$/m;
 
-/** Hebt `KERN_VERSION` in `core/version.ts` um eins und gibt die neue Zahl zurueck. */
-export function erhoeheKernVersion(quelle: string): { quelle: string; version: number } {
+/** Vergleichsstand fuer `--erhoehen`: je Branch genau eine Erhoehung gegenueber `main`. */
+const BASIS = 'origin/main';
+
+export function leseKernVersion(quelle: string): number {
   const treffer = VERSION_ZEILE.exec(quelle);
   if (treffer === null) throw new Error('core/version.ts: Zeile `export const KERN_VERSION = <n>;` fehlt');
-  const version = Number(treffer[1]) + 1;
-  return { quelle: quelle.replace(VERSION_ZEILE, `export const KERN_VERSION = ${String(version)};`), version };
+  return Number(treffer[1]);
+}
+
+export function setzeKernVersion(quelle: string, version: number): string {
+  leseKernVersion(quelle);
+  return quelle.replace(VERSION_ZEILE, `export const KERN_VERSION = ${String(version)};`);
+}
+
+/**
+ * Liegt der Branch schon ueber `main`, bleibt seine Version — ein zweiter Aufruf zaehlt
+ * nicht doppelt. Hat `main` inzwischen selbst erhoeht, eins darueber. Ohne Basis (kein
+ * Git, kein `origin/main`) bleibt nur blind um eins.
+ */
+export function zielVersion(aktuell: number, basis: number | undefined): number {
+  return basis === undefined ? aktuell + 1 : Math.max(aktuell, basis + 1);
+}
+
+function versionAufBasis(): number | undefined {
+  try {
+    const quelle = execFileSync('git', ['show', `${BASIS}:core/version.ts`], {
+      cwd: WURZEL,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    });
+    return leseKernVersion(quelle);
+  } catch {
+    return undefined;
+  }
 }
 
 // Als Skript aufgerufen — nicht beim Import aus dem Test.
 if (import.meta.filename === resolve(process.argv[1] ?? '')) {
   let version = KERN_VERSION;
   if (process.argv.includes('--erhoehen')) {
-    const neu = erhoeheKernVersion(readFileSync(VERSION_DATEI, 'utf8'));
-    writeFileSync(VERSION_DATEI, neu.quelle);
-    version = neu.version;
+    const basis = versionAufBasis();
+    version = zielVersion(KERN_VERSION, basis);
+    if (basis === undefined) process.stdout.write(`${BASIS} nicht lesbar — KERN_VERSION blind um eins erhoeht.\n`);
+    else if (version === KERN_VERSION) process.stdout.write(`KERN_VERSION ist gegenueber ${BASIS} (${String(basis)}) schon erhoeht.\n`);
+    if (version !== KERN_VERSION) writeFileSync(VERSION_DATEI, setzeKernVersion(readFileSync(VERSION_DATEI, 'utf8'), version));
   }
   const { kernVersion, abdruck } = schreibeAbdruck(version);
   process.stdout.write(`core/.abdruck.json: Kernversion ${String(kernVersion)}, ${abdruck.slice(0, 16)}…\n`);
