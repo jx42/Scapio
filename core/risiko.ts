@@ -12,7 +12,7 @@
  */
 
 import type { Tag } from './kalender.ts';
-import { istVor, monatVon, monatsEnde } from './kalender.ts';
+import { istVor, monatVon, monateZwischen, monatsEnde } from './kalender.ts';
 import type { TwrErgebnis } from './twr.ts';
 
 /** Tag -> €STR p.a., z.B. 0.0325 (= 3,25 %). */
@@ -26,9 +26,12 @@ const WURZEL_ZWOELF = Math.sqrt(12);
 export const MIN_MONATE = 12;
 
 /**
- * Letzter Indexwert je Monat, Rendite zwischen zwei aufeinanderfolgenden Monatsenden.
- * Der Monat des Stichtags fehlt, bis er vorbei ist: als Teilmonat wuerde er wie ein voller
- * zaehlen, und Sharpe zoege dafuer den vollen Monatszins ab. [ADR-043]
+ * Letzter gemessener Indexwert je Monat, Rendite zwischen zwei aufeinanderfolgenden
+ * Monatsenden. Der Monat des Stichtags fehlt, bis er vorbei ist: als Teilmonat wuerde er
+ * wie ein voller zaehlen, und Sharpe zoege dafuer den vollen Monatszins ab. [ADR-043]
+ *
+ * Ein Monat ohne einen einzigen Kurs fehlt ganz, und die Rendite ueber ihn hinweg zaehlt
+ * nicht: sie umfasst zwei Monate, als einer gezaehlt stuende daneben eine erfundene Null.
  */
 export function monatsrenditen(index: TwrErgebnis['index'], stichtag: Tag): Monatsrendite[] {
   const laufend = monatVon(stichtag);
@@ -36,13 +39,14 @@ export function monatsrenditen(index: TwrErgebnis['index'], stichtag: Tag): Mona
   if (bisVormonat.length === 0) return [];
 
   const letzterWertJeMonat = new Map<string, number>();
-  for (const punkt of bisVormonat) letzterWertJeMonat.set(monatVon(punkt.tag), punkt.wert);
+  for (const punkt of bisVormonat) if (punkt.lueckenhaft !== true) letzterWertJeMonat.set(monatVon(punkt.tag), punkt.wert);
 
   const monate = [...letzterWertJeMonat.keys()].sort();
   const renditen: Monatsrendite[] = [];
 
   for (let i = 1; i < monate.length; i += 1) {
     const monat = monate[i]!;
+    if (monateZwischen(monate[i - 1]!, monat) !== 1) continue;
     const basis = letzterWertJeMonat.get(monate[i - 1]!)!;
     if (basis === 0) continue; // kein sinnvolles Verhaeltnis von einem Nullwert aus
     renditen.push({ monat, rendite: letzterWertJeMonat.get(monat)! / basis - 1 });

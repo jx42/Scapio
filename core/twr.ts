@@ -40,9 +40,14 @@ export type TwrErgebnis = {
   readonly teilperioden: number;
   /** true, sobald Teilperioden aus einem Monatsraster stammen. Die Oberflaeche zeigt die Fussnote. */
   readonly grob: boolean;
-  /** Indexreihe, auf 100 zum ersten Tag normiert. Speist Volatilitaet, Max. Drawdown und Sharpe-Ratio. */
-  readonly index: readonly { readonly tag: Tag; readonly wert: number }[];
+  /**
+   * Indexreihe, auf 100 zum ersten Tag normiert. Speist Volatilitaet, Max. Drawdown und Sharpe-Ratio.
+   * Ein lueckenhafter Tag steht flach auf dem letzten gemessenen und traegt `lueckenhaft`.
+   */
+  readonly index: readonly Indexpunkt[];
 };
+
+export type Indexpunkt = { readonly tag: Tag; readonly wert: number; readonly lueckenhaft?: true };
 
 export const LEERES_ERGEBNIS: TwrErgebnis = {
   gesamt: 0,
@@ -67,7 +72,7 @@ export function twr(reihe: readonly DepotTag[], externeFluesse: readonly Fluss[]
   const flussJeTag = new Map<Tag, Cent>();
   for (const f of externeFluesse) flussJeTag.set(f.tag, (flussJeTag.get(f.tag) ?? 0n) + f.betrag);
 
-  const index: { tag: Tag; wert: number }[] = [];
+  const index: Indexpunkt[] = [];
   let faktor = 1;
   let teilperioden = 0;
   let grob = false;
@@ -88,7 +93,7 @@ export function twr(reihe: readonly DepotTag[], externeFluesse: readonly Fluss[]
     if (heute.lueckenhaft) {
       // Kein verlaesslicher Wert an diesem Tag: keine Teilperiode schneiden, sonst
       // wird aus einer fehlenden Kursnotierung eine erfundene Rendite. [P-05]
-      index.push({ tag: heute.tag, wert: faktor * 100 });
+      index.push({ tag: heute.tag, wert: faktor * 100, lueckenhaft: true });
       continue;
     }
 

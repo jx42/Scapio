@@ -47,8 +47,9 @@ weichen die Ergebnisse ab:
   - Liegen alle Flüsse am selben Tag, heißt das Ergebnis `nicht_bestimmbar`.
   - Scheitert die Bisektion an den Grenzen, heißt es `ausserhalb_bereich`.
   - Bei mehreren Vorzeichenwechseln trägt ein `ok` das Flag `mehrdeutig`. Es fehlt, wenn
-    die kumulierte Summe nur einmal wechselt (Norström): ein Sparplan mit gelegentlicher
-    Entnahme bleibt eindeutig. Die Oberfläche zeigt bei `mehrdeutig` einen Satz.
+    die kumulierte Summe nur einmal wechselt (Norström) und die Lösung über 0 % liegt: ein
+    Sparplan mit gelegentlicher Entnahme und Gewinn bleibt eindeutig. Die Oberfläche zeigt
+    bei `mehrdeutig` einen Satz. *Präzisiert im Nachtrag `KERN_VERSION` 47.*
 - **Risiko:** `monatsrenditen` lässt den Monat des Stichtags (ADR-053) weg, solange er nicht vorbei ist.
 - **Teuerung:** Gerechnet wird ab max(erster Fluss, ältester VPI-Monat).
 - **IZF unter einem Jahr** bleibt annualisiert. Die Erklärtexte sagen das jetzt, ebenso
@@ -80,7 +81,8 @@ weichen die Ergebnisse ab:
 - **Nachtrag [ADR-053](ADR-053-stichtag-und-isin-wechsel-im-kern.md):** Endwert auf dem letzten
   Reihentag statt `heute`; Positions-IZF nimmt die Flüsse der Vorgänger-ISIN auf.
 - `ausserhalb_bereich` deckt bei mehreren Vorzeichenwechseln auch Reihen ohne jede reelle
-  Lösung ab.
+  Lösung ab. *Eine gerade Zahl von Lösungen im Bereich heißt seit `KERN_VERSION` 47
+  `nicht_eindeutig`.*
 - Der tote Code `durchschnittlicheSparrate` ist entfernt; die Sparrate kommt aus `monatsFluesse`. In
   Fixture F0 wird ZZ0000000003 jetzt vor dem Verkauf gekauft.
 - **Nachtrag (`KERN_VERSION` 46): eine Überverkaufsregel.** Verkauft eine Buchung mehr, als
@@ -91,3 +93,15 @@ weichen die Ergebnisse ab:
   und die Sankey lief am Gesamtgewinn vorbei. Innerhalb eines Tages gehen Zugänge vor Abgängen,
   unabhängig vom Zeitstempel: Ein Verkauf mit früherem `ts` als der Kauf desselben Tages ist
   sonst ein Überverkauf. Kapitalmaßnahmen wirken weiter zum Tagesbeginn.
+
+## Nachtrag (`KERN_VERSION` 47): Norström nur über null, Zustand `nicht_eindeutig`
+
+- Norström sichert nur die Lösung über 0 %. Unter null kann daneben eine zweite liegen
+  (Probe −1000/+2500/−1000: −50 % und +100 %). `mehrdeutig` fehlt deshalb nur, wenn die
+  kumulierte Summe einmal wechselt, die Lösung über 0 % liegt und ein Raster in ln(1+r)
+  (`RASTER_PUNKTE`) unter null keinen Vorzeichenwechsel des Barwerts findet.
+- Sieht die Bisektion an beiden Grenzen dasselbe Vorzeichen, findet dasselbe Raster aber
+  einen Wechsel, liegen im Bereich mindestens zwei Lösungen: `nicht_eindeutig` statt
+  `ausserhalb_bereich`. Ohne Wechsel im Raster bleibt es `ausserhalb_bereich`. Zwei sehr
+  nahe Nullstellen fallen durch das Raster; dann bleibt es beim alten Satz.
+- `xirr()` nimmt keinen ungenutzten Tag mehr entgegen.
