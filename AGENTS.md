@@ -42,13 +42,13 @@ Richtung. Die Oberfläche rechnet nicht, der Server rechnet nicht, der Rechenker
 Die für Agenten; alle übrigen in [`docs/ENTWICKLUNG.md`](docs/ENTWICKLUNG.md#befehle).
 
 ```sh
-npm run check:geaendert  # Zwischenschritt: tsc ganz, eslint und vitest nur für Geändertes gegenüber origin/main
+npm run check:geaendert  # Zwischenschritt: tsc ganz, eslint und vitest für Geändertes gegenüber origin/main, Invarianten immer
 npm run check:kurz       # typecheck + lint + tests, still — muss vor jeder Übergabe grün sein
 npm run test:tz          # dieselbe Suite unter drei Zeitzonen — vor jedem Push
 npm run audit            # Schwachstellen der Laufzeitabhängigkeiten — vor jedem Push
 npm run test:invarianten # nur die zwölf Invariantentests und der Kontrasttest
 npm run test:e2e         # der eine Playwright-Durchstich, echter Chromium
-npm run kern:version     # nach einer Änderung in core/: KERN_VERSION + 1 und Abdruck neu [INV-10]
+npm run kern:version     # nach jeder Änderung in core/: KERN_VERSION + 1 je Branch, Abdruck neu [INV-10]
 npm run kontrast         # nach einem neuen Farb-Token: Kontrasttabelle neu schreiben
 npm run verify:zaehlung  # bei Zweifeln an einer Zahl: nur Tag und Feld, ohne Werte
 ```

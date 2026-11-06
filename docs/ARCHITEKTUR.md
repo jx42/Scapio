@@ -233,7 +233,7 @@ Dateien in dieser Reihenfolge; was der Compiler nicht bindet, ist vermerkt.
 |---|---|---|
 | 1 | `core/<rechner>.ts` | die Rechnung, rein [INV-04] |
 | 2 | `core/kennzahlen.ts` | in `berechneKennzahlen` einhängen |
-| 3 | `core/version.ts`, dann `npm run abdruck` | `KERN_VERSION` erhöhen [INV-10] |
+| 3 | `npm run kern:version` | `KERN_VERSION` erhöhen, Abdruck neu [INV-10] |
 | 4 | `server/json.ts` | JSON-Hilfe, wenn der Wert `bigint` oder `NaN` tragen kann; ein neuer Ergebnistyp bekommt sein Schema über `objektSchema<Vereinigt<T>>()`, dann meldet `tsc` ein fehlendes Feld |
 | 5 | `server/vertrag.ts` | Feld in `KennzahlenAntwort` — die eine Typquelle |
 | 6 | `server/routen/kennzahlen.ts` | Schema und Handler; ein fehlendes Schemafeld meldet `tsc` |
