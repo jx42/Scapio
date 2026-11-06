@@ -264,6 +264,10 @@ export const de = {
         tun:
           'Drücke später erneut „Aktualisieren“. Scheitert es bei jedem Abruf, hat sich vermutlich die Schnittstelle von Scalable Capital geändert: Hole dann mit Aktualisieren.command bzw. .bat die neueste Version von Scapio.',
       },
+      E_WAEHRUNG: {
+        grund: 'Die Antwort enthielt einen Betrag in einer anderen Währung als Euro. Scapio rechnet nur in Euro.',
+        tun: 'Hole mit Aktualisieren.command bzw. .bat die neueste Version von Scapio. Bis dahin bleibt diese Quelle auf dem alten Stand.',
+      },
       schnittstelle: {
         grund: 'Die Antwort hatte eine unerwartete Form. Vermutlich hat sich die Schnittstelle geändert.',
         tun: 'Hole mit Aktualisieren.command bzw. .bat die neueste Version von Scapio. Bis dahin bleibt diese Quelle auf dem alten Stand.',
@@ -431,6 +435,8 @@ export const de = {
     E_MCP_UNVOLLSTAENDIG: 'Die Antwort von Scalable Capital war unvollständig. Versuche es erneut.',
     E_SCHEMA:
       'Eine Antwort von Scalable Capital hatte eine unerwartete Form. Vermutlich hat sich die Schnittstelle geändert. Hole mit Aktualisieren.command bzw. .bat die neueste Version von Scapio.',
+    E_WAEHRUNG:
+      'Scalable Capital hat einen Betrag in einer anderen Währung als Euro geliefert. Scapio rechnet nur in Euro und hat nichts übernommen. Hole mit Aktualisieren.command bzw. .bat die neueste Version von Scapio.',
     E_STORNO_BREMSE:
       'Die Bank lieferte deutlich weniger Transaktionen als bekannt. Zur Sicherheit wurde nichts übernommen. Versuche es später erneut.',
     E_SEED_KAPUTT: 'Die Datei seed.json im Datenordner ist kein gültiges JSON. Prüfe sie — meist ist es ein Komma zu viel.',

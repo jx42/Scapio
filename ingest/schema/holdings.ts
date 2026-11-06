@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { GRENZE, Geld, ISIN_MUSTER, Kurs, Menge, Zeitstempel } from './grundlagen.ts';
+import { Euro, GRENZE, Geld, ISIN_MUSTER, Kurs, Menge, Zeitstempel } from './grundlagen.ts';
 
 // ---------------------------------------------------------------------------
 // get_portfolio_holdings
@@ -28,7 +28,7 @@ export const HoldingsAntwort = z
             valuationCurrency: z.string().max(8).optional(),
             currentQuote: z
               .object({
-                currency: z.string().max(8),
+                currency: Euro,
                 midPrice: Kurs,
                 timestamp: Zeitstempel,
               })

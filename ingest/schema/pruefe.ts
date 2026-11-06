@@ -8,13 +8,23 @@ import type { LaufFehlerCode } from '../../shared/laufFehler.ts';
  * Die Meldung nennt Pfad und Grund — nie den Wert, der sie ausgeloest hat. [INV-12]
  */
 export class SchemaFehler extends Error {
-  readonly code = 'E_SCHEMA' satisfies LaufFehlerCode;
+  readonly code: LaufFehlerCode = 'E_SCHEMA';
   readonly quelle: string;
 
   constructor(quelle: string, stellen: readonly string[]) {
     super(`Antwort von ${quelle} passt nicht zum Schema: ${stellen.join('; ')}`);
     this.name = 'SchemaFehler';
     this.quelle = quelle;
+  }
+}
+
+/** Eine Waehrung ausser EUR (`Euro` in `grundlagen.ts`): eigener Code, weil die Abhilfe eine andere ist. */
+export class WaehrungsFehler extends SchemaFehler {
+  override readonly code: LaufFehlerCode = 'E_WAEHRUNG';
+
+  constructor(quelle: string, stellen: readonly string[]) {
+    super(quelle, stellen);
+    this.name = 'WaehrungsFehler';
   }
 }
 
@@ -46,5 +56,6 @@ export function pruefe<T>(quelle: string, schema: z.ZodType<T, unknown>, roh: un
     }
     return `${pfad}: ${i.code}`;
   });
-  throw new SchemaFehler(quelle, stellen);
+  const waehrung = ergebnis.error.issues.some((i) => i.code === 'invalid_value' && i.path.at(-1) === 'currency');
+  throw waehrung ? new WaehrungsFehler(quelle, stellen) : new SchemaFehler(quelle, stellen);
 }

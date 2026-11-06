@@ -107,6 +107,10 @@ kennt vier Werte: `laufend`, `erfolg`, `teilweise`, `fehler`.
   - `E_SCHEMA`: eine Antwort hat die zod-Prüfung nicht bestanden [INV-12]. Die Form der
     Antwort hat sich geändert — ein echter Befund, kein Bedienfehler. `npm run vertrag`
     zeigt, welches Feld.
+  - `E_WAEHRUNG`: ein Betrag oder Kurs kam in einer anderen Währung als EUR (`Euro` in
+    `ingest/schema/grundlagen.ts`). Umgerechnet wird nirgends, also übernimmt der Lauf nichts
+    aus dieser Antwort; ein Kursfenster wird verworfen (`kursfensterSchema`). Ein echter Befund:
+    die Anwendung braucht eine Umrechnung, bevor Fremdwährung zulässig wird.
   - `E_PLAUSIBEL`: die Daten waren formal gültig, aber nicht plausibel (`ingest/plausibilitaet.ts`).
     `lauf.log` nennt die Prüfung.
   - `E_SEED_KAPUTT`: `seed.json` im Datenverzeichnis ist kein gültiges JSON (meist ein Komma zu viel).
