@@ -395,6 +395,8 @@ export const FAELLE: readonly Fall[] = [
           { code: 'H_UNBEKANNTER_TYP', anzahl: 2 },
           { code: 'H_KURSLUECKE', anzahl: 1 },
           { code: 'H_AUSBUCHUNG', anzahl: 3 },
+          { code: 'H_UEBERVERKAUF', anzahl: 1 },
+          { code: 'H_CASH_NEGATIV', anzahl: null },
           { code: 'H_KEIN_VPI', anzahl: null },
           { code: 'H_KEIN_ZINS', anzahl: null },
           { code: 'H_DRIFT_AUSGESETZT', anzahl: null },

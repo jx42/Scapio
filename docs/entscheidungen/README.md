@@ -18,7 +18,7 @@ der Geschichte stehen. Eine neue ADR bekommt die nächste freie Nummer und eine 
 | [011](ADR-011-kursgewinn-statt-twr-in-kachel-1.md) | Verlaufs-Rendite zeigt Kursgewinn, nicht TWR | Name präzisiert durch 016, Zählweise durch 023 |
 | [012](ADR-012-anmeldeknopf-als-zweite-mutierende-route.md) | Der Anmeldeknopf als zweite mutierende Route | gilt |
 | [013](ADR-013-update-nur-auf-knopfdruck.md) | Ein Update-Befehl, der nur auf Knopfdruck läuft | teilweise abgelöst durch 037; Nachtrag: 055 |
-| [014](ADR-014-steuern-nach-typ-statt-nach-vorzeichen.md) | Zinsen und Steuern nach Typ trennen, nicht nach Vorzeichen | gilt |
+| [014](ADR-014-steuern-nach-typ-statt-nach-vorzeichen.md) | Zinsen und Steuern nach Typ trennen, nicht nach Vorzeichen | Nachtrag: 062 |
 | [015](ADR-015-summenprobe-nur-bei-gleichem-stand.md) | Die Summenprobe vergleicht nur, wenn beide Seiten denselben Moment beschreiben | ergänzt durch 033 |
 | [016](ADR-016-gesamtgewinn-statt-kursgewinn-im-verlauf.md) | Die Zahl über dem Verlauf heißt Gesamtgewinn, nicht Kursgewinn | gilt |
 | [017](ADR-017-zweiter-eurostat-datensatz-fuer-den-rand.md) | Zwei Eurostat-Datensätze bilden eine Preisreihe | gilt |
@@ -47,7 +47,7 @@ der Geschichte stehen. Eine neue ADR bekommt die nächste freie Nummer und eine 
 | [040](ADR-040-aufgeraeumte-projektwurzel.md) | Aufgeräumte Projektwurzel | gilt |
 | [041](ADR-041-seed-im-datenverzeichnis.md) | `seed.json` im Datenverzeichnis | gilt |
 | [042](ADR-042-agenten-lesen-keine-depotwerte.md) | Agenten lesen keine Depotwerte | Nachtrag: 054 |
-| [043](ADR-043-flusskonvention-und-kapitalmassnahmen.md) | Flusskonvention, Kapitalmaßnahmen und Randfälle im Rechenkern | Nachtrag: 053 |
+| [043](ADR-043-flusskonvention-und-kapitalmassnahmen.md) | Flusskonvention, Kapitalmaßnahmen und Randfälle im Rechenkern | Nachtrag: 053, Überverkauf |
 | 044 | — | nicht vergeben |
 | [045](ADR-045-woechentliche-sicherung-beim-start.md) | Wöchentliche Sicherung beim Start | Nachtrag: 056 |
 | [046](ADR-046-footer-link-zur-readme.md) | Footer-Link zur Readme | gilt |

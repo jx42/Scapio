@@ -23,3 +23,10 @@ obwohl es bei ihr nichts zu durchschauen gibt.
 - **Synthetische Bestandteile im Lesemodell** — dann stünde die Aktie in `ausFonds` wie ein Fonds,
   und die Herleitung läge außerhalb des Kerns.
 - **Eigenes Feld `direkt` im Vertrag** — die gleiche ISIN trägt dieselbe Information.
+
+## Nachtrag: Abdeckung nach Gewichtssumme
+
+Ein Fonds zählt in der Abdeckung mit der Summe seiner gelisteten Gewichte, höchstens 1. Vorher
+zählte er ganz, sobald er überhaupt eine Liste hatte. Listet der Anbieter nur 60 %, etwa
+weil Cash und Futures ohne ISIN fehlen, ist auch nur 60 % des Fondswerts durchschaut. Die
+Prozentwerte daneben beziehen sich weiter auf das Depot.

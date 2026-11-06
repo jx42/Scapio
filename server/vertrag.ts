@@ -312,7 +312,7 @@ export type Jahre = MitStand & {
 
 /** Eine Herkunft des Gesamtgewinns — siehe `core/gewinnquellen.ts`. */
 export type Gewinnquelle = {
-  readonly art: 'position' | 'uebrige' | 'ertraege' | 'steuern' | 'gebuehren';
+  readonly art: 'position' | 'uebrige' | 'ertraege' | 'steuern' | 'gebuehren' | 'nichtZugeordnet';
   readonly isin: string | null;
   readonly name: string | null;
   /** Bei `uebrige` die Zahl der zusammengefassten Positionen, sonst 1. */

@@ -11,7 +11,16 @@ describe('mengenAenderungen', () => {
       kauf('2026-01-05', WELT, '2', '200'),
     ];
     const a = mengenAenderungen(txe, ausgeglicheneUebertraege(txe));
-    expect(a.get(WELT)!.get(T('2026-01-05'))).toBe(zuMengeE8('3'));
+    expect(a.get(WELT)!.get(T('2026-01-05'))).toEqual({ massnahme: 0n, handel: zuMengeE8('3') });
+  });
+
+  it('trennt Kapitalmassnahmen (Betrag 0) vom Handel', () => {
+    const txe = [
+      kauf('2026-01-05', WELT, '1', '100'),
+      tx({ tag: '2026-01-05', typ: 'SPLIT', isin: WELT, mengeE8: zuMengeE8('1'), betragCent: 0n }),
+    ];
+    const a = mengenAenderungen(txe, ausgeglicheneUebertraege(txe));
+    expect(a.get(WELT)!.get(T('2026-01-05'))).toEqual({ massnahme: zuMengeE8('1'), handel: zuMengeE8('1') });
   });
 
   it('uebergeht Cash, Stornos und Schwebendes', () => {
@@ -66,6 +75,21 @@ describe('baueMengenreihe', () => {
     expect(welt.get(T('2026-01-09'))).toBe(0n);
     expect(welt.get(T('2026-01-10'))).toBe(0n);
     expect(reihe.endbestand.get(WELT)).toBe(0n);
+  });
+
+  it('bleibt bei null, wenn mehr verkauft wird als bekannt — wie FIFO [ADR-043]', () => {
+    const txe = [kauf('2026-01-05', WELT, '1', '100'), verkauf('2026-01-07', WELT, '3', '300'), kauf('2026-01-09', WELT, '2', '200')];
+    const reihe = baueMengenreihe(txe, T('2026-01-05'), T('2026-01-10'), ausgeglicheneUebertraege(txe));
+    const welt = reihe.menge.get(WELT)!;
+    expect(welt.get(T('2026-01-07'))).toBe(0n);
+    expect(welt.get(T('2026-01-09'))).toBe(zuMengeE8('2'));
+    expect(reihe.endbestand.get(WELT)).toBe(zuMengeE8('2'));
+  });
+
+  it('bleibt bei null auch im Anfangsbestand vor `von`', () => {
+    const txe = [kauf('2026-01-02', WELT, '1', '100'), verkauf('2026-01-03', WELT, '3', '300'), kauf('2026-01-04', WELT, '2', '200')];
+    const reihe = baueMengenreihe(txe, T('2026-01-10'), T('2026-01-10'), ausgeglicheneUebertraege(txe));
+    expect(reihe.menge.get(WELT)!.get(T('2026-01-10'))).toBe(zuMengeE8('2'));
   });
 
   it('nennt den ersten Tag der gesamten Historie, auch aus einer Cash-Buchung', () => {

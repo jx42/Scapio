@@ -8,7 +8,7 @@ function position(nr: number, euro: string): PositionsBeitrag {
   return { isin, name: `Position ${nr}`, gewinnCent: zuCent(euro) };
 }
 
-const OHNE_TOEPFE = { ertraegeCent: 0n, steuernCent: 0n, gebuehrenCent: 0n };
+const OHNE_TOEPFE = { ertraegeCent: 0n, steuernCent: 0n, gebuehrenCent: 0n, nichtZugeordnetCent: 0n };
 
 describe('gewinnquellen', () => {
   it('teilt nach Vorzeichen: Gewinne fliessen zu, Verluste und Abzuege ab', () => {
@@ -17,6 +17,7 @@ describe('gewinnquellen', () => {
       ertraegeCent: zuCent('50'),
       steuernCent: zuCent('-40'),
       gebuehrenCent: zuCent('-10'),
+      nichtZugeordnetCent: 0n,
     });
     expect(g.zufluesse.map((q) => [q.art, q.betragCent])).toEqual([
       ['position', zuCent('900')],
@@ -53,8 +54,14 @@ describe('gewinnquellen', () => {
   });
 
   it('ordnet eine Steuererstattung den Zufluessen zu', () => {
-    const g = gewinnquellen({ positionen: [], ertraegeCent: 0n, steuernCent: zuCent('20'), gebuehrenCent: 0n });
+    const g = gewinnquellen({ positionen: [], ...OHNE_TOEPFE, steuernCent: zuCent('20') });
     expect(g.zufluesse.map((q) => q.art)).toEqual(['steuern']);
+  });
+
+  it('fuehrt den Rest als eigenen Topf, auf der Seite seines Vorzeichens', () => {
+    const g = gewinnquellen({ positionen: [position(1, '100')], ...OHNE_TOEPFE, nichtZugeordnetCent: zuCent('-7') });
+    expect(g.abfluesse.map((q) => [q.art, q.betragCent])).toEqual([['nichtZugeordnet', zuCent('-7')]]);
+    expect(g.nettoCent).toBe(zuCent('93'));
   });
 
   it('fasst ueberzaehlige Positionen je Seite zusammen, ohne die Summe zu aendern', () => {

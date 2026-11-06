@@ -3,7 +3,7 @@
  * Kacheln, dort aber ausserhalb von core/ nicht testbar. [INV-04]
  */
 
-/** Was die Positionsanteile offen lassen, ist Cash. Auf 0..1 begrenzt. */
+/** Was die Positionsanteile offen lassen, ist Cash. Auf 0..1 begrenzt; die Kennzahlen melden das als `H_CASH_NEGATIV`. */
 export function restAnteil(anteile: readonly number[]): number {
   let belegt = 0;
   for (const a of anteile) belegt += Number.isFinite(a) ? a : 0;

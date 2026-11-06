@@ -85,6 +85,10 @@ tragen nie eines — sie fallen auf dem Verrechnungskonto an, und genau das steh
   Töpfe. Das ist die gleiche bewusste Zurückhaltung wie bei `einordnen()`: der Ingest
   vermerkt den unbekannten Typ als Hinweis im Lauf, statt ihn stillschweigend
   einzusortieren.
+  *Nachtrag:* „in keinen Topf“ hieß nicht „ohne Wirkung“. Als intern eingeordnet ändert sein
+  Betrag Cash, Gesamtgewinn und Rendite, nur eben nicht als Einzahlung. Die Sankey führt ihn
+  seit [ADR-062](ADR-062-gewinn-in-euro-rendite-in-prozent.md) unter „Nicht zugeordnet“.
+  `H_UNBEKANNTER_TYP` sagt das jetzt, statt zu behaupten, die Rendite bleibe unberührt.
 - `bezug_isin` bleibt auf allen bestehenden Zeilen `NULL`, bis der nächste Lauf sie
   überschreibt. Das braucht keine Datenwanderung — wohl aber einen Import, der die
   Änderung überhaupt bemerkt. Der Satz „der Import schreibt jede Transaktion ohnehin neu"
