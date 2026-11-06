@@ -382,32 +382,6 @@ describe('berechneKennzahlen — Renditen', () => {
   });
 });
 
-describe('berechneKennzahlen — Sparrate', () => {
-  it('nimmt Schnitt, 12-Monats-Schnitt und Median aus den externen Fluessen', () => {
-    const einzahlungen = ['2026-01', '2026-02', '2026-03'].map((m) => einzahlung(`${m}-05`, '300'));
-    const k = berechneKennzahlen(standard({ transaktionen: einzahlungen, heute: T('2026-03-20') }));
-    expect(k.sparrateCent).toBe(zuCent('300'));
-    expect(k.medianCent).toBe(zuCent('300'));
-    expect(k.fluesse.monate).toHaveLength(3);
-  });
-
-  it('zaehlt die Monate bis heute, nicht bis zur letzten Zahlung', () => {
-    // Drei Einzahlungen bis Maerz, heute ist August: 900 € auf acht Monate. Sonst
-    // stuende nach einer Sparpause weiter die alte Rate da. [ADR-036]
-    const einzahlungen = ['2026-01', '2026-02', '2026-03'].map((m) => einzahlung(`${m}-05`, '300'));
-    const k = berechneKennzahlen(standard({ transaktionen: einzahlungen }));
-    expect(k.fluesse.monate).toHaveLength(8);
-    expect(k.sparrateCent).toBe(zuCent('112.50'));
-  });
-
-  it('nennt dieselben Zahlen wie die Flussuebersicht — keine zweite Rechnung', () => {
-    const k = berechneKennzahlen(standard());
-    expect(k.sparrateCent).toBe(k.fluesse.schnitt);
-    expect(k.sparrate12Cent).toBe(k.fluesse.schnitt12);
-    expect(k.medianCent).toBe(k.fluesse.median);
-  });
-});
-
 describe('berechneKennzahlen — Hinweise', () => {
   const codes = (e: KennzahlenEingaben): string[] => berechneKennzahlen(e).hinweise.map((h) => h.code);
 

@@ -12,7 +12,7 @@ der Geschichte stehen. Eine neue ADR bekommt die nächste freie Nummer und eine 
 | [005](ADR-005-datenbank-ausserhalb-des-projekts.md) | Datenbank außerhalb des Projektordners | Nachtrag: 056 |
 | [006](ADR-006-deutsches-fachvokabular.md) | Deutsches Fachvokabular, englisches Technikvokabular | gilt |
 | [007](ADR-007-ausgeglichene-uebertragspaare.md) | Ausgeglichene Übertragspaare als Nicht-Vorgang | gilt |
-| [008](ADR-008-fluesse-kachel-zeigt-investition-statt-einzahlung.md) | Kachel 5 zeigt Investition in Wertpapiere statt externer Ein-/Auszahlung | gilt |
+| [008](ADR-008-fluesse-kachel-zeigt-investition-statt-einzahlung.md) | Kachel 5 zeigt Investition in Wertpapiere statt externer Ein-/Auszahlung | Nachtrag: 053 |
 | [009](ADR-009-risikokennzahlen.md) | Risikokennzahlen auf Monatsbasis, mit echtem risikofreiem Zins | gilt |
 | [010](ADR-010-direkte-mcp-anmeldung-ohne-claude-code.md) | Direkte OAuth/PKCE-Anmeldung am Scalable-MCP statt Claude-Code-Kindprozess | Nachtrag: 054 |
 | [011](ADR-011-kursgewinn-statt-twr-in-kachel-1.md) | Verlaufs-Rendite zeigt Kursgewinn, nicht TWR | Name präzisiert durch 016, Zählweise durch 023 |
@@ -30,7 +30,7 @@ der Geschichte stehen. Eine neue ADR bekommt die nächste freie Nummer und eine 
 | [023](ADR-023-verlauf-zaehlt-ab-fensterbeginn.md) | Der Verlauf zählt ab Fensterbeginn, auch im Vergleich | gilt |
 | [024](ADR-024-shadcn-linie.md) | Die shadcn-Linie — `radix-ui`, `new-york-v4`, bewusst abweichende Bausteine | gilt |
 | [025](ADR-025-wertpapierart-per-get-security-quote.md) | Wertpapierart per `get_security_quote` | gilt |
-| [026](ADR-026-risikofreier-zins-als-benchmark.md) | Der risikofreie Zins als zehnter Eintrag in der Benchmarkwahl | gilt |
+| [026](ADR-026-risikofreier-zins-als-benchmark.md) | Der risikofreie Zins als zehnter Eintrag in der Benchmarkwahl | Nachtrag: ACT/360 |
 | [027](ADR-027-ishares-holdings-per-get-product-data.md) | iShares-Bestandteile per `get-product-data` | gilt |
 | [028](ADR-028-onvista-statt-justetf.md) | onvista statt justETF als Ziel des ISIN-Links | gilt |
 | [029](ADR-029-liquid-glass-dezent.md) | Liquid Glass dezent als einzige Darstellung | gilt |
@@ -47,7 +47,7 @@ der Geschichte stehen. Eine neue ADR bekommt die nächste freie Nummer und eine 
 | [040](ADR-040-aufgeraeumte-projektwurzel.md) | Aufgeräumte Projektwurzel | gilt |
 | [041](ADR-041-seed-im-datenverzeichnis.md) | `seed.json` im Datenverzeichnis | gilt |
 | [042](ADR-042-agenten-lesen-keine-depotwerte.md) | Agenten lesen keine Depotwerte | Nachtrag: 054 |
-| [043](ADR-043-flusskonvention-und-kapitalmassnahmen.md) | Flusskonvention, Kapitalmaßnahmen und Randfälle im Rechenkern | Nachtrag: 053, Überverkauf |
+| [043](ADR-043-flusskonvention-und-kapitalmassnahmen.md) | Flusskonvention, Kapitalmaßnahmen und Randfälle im Rechenkern | Nachtrag: 053, Überverkauf, Norström |
 | 044 | — | nicht vergeben |
 | [045](ADR-045-woechentliche-sicherung-beim-start.md) | Wöchentliche Sicherung beim Start | Nachtrag: 056 |
 | [046](ADR-046-footer-link-zur-readme.md) | Footer-Link zur Readme | gilt |
@@ -57,7 +57,7 @@ der Geschichte stehen. Eine neue ADR bekommt die nächste freie Nummer und eine 
 | [050](ADR-050-zeitzonen-in-der-ci-nur-unter-linux.md) | Zeitzonen in der CI nur unter Linux, ohne UTC | gilt |
 | [051](ADR-051-main-nur-ueber-pull-requests.md) | `main` nur über Pull Requests, ohne Bypass | Nachtrag: 055 |
 | [052](ADR-052-demo-band-mit-repository-link.md) | Demo-Band mit Link zum Repository | gilt |
-| [053](ADR-053-stichtag-und-isin-wechsel-im-kern.md) | Stichtag der Kennzahlen, ISIN-Wechsel und Selbstkontrolle ohne Cash | Nachtrag: 059 |
+| [053](ADR-053-stichtag-und-isin-wechsel-im-kern.md) | Stichtag der Kennzahlen, ISIN-Wechsel und Selbstkontrolle ohne Cash | Nachtrag: 059, Fenster und Flüsse |
 | [054](ADR-054-agentensperre-in-den-einstellungen.md) | Agentensperre in den Einstellungen, Toolnamen ohne Präfix | gilt |
 | [055](ADR-055-update-und-release-kette.md) | Update- und Release-Kette geschlossen | gilt |
 | [056](ADR-056-datenverzeichnis-und-dateirechte-aus-einer-hand.md) | Datenverzeichnis und Dateirechte aus einer Hand | gilt |

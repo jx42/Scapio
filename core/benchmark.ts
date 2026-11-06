@@ -103,13 +103,17 @@ export function baueBenchmarkreihe(e: Benchmarkeingaben): DepotTag[] {
  * sie nur `Rasterwert.kurs` braucht.
  *
  * Startet bei 1,000000 am ersten Tag mit einem Zinswert; jeder Folgetag verzinst den
- * Vortageswert mit dem zuletzt bekannten €STR p.a. auf 365 Tage. Ein Tag ohne eigenen
+ * Vortageswert mit dem zuletzt bekannten €STR p.a. nach ACT/360, der Konvention des Satzes
+ * selbst. Ein Tag ohne eigenen
  * Zinswert (Wochenende, Feiertag) fuehrt den zuletzt bekannten Satz fort statt eine
  * Luecke zu reissen — anders als bei einem Kurs gibt es dafuer keinen Nichthandelstag.
  * Vor dem ersten Zinswert (vor dem 2019-10-01 oder Zinsquelle abgeschaltet) bleibt der
  * Tag ohne Eintrag: `baueBenchmarkreihe` haelt das Cash dann unveraendert und markiert
  * den Tag als lueckenhaft, genau wie bei einer fehlenden Kurshistorie.
  */
+/** €STR ist ein Geldmarktsatz: ACT/360. */
+export const ZINSTAGE_IM_JAHR = 360;
+
 export function risikofreiesRaster(zinsreihe: Zinsreihe, von: Tag, bis: Tag): Map<Tag, Rasterwert> {
   const raster = new Map<Tag, Rasterwert>();
   let kurs: number | null = null;
@@ -122,7 +126,7 @@ export function risikofreiesRaster(zinsreihe: Zinsreihe, von: Tag, bis: Tag): Ma
       if (zinsHeute === undefined) continue;
       kurs = 1;
     } else if (letzterZins !== null) {
-      kurs *= 1 + letzterZins / 365;
+      kurs *= 1 + letzterZins / ZINSTAGE_IM_JAHR;
     }
 
     raster.set(t, { kurs: zuKursE6(kurs.toFixed(12)), gefuellt: zinsHeute === undefined });

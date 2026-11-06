@@ -150,7 +150,7 @@ describe('Rekonstruktion — sieben Tage von Hand nachgerechnet', () => {
 
   it('ergibt einen XIRR, der ohne NaN auskommt', () => {
     const fluesse = externeFluesse(TRANSAKTIONEN, AUSGEGLICHEN).map((f) => ({ ...f, betrag: -f.betrag }));
-    const e = xirr([...fluesse, { tag: BIS, betrag: zuCent('1218') }], BIS);
+    const e = xirr([...fluesse, { tag: BIS, betrag: zuCent('1218') }]);
     expect(e.art).toBe('ok');
     if (e.art === 'ok') expect(Number.isNaN(e.rate)).toBe(false);
   });

@@ -62,7 +62,7 @@ describe('1 — der gefundene Zins loest die Barwertgleichung', () => {
 
     fc.assert(
       fc.property(flussMuster, ({ fluesse }) => {
-        const e = xirr(fluesse, fluesse[0]!.tag);
+        const e = xirr(fluesse);
         if (e.art !== 'ok') return;
         geprueft += 1;
         const eingesetzt = Math.abs(Number(fluesse[0]!.betrag));
@@ -80,9 +80,9 @@ describe('1 — der gefundene Zins loest die Barwertgleichung', () => {
 describe('2 — der Zins haengt nicht an der Waehrungseinheit', () => {
   it('alle Betraege verdoppeln laesst den XIRR unveraendert', () => {
     fc.assert(
-      fc.property(flussMuster, fc.integer({ min: 2, max: 1000 }), ({ fluesse, ende }, faktor) => {
-        const a = xirr(fluesse, ende);
-        const b = xirr(fluesse.map((f) => ({ ...f, betrag: f.betrag * BigInt(faktor) })), ende);
+      fc.property(flussMuster, fc.integer({ min: 2, max: 1000 }), ({ fluesse }, faktor) => {
+        const a = xirr(fluesse);
+        const b = xirr(fluesse.map((f) => ({ ...f, betrag: f.betrag * BigInt(faktor) })));
         expect(b.art).toBe(a.art);
         if (a.art === 'ok' && b.art === 'ok') expect(b.rate).toBeCloseTo(a.rate, 6);
       }),
@@ -94,9 +94,9 @@ describe('2 — der Zins haengt nicht an der Waehrungseinheit', () => {
 describe('3 — der Zins haengt nicht am Kalenderdatum', () => {
   it('alle Tage um n verschieben laesst den XIRR unveraendert', () => {
     fc.assert(
-      fc.property(flussMuster, fc.integer({ min: -400, max: 400 }), ({ fluesse, ende }, n) => {
-        const a = xirr(fluesse, ende);
-        const b = xirr(fluesse.map((f) => ({ ...f, tag: plusTage(f.tag, n) })), plusTage(ende, n));
+      fc.property(flussMuster, fc.integer({ min: -400, max: 400 }), ({ fluesse }, n) => {
+        const a = xirr(fluesse);
+        const b = xirr(fluesse.map((f) => ({ ...f, tag: plusTage(f.tag, n) })));
         expect(b.art).toBe(a.art);
         if (a.art === 'ok' && b.art === 'ok') expect(b.rate).toBeCloseTo(a.rate, 6);
       }),

@@ -10,8 +10,9 @@
  * Ergebnis, keine Ausnahme. [core/CLAUDE.md]
  *
  * Wechselt das Vorzeichen mehrfach, kann es mehrere Loesungen geben; gemeldet wird eine,
- * mit `mehrdeutig`. Liegt die Loesung ausserhalb von [UNTERGRENZE; OBERGRENZE], heisst
- * das Ergebnis `ausserhalb_bereich`, nicht `nicht_konvergiert`. [ADR-043]
+ * mit `mehrdeutig`. Findet die Bisektion keinen Vorzeichenwechsel an den Grenzen, liegen
+ * im Bereich entweder keine oder eine gerade Zahl von Loesungen: mit Nullstelle im Raster
+ * heisst das `nicht_eindeutig`, ohne `ausserhalb_bereich`, nie `nicht_konvergiert`. [ADR-043]
  *
  * Der Solver rechnet in `number` — er loest eine Gleichung, er verwahrt kein Geld.
  * Seine Eingaben sind exakt, sein Ergebnis ist ein Prozentsatz. Das ist unkritisch
@@ -27,6 +28,8 @@ export type XirrErgebnis =
   | { readonly art: 'kein_vorzeichenwechsel' }
   | { readonly art: 'nicht_konvergiert' }
   | { readonly art: 'ausserhalb_bereich' }
+  /** Mehrere Loesungen im Bereich, und keine laesst sich vor den anderen auszeichnen. */
+  | { readonly art: 'nicht_eindeutig' }
   /** Alle Zahlungen an einem Tag: ohne Zeitraum gibt es keinen Zins. */
   | { readonly art: 'nicht_bestimmbar' }
   | { readonly art: 'zu_wenige_fluesse' };
@@ -42,6 +45,9 @@ export const OBERGRENZE = 10;
 
 /** Tageszaehlung fest auf 365 — kein Act/Act, keine Schaltjahrkorrektur. */
 export const TAGE_IM_JAHR = 365;
+
+/** Stuetzstellen, an denen nach weiteren Nullstellen gesucht wird, gleichmaessig in ln(1+r). */
+export const RASTER_PUNKTE = 400;
 
 type Punkt = { readonly jahre: number; readonly betrag: number };
 
@@ -87,15 +93,32 @@ function vorzeichenwechsel(betraege: readonly number[]): number {
 }
 
 /**
- * Kann es mehr als eine Loesung geben? Nur bei mehreren Vorzeichenwechseln der Zahlungen
- * (Descartes) — und auch dann nicht, wenn die aufgelaufene Summe nur einmal wechselt
- * (Norstrom). Ein Sparplan mit gelegentlicher Entnahme bleibt so eindeutig.
+ * Wie oft wechselt der Barwert auf einem Raster in ln(1+r) zwischen `von` und `bis` das
+ * Vorzeichen? Untere Schranke fuer die Zahl der Nullstellen: zwei sehr nahe fallen durch.
  */
-function istMehrdeutig(punkte: readonly Punkt[]): boolean {
+function rasterWechsel(punkte: readonly Punkt[], von: number, bis: number): number {
+  const a = Math.log1p(von);
+  const b = Math.log1p(bis);
+  const werte: number[] = [];
+  for (let i = 0; i <= RASTER_PUNKTE; i += 1) {
+    const f = barwert(punkte, Math.expm1(a + ((b - a) * i) / RASTER_PUNKTE));
+    if (Number.isFinite(f)) werte.push(f);
+  }
+  return vorzeichenwechsel(werte);
+}
+
+/**
+ * Kann es mehr als eine Loesung geben? Nur bei mehreren Vorzeichenwechseln der Zahlungen
+ * (Descartes). Wechselt die aufgelaufene Summe nur einmal (Norstrom), ist die *positive*
+ * Loesung eindeutig — ein Sparplan mit gelegentlicher Entnahme und Gewinn bleibt so
+ * eindeutig. Unter null sichert Norstrom nichts; dort sucht das Raster.
+ */
+function istMehrdeutig(punkte: readonly Punkt[], rate: number): boolean {
   if (vorzeichenwechsel(punkte.map((p) => p.betrag)) <= 1) return false;
   let summe = 0;
   const kumuliert = punkte.map((p) => (summe += p.betrag));
-  return vorzeichenwechsel(kumuliert) !== 1 || summe === 0;
+  if (vorzeichenwechsel(kumuliert) !== 1 || summe === 0) return true;
+  return rate <= 0 || rasterWechsel(punkte, UNTERGRENZE, 0) > 0;
 }
 
 /**
@@ -111,7 +134,9 @@ function bisektion(punkte: readonly Punkt[]): Loesung {
   if (!Number.isFinite(fUnten) || !Number.isFinite(fOben)) return { art: 'nicht_konvergiert' };
   if (fUnten === 0) return { art: 'ok', rate: unten, iterationen: 0 };
   if (fOben === 0) return { art: 'ok', rate: oben, iterationen: 0 };
-  if (fUnten > 0 === fOben > 0) return { art: 'ausserhalb_bereich' };
+  if (fUnten > 0 === fOben > 0) {
+    return rasterWechsel(punkte, UNTERGRENZE, OBERGRENZE) > 0 ? { art: 'nicht_eindeutig' } : { art: 'ausserhalb_bereich' };
+  }
 
   for (let i = 1; i <= BISEKTION_SCHRITTE; i += 1) {
     const mitte = (unten + oben) / 2;
@@ -134,14 +159,14 @@ function bisektion(punkte: readonly Punkt[]): Loesung {
   return Number.isFinite(mitte) ? { art: 'ok', rate: mitte, iterationen: BISEKTION_SCHRITTE } : { art: 'nicht_konvergiert' };
 }
 
-export function xirr(fluesse: readonly Fluss[], _heute?: Tag): XirrErgebnis {
+export function xirr(fluesse: readonly Fluss[]): XirrErgebnis {
   const punkte = vorbereiten(fluesse);
   if (punkte.length < 2) return { art: 'zu_wenige_fluesse' };
   if (vorzeichenwechsel(punkte.map((p) => p.betrag)) === 0) return { art: 'kein_vorzeichenwechsel' };
   if (punkte[punkte.length - 1]!.jahre === 0) return { art: 'nicht_bestimmbar' };
 
   const loesung = loese(punkte);
-  return loesung.art === 'ok' ? { ...loesung, mehrdeutig: istMehrdeutig(punkte) } : loesung;
+  return loesung.art === 'ok' ? { ...loesung, mehrdeutig: istMehrdeutig(punkte, loesung.rate) } : loesung;
 }
 
 function loese(punkte: readonly Punkt[]): Loesung {

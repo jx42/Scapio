@@ -152,7 +152,7 @@ export function registriereZeitreihe(app: FastifyInstance, ctx: Kontext): void {
 
     const erster = reihe[0]!.tag;
     const letzter = reihe[reihe.length - 1]!.tag;
-    const von = spaeter(zeitraum === null ? freiVon! : beginnVon(zeitraum, lm.heute, erster), erster);
+    const von = spaeter(zeitraum === null ? freiVon! : beginnVon(zeitraum, letzter, erster), erster);
     const bis = freiBis === null ? letzter : frueher(freiBis, letzter);
 
     const kursgewinnErgebnis = kursgewinnFenster(reihe, von, bis);
@@ -219,7 +219,7 @@ export function registriereZeitreihe(app: FastifyInstance, ctx: Kontext): void {
       reiheLeer: false,
       zeitraum,
       // Reicht die Historie nicht so weit zurueck, zeigte der Knopf dasselbe wie `max`.
-      zeitraeume: ZEITRAEUME.filter((z) => z === 'max' || vergleiche(beginnVon(z, lm.heute, erster), erster) > 0),
+      zeitraeume: ZEITRAEUME.filter((z) => z === 'max' || vergleiche(beginnVon(z, letzter, erster), erster) > 0),
       ausschnitt: { von: tagAlsText(von), bis: tagAlsText(bis) },
       tage: reihe.map((t) => tagAlsText(t.tag)),
       fensterGewinnCent: centAlsZahl(kursgewinnErgebnis.fensterGewinnCent),

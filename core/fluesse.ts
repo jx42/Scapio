@@ -1,9 +1,8 @@
 /**
- * Monatliche Zu- und Abfluesse, durchschnittliche Sparrate, rollierender Schnitt.
+ * Monatliche Zu- und Abfluesse, Schnitt, rollierender Schnitt und Median.
  *
  * Generisch ueber `Fluss[]` — was als Zu- und Abfluss zaehlt, entscheidet die
- * aufrufende Stelle, nicht diese Datei. `core/kennzahlen.ts` speist die Sparrate mit
- * `externeFluesse` (echte Ueberweisungen), `server/lesemodell.ts` speist Kachel 5 mit
+ * aufrufende Stelle, nicht diese Datei. `server/lesemodell.ts` speist Kachel 5 mit
  * `investitionsFluesse` (Kaeufe und Verkaeufe). Siehe ADR-008.
  */
 
@@ -41,8 +40,8 @@ export const LEERE_UEBERSICHT: Flussuebersicht = {
  * Monate lueckenlos von der ersten bis zur letzten Bewegung, mit `bis` bis zu diesem Tag.
  * Monate ohne Bewegung erscheinen mit null — ein fehlender Monat im Balkendiagramm
  * saehe aus wie ein kuerzerer Zeitraum, nicht wie eine Pause. Aus demselben Grund
- * reicht die Sparrate bis heute: wer vor zwei Jahren aufgehoert hat einzuzahlen, spart
- * heute nichts mehr, auch wenn die letzten zwoelf Monate *mit* Zahlung anderes sagen.
+ * reicht die Reihe bis zum Stichtag: wer vor zwei Jahren aufgehoert hat zu kaufen, kauft
+ * heute nichts mehr, auch wenn die letzten zwoelf Monate *mit* Kauf anderes sagen.
  */
 export function monatsFluesse(externe: readonly Fluss[], bis?: Tag): Flussuebersicht {
   if (externe.length === 0) return LEERE_UEBERSICHT;

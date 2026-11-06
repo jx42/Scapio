@@ -107,9 +107,9 @@ export function baueLesemodell(
   // `heuteVorgabe` friert diesen Tag ein und wird ausschliesslich von den beiden
   // Startern gesetzt, die ein synthetisches Depot bedienen (`start/demo.ts`,
   // `test/e2e/server-start.ts`): deren Kurshistorie endet an einem festen Tag, und
-  // ein `heute` von der Systemuhr schoebe die kurzen Fenster ("1W", "1M") hinter
-  // den letzten Datenpunkt — die Kachel zeigte dann ein leeres Diagramm, obwohl
-  // Daten da sind. Der echte Start uebergibt nichts und liest die Uhr.
+  // der Lauf und der Abrufstand der Fondsbestandteile rechnen gegen diesen Tag. Fenster,
+  // Kennzahlen und Fluesse richten sich nach dem letzten Reihentag, nicht nach `heute`
+  // (ADR-053). Der echte Start uebergibt nichts und liest die Uhr.
   const heute = heuteVorgabe ?? tagAus(new Date().toISOString());
 
   const letzterLauf = einmal(() => repository.lauf.letzter(db));
@@ -206,8 +206,9 @@ export function baueLesemodell(
   });
 
   // Kachel 5 zeigt Investitionen in Wertpapiere, nicht externe Zahlungen ins Depot —
-  // siehe ADR-008. Die Sparrate in `kennzahlen()` bleibt auf `externeFluesse` gestuetzt.
-  const fluesse = einmal(() => monatsFluesse(investitionsFluesse(transaktionen())));
+  // siehe ADR-008. Die Monate reichen bis zum Stichtag wie die Kennzahlen, sonst stuende
+  // nach einer Kaufpause im 12-Monats-Schnitt weiter die alte Rate. [ADR-053]
+  const fluesse = einmal(() => monatsFluesse(investitionsFluesse(transaktionen()), letzterTag()?.tag ?? heute));
 
   /**
    * Gehaltene Fonds, von denen die Top-25-Kachel keine Bestandteile zeigen kann — nur,

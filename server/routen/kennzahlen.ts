@@ -72,8 +72,6 @@ const ANTWORT_SCHEMA = objektSchema<KennzahlenAntwort>({
   maxDrawdown: maxDrawdownJsonSchema,
   volatilitaetProJahr: volatilitaetJsonSchema,
   sharpe: sharpeJsonSchema,
-  sparrateCent: { type: 'number' },
-  sparrate12Cent: { type: 'number' },
   hinweise: {
     type: 'array',
     items: objektSchema<Hinweis>({ code: { type: 'string', enum: [...HINWEIS_CODES] }, anzahl: { type: ['number', 'null'] } }),
@@ -118,8 +116,6 @@ export function registriereKennzahlen(app: FastifyInstance, ctx: Kontext): void 
       maxDrawdown: maxDrawdownAlsJson(k.maxDrawdown),
       volatilitaetProJahr: volatilitaetAlsJson(k.volatilitaetProJahr),
       sharpe: sharpeAlsJson(k.sharpe),
-      sparrateCent: centAlsZahl(k.sparrateCent),
-      sparrate12Cent: centAlsZahl(k.sparrate12Cent),
       hinweise: k.hinweise.map((h) => ({ code: h.code, anzahl: h.anzahl })),
       zinsenTransaktionen: k.zinsenTransaktionen.map((z) => ({
         txId: z.txId,
