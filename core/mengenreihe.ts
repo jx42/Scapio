@@ -9,6 +9,7 @@
 import type { MengeE8 } from './dezimal.ts';
 import type { Tag } from './kalender.ts';
 import { plusTage, vergleiche } from './kalender.ts';
+import { istKapitalmassnahme } from './fifo.ts';
 import type { Isin, Tx } from './typen.ts';
 import { zaehlt } from './typen.ts';
 import { istWertpapieruebertrag } from './uebertraege.ts';
@@ -22,6 +23,21 @@ export type Mengenreihe = {
   readonly endbestand: ReadonlyMap<Isin, MengeE8>;
 };
 
+/** Stueckzahlaenderung eines Tages: Kapitalmassnahmen (Betrag 0) und Handel getrennt, wie in `fifo()`. */
+export type Tagesaenderung = { readonly massnahme: MengeE8; readonly handel: MengeE8 };
+
+/**
+ * Bestand nach einem Tag. Nie negativ: wer mehr verkauft, als bekannt ist, haelt danach
+ * nichts — dieselbe Regel wie in `fifo()`, sonst stuende eine negative Position im
+ * Depotwert, deren Erloes FIFO schon als Gewinn bucht. Kapitalmassnahmen wirken zum
+ * Tagesbeginn, Zugaenge vor Abgaengen; mit der Grenze bei null ist das dasselbe wie die
+ * Summe des Handels. [ADR-043]
+ */
+function fortschreiben(bestand: MengeE8, d: Tagesaenderung): MengeE8 {
+  const nachMassnahme = bestand + d.massnahme > 0n ? bestand + d.massnahme : 0n;
+  return nachMassnahme + d.handel > 0n ? nachMassnahme + d.handel : 0n;
+}
+
 /**
  * Aenderung der Stueckzahl an einem Tag, je ISIN.
  *
@@ -32,8 +48,8 @@ export type Mengenreihe = {
 export function mengenAenderungen(
   transaktionen: readonly Tx[],
   ausgeglichen: ReadonlySet<string>,
-): Map<Isin, Map<Tag, MengeE8>> {
-  const aenderungen = new Map<Isin, Map<Tag, MengeE8>>();
+): Map<Isin, Map<Tag, Tagesaenderung>> {
+  const aenderungen = new Map<Isin, Map<Tag, Tagesaenderung>>();
 
   for (const tx of transaktionen) {
     if (!zaehlt(tx)) continue;
@@ -46,7 +62,13 @@ export function mengenAenderungen(
       jeIsin = new Map();
       aenderungen.set(tx.isin, jeIsin);
     }
-    jeIsin.set(tx.tag, (jeIsin.get(tx.tag) ?? 0n) + tx.mengeE8);
+    const d = jeIsin.get(tx.tag) ?? { massnahme: 0n, handel: 0n };
+    jeIsin.set(
+      tx.tag,
+      istKapitalmassnahme(tx)
+        ? { massnahme: d.massnahme + tx.mengeE8, handel: d.handel }
+        : { massnahme: d.massnahme, handel: d.handel + tx.mengeE8 },
+    );
   }
 
   return aenderungen;
@@ -85,18 +107,19 @@ export function baueMengenreihe(
     // Neuberechnung ab einem spaeteren Tag jeden frueheren Kauf vergessen und
     // ein leeres Depot ausgewiesen — dieselbe Regel wie in der Cashreihe.
     let bestand = 0n;
-    for (const [tag, d] of jeTag) {
-      if (vergleiche(tag, beginn) < 0) bestand += d;
+    for (const tag of tage) {
+      if (vergleiche(tag, beginn) < 0) bestand = fortschreiben(bestand, jeTag.get(tag)!);
     }
 
     for (let t = beginn; vergleiche(t, bis) <= 0; t = plusTage(t, 1)) {
-      bestand += jeTag.get(t) ?? 0n;
+      const d = jeTag.get(t);
+      if (d !== undefined) bestand = fortschreiben(bestand, d);
       reihe.set(t, bestand);
     }
 
     // Aenderungen nach `bis` gehoeren nicht in die Reihe, aber in den Endbestand.
     let gesamt = 0n;
-    for (const [, d] of jeTag) gesamt += d;
+    for (const tag of tage) gesamt = fortschreiben(gesamt, jeTag.get(tag)!);
 
     menge.set(isin, reihe);
     endbestand.set(isin, gesamt);

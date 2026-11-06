@@ -90,10 +90,33 @@ describe('berechneKennzahlen — Summen', () => {
       verkauf('2026-02-02', EUROPA, '5', '450'),
       zins('2026-03-01', '12'),
     ];
-    const k = berechneKennzahlen(standard({ transaktionen }));
+    // Cash 2000 − 1000 − 500 + 450 + 12 = 962, dazu der Welt-ETF zu 1200.
+    const reihe = [
+      depotTag('2025-08-26', '2000', { wertpapiereCent: zuCent('1500'), nettoEinzahlungKumCent: zuCent('2000') }),
+      depotTag('2026-08-26', '2162', { wertpapiereCent: zuCent('1200'), nettoEinzahlungKumCent: zuCent('2000') }),
+    ];
+    const k = berechneKennzahlen(standard({ transaktionen, reihe }));
     const g = k.gewinnquellen;
+    expect(g.nettoCent).toBe(k.gesamtCent - k.nettoEinzahlungCent);
     expect(g.nettoCent).toBe(k.kursgewinnCent + k.realisiertCent + k.zinsenCent + k.steuernCent + k.gebuehrenCent);
+    expect([...g.zufluesse, ...g.abfluesse].map((q) => q.art)).not.toContain('nichtZugeordnet');
     expect(g.abfluesse.map((q) => q.isin)).toContain(EUROPA);
+  });
+
+  it('weist aus, was keiner Quelle zuzuordnen ist, statt es still zu verlieren [ADR-062]', () => {
+    // Eine Cash-Buchung unbekannten Typs: in Cash und Gesamtwert, in keinem Topf.
+    const e = standard();
+    const k = berechneKennzahlen({
+      ...e,
+      transaktionen: [...e.transaktionen, tx({ tag: '2026-01-10', art: 'CASH', typ: 'CORRECTION', betragCent: zuCent('50') })],
+      reihe: [
+        e.reihe[0]!,
+        depotTag('2026-08-26', '1250', { wertpapiereCent: zuCent('1200'), cashCent: zuCent('50'), nettoEinzahlungKumCent: zuCent('1000') }),
+      ],
+    });
+    const rest = [...k.gewinnquellen.zufluesse, ...k.gewinnquellen.abfluesse].filter((q) => q.art === 'nichtZugeordnet');
+    expect(k.gewinnquellen.nettoCent).toBe(k.gesamtCent - k.nettoEinzahlungCent);
+    expect(rest.map((q) => q.betragCent)).toEqual([zuCent('50')]);
   });
 
   it('weist Einstand und Buchgewinn getrennt aus', () => {
@@ -443,6 +466,22 @@ describe('berechneKennzahlen — Hinweise', () => {
       tx({ tag: '2026-02-02', typ: 'CORPORATE_ACTION', art: 'WERTPAPIER', isin: EUROPA, mengeE8: -100_000_000n, betragCent: 0n }),
     ];
     expect(codes(standard({ transaktionen }))).toContain('H_AUSBUCHUNG');
+  });
+
+  it('meldet einen Verkauf ueber den bekannten Bestand', () => {
+    const e = standard();
+    const transaktionen = [...e.transaktionen, verkauf('2026-02-02', WELT, '15', '1500')];
+    expect(codes(standard({ transaktionen }))).toContain('H_UEBERVERKAUF');
+    expect(codes(e)).not.toContain('H_UEBERVERKAUF');
+  });
+
+  it('meldet, wenn die Positionen mehr wert sind als das Depot und der Cash-Anteil begrenzt ist', () => {
+    const e = standard();
+    const reihe = [e.reihe[0]!, depotTag('2026-08-26', '1100', { wertpapiereCent: zuCent('1200'), cashCent: zuCent('-100') })];
+    const k = berechneKennzahlen({ ...e, reihe });
+    expect(k.cashAnteil).toBe(0);
+    expect(k.hinweise.map((h) => h.code)).toContain('H_CASH_NEGATIV');
+    expect(codes(e)).not.toContain('H_CASH_NEGATIV');
   });
 
   it('schweigt, wenn nichts zu melden ist', () => {

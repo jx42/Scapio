@@ -55,6 +55,8 @@ export type FifoErgebnis = {
   readonly herkunft: ReadonlyMap<Isin, readonly Herkunft[]>;
   /** Abgaenge des ganzen Bestands ohne Betrag und ohne Zugang am selben Tag, als Verlust gebucht. */
   readonly ausbuchungen: number;
+  /** Verkaeufe ueber den bekannten Bestand hinaus — unvollstaendige Historie. */
+  readonly ueberverkaeufe: number;
 };
 
 /**
@@ -79,6 +81,11 @@ export type FifoErgebnis = {
  * Kapitalmassnahme und bucht den Einstand um, statt ihn zu realisieren — siehe
  * `bucheUm`. [ADR-043]
  *
+ * Innerhalb eines Tages gehen Zugaenge den Abgaengen vor, erst danach entscheidet der
+ * Zeitstempel. Der Tag ist die Einheit der Mengenreihe; nach Zeitstempel sortiert, liefe
+ * ein Verkauf vor dem Kauf desselben Tages ins Leere, und Einstand und Bestand
+ * widersprachen sich am Tagesende. [ADR-043]
+ *
  * `ausgeglichen` kommt vom Aufrufer, einmal ueber die gesamte Historie berechnet — die
  * Paarerkennung in `ausgeglicheneUebertraege()` ist ohnehin je ISIN gruppiert, das
  * Ergebnis fuer eine ISIN ist also dasselbe, ob man es auf der vollen Liste oder auf
@@ -93,9 +100,17 @@ export function fifo(transaktionen: readonly Tx[], ausgeglichen: ReadonlySet<str
     if (ausgeglichen.has(tx.id)) continue;
     relevant.push(tx);
   }
-  relevant.sort((a, b) => vergleiche(a.tag, b.tag) || vergleiche(a.ts, b.ts));
+  const abgang = (tx: Tx): number => (tx.mengeE8! > 0n ? 0 : 1);
+  relevant.sort((a, b) => vergleiche(a.tag, b.tag) || abgang(a) - abgang(b) || vergleiche(a.ts, b.ts));
 
-  const buch: Buch = { offen: new Map(), realisiert: new Map(), verkaeufe: [], herkunft: new Map(), ausbuchungen: 0 };
+  const buch: Buch = {
+    offen: new Map(),
+    realisiert: new Map(),
+    verkaeufe: [],
+    herkunft: new Map(),
+    ausbuchungen: 0,
+    ueberverkaeufe: 0,
+  };
   for (const tx of relevant) if (!buch.offen.has(tx.isin!)) buch.offen.set(tx.isin!, []);
 
   let i = 0;
@@ -126,7 +141,13 @@ export function fifo(transaktionen: readonly Tx[], ausgeglichen: ReadonlySet<str
   }
 
   buch.verkaeufe.sort((a, b) => vergleiche(a.tag, b.tag));
-  return { einstaende: ergebnis, verkaeufe: buch.verkaeufe, herkunft: buch.herkunft, ausbuchungen: buch.ausbuchungen };
+  return {
+    einstaende: ergebnis,
+    verkaeufe: buch.verkaeufe,
+    herkunft: buch.herkunft,
+    ausbuchungen: buch.ausbuchungen,
+    ueberverkaeufe: buch.ueberverkaeufe,
+  };
 }
 
 type OffeneTranche = { tag: Tag; menge: MengeE8; kosten: Cent };
@@ -140,6 +161,7 @@ type Buch = {
   readonly verkaeufe: RealisierteVerkaufszeile[];
   readonly herkunft: Map<Isin, Herkunft[]>;
   ausbuchungen: number;
+  ueberverkaeufe: number;
 };
 
 /**
@@ -253,7 +275,6 @@ function bucheHandel(buch: Buch, tx: Tx): void {
   let zuVerkaufen = -menge;
   const erloes = tx.betragCent < 0n ? -tx.betragCent : tx.betragCent;
   let verbrauchteKosten = 0n;
-  const gesamtVerkauft = zuVerkaufen;
 
   while (zuVerkaufen > 0n && offen.length > 0) {
     const tranche = offen[0]!;
@@ -276,14 +297,13 @@ function bucheHandel(buch: Buch, tx: Tx): void {
     zuVerkaufen = 0n;
   }
 
-  // Was ueber den bekannten Bestand hinaus verkauft wird, hat keinen Einstand.
-  // Das passiert bei unvollstaendiger Historie und wird als reiner Erloes gebucht,
-  // statt die Rechnung mit einem negativen Bestand zu vergiften.
-  const tatsaechlichVerkauft = gesamtVerkauft - zuVerkaufen;
-  const anteiligerErloes =
-    tatsaechlichVerkauft === gesamtVerkauft ? erloes : rundeAufCent(erloes * tatsaechlichVerkauft, gesamtVerkauft);
+  // Was ueber den bekannten Bestand hinaus verkauft wird, hat keinen Einstand
+  // (unvollstaendige Historie). Der Bestand bleibt bei null — dieselbe Regel wie in der
+  // Mengenreihe — und der ganze Erloes ist Gewinn: er liegt als Cash im Depot, und nur so
+  // geht der Gesamtgewinn in seinen Quellen auf. [ADR-043]
+  if (zuVerkaufen > 0n) buch.ueberverkaeufe += 1;
 
-  const gewinn = anteiligerErloes - verbrauchteKosten;
+  const gewinn = erloes - verbrauchteKosten;
   buch.realisiert.set(isin, (buch.realisiert.get(isin) ?? 0n) + gewinn);
   buch.verkaeufe.push({ txId: tx.id, tag: tx.tag, isin, gewinnCent: gewinn });
 }

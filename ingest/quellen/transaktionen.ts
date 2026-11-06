@@ -161,8 +161,9 @@ export async function holeTransaktionen(ctx: Kontext): Promise<Ernte<Transaktion
   }
 
   if (unbekannteTypen.size > 0) {
-    // Unbekannte Typen gelten im Rechenkern als intern und verschieben die Rendite
-    // deshalb NICHT heimlich — sie stehen hier, damit jemand sie einordnet.
+    // Unbekannte Typen gelten im Rechenkern als intern: ihr Betrag aendert Cash und
+    // Gesamtgewinn, ohne Einzahlung zu sein, und steht in den Gewinnquellen unter
+    // „Nicht zugeordnet“. Sie stehen hier, damit jemand sie einordnet. [ADR-014]
     ctx.befunde.hinweis('unbekannteTypen', {
       typen: [...unbekannteTypen].map((t) => t.replace(/[^A-Z0-9_]/g, '?')).sort(), // Fremdtext entschaerfen [INV-06]
     });

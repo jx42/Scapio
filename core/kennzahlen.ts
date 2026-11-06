@@ -49,6 +49,8 @@ export const HINWEIS_CODES = [
   'H_KEIN_VPI',
   'H_KEIN_ZINS',
   'H_DRIFT_AUSGESETZT',
+  'H_UEBERVERKAUF',
+  'H_CASH_NEGATIV',
 ] as const;
 export type HinweisCode = (typeof HINWEIS_CODES)[number];
 
@@ -119,7 +121,7 @@ export type Kennzahlen = {
   readonly gebuehrenCent: Cent;
   readonly gesamtCent: Cent;
   readonly cashCent: Cent;
-  /** Was die Positionsanteile offen lassen, ist Cash. 0..1. */
+  /** Was die Positionsanteile offen lassen, ist Cash. 0..1; begrenzt meldet `H_CASH_NEGATIV`. */
   readonly cashAnteil: number;
   readonly nettoEinzahlungCent: Cent;
   readonly twr: TwrErgebnis;
@@ -142,7 +144,7 @@ export type Kennzahlen = {
   readonly gebuehrenTransaktionen: readonly ErtragsZeile[];
   /** Einzelverkaeufe hinter `realisiertCent`, neueste zuerst. */
   readonly realisierteVerkaeufe: readonly RealisierteZeile[];
-  /** Gesamtgewinn nach Herkunft: je Wertpapier, Ertraege, Steuern, Gebuehren. */
+  /** Gesamtgewinn nach Herkunft: je Wertpapier, Ertraege, Steuern, Gebuehren, Rest. */
   readonly gewinnquellen: Gewinnquellen;
 };
 
@@ -189,7 +191,7 @@ export function berechneKennzahlen(e: KennzahlenEingaben): Kennzahlen {
   // sie braucht, statt je Aufruf (und hier je offener Position) neu.
   const ausgeglichen = ausgeglicheneUebertraege(transaktionen);
 
-  const { einstaende, verkaeufe, herkunft, ausbuchungen } = fifo(transaktionen, ausgeglichen);
+  const { einstaende, verkaeufe, herkunft, ausbuchungen, ueberverkaeufe } = fifo(transaktionen, ausgeglichen);
   const externe = externeFluesse(transaktionen, ausgeglichen);
 
   let investiert = 0n;
@@ -295,6 +297,12 @@ export function berechneKennzahlen(e: KennzahlenEingaben): Kennzahlen {
 
   const kursgewinn = wertpapiere - investiert;
 
+  // Rest gegen den Gesamtgewinn, nicht eine weitere Summe: so geht die Zerlegung immer
+  // auf, und was keine Quelle hat, steht sichtbar daneben statt still zu fehlen. [ADR-062]
+  let zugeordnet = zinsen + steuern + gebuehren;
+  for (const b of beitraege) zugeordnet += b.gewinnCent;
+  const nichtZugeordnet = gesamt - nettoEinzahlung - zugeordnet;
+
   const twrErgebnis = twr(sortierteReihe, externe);
   const renditen = monatsrenditen(twrErgebnis.index, stichtag);
 
@@ -321,7 +329,7 @@ export function berechneKennzahlen(e: KennzahlenEingaben): Kennzahlen {
     medianCent: uebersicht.median,
     positionen,
     fluesse: uebersicht,
-    hinweise: sammleHinweise(e, sortierteReihe, ausbuchungen),
+    hinweise: sammleHinweise(e, sortierteReihe, { ausbuchungen, ueberverkaeufe, cashNegativ: wertpapiere > 0n && gesamt < wertpapiere }),
     zinsenTransaktionen,
     steuernTransaktionen,
     gebuehrenTransaktionen,
@@ -331,11 +339,19 @@ export function berechneKennzahlen(e: KennzahlenEingaben): Kennzahlen {
       ertraegeCent: zinsen,
       steuernCent: steuern,
       gebuehrenCent: gebuehren,
+      nichtZugeordnetCent: nichtZugeordnet,
     }),
   };
 }
 
-function sammleHinweise(e: KennzahlenEingaben, reihe: readonly DepotTag[], ausbuchungen: number): Hinweis[] {
+type Befunde = {
+  readonly ausbuchungen: number;
+  readonly ueberverkaeufe: number;
+  /** Positionen zusammen mehr wert als das Depot: `cashAnteil` ist dann auf 0 begrenzt. */
+  readonly cashNegativ: boolean;
+};
+
+function sammleHinweise(e: KennzahlenEingaben, reihe: readonly DepotTag[], befunde: Befunde): Hinweis[] {
   const hinweise: Hinweis[] = [];
 
   const unbekannt = new Set<string>();
@@ -349,7 +365,9 @@ function sammleHinweise(e: KennzahlenEingaben, reihe: readonly DepotTag[], ausbu
   const luecken = reihe.filter((t) => t.lueckenhaft && ab !== null && vergleiche(t.tag, ab) >= 0).length;
   if (luecken > 0) hinweise.push({ code: 'H_KURSLUECKE', anzahl: luecken });
 
-  if (ausbuchungen > 0) hinweise.push({ code: 'H_AUSBUCHUNG', anzahl: ausbuchungen });
+  if (befunde.ausbuchungen > 0) hinweise.push({ code: 'H_AUSBUCHUNG', anzahl: befunde.ausbuchungen });
+  if (befunde.ueberverkaeufe > 0) hinweise.push({ code: 'H_UEBERVERKAUF', anzahl: befunde.ueberverkaeufe });
+  if (befunde.cashNegativ) hinweise.push({ code: 'H_CASH_NEGATIV', anzahl: null });
   if (e.vpi.size === 0) hinweise.push({ code: 'H_KEIN_VPI', anzahl: null });
   if (e.zinsreihe.size === 0) hinweise.push({ code: 'H_KEIN_ZINS', anzahl: null });
   if (e.drift.stufe === 'ausgesetzt') hinweise.push({ code: 'H_DRIFT_AUSGESETZT', anzahl: null });

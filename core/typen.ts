@@ -132,9 +132,10 @@ export function istGebuehr(typ: string): boolean {
 export type Einordnung = 'extern' | 'ertrag' | 'intern';
 
 /**
- * Ordnet einen Transaktionstyp ein. Unbekannte Typen gelten als intern —
- * ein unbekannter Typ darf die Renditerechnung nicht heimlich verschieben.
- * Der Ingest vermerkt ihn stattdessen als Hinweis im Lauf.
+ * Ordnet einen Transaktionstyp ein. Unbekannte Typen gelten als intern: nie als
+ * Einzahlung, denn ein unbekannter Typ darf kein Kapital erfinden. Sein Betrag aendert
+ * trotzdem Cash und damit den Gewinn; die Gewinnquellen fuehren ihn unter
+ * `nichtZugeordnet`, Ingest und Kennzahlen melden ihn als Hinweis. [ADR-014]
  */
 export function einordnen(typ: string): Einordnung {
   const t = typ.toUpperCase();

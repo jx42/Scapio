@@ -105,11 +105,30 @@ describe('lookThrough', () => {
     // Ohne die Quote waeren die Prozentwerte irrefuehrend.
     const e = lookThrough(
       werte([[WELT, '7500'], [GOLD, '2500']]),
-      [teil(WELT, 'US0378331005', 'Apple', 0.05)],
+      [teil(WELT, 'US0378331005', 'Apple', 0.6), teil(WELT, 'CH0038863350', 'Nestle', 0.4)],
       zuCent('10000'),
     );
     expect(e.durchschautCent).toBe(zuCent('7500'));
     expect(e.abdeckung).toBeCloseTo(0.75, 12);
+  });
+
+  it('zaehlt einen Fonds nur mit der Summe seiner Gewichte zur Abdeckung, hoechstens ganz', () => {
+    // Was der Anbieter ohne ISIN fuehrt (Cash, Futures), ist nicht durchschaut.
+    const teilweise = lookThrough(
+      werte([[WELT, '1000'], [GOLD, '1000']]),
+      [teil(WELT, 'US0378331005', 'Apple', 0.4), teil(WELT, 'CH0038863350', 'Nestle', 0.2)],
+      zuCent('2000'),
+    );
+    expect(teilweise.durchschautCent).toBe(zuCent('600'));
+    expect(teilweise.abdeckung).toBeCloseTo(0.3, 12);
+
+    const ueber = lookThrough(
+      werte([[WELT, '1000']]),
+      [teil(WELT, 'US0378331005', 'Apple', 0.7), teil(WELT, 'CH0038863350', 'Nestle', 0.4)],
+      zuCent('1000'),
+    );
+    expect(ueber.durchschautCent).toBe(zuCent('1000'));
+    expect(ueber.abdeckung).toBe(1);
   });
 
   it('zaehlt einen Fonds ohne Wert nicht zur Abdeckung', () => {
@@ -126,10 +145,12 @@ describe('lookThrough', () => {
 
   it('verwirft einen Bestandteil, dessen Anteil auf null Cent rundet', () => {
     // Ein winziges Gewicht auf einen winzigen Fondswert ergibt weniger als einen
-    // halben Cent — das zaehlt nicht als Position, aber der Fonds bleibt "durchschaut".
+    // halben Cent — das zaehlt nicht als Position; der Fonds hat aber eine Liste und
+    // steht deshalb nicht unter den undurchschauten.
     const e = lookThrough(werte([[WELT, '0.01']]), [teil(WELT, 'US0378331005', 'Winzig', 0.001)], zuCent('0.01'));
     expect(e.top).toEqual([]);
-    expect(e.durchschautCent).toBe(zuCent('0.01'));
+    expect(e.durchschautCent).toBe(0n);
+    expect(e.undurchschaut).toEqual([]);
   });
 
   it('sortiert die Fonds-Anteile eines Unternehmens absteigend, auch wenn der groessere zuerst kam', () => {
@@ -285,7 +306,8 @@ describe('lookThrough mit Einzelaktien', () => {
       { isin: NVIDIA, anteil: zuCent('200') },
       { isin: WELT, anteil: zuCent('50') },
     ]);
-    expect(e.durchschautCent).toBe(zuCent('1200'));
+    // Die Aktie ganz, vom Welt-ETF nur die gelisteten 5 %.
+    expect(e.durchschautCent).toBe(zuCent('250'));
     expect(e.undurchschaut).toEqual([GOLD]);
     expect(e.sektoren).toEqual([{ name: 'Information Technology', exposure: zuCent('250'), anteil: 1 }]);
   });

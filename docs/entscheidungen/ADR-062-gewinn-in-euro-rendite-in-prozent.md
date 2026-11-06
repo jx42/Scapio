@@ -32,3 +32,12 @@ Die Realrendite der Jahrestabelle beruhte auf der TWR, die gleichnamige Karte au
 - **„Persönliche Rendite“ statt IZF** — verständlicher, aber in keinem Kontoauszug und keiner
   Steuerunterlage so genannt; der Erklärtext sagt bereits, dass das Timing zählt.
 - **„Nettogewinn“ überall** — legt nahe, die Kursgewinne seien schon versteuert. Sie sind es nicht.
+
+## Nachtrag: Gesamtgewinn der Sankey gleich dem Verlauf
+
+`nettoCent` war die Summe der Töpfe und lief am Gesamtgewinn vorbei, sobald eine Buchung in
+keinen Topf fiel: unbekannter Cash-Typ, Wertpapierbuchung ohne Menge, Überverkauf. Jetzt
+rechnet `berechneKennzahlen` den Rest `gesamt − netto − Σ Töpfe` aus und zeigt ihn als Topf
+„Nicht zugeordnet“ (`nichtZugeordnet`, ohne Buchungsliste). Damit gilt
+`nettoCent = gesamtCent − nettoEinzahlungCent` per Konstruktion, geprüft in
+`test/gewinnquellen-summe.test.ts`. Der Topf ist im Normalfall leer. Steht er, ist er ein Befund.
