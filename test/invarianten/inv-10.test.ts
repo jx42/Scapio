@@ -12,13 +12,11 @@
  * ## Wenn dieser Test fehlschlaegt
  *
  * Er sagt dir nicht, dass etwas kaputt ist — er sagt, dass du `core/` geaendert hast.
- * Zwei Schritte:
+ * `npm run kern:version` erhoeht `KERN_VERSION` (einmal je Branch gegenueber
+ * `origin/main`) und schreibt `core/.abdruck.json` neu.
  *
- *   1. `KERN_VERSION` in `core/version.ts` um eins erhoehen.
- *   2. `npm run abdruck` — schreibt `core/.abdruck.json` neu.
- *
- * Nur den Abdruck neu zu schreiben, ohne die Version zu erhoehen, ist genau der
- * Fehler, den diese Regel verhindern soll.
+ * Nur den Abdruck neu zu schreiben (`npm run abdruck`), ohne die Version zu erhoehen,
+ * ist genau der Fehler, den diese Regel verhindern soll.
  */
 
 import { createHash } from 'node:crypto';
@@ -34,7 +32,7 @@ describe('INV-10 — Kernversion und Abdruck', () => {
   it('hat einen hinterlegten Abdruck', () => {
     expect(
       existsSync(ABDRUCK_DATEI),
-      'core/.abdruck.json fehlt — `npm run abdruck` schreibt sie.',
+      'core/.abdruck.json fehlt — `npm run kern:version` schreibt sie.',
     ).toBe(true);
   });
 
@@ -44,16 +42,17 @@ describe('INV-10 — Kernversion und Abdruck', () => {
     expect(
       abdruckVonCore(),
       [
-        'Der Rechenkern hat sich geaendert.',
-        '',
-        '  1. KERN_VERSION in core/version.ts um eins erhoehen',
-        '  2. npm run abdruck',
+        'Der Rechenkern hat sich geaendert. Zu tun: npm run kern:version',
+        '(erhoeht KERN_VERSION einmal je Branch und schreibt core/.abdruck.json neu).',
         '',
         `  hinterlegt fuer Version ${hinterlegt.kernVersion}: ${hinterlegt.abdruck}`,
       ].join('\n'),
     ).toBe(hinterlegt.abdruck);
 
-    expect(hinterlegt.kernVersion, 'Der Abdruck gehoert zu einer anderen Kernversion').toBe(KERN_VERSION);
+    expect(
+      hinterlegt.kernVersion,
+      'Der Abdruck gehoert zu einer anderen Kernversion — npm run kern:version',
+    ).toBe(KERN_VERSION);
   });
 
   it('haelt die Version als ganze Zahl ab eins', () => {
