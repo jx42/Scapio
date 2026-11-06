@@ -18,6 +18,7 @@ import { AufteilungKachel } from '@/features/aufteilung/AufteilungKachel';
 import { FluesseKachel } from '@/features/fluesse/FluesseKachel';
 import { GewinnquellenKachel } from '@/features/gewinnquellen/GewinnquellenKachel';
 import { SparplaeneKachel } from '@/features/sparplaene/SparplaeneKachel';
+import { zielSchreiben } from '@/features/aufteilung/zielaufteilung';
 
 import {
   AktualisierenElemente,
@@ -46,7 +47,11 @@ async function starteFall(fall: Fall, ziel: HTMLElement): Promise<void> {
   installiereStub(fall, basis);
   try {
     if (fall.zielaufteilung === undefined) localStorage.removeItem('portfolio.zielaufteilung');
-    else localStorage.setItem('portfolio.zielaufteilung', JSON.stringify(fall.zielaufteilung));
+    else
+      zielSchreiben({
+        ziel: new Map(Object.entries(fall.zielaufteilung.ziel)),
+        ausgeschlossen: fall.zielaufteilung.ausgeschlossen ?? [],
+      });
   } catch {
     // ohne Speicher eben ohne
   }

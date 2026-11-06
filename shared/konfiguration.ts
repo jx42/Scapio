@@ -59,10 +59,23 @@ const DriftSchwellen = z
   })
   .strict();
 
+/**
+ * e2e, Demo und Randfallseite. Agenten duerfen diese Ports ansehen und fotografieren
+ * [ADR-042]; laeuft die echte App auf einem davon, laege ein echtes Depot im Bild.
+ */
+export const WERKZEUGPORTS = { von: 4790, bis: 4793 } as const;
+
 // Ohne Vorgaben: in `einstellungen.json` heisst ein fehlendes Feld "wie in config.json",
 // nicht "zurueck auf die Vorgabe". Die Vorgaben haengen erst `KonfigurationSchema` an.
 const EINSTELLUNGEN = {
-  port: z.number().int().min(1024).max(65535),
+  port: z
+    .number()
+    .int()
+    .min(1024)
+    .max(65535)
+    .refine((p) => p < WERKZEUGPORTS.von || p > WERKZEUGPORTS.bis, {
+      message: `${String(WERKZEUGPORTS.von)}–${String(WERKZEUGPORTS.bis)} gehoeren Demo, Randfallseite und e2e`,
+    }),
   mcpZeitlimitMs: z.number().int().min(1000).max(600_000),
   csvZeitlimitMs: z.number().int().min(1000).max(300_000),
   csvGroesstMb: z.number().int().min(1).max(256),

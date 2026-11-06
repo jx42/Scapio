@@ -44,7 +44,15 @@ export function zielAusParameter(parameter: string): Map<string, number> {
 
 /* --------------------------------------------------------------------- Speicher */
 
+/*
+ * Im Speicher steht je Zeile nur eine FNV-1a-Pruefsumme des Schluessels, keine ISIN — wie bei
+ * den weggeklickten Hinweisen [ADR-056]. Zurueckgefunden wird eine Zeile ueber die Schluessel,
+ * die der Dialog gerade zeigt. Fassung 1 (bis 2026-11) hielt die ISINs im Klartext und wird
+ * beim ersten Lesen umgeschrieben.
+ */
+
 const NAME = 'zielaufteilung';
+const FASSUNG = 2;
 
 export type GespeichertesZiel = {
   readonly ziel: ReadonlyMap<string, number>;
@@ -54,24 +62,63 @@ export type GespeichertesZiel = {
 
 const LEER: GespeichertesZiel = { ziel: new Map(), ausgeschlossen: [] };
 
-const gueltigerSchluessel = (s: unknown): s is string => typeof s === 'string' && (s === KONTO || istIsin(s));
+export function zielPruefsumme(schluessel: string): string {
+  let summe = 0x811c9dc5;
+  for (const zeichen of schluessel) summe = Math.imul(summe ^ (zeichen.codePointAt(0) ?? 0), 0x01000193) >>> 0;
+  return summe.toString(36);
+}
+
+const istKlartext = (s: unknown): s is string => typeof s === 'string' && (s === KONTO || istIsin(s));
+const istPruefsumme = (s: unknown): s is string => typeof s === 'string' && /^[0-9a-z]{1,7}$/.test(s);
 const gueltigeBp = (bp: unknown): bp is number => Number.isInteger(bp) && (bp as number) >= 0 && (bp as number) <= BP_GANZ;
 
 /** Ein manipulierter oder veralteter Eintrag faellt Zeile fuer Zeile heraus, nie die Seite. */
-export function zielLesen(): GespeichertesZiel {
+function speicherLesen(): GespeichertesZiel {
   const roh = jsonLesen(NAME);
   if (typeof roh !== 'object' || roh === null) return LEER;
-  const { ziel, ausgeschlossen } = roh as Record<string, unknown>;
+  const { fassung, ziel, ausgeschlossen } = roh as Record<string, unknown>;
+  const alt = fassung !== FASSUNG;
+  const gueltig = alt ? istKlartext : istPruefsumme;
+  const umschreiben = (s: string): string => (alt ? zielPruefsumme(s) : s);
   const eintraege =
     typeof ziel === 'object' && ziel !== null
-      ? Object.entries(ziel).filter(([s, bp]) => gueltigerSchluessel(s) && gueltigeBp(bp)).slice(0, HOECHSTENS_ZEILEN)
+      ? Object.entries(ziel).filter(([s, bp]) => gueltig(s) && gueltigeBp(bp)).slice(0, HOECHSTENS_ZEILEN)
       : [];
+  const gelesen: GespeichertesZiel = {
+    ziel: new Map(eintraege.map(([s, bp]) => [umschreiben(s), bp as number])),
+    ausgeschlossen: Array.isArray(ausgeschlossen) ? ausgeschlossen.filter(gueltig).slice(0, HOECHSTENS_ZEILEN).map(umschreiben) : [],
+  };
+  if (alt) speicherSchreiben(gelesen);
+  return gelesen;
+}
+
+function speicherSchreiben(z: GespeichertesZiel): void {
+  jsonSchreiben(NAME, { fassung: FASSUNG, ziel: Object.fromEntries(z.ziel), ausgeschlossen: z.ausgeschlossen });
+}
+
+/** Ersetzt einen Eintrag der Fassung 1 schon beim Laden der Seite, nicht erst beim Oeffnen des Dialogs. */
+export function zielSpeicherUmstellen(): void {
+  speicherLesen();
+}
+
+/** Das gemerkte Ziel der Zeilen, die es noch gibt; eine verkaufte Position faellt heraus. */
+export function zielLesen(vorhanden: readonly string[]): GespeichertesZiel {
+  const nachSumme = new Map(vorhanden.map((s) => [zielPruefsumme(s), s]));
+  const gespeichert = speicherLesen();
+  const ziel = new Map<string, number>();
+  for (const [summe, bp] of gespeichert.ziel) {
+    const schluessel = nachSumme.get(summe);
+    if (schluessel !== undefined) ziel.set(schluessel, bp);
+  }
   return {
-    ziel: new Map(eintraege as [string, number][]),
-    ausgeschlossen: Array.isArray(ausgeschlossen) ? ausgeschlossen.filter(gueltigerSchluessel).slice(0, HOECHSTENS_ZEILEN) : [],
+    ziel,
+    ausgeschlossen: gespeichert.ausgeschlossen.flatMap((summe) => nachSumme.get(summe) ?? []),
   };
 }
 
 export function zielSchreiben(z: GespeichertesZiel): void {
-  jsonSchreiben(NAME, { ziel: Object.fromEntries(z.ziel), ausgeschlossen: z.ausgeschlossen });
+  speicherSchreiben({
+    ziel: new Map([...z.ziel].map(([s, bp]) => [zielPruefsumme(s), bp])),
+    ausgeschlossen: z.ausgeschlossen.map(zielPruefsumme),
+  });
 }

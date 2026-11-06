@@ -17,8 +17,7 @@
  * Weg fuer Agentensitzungen, deren Kontext bei einem Cloud-Dienst liegt [ADR-042].
  */
 
-import { mkdtempSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { mkdtempSync, readdirSync, rmSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import type { DatabaseSync } from 'node:sqlite';
 import type { Cent } from '../core/dezimal.ts';
@@ -77,11 +76,25 @@ export function vergleicheReihen(
   return befunde.sort((a, b) => (a.tag < b.tag ? -1 : a.tag > b.tag ? 1 : 0));
 }
 
+const KOPIE_PRAEFIX = 'verify-';
+
+/**
+ * Die Arbeitskopie liegt im Datenverzeichnis, nicht unter `os.tmpdir()`: dort greift die
+ * Agentensperre [ADR-054], und ein Abbruch per SIGKILL laesst keine Depotkopie in einem
+ * fremden Ordner liegen. Reste eines abgebrochenen Laufs raeumt der naechste.
+ */
+export function arbeitsverzeichnisAnlegen(datenpfad: string): string {
+  for (const name of readdirSync(datenpfad)) {
+    if (name.startsWith(KOPIE_PRAEFIX)) rmSync(join(datenpfad, name), { recursive: true, force: true });
+  }
+  return mkdtempSync(join(datenpfad, KOPIE_PRAEFIX));
+}
+
 export async function haupt(argumente: readonly string[] = process.argv.slice(2)): Promise<number> {
   const nurZaehlung = argumente.includes('--nur-zaehlung');
   const konfiguration = ladeKonfiguration();
   const echt = await oeffneDatenbank({ konfiguration, migrieren: false });
-  const arbeitsverzeichnis = mkdtempSync(join(tmpdir(), 'portfolio-verify-'));
+  const arbeitsverzeichnis = arbeitsverzeichnisAnlegen(konfiguration.datenpfad);
 
   try {
     const gespeichert = repository.depotTag.alle(echt);

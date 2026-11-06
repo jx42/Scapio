@@ -38,6 +38,7 @@ npm run dev            # Entwicklung mit Neuladen, echte Datenbank — nicht fü
 npm run demo           # Oberfläche mit erfundenen Daten, ohne echtes Depot — mit Neuladen
 npm run demo:export    # dieselbe Demo als statischer Abzug nach .demo-export/, für demo-worker/
 npm run edgecases      # alle Fehlermeldungen und Randfälle der Oberfläche auf einer Seite
+npm run pr-bild -- <nr> <id>… # Kacheln der laufenden Demo fotografieren, für den Skill /push (ADR-042)
 npm run mcp-login      # einmalige, interaktive OAuth/PKCE-Anmeldung am Scalable-MCP
 npm run check          # typecheck + lint + tests (die Invarianten laufen darin mit) — muss vor jeder Übergabe grün sein
 npm run check:kurz     # dieselbe Prüfung, aber still: drei Zeilen statt tausend, Volltext im Log

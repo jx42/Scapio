@@ -52,3 +52,27 @@ Befund vom 2026-11-01: Die Liste sperrte die Datenbank, aber nicht die Seite, di
 `127.0.0.1` und `localhost`. Claude in Chrome und Playwright fängt keine Regel — dafür steht in
 AGENTS.md, dass Agenten nur Demo, Edgecases und e2e ansehen. Ein abweichender Port aus
 `einstellungen.json` ist nur durch diese Regel gedeckt.
+
+## Nachtrag: Umgehungen geschlossen
+
+Audit vom 2026-11-06: Die Muster fingen nur die wörtliche Form. `npm run -s verify`,
+`npm run start`, `node … start/verify.ts`, `./Start.command`, `wget` oder `node -e` auf `:4732`,
+`cp`/`cat` auf Datenverzeichnis und `~/Scapio-Sicherung` und `Read` auf die Temp-Kopie von
+`verify` gingen durch.
+
+- **Bash:** Datenverzeichnis beider Plattformen und `Scapio-Sicherung` als Teilstring, `:4732` in
+  jedem Befehl, `npm run` mit Optionen vor dem Skriptnamen, `node` vor `start/start.ts`,
+  `start/verify.ts` und `ingest/lauf.ts`, die `.command`/`.bat`-Einstiege. `*start/start.ts*` ist
+  auf `*node*start/start.ts*` verengt, damit `grep` und `sed` auf den Quelltext erlaubt bleiben.
+- **Read:** `*.db` und `*.db-wal` überall. `verify` legt seine Kopie im Datenverzeichnis an statt
+  unter `tmpdir()` und räumt Reste eines abgebrochenen Laufs beim nächsten ab.
+- **Claude in Chrome:** `ClaudeInChromeDomain(127.0.0.1:4732)` und `(localhost:4732)`. Claude Code
+  wertet `deny` dafür aus und vergleicht mit und ohne Port (geprüft an 2.1.316); ohne Port wären
+  auch Demo und Randfallseite gesperrt. Der Satz „Claude in Chrome … fängt keine Regel“ oben ist
+  damit überholt. Playwright bleibt ungesperrt; PR-Bilder entstehen nur über `npm run pr-bild`
+  ([ADR-042](ADR-042-agenten-lesen-keine-depotwerte.md), Nachtrag).
+- `test/agentensperre.test.ts` prüft die Muster an einem Modell der Regelauswertung gegen eine
+  Tabelle von Umgehungen und von Befehlen, die erlaubt bleiben müssen.
+
+Restlücke: ein Interpreter mit zusammengesetztem Pfad oder Port (`python3 -c`, `node -e` mit
+Variablen) und ein abweichender Port aus `einstellungen.json`. Dagegen steht nur AGENTS.md.

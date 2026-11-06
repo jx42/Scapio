@@ -7,6 +7,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
+import { z } from 'zod';
 import {
   ChartAntwort,
   EurostatAntwort,
@@ -126,5 +127,12 @@ describe('SchemaFehler', () => {
       expect(f.message).not.toContain('ZZ000000000');
       expect(f.message).not.toContain('Beispiel Globalfonds');
     }
+  });
+
+  it('gibt einen fremden Schluessel im Pfad nicht weiter', () => {
+    const schema = z.record(z.string(), z.number());
+    const boese = `\u001b]8;;https://x.example\u0007${'a'.repeat(200)}`;
+    expect(() => pruefe('eurostat', schema, { gut: 1, [boese]: 'kein Wert' })).toThrow(/^Antwort von eurostat passt nicht zum Schema: \?: invalid_type$/);
+    expect(() => pruefe('eurostat', schema, { gut: 'x' })).toThrow('Schema: gut: invalid_type');
   });
 });
