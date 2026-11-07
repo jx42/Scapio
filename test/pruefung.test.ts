@@ -21,7 +21,7 @@ const skripte = (
 
 describe('check und check:kurz', () => {
   it('gehen dieselben Schritte in derselben Reihenfolge', () => {
-    // "npm run -s typecheck && npm run -s lint && npm run -s test" -> [typecheck, lint, test]
+    // "npm run -s typecheck && … && npm run -s test:abdeckung" -> [typecheck, lint, test:abdeckung]
     const ausSkript = (skripte.check ?? '')
       .split('&&')
       .map((teil) => teil.trim().replace(/^npm run (-s )?/, ''));
@@ -35,7 +35,7 @@ describe('check und check:kurz', () => {
       expect(skript, `package.json kennt kein Skript "${schritt.name}"`).toBeDefined();
 
       const erwartet = [schritt.werkzeug, ...schritt.argumente].join(' ');
-      // tsc --noEmit | eslint . --max-warnings 0 | vitest run
+      // tsc --noEmit | eslint . --max-warnings 0 | vitest run --coverage
       expect(skript).toBe(erwartet);
     }
   });
