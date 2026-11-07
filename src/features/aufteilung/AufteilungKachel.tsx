@@ -76,6 +76,7 @@ export function AufteilungKachel() {
       titel={analyse ? de.aufteilung.analyseTitel : de.aufteilung.titel}
       id="aufteilung"
       zustand={zustand}
+      reiter={mitReitern ? (analyse ? 'analyse' : 'aufteilung') : undefined}
       ladehoehe={analyse ? 'gross' : 'mittel'}
       werkzeuge={
         <>

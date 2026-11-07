@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
   // eslint-disable-next-line no-restricted-syntax -- outline-none ohne eigenen Ring: der globale, unlayerte Ring aus styles/theme.css gilt unbedingt.
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-farben disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 shrink-0 outline-none cursor-pointer disabled:cursor-not-allowed",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-farben disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 shrink-0 outline-none cursor-pointer",
   {
     variants: {
       variant: {

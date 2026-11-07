@@ -1,4 +1,4 @@
-// shadcn/ui — HoverCard auf Radix. Anders als ein Tooltip bleibt sie offen, solange der Zeiger auf ihr steht, und Escape schliesst sie (WCAG 1.4.13).
+// shadcn/ui — HoverCard (new-york-v4, Abweichungen in ADR-024). Anders als ein Tooltip bleibt sie offen, solange der Zeiger auf ihr steht, und Escape schliesst sie (WCAG 1.4.13).
 import * as React from 'react';
 import { HoverCard as HoverCardPrimitive } from 'radix-ui';
 

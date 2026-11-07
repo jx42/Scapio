@@ -177,6 +177,7 @@ export function VerlaufKachel() {
           }
           id="verlauf"
           zustand={zustand}
+          reiter={tabelle ? JAHRE : modus}
           ladehoehe="gross"
           className="pb-4"
           werkzeuge={

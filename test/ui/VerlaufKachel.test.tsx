@@ -16,6 +16,11 @@ import { JahresTabelle } from '@/features/verlauf/JahresTabelle';
 import { erwarteBarrierefrei, euro, fetchErsatz, fokussieren, prozentText, rendern } from './hilfen';
 import { drift, kennzahlenAntwort, sharpeOhne, volatilitaetOhne } from './fixtures';
 
+/** Name des Info-Knopfs an einem Wert der Jahrestabelle. */
+function erklaerung(spalte: string, jahr: string): string {
+  return `${de.erklaerungOeffnen}: ${de.verlauf.jahre.grundZu(spalte, jahr)}`;
+}
+
 const FIXTURE: Zeitreihe = {
   stand: '2026-08-26T12:08:00+02:00',
   drift: drift(),
@@ -562,7 +567,9 @@ describe('VerlaufKachel', () => {
     // Ohne Vergleich keine Vergleichsspalte; der Verlust traegt Pfeil, nicht nur Farbe.
     expect(within(tabelle).queryByText(/^Vergleich/)).toBeNull();
     expect(within(zeilen[1]!).getAllByRole('img', { name: de.kennzahlen.richtungNegativ }).length).toBeGreaterThan(0);
-    expect(within(zeilen[2]!).getByTitle(/Inflation bis Juni 2026/)).toBeInTheDocument();
+    await userEvent.click(within(zeilen[2]!).getByRole('button', { name: erklaerung(de.verlauf.jahre.spalteInflation, '2026') }));
+    expect(await screen.findByText(/Inflation bis Juni 2026/)).toBeInTheDocument();
+    await userEvent.keyboard('{Escape}');
 
     expect(screen.getByRole('tab', { name: de.verlauf.jahreReiter })).toHaveAttribute('aria-selected', 'true');
     expect(screen.queryByRole('radiogroup', { name: de.verlauf.zeitraum })).toBeNull();
@@ -575,11 +582,12 @@ describe('VerlaufKachel', () => {
     expect(localStorage.getItem('portfolio.verlaufDarstellung')).toBe('verlauf');
   });
 
-  it('nennt den Inflationsstand auch bei einem abgeschlossenen Jahr ohne Dezemberzahl', () => {
+  it('nennt den Inflationsstand auch bei einem abgeschlossenen Jahr ohne Dezemberzahl', async () => {
     const [aelter, neuer] = JAHRE_FIXTURE.jahre;
     rendern(<JahresTabelle daten={{ ...JAHRE_FIXTURE, jahre: [{ ...aelter!, teuerungBisMonat: '2025-11' }, neuer!] }} />);
     const zeilen = screen.getAllByRole('row');
-    expect(within(zeilen[1]!).getByTitle(/Inflation bis November 2025/)).toBeInTheDocument();
+    await userEvent.click(within(zeilen[1]!).getByRole('button', { name: erklaerung(de.verlauf.jahre.spalteInflation, aelter!.jahr) }));
+    expect(await screen.findByText(/Inflation bis November 2025/)).toBeInTheDocument();
   });
 
   it('schreibt die Spanne eines Jahres, das in sich beginnt und endet, in eine Klammer', () => {
@@ -588,7 +596,7 @@ describe('VerlaufKachel', () => {
     expect(screen.getByRole('rowheader')).toHaveTextContent(`2025 ${de.verlauf.jahre.abBis('03.03.', '20.10.')}`);
   });
 
-  it('erklaert im Tooltip, warum ein Wert nicht berechenbar ist', () => {
+  it('erklaert per Info-Knopf, warum ein Wert nicht berechenbar ist', async () => {
     const [aelter, neuer] = JAHRE_FIXTURE.jahre;
     const daten: Jahre = {
       ...JAHRE_FIXTURE,
@@ -598,11 +606,20 @@ describe('VerlaufKachel', () => {
     rendern(<JahresTabelle daten={daten} />);
     const [, erste, zweite] = screen.getAllByRole('row');
     const j = de.verlauf.jahre;
-    expect(within(erste!).getByTitle(j.ohneRendite)).toHaveTextContent(de.xirr.nichtBerechenbar);
-    expect(within(erste!).getByTitle(j.ohneVergleich('MSCI World'))).toBeInTheDocument();
-    expect(within(erste!).getByTitle(j.ohneIzf)).toHaveTextContent(de.xirr.nichtBerechenbar);
-    expect(within(erste!).getByTitle(j.realOhneIzf)).toBeInTheDocument();
-    expect(within(zweite!).getByTitle(j.ohneInflation)).toBeInTheDocument();
-    expect(within(zweite!).getByTitle(j.realOhneInflation)).toBeInTheDocument();
+    const faelle: [HTMLElement, string, string, string][] = [
+      [erste!, aelter!.jahr, j.spalteRendite, j.ohneRendite],
+      [erste!, aelter!.jahr, j.spalteVergleich('MSCI World'), j.ohneVergleich('MSCI World')],
+      [erste!, aelter!.jahr, j.spalteIzf, j.ohneIzf],
+      [erste!, aelter!.jahr, j.spalteReal, j.realOhneIzf],
+      [zweite!, neuer!.jahr, j.spalteInflation, j.ohneInflation],
+      [zweite!, neuer!.jahr, j.spalteReal, j.realOhneInflation],
+    ];
+    for (const [zeile, jahr, spalte, grund] of faelle) {
+      const knopf = within(zeile).getByRole('button', { name: erklaerung(spalte, jahr) });
+      expect(knopf.closest('td')).toHaveTextContent(de.xirr.nichtBerechenbar);
+      await userEvent.click(knopf);
+      expect(await screen.findByText(grund)).toBeInTheDocument();
+      await userEvent.keyboard('{Escape}');
+    }
   });
 });

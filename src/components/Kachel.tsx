@@ -13,6 +13,7 @@ import type { ReactNode } from 'react';
 
 import { cn } from '@/lib/utils';
 import { Card } from '@/components/ui/card';
+import { TabsContent } from '@/components/ui/tabs';
 import { Fehlergrenze } from '@/components/Fehlergrenze';
 import { FehlerZustand, LadeZustand, LeerZustand, type Ladehoehe } from '@/components/Zustaende';
 
@@ -40,6 +41,11 @@ export type KachelProps = {
   readonly fussnoten?: ReactNode;
   /** Zusätzliche CSS-Klassen für die Section. */
   readonly className?: string;
+  /**
+   * Wert des gewählten Reiters, wenn die Kachel in `<Tabs>` steht: Laden, Leer und Fehler
+   * stehen dann in dessen Panel, sonst zeigte `aria-controls` des Reiters ins Leere (WCAG 4.1.2).
+   */
+  readonly reiter?: string;
   readonly children: ReactNode;
 };
 
@@ -54,9 +60,18 @@ export function Kachel({
   werkzeuge,
   fussnoten,
   className,
+  reiter,
   children,
 }: KachelProps) {
   const titelId = `${id}-titel`;
+  const meldung =
+    zustand.art === 'laedt' ? (
+      <LadeZustand hoehe={ladehoehe} />
+    ) : zustand.art === 'leer' ? (
+      <LeerZustand text={zustand.text}>{zustand.inhalt}</LeerZustand>
+    ) : zustand.art === 'fehler' ? (
+      <FehlerZustand text={zustand.text} hinweis={zustand.hinweis} still={zustand.still} />
+    ) : null;
 
   return (
     <Card
@@ -88,14 +103,7 @@ export function Kachel({
           className={cn('px-2', zustand.art === 'leer' && 'flex flex-1 flex-col pb-4')}
         >
           <Fehlergrenze>
-            {zustand.art === 'laedt' ? <LadeZustand hoehe={ladehoehe} /> : null}
-            {zustand.art === 'leer' ? (
-              <LeerZustand text={zustand.text}>{zustand.inhalt}</LeerZustand>
-            ) : null}
-            {zustand.art === 'fehler' ? (
-              <FehlerZustand text={zustand.text} hinweis={zustand.hinweis} still={zustand.still} />
-            ) : null}
-            {zustand.art === 'bereit' ? children : null}
+            {meldung === null ? children : reiter === undefined ? meldung : <TabsContent value={reiter}>{meldung}</TabsContent>}
           </Fehlergrenze>
         </div>
 

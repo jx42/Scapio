@@ -112,7 +112,8 @@ async function haupt(): Promise<void> {
   http.listen({ host: HOST, port: EDGECASES_PORT }, () => {
     const adresse = `http://${HOST}:${String(EDGECASES_PORT)}${SEITE}`;
     process.stdout.write(`Randfaelle unter ${adresse} — Strg+C beendet.\n`);
-    oeffneImBrowser(adresse);
+    // `--ohne-browser`: der e2e-Lauf startet die Seite als zweiten webServer.
+    if (!process.argv.includes('--ohne-browser')) oeffneImBrowser(adresse);
   });
 
   const beenden = (): void => {
