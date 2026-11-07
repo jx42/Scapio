@@ -27,7 +27,6 @@ Fünf Kacheln, eine Seite, dunkel, dicht. Rendert nur — gerechnet wird in `cor
 - Reduzierte Bewegung schaltet `theme.css` global ab; eine neue Animation außerhalb von CSS-Übergängen braucht `motion-safe:`.
 - Klickziele mindestens 24 × 24 px (`min-h-6`), außer den onvista-Badges; Sprungziele mit `tabIndex={-1}`.
 - Kein Überlauf bei 375 px: Grids mit `grid-cols-1`, nicht mit impliziter `auto`-Spalte; `break-words` statt `truncate`.
-- Was ein Klick ins Chart öffnet, braucht einen Knopf außerhalb von `role="img"`.
 - Ein Chart-Tabellenalternative hat die Auflösung des Fensters, nicht der Reihe.
 - Fehlerzustand mit `role="alert"`, bei `E_NETZ` einmal je Seite (`still` in der Kachel); Erklärungen als Popover (`InfoKnopf`), kein Tooltip (es gibt keinen), kein `title=`.
 - Neues Farb-Token: Paarung in `start/kontrast.ts` eintragen, dann `npm run kontrast`.

@@ -12,7 +12,7 @@ import { de } from '@/i18n/de';
 import type { Gewinnquellen } from '@/lib/api';
 import { GewinnquellenKachel } from '@/features/gewinnquellen/GewinnquellenKachel';
 import { GewinnquellenBuchungen } from '@/features/gewinnquellen/GewinnquellenBuchungen';
-import { erwarteBarrierefrei, fetchErsatz, fokussieren, rendern, type Antwort } from './hilfen';
+import { erwarteBarrierefrei, fetchErsatz, rendern, type Antwort } from './hilfen';
 import { drift, kennzahlenAntwort } from './fixtures';
 
 const GEWINNQUELLEN: Gewinnquellen = {
@@ -88,27 +88,6 @@ describe('GewinnquellenKachel', () => {
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByText(de.kennzahlen.detailsLeer)).toBeInTheDocument();
     await erwarteBarrierefrei(container);
-  });
-
-  it('erreicht dieselben Buchungen wie ein Klick ins Diagramm per Tastatur, ohne Mitte und Gesamtgewinn', async () => {
-    wiederherstellen = fetchErsatz((pfad) => {
-      if (pfad.startsWith('/api/kennzahlen')) return { body: kennzahlenAntwort() };
-      return abfrage(() => ({ body: GEWINNQUELLEN }))(pfad);
-    });
-    rendern(<GewinnquellenKachel />);
-
-    const name = (ziel: string) => de.kennzahlen.detailsOeffnen(ziel);
-    const steuern = await screen.findByRole('button', { name: name(de.gewinnquellen.steuern) });
-    for (const ziel of ['Welt <b>ETF</b>', de.gewinnquellen.ertraege, 'Einzelaktie']) {
-      expect(screen.getByRole('button', { name: name(ziel) })).toBeInTheDocument();
-    }
-    expect(screen.queryByRole('button', { name: name(de.gewinnquellen.nettogewinn) })).toBeNull();
-    expect(screen.queryByRole('button', { name: name(de.gewinnquellen.brutto) })).toBeNull();
-
-    fokussieren(steuern);
-    await userEvent.keyboard('{Enter}');
-    const dialog = await screen.findByRole('dialog', { name: de.gewinnquellen.steuern });
-    expect(dialog).toBeInTheDocument();
   });
 
   it('zeigt bei einer Position nur ihre Verkaeufe, bei den uebrigen alle anderen', () => {

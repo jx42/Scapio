@@ -41,9 +41,3 @@ Höhenbindung mit der Aufteilung in `App.tsx`.
   stehen als Beträge in der Tabellenalternative.
 - Der Nachtrag in [ADR-053](ADR-053-stichtag-und-isin-wechsel-im-kern.md) zu „Hinweise in der Kachel“ meint
   jetzt den Kopf der Verlaufskachel.
-
-## Nachtrag: Tastaturweg zu den Buchungen
-
-Die zweite Folge oben gilt nicht mehr. Unter der Sankey steht je Herkunft mit Buchungen ein Knopf
-(Positionen, Erträge, Steuern, Gebühren, Übrige), gebaut wie „Realisiert“ in der Kopfzeile. Er öffnet
-denselben Dialog wie der Klick ins Diagramm; Mitte und Gesamtgewinn haben keinen (WCAG 2.1.1).

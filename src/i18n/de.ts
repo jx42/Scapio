@@ -913,8 +913,6 @@ export const de = {
     nichtZugeordnet: 'Nicht zugeordnet',
     uebrige: (anzahl: number) => `${anzahl} weitere`,
     realisiert: 'Realisiert',
-    /** Knöpfe unter dem Sankey: dieselben Ziele wie ein Klick auf Knoten oder Band, für die Tastatur. */
-    buchungen: 'Transaktionen',
     nichtsRealisiert: 'Noch nichts verkauft: Der Gewinn steht bisher nur im Kurs.',
     betragUndAnteil: (betrag: string, anteil: string) => `${betrag} · ${anteil}`,
     chart: (netto: string) =>
