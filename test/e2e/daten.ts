@@ -9,7 +9,7 @@
  * (BlackRock) und ein Bitcoin-ETP (21Shares) fuer die Arten FUND und CRYPTO_ETP. Durchschaubar
  * sind nur der iShares-Fonds und die Einzelaktie — Vanguard und State Street
  * fuehren keinen abrufbaren Katalog (ADR-018), ETC, ETP und Fonds haben keine
- * Bestandteile. Genau deshalb steht die Abdeckungsquote auf der Top-25-Kachel bei rund 60 %:
+ * Bestandteile. Genau deshalb steht die Abdeckungsquote im Reiter Analyse bei rund 60 %:
  * das ist der Zustand, den die Anwendung abbilden soll, keine Luecke im Szenario.
  *
  * Alle Kurse kommen aus `kurshistorie-modelliert.json`, Tagesraster 2025-01-02 bis 2026-02-27.
@@ -472,7 +472,7 @@ export function erzeugeSzenario(heute: Tag, jetzt: string): Szenario {
   ];
   weltBestandteile.push(...weltRest(WELT_ISIN));
   // Nur der iShares-Fonds hat Bestandteile. Vanguard und State Street fuehren keinen
-  // abrufbaren Katalog (ADR-018), der Gold-ETC hat keine — die Top-25-Kachel zeigt das samt
+  // abrufbaren Katalog (ADR-018), der Gold-ETC hat keine — der Reiter Analyse zeigt das samt
   // direkt gehaltener NVIDIA-Aktie als Abdeckungsquote von rund 60 %, nicht als Fehler.
   const bestandteile = new Map<Isin, readonly Bestandteil[]>([[WELT_ISIN, weltBestandteile]]);
 

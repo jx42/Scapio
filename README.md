@@ -76,7 +76,7 @@ Der Reiter „Analyse“ in der Kachel Aufteilung zeigt, in welche Länder, Sekt
 1. Die Datei `docs/einstellungen.example.json` aus dem Scapio-Ordner in den Datenordner kopieren (siehe [Wo liegen meine Daten?](#-wo-liegen-meine-daten)) und in `einstellungen.json` umbenennen. Liegt dort schon eine `einstellungen.json`, stattdessen die Zeile `"top25": true` in sie übernehmen.
 2. Scapio neu starten und auf „Aktualisieren“ klicken.
 
-ETFs von Xtrackers und Amundi erkennt Scapio selbst. Fehlen iShares-Fonds, nennt die Kachel sie und erklären, wie du sie in einer `funds.json` einträgst. Ausschalten: in `einstellungen.json` `true` durch `false` ersetzen und neu starten.
+ETFs von Xtrackers und Amundi erkennt Scapio selbst. Fehlen iShares-Fonds, nennt der Reiter sie und erklärt, wie du sie in einer `funds.json` einträgst. Ausschalten: in `einstellungen.json` `true` durch `false` ersetzen und neu starten.
 
 ## ⏹️ Beenden
 

@@ -23,6 +23,8 @@ rem  5. `chcp 65001` als erste Zeile, sonst kaemen die Emojis unter Codepage 850
 rem     oder 437 als Zeichensalat an. Die Datei ist UTF-8 und muss es bleiben. Die
 rem     alte Konsole von Windows 10 zeigt statt Emojis leere Kaestchen, der Satz
 rem     bleibt lesbar. Umlaute trotzdem als "ae", "oe", "ue", "ss" - wie drueben.
+rem     Aktualisieren.bat und Deinstallieren.bat zeigen keine Emojis; sie kommen
+rem     ohne `chcp` aus und bleiben reines ASCII.
 rem  6. Fehlt Node, kommt ein Satz mehr als drueben: Der Installer setzt PATH erst fuer
 rem     neu gestartete Programme, und ein Fenster aus einem Explorer, der das nicht
 rem     mitbekommen hat, findet Node trotz Installation nicht. Ab- und wieder anmelden
