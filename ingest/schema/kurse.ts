@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { GRENZE, ISIN_MUSTER, Kurs, Zeitstempel } from './grundlagen.ts';
+import { Euro, GRENZE, ISIN_MUSTER, Kurs, Zeitstempel } from './grundlagen.ts';
 
 // ---------------------------------------------------------------------------
 // get_security_chart
@@ -19,7 +19,7 @@ export const ChartAntwort = z
   .object({
     isin: z.string().regex(ISIN_MUSTER),
     timeframe: z.string().max(GRENZE.typ),
-    currency: z.string().max(8),
+    currency: Euro,
     source: z.string().max(GRENZE.typ),
     closingReferencePoint: Chartpunkt,
     dataPoints: z.array(Chartpunkt).max(GRENZE.kurspunkte),

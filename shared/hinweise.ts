@@ -33,6 +33,8 @@ export type HinweisWerte = {
   kursfensterNichtAbrufbar: { fenster: string; isin: string; grund: string };
   kursfensterSchema: { fenster: string; isin: string };
   kursfensterAndereIsin: { fenster: string; isin: string };
+  /** Punkte mit Kurs <= 0, ueber alle Fenster einer ISIN; verworfen, der Rest uebernommen. */
+  kurspunkteUngueltig: { isin: string; anzahl: number };
   zinsLuecken: { tage: number };
   vpiLuecken: { monate: number };
   vpiRandLuecken: { monate: number };

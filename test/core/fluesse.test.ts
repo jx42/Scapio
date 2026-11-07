@@ -35,6 +35,13 @@ describe('monatsFluesse', () => {
     expect(u.schnitt12).toBe(zuCent('300'));
   });
 
+  it('nimmt bei dreizehn Monaten genau die juengsten zwoelf, nicht den juengsten allein', () => {
+    const fluesse = [fluss('2025-01-05', '200'), fluss('2026-01-05', '1200')];
+    const u = monatsFluesse(fluesse);
+    expect(u.monate).toHaveLength(13);
+    expect(u.schnitt12).toBe(zuCent('100'));
+  });
+
   it('nimmt den Median bei ungerader Anzahl aus der Mitte', () => {
     const u = monatsFluesse([fluss('2026-01-05', '100'), fluss('2026-02-05', '900'), fluss('2026-03-05', '200')]);
     expect(u.median).toBe(zuCent('200'));

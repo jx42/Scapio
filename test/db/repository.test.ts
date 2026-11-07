@@ -473,6 +473,32 @@ describe('lauf', () => {
     expect(l.fehlerCode).toBe('E_ABGEBROCHEN');
   });
 
+  it('behaelt beim Abschluss nur die juengsten LAEUFE_BEHALTEN Laeufe und den letzten erfolgreichen', () => {
+    expect(laufRepo.LAEUFE_BEHALTEN).toBeGreaterThan(0);
+    const tag = '2026-08-26T18:00:00+02:00';
+    const erfolg = laufRepo.starte(db, tag);
+    laufRepo.beende(db, erfolg, { beendet: tag, status: 'erfolg', quellen: {} });
+    const ids: number[] = [];
+    for (let i = 0; i < laufRepo.LAEUFE_BEHALTEN + 5; i += 1) {
+      const id = laufRepo.starte(db, tag);
+      laufRepo.beende(db, id, { beendet: tag, status: 'fehler', quellen: {} });
+      ids.push(id);
+    }
+    const uebrig = (db.prepare('SELECT id FROM lauf ORDER BY id').all() as { id: bigint }[]).map((z) => Number(z.id));
+    expect(uebrig).toEqual([erfolg, ...ids.slice(-laufRepo.LAEUFE_BEHALTEN)]);
+    expect(laufRepo.letzterErfolgreicher(db)!.id).toBe(erfolg);
+  });
+
+  it('kuerzt beim Abschluss keinen Lauf, der noch laeuft', () => {
+    const tag = '2026-08-26T18:00:00+02:00';
+    const haengend = laufRepo.starte(db, tag);
+    for (let i = 0; i < laufRepo.LAEUFE_BEHALTEN + 1; i += 1) {
+      const id = laufRepo.starte(db, tag);
+      laufRepo.beende(db, id, { beendet: tag, status: 'fehler', quellen: {} });
+    }
+    expect(db.prepare('SELECT status FROM lauf WHERE id = ?').get(haengend)).toEqual({ status: 'laufend' });
+  });
+
   it('fuehrt den Schritt und vergisst ihn am Ende', () => {
     const id = laufRepo.starte(db, '2026-08-26T18:00:00+02:00');
     expect(laufRepo.letzter(db)!.schritt).toBeNull();

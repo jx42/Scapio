@@ -122,9 +122,17 @@ export type McpAntwort = {
   readonly rohJson: string;
 };
 
-const HOECHSTENS_SEITEN = 50;
-/** Ab hier warnt ein Hinweis, bevor die Decke den Abruf der Transaktionen hart abbricht. */
+/** Verlangte Seitengroesse; die tatsaechliche nennt `returnedCount` der ersten Seite. */
+const SEITENGROESSE = 100;
+/**
+ * Aeussere Decke gegen einen Server, der endlos blaettert. Die wirksame Decke folgt aus
+ * `totalCount` und der gelieferten Seitengroesse der ersten Seite (`seitenDecke`).
+ */
+export const HOECHSTENS_SEITEN = 1_000;
+/** Ab hier warnt ein Hinweis, bevor die aeussere Decke den Abruf hart abbricht. */
 const SEITEN_VORWARNUNG = Math.ceil(HOECHSTENS_SEITEN * 0.8);
+/** Spielraum fuer Buchungen, die waehrend des Blaetterns hinzukommen. */
+const SEITEN_RESERVE = 2;
 /** Pause vor der einen Wiederholung; ein sofortiger zweiter Versuch trifft dieselbe Stoerung. */
 const WIEDERHOLUNG_NACH_MS = 1_000;
 /** Laenger verlangt `Retry-After` nicht, sonst wird nicht gewartet, sondern abgebrochen. */
@@ -132,12 +140,36 @@ const HOECHSTENS_WARTEN_MS = 30_000;
 
 const warteEcht = (ms: number): Promise<void> => new Promise((fertig) => setTimeout(fertig, ms));
 
-function naechsterCursor(block: unknown): string | null {
-  if (block === null || typeof block !== 'object') return null;
+function seitenfeld(block: unknown, feld: 'nextCursor' | 'totalCount' | 'returnedCount'): unknown {
+  if (block === null || typeof block !== 'object') return undefined;
   const seite = (block as { page?: unknown }).page;
-  if (seite === null || typeof seite !== 'object') return null;
-  const cursor = (seite as { nextCursor?: unknown }).nextCursor;
+  if (seite === null || typeof seite !== 'object') return undefined;
+  return (seite as Record<string, unknown>)[feld];
+}
+
+function naechsterCursor(block: unknown): string | null {
+  const cursor = seitenfeld(block, 'nextCursor');
   return typeof cursor === 'string' ? cursor : null;
+}
+
+const anzahlOderNull = (wert: unknown): number | null =>
+  typeof wert === 'number' && Number.isSafeInteger(wert) && wert >= 0 ? wert : null;
+
+/**
+ * Wirksame Decke nach der ersten Seite: so viele Seiten, wie `totalCount` bei der gelieferten
+ * Seitengroesse braucht, plus Reserve. Ohne lesbares `totalCount` gilt die aeussere Decke.
+ * Gelesen werden nur Zaehler, keine Nutzdaten; geprueft wird die Seite spaeter durch zod.
+ */
+function seitenDecke(tool: LesendesTool, ersteSeite: unknown): number {
+  const gesamt = anzahlOderNull(seitenfeld(ersteSeite, 'totalCount'));
+  if (gesamt === null) return HOECHSTENS_SEITEN;
+  const geliefert = anzahlOderNull(seitenfeld(ersteSeite, 'returnedCount'));
+  const groesse = geliefert !== null && geliefert > 0 ? geliefert : SEITENGROESSE;
+  const noetig = Math.ceil(gesamt / groesse);
+  if (noetig > HOECHSTENS_SEITEN) {
+    throw new McpFehler('E_MCP_SEITEN', tool, `totalCount verlangt mehr als ${String(HOECHSTENS_SEITEN)} Seiten.`);
+  }
+  return Math.min(HOECHSTENS_SEITEN, Math.max(1, noetig) + SEITEN_RESERVE);
 }
 
 async function seitenAbrufen(
@@ -148,11 +180,14 @@ async function seitenAbrufen(
   melde?: (hinweis: Hinweis) => void,
 ): Promise<unknown[]> {
   const seiten: unknown[] = [];
+  const gesehen = new Set<string>();
+  let decke = HOECHSTENS_SEITEN;
   let cursor: string | undefined;
-  for (let seite = 0; seite < HOECHSTENS_SEITEN; seite += 1) {
+  while (seiten.length < decke) {
     const argumente = cursor === undefined ? basisArgumente : { ...basisArgumente, cursor };
     const inhalt = await werkzeugAufruf(token, tool, argumente, zeitlimitMs, melde);
     seiten.push(inhalt);
+    if (seiten.length === 1) decke = seitenDecke(tool, inhalt);
     const weiter = naechsterCursor(inhalt);
     if (weiter === null) {
       if (seiten.length >= SEITEN_VORWARNUNG) {
@@ -160,16 +195,20 @@ async function seitenAbrufen(
       }
       return seiten;
     }
+    if (gesehen.has(weiter)) {
+      throw new McpFehler('E_MCP_SEITEN', tool, 'Ein Cursor kam doppelt; die Blaetterung dreht sich im Kreis.');
+    }
+    gesehen.add(weiter);
     cursor = weiter;
   }
-  // HOECHSTENS_SEITEN erschoepft und noch ein Cursor offen: ein stiller Abbruch haette hier
+  // Decke erschoepft und noch ein Cursor offen: ein stiller Abbruch haette hier
   // eine unvollstaendige Transaktionsliste als vollstaendige ausgegeben (Vorfall: Seiten-
   // deckel griff, `holeTransaktionen` sah nur die letzte Seite und stornierte die fehlenden
   // Transaktionen als "verschwunden"). Lieber werfen als eine Luecke stillschweigend importieren.
   throw new McpFehler(
     'E_MCP_SEITEN',
     tool,
-    `Mehr als ${String(HOECHSTENS_SEITEN)} Seiten noetig, aber noch nicht alle abgerufen.`,
+    `Mehr als ${String(decke)} Seiten noetig, aber noch nicht alle abgerufen.`,
   );
 }
 
@@ -193,7 +232,7 @@ function argumenteFuer(tool: LesendesTool, ergaenzung: Ergaenzung | undefined): 
     return { isin: ergaenzung.isin };
   }
   if (tool === TRANSAKTIONEN_TOOL) {
-    return { pageSize: 100 };
+    return { pageSize: SEITENGROESSE };
   }
   return {};
 }

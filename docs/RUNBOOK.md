@@ -100,13 +100,20 @@ kennt vier Werte: `laufend`, `erfolg`, `teilweise`, `fehler`.
     jedem Lauf, hat sich vermutlich die Schnittstelle geändert.
   - `E_MCP_ARGUMENT`: der Ingest wollte ein Werkzeug außerhalb der Allowlist oder mit
     ungültiger ISIN aufrufen [INV-01]. Immer ein Programmfehler, nie ein Bedienfehler.
-  - `E_MCP_SEITEN`: die Transaktionsliste braucht mehr Seiten als `HOECHSTENS_SEITEN`
-    (`ingest/mcp.ts`). Die Decke anheben, nicht abschalten.
+  - `E_MCP_SEITEN`: die Blätterung der Transaktionsliste endet nicht. Die Decke folgt aus
+    `totalCount` und der Seitengröße der ersten Seite plus Reserve; außerdem bricht ein doppelter
+    Cursor ab, und `totalCount` über `HOECHSTENS_SEITEN` (`ingest/mcp.ts`, 1000 Seiten) bricht vor
+    dem Blättern ab. Bleibt es dabei, blättert die Schnittstelle anders als erwartet — ein echter
+    Befund; die Decke nicht abschalten.
   - `E_MCP_UNVOLLSTAENDIG`: eine Seite der Transaktionsliste hatte weniger oder mehr Zeilen,
     als ihr `returnedCount` sagt. Der Lauf übernimmt nichts; später erneut aktualisieren.
   - `E_SCHEMA`: eine Antwort hat die zod-Prüfung nicht bestanden [INV-12]. Die Form der
     Antwort hat sich geändert — ein echter Befund, kein Bedienfehler. `npm run vertrag`
     zeigt, welches Feld.
+  - `E_WAEHRUNG`: ein Betrag oder Kurs kam in einer anderen Währung als EUR (`Euro` in
+    `ingest/schema/grundlagen.ts`). Umgerechnet wird nirgends, also übernimmt der Lauf nichts
+    aus dieser Antwort; ein Kursfenster wird verworfen (`kursfensterSchema`). Ein echter Befund:
+    die Anwendung braucht eine Umrechnung, bevor Fremdwährung zulässig wird.
   - `E_PLAUSIBEL`: die Daten waren formal gültig, aber nicht plausibel (`ingest/plausibilitaet.ts`).
     `lauf.log` nennt die Prüfung.
   - `E_SEED_KAPUTT`: `seed.json` im Datenverzeichnis ist kein gültiges JSON (meist ein Komma zu viel).
@@ -217,6 +224,8 @@ selben Verzeichnis, werden von `alteSicherungenLoeschen` aber getrennt gezählt:
 bleiben die **letzten fünf** Dateien stehen, dazu die neueste je Monat der letzten zwölf Monate
 und die neueste je Jahr ([ADR-056](entscheidungen/ADR-056-datenverzeichnis-und-dateirechte-aus-einer-hand.md)). Mehrfaches manuelles Sichern kurz vor einer
 Migration kann die automatische Migrationssicherung also nicht mehr aus der Rotation drängen.
+Reste einer abgebrochenen Sicherung (`portfolio-….db.tmp`, `-wal`, `-shm`) löscht der nächste
+Start, sobald sie älter als eine Stunde sind.
 
 Nach einer Schemaänderung:
 

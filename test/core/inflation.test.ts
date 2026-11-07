@@ -141,6 +141,19 @@ describe('teuerungLaufendesJahr', () => {
     // Beide Monate liegen 2 % ueber ihrem Vorjahresmonat — trotz des Sturzes von 110 auf 102.
     expect(teuerungLaufendesJahr(saison, '2026-07')).toBeCloseTo(0.02, 10);
   });
+
+  it('laesst einen Monat mit Index 0 weg, auf beiden Seiten des Vergleichs', () => {
+    // Index 0 im Vorjahr gaebe Infinity, im laufenden Jahr eine Teuerung von -100 %.
+    const null0: Vpi = new Map([
+      ['2025-01', 0],
+      ['2025-02', 100],
+      ['2025-03', 100],
+      ['2026-01', 102],
+      ['2026-02', 104],
+      ['2026-03', 0],
+    ]);
+    expect(teuerungLaufendesJahr(null0, '2026-03')).toBeCloseTo(0.04, 10);
+  });
 });
 
 describe('realeRendite', () => {
