@@ -8,9 +8,10 @@
 
 import { de } from '@/i18n/de';
 import type { ErtragsZeile, RealisierteZeile } from '@/lib/api';
-import { datumKurz, euroAusCent, vorzeichen } from '@/lib/format';
+import { datumKurz, euroAusCent, richtungswert } from '@/lib/format';
 import { richtungTon } from '@/lib/farben';
 import { cn } from '@/lib/utils';
+import { RichtungsPfeil } from '@/components/RichtungsPfeil';
 import {
   Dialog,
   DialogContent,
@@ -113,7 +114,7 @@ export function KennzahlDetailsDialog({ titel, zeilen, spalteMitte, leer, onOpen
               </TableRow>
             ) : (
               zeilen?.map((z) => {
-                const richtung = vorzeichen(z.betragCent);
+                const betrag = richtungswert(z.betragCent, euroAusCent);
                 return (
                   <TableRow key={z.txId}>
                     <TableCell className="whitespace-nowrap align-top">{datumKurz(z.tag)}</TableCell>
@@ -122,9 +123,10 @@ export function KennzahlDetailsDialog({ titel, zeilen, spalteMitte, leer, onOpen
                       {z.neben === null ? null : <span className="block text-xs text-text-leise">{z.neben}</span>}
                     </TableCell>
                     <TableCell
-                      className={cn('text-right whitespace-nowrap align-top', richtungTon[richtung.richtung])}
+                      className={cn('text-right whitespace-nowrap align-top', richtungTon[betrag.richtung])}
                     >
-                      {euroAusCent(z.betragCent, true)}
+                      <RichtungsPfeil pfeil={betrag.pfeil} className="mr-0.5" />
+                      {betrag.wert}
                     </TableCell>
                   </TableRow>
                 );

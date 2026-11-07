@@ -30,3 +30,23 @@ describe('Driftbanner', () => {
     expect(screen.getByText(de.drift.handlung)).toBeInTheDocument();
   });
 });
+
+describe('Driftbanner als Live-Region', () => {
+  it('stellt beide Regionen schon ohne Abweichung leer ins DOM', () => {
+    rendern(<Driftbanner drift={drift('ok')} />);
+    expect(screen.getByRole('status')).toBeEmptyDOMElement();
+    expect(screen.getByRole('alert')).toBeEmptyDOMElement();
+  });
+
+  it('sagt ein Banner hoeflich an, einen Abbruch sofort, ohne den Info-Knopf', () => {
+    const { rerender } = rendern(<Driftbanner drift={drift('ok')} />);
+    rerender(<Driftbanner drift={BANNER_DRIFT} />);
+    expect(screen.getByRole('status')).toHaveTextContent(de.drift.titelBanner);
+    expect(screen.getByRole('alert')).toBeEmptyDOMElement();
+    expect(screen.getByRole('status').querySelector('button')).toBeNull();
+
+    rerender(<Driftbanner drift={drift('abbruch', { abweichung: 0.05 })} />);
+    expect(screen.getByRole('alert')).toHaveTextContent(de.drift.titelAbbruch);
+    expect(screen.getByRole('status')).toBeEmptyDOMElement();
+  });
+});

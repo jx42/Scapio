@@ -9,9 +9,9 @@
  * Alle Betraege und Anteile kommen fertig aus `core/gewinnquellen.ts`; hier werden nur
  * Knoten und Baender fuer Recharts zusammengesteckt.
  *
- * Ein Klick auf Knoten oder Band oeffnet die Buchungen dahinter. Nur fuer Zeiger: In
- * role="img" liegt nichts Bedienbares (ChartRahmen); die Tastatur erreicht dieselben Listen
- * nicht ueber das Diagramm.
+ * Ein Klick auf Knoten oder Band oeffnet die Buchungen dahinter. In role="img" liegt nichts
+ * Bedienbares (ChartRahmen); fuer die Tastatur stehen dieselben Ziele als Knoepfe unter dem
+ * Diagramm.
  */
 
 import { useCallback, useMemo, useRef, useState, type ComponentProps, type PointerEvent } from 'react';
@@ -329,7 +329,36 @@ export function GewinnquellenAnsicht({ daten, realisiertCent, onAuswahl }: Gewin
           </ResponsiveContainer>
         </div>
       </ChartRahmen>
+
+      {waehle === undefined ? null : <Buchungsknoepfe knoten={knoten} onAuswahl={waehle} />}
     </div>
+  );
+}
+
+function Buchungsknoepfe({
+  knoten,
+  onAuswahl,
+}: {
+  readonly knoten: readonly Knoten[];
+  readonly onAuswahl: (a: Auswahl) => void;
+}) {
+  const ziele = knoten.flatMap((k) => (k.auswahl === null ? [] : [{ schluessel: k.schluessel, name: k.name, auswahl: k.auswahl }]));
+  if (ziele.length === 0) return null;
+  return (
+    <p className="flex flex-wrap items-baseline gap-x-4 gap-y-1 text-sm text-text-leise">
+      <span>{de.satz.beschriftung(de.gewinnquellen.buchungen)}</span>
+      {ziele.map((z) => (
+        <button
+          key={z.schluessel}
+          type="button"
+          onClick={() => onAuswahl(z.auswahl)}
+          className={cn('min-h-6 cursor-pointer text-left break-words', linkVariants({ abstand: 'weit' }))}
+        >
+          <span className="sr-only">{de.kennzahlen.detailsOeffnen(z.name)}</span>
+          <span aria-hidden="true">{z.name}</span>
+        </button>
+      ))}
+    </p>
   );
 }
 

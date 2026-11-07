@@ -45,7 +45,7 @@ npm run check:kurz     # dieselbe Prüfung, aber still: drei Zeilen statt tausen
 npm run check:geaendert # tsc ganz, eslint und vitest für Geändertes gegenüber origin/main, dazu Invarianten und Tests aus der Pfadtabelle in start/pruefung.ts — für Zwischenschritte
 npm run test:tz        # dieselbe Suite unter drei Zeitzonen
 npm run test:invarianten # nur die zwölf Invariantentests, dazu der Kontrasttest der Farb-Tokens
-npm run test:e2e       # der eine Playwright-Durchstich, echter Chromium
+npm run test:e2e       # der eine Playwright-Durchstich, echter Chromium; belegt 4790 und 4793 (Randfälle)
 npm run test:abdeckung # alle Tests mit Abdeckung je Ordner, der Testschritt von check; je Datei: -- --coverage.reporter=text
 npm run verify         # Historie komplett neu rechnen und mit der gespeicherten vergleichen — mit Beträgen, nicht für Agenten
 npm run verify:zaehlung # dasselbe, aber nur Tag und Feld — der Weg für Agenten

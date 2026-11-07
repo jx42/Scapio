@@ -2,8 +2,8 @@
  * Reiter Analyse, dritte Spalte unter der Treemap: der Blick durch die ETFs auf die Unternehmen dahinter.
  *
  * Kompakt: eine Zeile je Unternehmen, Prozent vor Euro wie in den Legenden der Ringe. Die Fonds
- * stehen nur in der Hover-Karte und, für Screenreader, verborgen in der Zeile. Namen werden in der
- * Drittelbreite gekürzt; ungekürzt stehen sie in der Hover-Karte und der Tabelle der Treemap.
+ * stehen nur in der Hover-Karte und, für Screenreader, verborgen in der Zeile. Lange Namen brechen
+ * in der Drittelbreite um, statt gekürzt zu werden: die Hover-Karte erreicht nur die Maus.
  * „Mehr zeigen“ hält `AnalyseAnsicht` für alle drei Spalten.
  */
 
@@ -118,7 +118,7 @@ function Top25Zeile({ zeile, angeschnitten, aktiv, onHover }: Top25ZeileProps) {
       <TableHead scope="row" className="h-auto min-w-0 py-2 pr-2 text-[length:inherit] font-normal">
         <HoverCard openDelay={150} closeDelay={100}>
           <HoverCardTrigger asChild>
-            <span className="block truncate text-text">{zeile.name}</span>
+            <span className="block break-words text-text">{zeile.name}</span>
           </HoverCardTrigger>
           <HoverCardContent side="top" align="start" aria-hidden="true">
             <p className="font-medium text-text">{zeile.name}</p>

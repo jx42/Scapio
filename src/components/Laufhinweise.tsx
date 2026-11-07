@@ -9,6 +9,9 @@
  *   Aktualisieren-Knopf, wo ein zweiter Versuch hilft;
  * - uebrige Hinweise (`lib/hinweisText.ts`): Titel, Satz, Abhilfe — per X ausblendbar,
  *   gemerkt je Lauf im Browser, die Daten bleiben unberuehrt.
+ *
+ * Die Reihe ist eine Live-Region, die immer im DOM steht, auch leer — gefuellt eingefuegt,
+ * sagt ein Screenreader sie oft nicht an. Leer ist sie `sr-only` und nimmt keinen Abstand.
  */
 
 import { RefreshCw, TriangleAlert, X } from 'lucide-react';
@@ -54,12 +57,11 @@ export function Laufhinweise({
     .filter((hinweis) => hinweis.art !== 'quelleGescheitert')
     .map((hinweis) => ({ hinweis, schluessel: hinweisSchluessel(hinweis) }))
     .filter(({ schluessel }) => !ausgeblendet.has(schluessel));
-  if (sichtbar.length === 0 && meldungen.length === 0 && fehler === null) return null;
 
   return (
-    <div className="flex flex-col gap-2">
+    <div role="status" className="flex flex-col gap-2 empty:sr-only">
       {fehler !== null && (
-        <Alert variant="warnung" role="status">
+        <Alert variant="warnung" role="none">
           <TriangleAlert aria-hidden="true" />
           <AlertTitle>{de.laufhinweise.fehlerTitel}</AlertTitle>
           <AlertDescription>
@@ -75,7 +77,7 @@ export function Laufhinweise({
         <QuellenAlert key={meldung.schluessel} meldung={meldung} onAktualisieren={onAktualisieren} />
       ))}
       {sichtbar.map(({ hinweis, schluessel }) => (
-        <Alert key={schluessel} variant="warnung" role="status">
+        <Alert key={schluessel} variant="warnung" role="none">
           <TriangleAlert aria-hidden="true" />
           <AlertTitle>{hinweisTitel(hinweis)}</AlertTitle>
           <AlertDescription>
@@ -107,7 +109,7 @@ function QuellenAlert({
   readonly onAktualisieren: () => void;
 }) {
   return (
-    <Alert variant="warnung" role="status">
+    <Alert variant="warnung" role="none">
       <TriangleAlert aria-hidden="true" />
       <AlertTitle>{meldung.titel}</AlertTitle>
       <AlertDescription>

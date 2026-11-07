@@ -16,6 +16,7 @@ import { anteilProzent, euroAusCent, prozent, vorzeichen, zielEingabe } from '@/
 import { richtungTon } from '@/lib/farben';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import {
@@ -233,7 +234,7 @@ function RebalancingInhalt({
                   <label htmlFor={feldId} className="sr-only">
                     {de.rebalancing.zielFeld(z.name)}
                   </label>
-                  <input
+                  <Input
                     id={feldId}
                     type="text"
                     inputMode="decimal"
@@ -244,10 +245,7 @@ function RebalancingInhalt({
                     disabled={gesperrt || aus}
                     aria-invalid={ungueltig ? true : undefined}
                     aria-describedby={ungueltig ? feldFehlerId : undefined}
-                    className={cn(
-                      'h-8 w-20 rounded-md border border-input bg-bedien px-2 text-right tabular-nums text-text disabled:opacity-60',
-                      ungueltig && 'border-verlust',
-                    )}
+                    className="h-8 w-20 px-2 text-right tabular-nums"
                   />
                 </TableCell>
                 <TableCell className={cn('text-right tabular-nums whitespace-nowrap max-sm:hidden', veraltet && 'opacity-50')}>

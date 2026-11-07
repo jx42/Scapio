@@ -127,7 +127,7 @@ function Seite() {
         </div>
       </header>
 
-      <div className="mx-auto flex max-w-8xl flex-col gap-2 px-4 has-[[role=status],[role=alert]]:mb-4">
+      <div className="mx-auto flex max-w-8xl flex-col gap-2 px-4 has-[[data-slot=alert]]:mb-4">
         <Driftbanner drift={health.data?.drift} />
         <AktualisierenHinweise kannAktualisieren={tokenVorhanden()} />
         {willkommen ? (

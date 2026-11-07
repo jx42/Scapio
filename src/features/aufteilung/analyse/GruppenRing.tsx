@@ -116,7 +116,7 @@ export const GruppenRing = memo(function GruppenRing({
         >
           <span className="w-6 shrink-0 tabular-nums text-text-leise">{rang(g, i)}</span>{' '}
           <Farbtupfer farbe={farbe(i)} />
-          <span className="min-w-0 flex-1 truncate text-text">{anzeigename(g.name)}</span>{' '}
+          <span className="min-w-0 flex-1 break-words text-text">{anzeigename(g.name)}</span>{' '}
           <GruppenWerte anteil={g.anteil} exposureCent={g.exposureCent} />
         </button>
       </li>

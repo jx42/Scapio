@@ -8,19 +8,33 @@ import type { Jahre, Jahreszeile } from '@/lib/api';
 import { richtungTon } from '@/lib/farben';
 import { datumAlsTagMonat, euroAusCent, monatLang, prozent, richtungswert } from '@/lib/format';
 import { cn } from '@/lib/utils';
+import { InfoKnopf } from '@/components/InfoKnopf';
 import { RichtungsPfeil } from '@/components/RichtungsPfeil';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 const t = de.verlauf.jahre;
 const ZAHL = 'text-right whitespace-nowrap tabular-nums';
 
-/** Ein Wert mit Erklaerung im Tooltip — fuer "nicht berechenbar" und eine verkuerzte Inflation. */
-function MitGrund({ grund, children }: { readonly grund: string; readonly children: string }) {
+/**
+ * Ein Wert mit Erklaerung im Popover — fuer "nicht berechenbar" und eine verkuerzte Inflation.
+ * Kein `title`: der ist ohne Maus nicht erreichbar.
+ */
+function MitGrund({ grund, children }: { readonly grund: Grund; readonly children: string }) {
   return (
-    <span title={grund} className="cursor-help">
+    <>
       {children}
-    </span>
+      <InfoKnopf bezeichnung={grund.bezeichnung}>
+        <p>{grund.text}</p>
+      </InfoKnopf>
+    </>
   );
+}
+
+/** Die Erklaerung und wofuer sie gilt: Spalte und Jahr, fuer das aria-label. */
+type Grund = { readonly text: string; readonly bezeichnung: string };
+
+function grund(spalte: string, zeile: Jahreszeile, text: string): Grund {
+  return { text, bezeichnung: t.grundZu(spalte, zeile.jahr) };
 }
 
 function Gerichtet({
@@ -31,7 +45,7 @@ function Gerichtet({
   readonly wert: number | null;
   readonly formatieren: (b: number) => string;
   /** Warum `wert` fehlt; ohne Angabe kann er nicht fehlen. */
-  readonly grund?: string;
+  readonly grund?: Grund;
 }) {
   const r = richtungswert(wert, formatieren);
   return (
@@ -63,14 +77,14 @@ function Jahr({ zeile }: { readonly zeile: Jahreszeile }) {
 }
 
 /**
- * Endet die Inflation vor dem letzten Monat der Zeile, sagt der Tooltip, bis wann — auch bei
+ * Endet die Inflation vor dem letzten Monat der Zeile, sagt die Erklaerung, bis wann — auch bei
  * einem abgeschlossenen Jahr, solange Eurostat den Dezember noch nicht veroeffentlicht hat.
  */
 function Teuerung({ zeile, teuerung }: { readonly zeile: Jahreszeile; readonly teuerung: number }) {
   const bisMonat = zeile.teuerungBisMonat;
   const letzterMonat = zeile.bis === null ? `${zeile.jahr}-12` : zeile.bis.slice(0, 7);
   if (bisMonat === null || bisMonat >= letzterMonat) return prozent(teuerung);
-  return <MitGrund grund={t.inflationBis(monatLang(bisMonat))}>{prozent(teuerung)}</MitGrund>;
+  return <MitGrund grund={grund(t.spalteInflation, zeile, t.inflationBis(monatLang(bisMonat)))}>{prozent(teuerung)}</MitGrund>;
 }
 
 export function JahresTabelle({ daten }: { readonly daten: Jahre }) {
@@ -113,14 +127,18 @@ export function JahresTabelle({ daten }: { readonly daten: Jahre }) {
         {daten.jahre.map((z) => (
           <TableRow key={z.jahr}>
             <Jahr zeile={z} />
-            <Gerichtet wert={z.twr} formatieren={prozent} grund={t.ohneRendite} />
+            <Gerichtet wert={z.twr} formatieren={prozent} grund={grund(t.spalteRendite, z, t.ohneRendite)} />
             {mitVergleich ? (
-              <Gerichtet wert={z.vergleich} formatieren={prozent} grund={t.ohneVergleich(daten.benchmark!.name)} />
+              <Gerichtet
+                wert={z.vergleich}
+                formatieren={prozent}
+                grund={grund(t.spalteVergleich(daten.benchmark!.name), z, t.ohneVergleich(daten.benchmark!.name))}
+              />
             ) : null}
-            <Gerichtet wert={z.izf} formatieren={prozent} grund={t.ohneIzf} />
+            <Gerichtet wert={z.izf} formatieren={prozent} grund={grund(t.spalteIzf, z, t.ohneIzf)} />
             <TableCell className={ZAHL}>
               {z.teuerung === null ? (
-                <MitGrund grund={t.ohneInflation}>{de.xirr.nichtBerechenbar}</MitGrund>
+                <MitGrund grund={grund(t.spalteInflation, z, t.ohneInflation)}>{de.xirr.nichtBerechenbar}</MitGrund>
               ) : (
                 <Teuerung zeile={z} teuerung={z.teuerung} />
               )}
@@ -128,7 +146,7 @@ export function JahresTabelle({ daten }: { readonly daten: Jahre }) {
             <Gerichtet
               wert={z.real}
               formatieren={prozent}
-              grund={z.izf === null ? t.realOhneIzf : t.realOhneInflation}
+              grund={grund(t.spalteReal, z, z.izf === null ? t.realOhneIzf : t.realOhneInflation)}
             />
             <Gerichtet wert={z.gewinnCent} formatieren={euroAusCent} />
             <TableCell className={ZAHL}>{euroAusCent(z.einzahlungCent, true)}</TableCell>

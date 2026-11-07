@@ -114,6 +114,7 @@ const A11Y_SETTINGS = {
       PopoverTrigger: 'button',
       CollapsibleTrigger: 'button',
       DropdownMenuTrigger: 'button',
+      Input: 'input',
       Table: 'table',
       TableHeader: 'thead',
       TableBody: 'tbody',

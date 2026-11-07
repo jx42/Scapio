@@ -14,12 +14,15 @@ afterEach(() => {
   window.localStorage.clear();
 });
 
+/** Die Alerts in der Region; sie selbst tragen keine Rolle, die Reihe ist die Live-Region. */
+function alleAlerts(): HTMLElement[] {
+  return [...screen.getByRole('status').querySelectorAll<HTMLElement>('[data-slot="alert"]')];
+}
+
 describe('Laufhinweise', () => {
-  it('zeigt nichts, solange der letzte Lauf keine Hinweise gemeldet hat', () => {
-    const { container } = rendern(
-      <Laufhinweise laufId={1} hinweise={[]} quellen={{}} fehler={null} onAktualisieren={() => {}} />,
-    );
-    expect(container).toBeEmptyDOMElement();
+  it('zeigt nichts, solange der letzte Lauf keine Hinweise gemeldet hat — die Region steht leer bereit', () => {
+    rendern(<Laufhinweise laufId={1} hinweise={[]} quellen={{}} fehler={null} onAktualisieren={() => {}} />);
+    expect(screen.getByRole('status')).toBeEmptyDOMElement();
   });
 
   it('zeigt jeden Hinweis als eigenen Alert ueber die gesamte Breite', () => {
@@ -55,7 +58,7 @@ describe('Laufhinweise', () => {
     rendern(
       <Laufhinweise laufId={1} hinweise={[ERSTER, ZWEITER]} quellen={{}} fehler={null} onAktualisieren={() => {}} />,
     );
-    expect(screen.getAllByRole('status')).toHaveLength(2);
+    expect(alleAlerts()).toHaveLength(2);
   });
 
   it('zeigt den gescheiterten Bestand auch aus einem Lauf ohne Code je Quelle, mit Aktualisieren-Knopf', () => {
@@ -103,7 +106,7 @@ describe('Laufhinweise', () => {
         onAktualisieren={() => {}}
       />,
     );
-    const [sprung, anderer] = screen.getAllByRole('status');
+    const [sprung, anderer] = alleAlerts();
     expect(sprung).toHaveTextContent('iShares Core MSCI World (IE00B4L5Y983): 1 Kurs mit Tagessprung über 30 % am 12.03.2020');
     expect(sprung).toHaveTextContent(de.laufhinweise.artTun.tagessprung!);
     expect(anderer).not.toHaveTextContent(de.laufhinweise.artTun.tagessprung!);
@@ -167,7 +170,7 @@ describe('Laufhinweise', () => {
         onAktualisieren={onAktualisieren}
       />,
     );
-    const [gegenprobe, kurse] = screen.getAllByRole('status');
+    const [gegenprobe, kurse] = alleAlerts();
     expect(gegenprobe).toHaveTextContent(de.laufhinweise.quelle.gesamtwert.titel);
     expect(gegenprobe).toHaveTextContent(de.laufhinweise.quelleCode.E_MCP_ABGELEHNT.grund);
     expect(gegenprobe).toHaveTextContent(de.laufhinweise.quelle.gesamtwert.folge);
@@ -204,7 +207,7 @@ describe('Laufhinweise', () => {
         onAktualisieren={() => {}}
       />,
     );
-    const [lauf, ...rest] = screen.getAllByRole('status');
+    const [lauf, ...rest] = alleAlerts();
     expect(rest).toHaveLength(0);
     expect(lauf).toHaveTextContent(de.laufhinweise.fehlerFolge);
     expect(lauf).toHaveTextContent(de.laufhinweise.code('E_SCHEMA'));
@@ -226,7 +229,7 @@ describe('Laufhinweise', () => {
   });
 
   it('ueberlaesst eine abgelaufene Anmeldung dem Anmelde-Alert', () => {
-    const { container } = rendern(
+    rendern(
       <Laufhinweise
         laufId={1}
         hinweise={[{ art: 'quelleGescheitert', werte: { quelle: 'sparplaene', code: 'E_MCP_ANMELDUNG' } }]}
@@ -235,7 +238,7 @@ describe('Laufhinweise', () => {
         onAktualisieren={() => {}}
       />,
     );
-    expect(container).toBeEmptyDOMElement();
+    expect(screen.getByRole('status')).toBeEmptyDOMElement();
   });
 
   it('zeigt einen gescheiterten Lauf mit Satz, Code und — wo es hilft — Aktualisieren-Knopf', () => {

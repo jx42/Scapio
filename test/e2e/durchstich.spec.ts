@@ -8,7 +8,8 @@
  * Der zweite Teil ist der Barrierefreiheitsdurchlauf: axe gegen die fertig geladene Seite,
  * auch mit offenem Menue, Popover und Dialog, dazu die Befunde, die axe nicht sieht
  * (Sprungmarke, Ueberlauf bei schmalem Fenster, Fokus unter der Blende, fokussierbare
- * Tabellenregion). Dazu die Randschichten: Demo-Band, fehlender Server, Bauseite.
+ * Tabellenregion). Dazu die Randschichten: Demo-Band, fehlender Server, Bauseite, und jeder
+ * Fall der Randfallseite (`npm run edgecases`) — Laden, Leer und Fehler sieht die Demo nie.
  * Siehe docs/BARRIEREFREIHEIT.md.
  */
 
@@ -17,6 +18,8 @@ import { expect, test, type Page } from '@playwright/test';
 import { KOPFZEILEN } from '../../server/sicherheit.ts';
 import { hinweisseite, hinweisseiteCsp } from '../../server/server.ts';
 import type { LaufSchritt } from '../../server/vertrag.ts';
+import { FAELLE, type Fall } from '../edgecases/faelle.ts';
+import { EDGECASES_SEITE } from './config.ts';
 
 declare global {
   interface Window {
@@ -201,22 +204,27 @@ test.describe('Barrierefreiheit', () => {
   test('bei 320 px und Textabstand nach WCAG 1.4.12 laeuft nichts ueber und nichts wird abgeschnitten', async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 900 });
     await warteAufKacheln(page);
-    const befund = await page.evaluate(() => {
+    await page.evaluate(() => {
       // Ueber CSSOM statt <style>: die echte CSP sperrt Inline-Stile, und `bypassCSP` bleibt aus.
       const abstand = new CSSStyleSheet();
       abstand.replaceSync(
         '* { line-height: 1.5 !important; letter-spacing: 0.12em !important; word-spacing: 0.16em !important; } p { margin-bottom: 2em !important; }',
       );
       document.adoptedStyleSheets = [...document.adoptedStyleSheets, abstand];
-      const gekuerzt = [...document.querySelectorAll<HTMLElement>('body *')].filter(
-        (e) => getComputedStyle(e).textOverflow === 'ellipsis' && e.scrollWidth > e.clientWidth,
-      );
-      return {
-        ueberlauf: document.documentElement.scrollWidth - document.documentElement.clientWidth,
-        gekuerzt: gekuerzt.map((e) => e.textContent ?? ''),
-      };
     });
-    expect(befund).toEqual({ ueberlauf: 0, gekuerzt: [] });
+    for (const reiter of REITER) {
+      await zeigeReiter(page, reiter);
+      const befund = await page.evaluate(() => {
+        const gekuerzt = [...document.querySelectorAll<HTMLElement>('body *')].filter(
+          (e) => getComputedStyle(e).textOverflow === 'ellipsis' && e.scrollWidth > e.clientWidth,
+        );
+        return {
+          ueberlauf: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+          gekuerzt: gekuerzt.map((e) => e.textContent ?? ''),
+        };
+      });
+      expect(befund, reiter).toEqual({ ueberlauf: 0, gekuerzt: [] });
+    }
   });
 });
 
@@ -257,7 +265,8 @@ test.describe('Barrierefreiheit der Randschichten', () => {
     await page.route('/api/**', (route) => route.abort('connectionrefused'));
     await page.goto('/');
     await expect(page.locator('[aria-busy="true"]')).toHaveCount(0, { timeout: 15_000 });
-    await expect(page.getByRole('alert')).toHaveCount(1);
+    // Leere Live-Regionen (Driftbanner) stehen immer im DOM; gezaehlt wird, was etwas meldet.
+    await expect(page.getByRole('alert').filter({ hasText: /\S/ })).toHaveCount(1);
     await erwarteAxeOhneVerstoss(page);
   });
 
@@ -279,4 +288,22 @@ test.describe('Barrierefreiheit der Randschichten', () => {
     await expect(page.getByRole('status')).toContainText('Wertpapiere einordnen');
     expect(await page.evaluate(() => window.__nichtNeuGeladen)).toBe(true);
   });
+});
+
+/** Ein Fall, dessen Abfragen nie antworten, behaelt sein Skeleton. */
+function haengt(fall: Fall): boolean {
+  return Object.values(fall.routen ?? {}).some((a) => a.art === 'haengt');
+}
+
+test.describe('Barrierefreiheit der Randfaelle', () => {
+  for (const fall of FAELLE) {
+    test(`axe findet im Randfall ${fall.id} nichts`, async ({ page }) => {
+      await page.goto(`${EDGECASES_SEITE}?fall=${encodeURIComponent(fall.id)}`);
+      await expect(page.locator('#wurzel > *').first()).toBeAttached();
+      if (!haengt(fall)) await expect(page.locator('[aria-busy="true"]')).toHaveCount(0, { timeout: 15_000 });
+      // Die Klicks eines Falls setzt die Seite selbst ab, frühestens nach einer Sekunde.
+      if (fall.klick !== undefined) await page.waitForTimeout(2_000);
+      await erwarteAxeOhneVerstoss(page);
+    });
+  }
 });

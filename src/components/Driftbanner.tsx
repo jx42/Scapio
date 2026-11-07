@@ -46,27 +46,37 @@ function texte(drift: Drift): { titel: string; text: string; ernst: boolean } | 
   }
 }
 
+/**
+ * Angesagt wird ueber zwei Regionen, die leer im DOM stehen und erst dann Text bekommen —
+ * gefuellt eingefuegt, sagt ein Screenreader sie oft nicht an. Das sichtbare Banner ist selbst
+ * keine Region: der Info-Knopf darin wuerde sonst mitgelesen.
+ */
 export function Driftbanner({ drift }: { drift: Drift | undefined }) {
-  if (drift === undefined) return null;
-  const inhalt = texte(drift);
-  if (inhalt === null) return null;
+  const inhalt = drift === undefined ? null : texte(drift);
+  const ansage = inhalt === null ? null : de.drift.ansage(inhalt.titel, inhalt.text);
 
   return (
-    <Alert
-      variant={inhalt.ernst ? 'verlust' : 'warnung'}
-      role={inhalt.ernst ? 'alert' : 'status'}
-      className="px-4 py-3"
-    >
-      <AlertTitle className="flex items-center gap-2 font-semibold">
-        <span aria-hidden="true">{de.pfeil.ab}</span>
-        {inhalt.titel}
-        <InfoKnopf bezeichnung={inhalt.titel}>
-          <p>{de.drift.erklaerung}</p>
-          <p className="mt-1 text-text-leise">{de.drift.handlung}</p>
-        </InfoKnopf>
-      </AlertTitle>
-      <AlertDescription>{inhalt.text}</AlertDescription>
-    </Alert>
+    <>
+      <p role="alert" className="sr-only">
+        {inhalt?.ernst === true ? ansage : null}
+      </p>
+      <p role="status" className="sr-only">
+        {inhalt?.ernst === false ? ansage : null}
+      </p>
+      {inhalt === null ? null : (
+        <Alert variant={inhalt.ernst ? 'verlust' : 'warnung'} role="none" className="px-4 py-3">
+          <AlertTitle className="flex items-center gap-2 font-semibold">
+            <span aria-hidden="true">{de.pfeil.ab}</span>
+            {inhalt.titel}
+            <InfoKnopf bezeichnung={inhalt.titel}>
+              <p>{de.drift.erklaerung}</p>
+              <p className="mt-1 text-text-leise">{de.drift.handlung}</p>
+            </InfoKnopf>
+          </AlertTitle>
+          <AlertDescription>{inhalt.text}</AlertDescription>
+        </Alert>
+      )}
+    </>
   );
 }
 

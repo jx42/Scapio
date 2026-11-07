@@ -14,7 +14,7 @@ Registry taugten dadurch nicht mehr als Aktualisierungsweg.
 ## Entscheidung
 
 1. **Ein Registry-Stand: `new-york-v4`, Basis `radix`** — der, den `components.json`
-   nennt (`style`; die Basis leitet die CLI aus dem Stil ab). Alle fünfzehn Bausteine
+   nennt (`style`; die Basis leitet die CLI aus dem Stil ab). Alle siebzehn Bausteine
    folgen Struktur und API dieses Stands: `import { X as XPrimitive } from 'radix-ui'`,
    `data-slot`, `data-variant`/`data-size` (außer `tabs` und `toggle-group`, die keine Varianten haben), Vorgabewerte in der Signatur, `className`
    über `cn(variants({ … }), className)`.
@@ -47,19 +47,21 @@ Fokusring in derselben Klasse ist per Lint verboten (`eslint.config.js`, Block `
 |---|---|
 | `alert` | Varianten `default`, `gewinn`, `warnung`, `verlust` statt `default`/`destructive`. Kompakter (`px-2.5 py-2`). `AlertAction` bleibt (aus `radix-nova`). Beschreibung ist ein Block statt eines Grids, damit gemischter Inline-Inhalt nicht in Zeilen zerfällt. `AlertAction` steht unter `sm` unter dem Text statt daneben (WCAG 1.4.10 bei 320 px). |
 | `badge` | Varianten `default`, `gewinnLeise`, `verlustLeise`, `link` statt der shadcn-Palette; eckiger, Großbuchstaben, eigene Größen. `link` mit `text-text` statt `text-text-leise`: auf `rand-licht` kam das leise Grau nur auf 4,23:1 (WCAG 1.4.3). |
-| `button` | Varianten `default`, `outline`, `ghost`, `link` (kein `destructive`/`secondary` — die Anwendung löscht nichts); `link` ist der eine Linkstil aus `lib/linkStil.ts`, nicht `text-primary`. Größen `default`, `sm`, `icon` (kein `lg`, `xs`, keine `icon-*`) (kein `xs`, keine `icon-*`); `cursor-pointer`, `transition-farben`; keine `aria-invalid`-Stile (keine Formulare). Symbolgröße steht wie in der Registry in der Basisklasse — Symbole im Knopf tragen kein eigenes `size-4`. |
+| `button` | Varianten `default`, `outline`, `ghost`, `link` (kein `destructive`/`secondary` — die Anwendung löscht nichts); `link` ist der eine Linkstil aus `lib/linkStil.ts`, nicht `text-primary`. Größen `default`, `sm`, `icon` (kein `lg`, `xs`, keine `icon-*`) (kein `xs`, keine `icon-*`); `cursor-pointer`, `transition-farben`, kein `disabled:cursor-not-allowed` (neben `pointer-events-none` wirkungslos); keine `aria-invalid`-Stile (ein Knopf ist nie ungültig). Symbolgröße steht wie in der Registry in der Basisklasse — Symbole im Knopf tragen kein eigenes `size-4`. |
 | `card` | `glas glas-hover rounded-lg` statt `rounded-xl border bg-card shadow-sm`; nur `Card`, `CardHeader`, `CardTitle`, `CardDescription`, `CardContent` (kein `CardAction`, kein `CardFooter`); `asChild` als Erweiterung. |
 | `collapsible` | `cursor-pointer` am Auslöser. |
 | `dialog` | Nur `Dialog`, `DialogContent`, `DialogHeader`, `DialogTitle`, `DialogDescription` (Overlay und Portal intern, kein `DialogTrigger`/`DialogClose`/`DialogFooter`). `schwebend`, Tokens, Überschrift in `font-heading`; Schließen-Text aus `i18n/de.ts`. `DialogContent` merkt sich den Auslöser beim Öffnen und fokussiert ihn beim Schließen — Radix gibt den Fokus nur an einen `DialogTrigger` zurück, und unsere Dialoge sind gesteuert (WCAG 2.4.3). |
 | `dropdown-menu` | Nur `DropdownMenu`, `Trigger`, `Content`, `CheckboxItem`. `CheckboxItem` mit Farbpunkt (`punkt`) und rechtem Inhalt (`rechts`) für Linien- und Benchmarkwahl. |
+| `hover-card` | Fläche `schwebend`, Pfeil `fill-rand`, `sideOffset 6`, `max-w-xs` statt `w-64`, ohne Ein-/Ausblend-Animation — wie `popover`. Nur für Zusatzwissen zu Namen, das die Zeile für Screenreader schon verborgen trägt (Top 25, ADR-058); nie die einzige Stelle eines Textes. |
+| `input` | Rand `bedien-rand` (3:1, ADR-019) auf `bg-bedien`, ungültig `aria-invalid:border-verlust` statt `destructive`-Ring; kein eigener Fokusring, kein `outline-none`, kein `shadow-xs`, keine `file:`-, `selection:`- und `dark:`-Klassen (keine Datei-Eingabe, Theme fest dunkel), kein `disabled:cursor-not-allowed`. |
 | `popover` | Fläche `schwebend`, Pfeil `fill-rand`, `max-w-xs`, ohne Ein-/Ausblend-Animation. Trägt die Erklärungen des `InfoKnopf` und den Demo-Grund am Aktualisieren-Knopf, weil ein Tooltip auf Touchgeräten nicht aufgeht (WCAG 1.4.13). |
 | `trigger` (kein Registry-Baustein) | `triggerVariants` (cva, Größen `default`/`sm`, `aktiv` für eine gesetzte Auswahl) mit eigenem Fokusring für die Menü-Auslöser im Kachelkopf. Ersetzt das gelöschte `select.tsx`, das nur noch diesen Stil lieferte. |
 | `slider` | Immer zwei Griffe; `SliderThumb` als eigener Export statt der in `Slider` gerenderten Griffe, damit jeder Griff ein eigenes `aria-label` bekommt. Spur `h-0.5` ohne `data-slot`, Griff sichtbar 12 px mit 24-px-Klickziel per Pseudo-Element, Hof als `ring` statt `outline` (der bleibt dem Fokusring). |
 | `skeleton` | `bg-rand` und `motion-safe:animate-pulse` statt `animate-pulse bg-accent`. |
 | `sonner` | Ohne `next-themes` (Theme fest dunkel), ohne `style`-Attribut, Farben als Klassen aus den Tokens, `closeButton`, `duration={3000}`; Region- und Schließen-Name aus `i18n/de.ts` (`containerAriaLabel`, `closeButtonAriaLabel`). Die beiden CSP-Hashes stehen in `server/sicherheit.ts`. |
 | `table` | Dichter (`h-8`, `py-1.5`, `text-xs`), Rahmen `border-rand`, Randzellen ohne Außenpolster, damit die Linien bündig mit dem Text enden; Zeilen-Hover als gerundete Fläche darüber hinaus (`tabellenzeile-hover`, ADR-029). Mit `bereich` wird der Scroll-Container eine fokussierbare, benannte Region — für Tabellen, die bei schmaler Breite überlaufen (WCAG 2.1.1). `innen` setzt Klassen am Scroll-Container (etwa die Blende `ausblenden-unten`), damit die Maske nicht über dem Fokusring der Region liegt. |
-| `tabs` | Liste als Bedienfläche (`lichtkante lichtkante-hover bg-bedien p-0.75`), feste Höhe `h-9`, Reiter `h-7`. |
-| `toggle`, `toggle-group` | `toggle.tsx` exportiert nur `toggleVariants` (ein einzelner Toggle kommt nicht vor). Nur die Variante `default`; feste Höhe (`h-7`) statt Größenstufen, kein `spacing` (die Registry setzt es per `style`). Die Gruppe ist eine Segmentleiste in derselben Bedienfläche wie `tabs`, Einträge ohne eigenen Rand. |
+| `tabs` | Liste als Bedienfläche (`lichtkante lichtkante-hover bg-bedien p-0.75`), feste Höhe `h-9`, Reiter `h-7`, kein `disabled:cursor-not-allowed`. Steht eine `<Kachel>` in `Tabs`, legt sie Laden, Leer und Fehler mit `reiter` ins Panel des gewählten Reiters — sonst zeigte dessen `aria-controls` ins Leere. |
+| `toggle`, `toggle-group` | `toggle.tsx` exportiert nur `toggleVariants` (ein einzelner Toggle kommt nicht vor). Nur die Variante `default`; feste Höhe (`h-7`) statt Größenstufen, kein `disabled:cursor-not-allowed`, kein `spacing` (die Registry setzt es per `style`). Die Gruppe ist eine Segmentleiste in derselben Bedienfläche wie `tabs`, Einträge ohne eigenen Rand. |
 
 ## Folgen
 
@@ -67,7 +69,7 @@ Fokusring in derselben Klasse ist per Lint verboten (`eslint.config.js`, Block `
   Laufzeit nichts.
 - Die Chart-Tooltips teilen sich eine Fläche (`components/ChartTooltipFlaeche.tsx`).
   Einen `ui/tooltip.tsx` gibt es nicht mehr: Erklärungen stehen im Popover, und
-  `test/keinTooltip.test.ts` hält den Radix-Tooltip draußen.
+  `test/keinTooltip.test.ts` hält den Radix-Tooltip und `title=` draußen.
 - Ein `shadcn add` eines neuen Bausteins ist wieder möglich: Ergebnis prüfen, Tokens statt
   shadcn-Namen einsetzen (Aliase aus ADR-019 fangen das Vergessene ab), INV-05 wahren und
   die neue Abweichung hier eintragen.

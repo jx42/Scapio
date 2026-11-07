@@ -480,6 +480,8 @@ export const de = {
     titelBanner: 'Die Selbstkontrolle meldet eine Abweichung',
     titelAbbruch: 'Die Rekonstruktion stimmt nicht mit dem gemeldeten Bestand überein',
     titelAusgesetzt: 'Die Selbstkontrolle war nicht möglich',
+    /** Was die Live-Region des Banners ansagt: Titel und Satz in einem. */
+    ansage: (titel: string, text: string) => `${titel}. ${text}`,
     banner: (abweichung: string) =>
       `Der aus den Umsätzen nachgerechnete Depotwert weicht um ${abweichung} vom Bestand ab, den die Bank meldet. Die Zahlen auf dieser Seite können daneben liegen. Drücke später erneut „Aktualisieren“; bleibt die Abweichung, vergleiche die Umsätze mit den Abrechnungen der Bank.`,
     abbruch: (abweichung: string) =>
@@ -622,6 +624,8 @@ export const de = {
       ohneIzf: 'Für diese Zahlungsreihe lässt sich kein interner Zinsfuß berechnen.',
       realOhneIzf: 'Ohne IZF keine Realrendite.',
       realOhneInflation: 'Ohne Inflation keine Realrendite.',
+      /** Wofür eine Erklärung in der Tabelle gilt, für das aria-label des Info-Knopfs. */
+      grundZu: (spalte: string, jahr: string) => `${spalte} ${jahr}`,
       inflationBis: (monat: string) => `Inflation bis ${monat}, neuere Monate sind noch nicht veröffentlicht.`,
       leer: 'Noch kein Kalenderjahr in der Historie.',
     },
@@ -900,6 +904,8 @@ export const de = {
     nichtZugeordnet: 'Nicht zugeordnet',
     uebrige: (anzahl: number) => `${anzahl} weitere`,
     realisiert: 'Realisiert',
+    /** Knöpfe unter dem Sankey: dieselben Ziele wie ein Klick auf Knoten oder Band, für die Tastatur. */
+    buchungen: 'Transaktionen',
     nichtsRealisiert: 'Noch nichts verkauft: Der Gewinn steht bisher nur im Kurs.',
     betragUndAnteil: (betrag: string, anteil: string) => `${betrag} · ${anteil}`,
     chart: (netto: string) =>
