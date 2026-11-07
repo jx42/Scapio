@@ -264,6 +264,10 @@ export const de = {
         tun:
           'Drücke später erneut „Aktualisieren“. Scheitert es bei jedem Abruf, hat sich vermutlich die Schnittstelle von Scalable Capital geändert: Hole dann mit Aktualisieren.command bzw. .bat die neueste Version von Scapio.',
       },
+      E_WAEHRUNG: {
+        grund: 'Die Antwort enthielt einen Betrag in einer anderen Währung als Euro. Scapio rechnet nur in Euro.',
+        tun: 'Hole mit Aktualisieren.command bzw. .bat die neueste Version von Scapio. Bis dahin bleibt diese Quelle auf dem alten Stand.',
+      },
       schnittstelle: {
         grund: 'Die Antwort hatte eine unerwartete Form. Vermutlich hat sich die Schnittstelle geändert.',
         tun: 'Hole mit Aktualisieren.command bzw. .bat die neueste Version von Scapio. Bis dahin bleibt diese Quelle auf dem alten Stand.',
@@ -303,6 +307,7 @@ export const de = {
       kursfensterNichtAbrufbar: 'Kurse nicht abgerufen',
       kursfensterSchema: 'Kurse verworfen',
       kursfensterAndereIsin: 'Kurse verworfen',
+      kurspunkteUngueltig: 'Einzelne Kurse verworfen',
       zinsLuecken: 'Lücken in den Zinsdaten',
       vpiLuecken: 'Lücken im Preisindex',
       vpiRandLuecken: 'Lücken im Preisindex',
@@ -349,6 +354,7 @@ export const de = {
         'Drücke später erneut „Aktualisieren“. Bleibt der Hinweis, hilft eine neue Version von Scapio (Aktualisieren.command bzw. .bat).',
       kursfensterAndereIsin:
         'Drücke später erneut „Aktualisieren“. Bleibt der Hinweis, hilft eine neue Version von Scapio (Aktualisieren.command bzw. .bat).',
+      kurspunkteUngueltig: 'Du musst nichts tun; die übrigen Kurse sind übernommen.',
       zinsLuecken: 'Du musst nichts tun.',
       vpiLuecken: 'Du musst nichts tun.',
       vpiRandLuecken: 'Du musst nichts tun.',
@@ -404,6 +410,7 @@ export const de = {
         `Kursfenster ${fenster} für ${isin} hatte eine unerwartete Form und wurde verworfen.`,
       kursfensterAndereIsin: (fenster: string, isin: string) =>
         `Kursfenster ${fenster}: Die Antwort betraf ein anderes Papier als ${isin} und wurde verworfen.`,
+      kurspunkteUngueltig: (isin: string, anzahl: string) => `${isin}: ${anzahl} Kurse von null oder darunter verworfen.`,
       zinsLuecken: (tage: string) => `Zins: ${tage} Tage ohne Wert übersprungen.`,
       vpiLuecken: (monate: string) => `Preisindex: ${monate} Monate ohne Wert übersprungen.`,
       vpiRandLuecken: (monate: string) => `Preisindex, jüngste Monate: ${monate} Monate ohne Wert übersprungen.`,
@@ -431,6 +438,8 @@ export const de = {
     E_MCP_UNVOLLSTAENDIG: 'Die Antwort von Scalable Capital war unvollständig. Versuche es erneut.',
     E_SCHEMA:
       'Eine Antwort von Scalable Capital hatte eine unerwartete Form. Vermutlich hat sich die Schnittstelle geändert. Hole mit Aktualisieren.command bzw. .bat die neueste Version von Scapio.',
+    E_WAEHRUNG:
+      'Scalable Capital hat einen Betrag in einer anderen Währung als Euro geliefert. Scapio rechnet nur in Euro und hat nichts übernommen. Hole mit Aktualisieren.command bzw. .bat die neueste Version von Scapio.',
     E_STORNO_BREMSE:
       'Die Bank lieferte deutlich weniger Transaktionen als bekannt. Zur Sicherheit wurde nichts übernommen. Versuche es später erneut.',
     E_SEED_KAPUTT: 'Die Datei seed.json im Datenordner ist kein gültiges JSON. Prüfe sie — meist ist es ein Komma zu viel.',

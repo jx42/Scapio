@@ -242,6 +242,9 @@ Beispiel: `('2026-08-20', -0.0055, 'ezb:EST')`
 
 Protokoll jedes Ingest-Laufs — für `/api/lauf`, das Runbook und die Übergabeprüfliste.
 Enthält nie Beträge oder Fremdtext, nur Quellennamen, Statuswerte und Anzahlen.
+Der Abschluss eines Laufs löscht in derselben Transaktion alles jenseits der jüngsten
+`LAEUFE_BEHALTEN` (500, `db/repository/lauf.ts`); ein laufender und der letzte erfolgreiche
+oder teilweise Lauf bleiben immer.
 
 | Feld | Typ | Bedeutung |
 |---|---|---|

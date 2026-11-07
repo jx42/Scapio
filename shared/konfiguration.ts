@@ -84,7 +84,7 @@ const EINSTELLUNGEN = {
   inflationsquelle: z.enum(['eurostat', 'destatis']),
   zinsquelle: z.enum(['ecb', 'keine']),
   driftSchwellen: DriftSchwellen,
-  /** Kachel „Top 25 Unternehmen" samt Abruf der Fondsbestandslisten [ADR-038]. */
+  /** Reiter „Analyse“ der Aufteilung samt Abruf der Fondsbestandslisten [ADR-038, ADR-060]. */
   top25: z.boolean(),
 };
 

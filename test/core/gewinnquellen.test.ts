@@ -76,6 +76,16 @@ describe('gewinnquellen', () => {
     expect(g.bruttoCent).toBe(zuCent(String((11 * 12 * 10) / 2 + 5)));
   });
 
+  it('zeigt genau HOECHSTENS_JE_SEITE Positionen einzeln, eine mehr fasst zwei zusammen', () => {
+    const positionen = (n: number) => Array.from({ length: n }, (_, i) => position(i + 1, String((i + 1) * 10)));
+    const genau = gewinnquellen({ positionen: positionen(HOECHSTENS_JE_SEITE), ...OHNE_TOEPFE });
+    expect(genau.zufluesse.map((q) => q.art)).toEqual(Array<string>(HOECHSTENS_JE_SEITE).fill('position'));
+
+    const eineMehr = gewinnquellen({ positionen: positionen(HOECHSTENS_JE_SEITE + 1), ...OHNE_TOEPFE });
+    expect(eineMehr.zufluesse).toHaveLength(HOECHSTENS_JE_SEITE);
+    expect(eineMehr.zufluesse.at(-1)).toMatchObject({ art: 'uebrige', anzahl: 2, betragCent: zuCent('30') });
+  });
+
   it('sortiert gleich grosse Betraege stabil nach ISIN', () => {
     const g = gewinnquellen({ positionen: [position(2, '10'), position(1, '10')], ...OHNE_TOEPFE });
     expect(g.zufluesse.map((q) => q.isin)).toEqual([position(1, '0').isin, position(2, '0').isin]);

@@ -21,8 +21,9 @@ rem  3. `call` vor jedem npm-Aufruf und vor Start.bat: npm ist unter Windows sel
 rem     eine .cmd-Datei, und eine .bat aus einer .bat heraus ohne `call` kehrt nie
 rem     zurueck - der Rest dieser Datei liefe schlicht nicht.
 rem
-rem Nur ASCII, keine Umlaute, und Pfade in ( ... ) nur als !VAR! - siehe Start.bat,
-rem Punkte 4 und 5.
+rem Kein `chcp 65001` und darum nur ASCII: ohne Emojis, Umlaute als "ae", "oe", "ue",
+rem "ss" wie in Start.bat (Punkt 5). Pfade in ( ... ) nur als !VAR! - siehe Start.bat,
+rem Punkt 4.
 
 setlocal enabledelayedexpansion
 

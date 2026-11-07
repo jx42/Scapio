@@ -16,6 +16,7 @@ import {
   SchemaFehler,
   SparplaeneAntwort,
   TransaktionenAntwort,
+  WaehrungsFehler,
   pruefe,
 } from '../../ingest/schema.ts';
 import { FIXTURE, json } from '../fixtures/index.ts';
@@ -112,6 +113,38 @@ describe('Schema · ezb', () => {
 
   it('lehnt ein unbekanntes Feld ab, statt es stillschweigend zu ignorieren', () => {
     expect(() => pruefe('zins', EzbZinsAntwort, json(FIXTURE.ezbFeld))).toThrow(/links/);
+  });
+});
+
+describe('Schema · Waehrung', () => {
+  type Fall = readonly [string, z.ZodType<unknown, unknown>, string, (roh: Record<string, any>) => void];
+  const faelle: readonly Fall[] = [
+    ['holdings', HoldingsAntwort, FIXTURE.holdings, (r) => { r.holdings[0].currentQuote.currency = 'USD'; }],
+    ['transaktionen', TransaktionenAntwort, FIXTURE.transaktionen, (r) => { r.transactions[0].currency = 'USD'; }],
+    ['kurse', ChartAntwort, FIXTURE.chart1m, (r) => { r.currency = 'USD'; }],
+  ];
+
+  it.each(faelle)('%s: eine andere Waehrung als EUR wird E_WAEHRUNG, nicht still zu Euro-Cent', (quelle, schema, fixture, aendere) => {
+    const roh = json(fixture) as Record<string, any>;
+    aendere(roh);
+    let gefangen: unknown;
+    try {
+      pruefe(quelle, schema, roh);
+    } catch (fehler) {
+      gefangen = fehler;
+    }
+    expect(gefangen).toBeInstanceOf(WaehrungsFehler);
+    expect(gefangen).toBeInstanceOf(SchemaFehler);
+    expect((gefangen as WaehrungsFehler).code).toBe('E_WAEHRUNG');
+    expect((gefangen as WaehrungsFehler).message).toMatch(/currency: invalid_value/);
+    expect((gefangen as WaehrungsFehler).message).not.toContain('USD');
+  });
+
+  it('bleibt E_SCHEMA bei einem anderen Formfehler', () => {
+    const roh = json(FIXTURE.chart1m) as Record<string, unknown>;
+    delete roh.source;
+    expect(() => pruefe('kurse', ChartAntwort, roh)).toThrow(SchemaFehler);
+    expect(() => pruefe('kurse', ChartAntwort, roh)).not.toThrow(WaehrungsFehler);
   });
 });
 

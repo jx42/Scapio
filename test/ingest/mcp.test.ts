@@ -19,7 +19,7 @@ import type { Hinweis } from '../../shared/hinweise.ts';
 
 vi.mock('../../ingest/mcpAnmeldung.ts', () => ({ zugriffstoken: vi.fn() }));
 
-const { McpFehler, McpSicherung, ZEITFEHLER_BIS_ABBRUCH, ZEITFEHLER_IM_LAUF_BIS_ABBRUCH, mcpAufrufRoh, mcpSitzungVergessen } =
+const { HOECHSTENS_SEITEN, McpFehler, McpSicherung, ZEITFEHLER_BIS_ABBRUCH, ZEITFEHLER_IM_LAUF_BIS_ABBRUCH, mcpAufrufRoh, mcpSitzungVergessen } =
   await import('../../ingest/mcp.ts');
 const { zugriffstoken } = await import('../../ingest/mcpAnmeldung.ts');
 
@@ -279,14 +279,60 @@ describe('mcpAufrufRoh', () => {
       });
     };
 
+    const vorwarnung = Math.ceil(HOECHSTENS_SEITEN * 0.8);
     const meldungen: Hinweis[] = [];
-    seiten(39);
+    seiten(vorwarnung - 1);
     await mcpAufrufRoh(TRANSAKTIONEN_TOOL, { konfiguration: k, warte: sofort, melde: (h) => meldungen.push(h) });
     expect(meldungen).toEqual([]);
 
-    seiten(40);
+    seiten(vorwarnung);
     await mcpAufrufRoh(TRANSAKTIONEN_TOOL, { konfiguration: k, warte: sofort, melde: (h) => meldungen.push(h) });
-    expect(meldungen).toEqual([{ art: 'transaktionenSeitenGrenze', werte: { seiten: 40, hoechstens: 50 } }]);
+    expect(meldungen).toEqual([{ art: 'transaktionenSeitenGrenze', werte: { seiten: vorwarnung, hoechstens: HOECHSTENS_SEITEN } }]);
+  });
+
+  describe('Seitendecke', () => {
+    /** Seite `n` (ab 1) meldet `gesamt` Zeilen und je `jeSeite`; `letzte` ist die Seite ohne Cursor. */
+    const blaettern = (gesamt: number | undefined, jeSeite: number, letzte: number | null, cursor = (n: number) => String(n + 1)) =>
+      fetchMock((rpc) => {
+        if (rpc.method === 'initialize') return initOk();
+        if (rpc.method === 'notifications/initialized') return notifOk();
+        const c = rpc.params?.arguments?.cursor;
+        const n = typeof c === 'string' ? Number(c) : 1;
+        const page = { nextCursor: letzte !== null && n >= letzte ? null : cursor(n), totalCount: gesamt, returnedCount: jeSeite };
+        return toolOk({ page, transactions: [] });
+      });
+    const seitenAufrufe = (calls: readonly FetchAufruf[]): number => calls.filter((c) => c.rpc.method === 'tools/call').length;
+    const fehlerVon = (p: Promise<unknown>): Promise<unknown> => p.then(() => null, (f: unknown) => f);
+
+    it('liest mehr als 5000 Transaktionen vollstaendig, statt an einer festen Decke zu scheitern', async () => {
+      blaettern(6_000, 100, 60);
+      const antwort = await mcpAufrufRoh(TRANSAKTIONEN_TOOL, { konfiguration: frischeKonfiguration(), warte: sofort });
+      expect(antwort.bloecke).toHaveLength(60);
+    });
+
+    it('koppelt die Decke an totalCount und die gelieferte Seitengroesse', async () => {
+      // 250 Zeilen zu je 50 sind 5 Seiten; der Server blaettert endlos weiter.
+      const { calls } = blaettern(250, 50, null);
+      const fehler = await fehlerVon(mcpAufrufRoh(TRANSAKTIONEN_TOOL, { konfiguration: frischeKonfiguration(), warte: sofort }));
+      expect(fehler).toBeInstanceOf(McpFehler);
+      expect((fehler as InstanceType<typeof McpFehler>).code).toBe('E_MCP_SEITEN');
+      expect(seitenAufrufe(calls)).toBeGreaterThan(5);
+      expect(seitenAufrufe(calls)).toBeLessThan(10);
+    });
+
+    it('bricht ohne Blaettern ab, wenn totalCount ueber der Decke liegt', async () => {
+      const { calls } = blaettern((HOECHSTENS_SEITEN + 1) * 100, 100, null);
+      const fehler = await fehlerVon(mcpAufrufRoh(TRANSAKTIONEN_TOOL, { konfiguration: frischeKonfiguration(), warte: sofort }));
+      expect((fehler as InstanceType<typeof McpFehler>).code).toBe('E_MCP_SEITEN');
+      expect(seitenAufrufe(calls)).toBe(1);
+    });
+
+    it('bricht bei einem wiederholten Cursor sofort ab', async () => {
+      const { calls } = blaettern(undefined, 100, null, () => 'immer-derselbe');
+      const fehler = await fehlerVon(mcpAufrufRoh(TRANSAKTIONEN_TOOL, { konfiguration: frischeKonfiguration(), warte: sofort }));
+      expect((fehler as InstanceType<typeof McpFehler>).code).toBe('E_MCP_SEITEN');
+      expect(seitenAufrufe(calls)).toBe(2);
+    });
   });
 
   it('bricht nach mcpZeitlimitMs ab, statt endlos zu haengen, und wirft E_MCP_ZEIT', async () => {
