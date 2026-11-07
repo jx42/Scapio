@@ -36,6 +36,7 @@ export const LAUF_FEHLER = [
   ...MCP_FEHLER,
   ...NETZ_FEHLER,
   'E_SCHEMA',
+  'E_WAEHRUNG',
   'E_PLAUSIBEL',
   'E_STORNO_BREMSE',
   'E_SEED_KAPUTT',

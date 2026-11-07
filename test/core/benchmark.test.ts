@@ -83,6 +83,21 @@ describe('baueBenchmarkreihe', () => {
     expect(tag3.gesamtCent - tag3.nettoEinzahlungKumCent).toBe(0n);
   });
 
+  it('Auszahlung über den Bestand: verkauft höchstens alles, der Rest bleibt als negatives Cash', () => {
+    const raster = konstantesRaster('2026-01-02', '2026-01-03', '100');
+    const reihe = baueBenchmarkreihe({
+      fluesse: [fluss('2026-01-02', '1000'), fluss('2026-01-03', '-1500')],
+      raster,
+      von: T('2026-01-02'),
+      bis: T('2026-01-03'),
+    });
+
+    const tag3 = reihe.find((z) => z.tag === T('2026-01-03'))!;
+    expect(tag3.wertpapiereCent).toBe(0n);
+    expect(tag3.cashCent).toBe(zuCent('-500'));
+    expect(tag3.gesamtCent).toBe(zuCent('-500'));
+  });
+
   it('Kurslücke: ein Tag ohne Kurs bleibt als Cash liegen und wird lueckenhaft markiert', () => {
     const raster = new Map<Tag, Rasterwert>([
       [T('2026-01-02'), { kurs: zuKursE6('100'), gefuellt: false }],

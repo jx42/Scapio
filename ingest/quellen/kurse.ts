@@ -16,7 +16,7 @@ import type { Herkunft, Kurspunkt } from '../../core/kursraster.ts';
 import { tagAus } from '../../core/kalender.ts';
 import { mcpAufrufRoh } from '../mcp.ts';
 import type { Ernte, Kontext } from '../importieren.ts';
-import { pruefeKurs, tagIstBrauchbar } from '../plausibilitaet.ts';
+import { tagIstBrauchbar } from '../plausibilitaet.ts';
 import type { Zeitfenster } from '../schema.ts';
 import { ChartAntwort, pruefe } from '../schema.ts';
 
@@ -45,6 +45,7 @@ export async function holeKurse(
   const kurspunkte: Kurspunkt[] = [];
   const fehlend: string[] = [];
   const rohStuecke: Record<string, unknown> = {};
+  let ungueltig = 0;
 
   for (const [fenster, herkunft] of KURSFENSTER_JE_HERKUNFT) {
     let bloecke: readonly unknown[];
@@ -92,11 +93,18 @@ export async function holeKurse(
       if (!tagIstBrauchbar(ctx.befunde, quelleFuer(isin), tag, ctx.heute)) continue;
 
       const kurs = p.midPrice;
-      pruefeKurs(quelleFuer(isin), isin, kurs); // Abbruch bei <= 0
+      // Ein einzelner Punkt <= 0 verwirft nur sich: der Tag wird eine sichtbare Luecke. Der
+      // Bestand (`holdings.ts`) bricht dagegen ab, dort traegt der eine Kurs den ganzen Wert.
+      if (kurs <= 0n) {
+        ungueltig += 1;
+        continue;
+      }
 
       kurspunkte.push({ isin, tag, kurs, herkunft, abgerufenAm: ctx.jetzt });
     }
   }
+
+  if (ungueltig > 0) ctx.befunde.hinweis('kurspunkteUngueltig', { isin, anzahl: ungueltig });
 
   return {
     daten: { kurspunkte, fehlendeFenster: fehlend },

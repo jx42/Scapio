@@ -143,18 +143,43 @@ export async function sichern(
   return ziel;
 }
 
+/** Temp-Datei einer Sicherung samt WAL-Resten der Pruefkopie (`sichern`). */
+const TEMP_REST = /^portfolio-.+\.db\.tmp(-wal|-shm)?$/;
+/** Juenger kann eine Sicherung sein, die ein zweiter Prozess (`npm run backup`) gerade schreibt. */
+const TEMP_REST_NACH_MS = 60 * 60 * 1000;
+
+/**
+ * Loescht, was eine abgebrochene Sicherung hinterlassen hat. `sichern` raeumt selbst auf,
+ * aber nicht, wenn der Prozess zwischen `backup` und `rename` endet; jeder Rest haelt eine
+ * volle Kopie des Depots. @returns die geloeschten Namen.
+ */
+export function raeumeTempReste(verzeichnis: string, jetzt: number = Date.now()): string[] {
+  if (!existsSync(verzeichnis)) return [];
+  const geloescht: string[] = [];
+  for (const datei of readdirSync(verzeichnis)) {
+    if (!TEMP_REST.test(datei)) continue;
+    const pfad = join(verzeichnis, datei);
+    if (jetzt - statSync(pfad).mtimeMs < TEMP_REST_NACH_MS) continue;
+    rmSync(pfad, { force: true });
+    geloescht.push(datei);
+  }
+  return geloescht;
+}
+
 /** Abstand, ab dem `npm start` von selbst sichert [ADR-045]. */
 const AUTOMATISCH_NACH_MS = 7 * 24 * 60 * 60 * 1000;
 
 /**
  * Sichert mit Anlass `automatisch`, wenn die juengste Sicherung gleich welchen Anlasses
- * aelter als sieben Tage ist (oder es keine gibt). `null`: nicht faellig. [ADR-045]
+ * aelter als sieben Tage ist (oder es keine gibt). `null`: nicht faellig. Raeumt vorher
+ * Reste abgebrochener Sicherungen (`raeumeTempReste`). [ADR-045]
  */
 export async function sichereWennFaellig(
   db: DatabaseSync,
   verzeichnis: string,
   jetzt: number = Date.now(),
 ): Promise<string | null> {
+  raeumeTempReste(verzeichnis, jetzt);
   if (existsSync(verzeichnis)) {
     const alle = Object.values(MUSTER);
     for (const datei of readdirSync(verzeichnis)) {

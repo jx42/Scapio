@@ -28,6 +28,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Tag } from '../../core/kalender.ts';
+import type { Isin } from '../../core/typen.ts';
 import { konfigurationFuer, type Konfiguration } from '../../shared/konfiguration.ts';
 import type * as KonfigurationModul from '../../shared/konfiguration.ts';
 import type * as FondsaufloesungModul from '../../ingest/fondsaufloesung.ts';
@@ -315,6 +316,36 @@ describe('fuehreLaufAus — Fehlercode je Quelle', () => {
     expect(ergebnis.quellen.fondsaufloesung).toBe('fehler');
     expect(ergebnis.status).toBe('teilweise');
     expect(ergebnis.hinweise).toContainEqual({ art: 'quelleGescheitert', werte: { quelle: 'fondsaufloesung', code: 'E_UNBEKANNT' } });
+  });
+
+  it('isoliert einen gescheiterten Bestandteil-Abruf auf seinen Fonds und behaelt dessen alten Stand', async () => {
+    const holdings = json(FIXTURE.holdings) as { holdings: { isin: string }[] };
+    const fonds = holdings.holdings[0]!.isin as Isin;
+    vi.mocked(katalogeAbrufen).mockResolvedValueOnce(new Map([[fonds, { anbieter: 'ishares', eintrag: { produktId: '1' } }]]));
+    fetchMock((rpc) => {
+      if (rpc.method === 'initialize') return initOk();
+      if (rpc.method === 'notifications/initialized') return notifOk();
+      const tool = rpc.params?.name ?? '';
+      if (tool.endsWith('get_portfolio_holdings')) return toolOk(holdings);
+      if (tool.endsWith('list_portfolio_transactions')) return toolOk(json(FIXTURE.transaktionen));
+      return toolOk({});
+    });
+    const db = await testDatenbank();
+    const alterStand = '2026-07-01';
+    repository.etfBestandteil.ersetzeFuerStand(db, fonds, alterStand, [
+      { fondsIsin: fonds, unternehmenIsin: 'US0000000001', name: 'Synthetisch', gewicht: 1, sektor: null, land: null },
+    ]);
+
+    // Ohne erlaubten Host scheitert der Abruf bei iShares, bevor er das Netz erreicht.
+    const ergebnis = await fuehreLaufAus({ db, konfiguration: konfiguration({ top25: true, erlaubteHosts: [] }), heute: HEUTE });
+
+    expect(ergebnis.quellen[`ishares:${fonds}`]).toBe('fehler');
+    expect(ergebnis.hinweise.filter((h) => h.art === 'fondsNichtAbrufbar').map((h) => h.werte)).toEqual([
+      expect.objectContaining({ anbieter: 'ishares', isin: fonds }),
+    ]);
+    expect(ergebnis.status).toBe('teilweise');
+    expect(repository.etfBestandteil.neuesterStand(db, fonds)).toBe(alterStand);
+    expect(repository.fondsAufloesung.fuerIsin(db, fonds)).toMatchObject({ anbieter: 'ishares', durchsicht: 'moeglich' });
   });
 
   it('schliesst den Lauf mit "fehler", wenn ausserhalb der Schritt-Fangnetze etwas wirft', async () => {

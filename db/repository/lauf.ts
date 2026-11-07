@@ -8,7 +8,7 @@
 
 import type { DatabaseSync } from 'node:sqlite';
 import type { Hinweis } from '../../shared/hinweise.ts';
-import { spaltenliste, stmt } from './hilfen.ts';
+import { inTransaktion, spaltenliste, stmt } from './hilfen.ts';
 import type { Bindung, Spalten } from './hilfen.ts';
 
 export type LaufStatus = 'laufend' | 'erfolg' | 'teilweise' | 'fehler';
@@ -121,7 +121,24 @@ export type Abschluss = {
   readonly fehlerText?: string | null;
 };
 
+/**
+ * So viele abgeschlossene Laeufe bleiben; angezeigt werden hoechstens 20 (`letzte`). Ohne
+ * Grenze waechst die Tabelle mit jedem Knopfdruck, und jede Sicherung traegt sie mit.
+ */
+export const LAEUFE_BEHALTEN = 500;
+
+/** Abschluss und Kuerzung in einer Transaktion; innerhalb einer fremden laufen beide in ihr. */
 export function beende(db: DatabaseSync, id: number, a: Abschluss): void {
+  if (db.isTransaction) {
+    abschliessen(db, id, a);
+    return;
+  }
+  inTransaktion(db, () => {
+    abschliessen(db, id, a);
+  });
+}
+
+function abschliessen(db: DatabaseSync, id: number, a: Abschluss): void {
   const bindung: Bindung<Omit<Zeile, 'gestartet' | 'schritt'>> = {
     id,
     beendet: a.beendet,
@@ -136,6 +153,14 @@ export function beende(db: DatabaseSync, id: number, a: Abschluss): void {
     `UPDATE lauf SET beendet = $beendet, status = $status, fehler_code = $fehler_code, fehler_text = $fehler_text,
        quellen_json = $quellen_json, hinweise_json = $hinweise_json, schritt = NULL WHERE id = $id`,
   ).run(bindung);
+  // Der letzte erfolgreiche bleibt, auch wenn er aelter ist: auf ihm steht der Stand der Kachel.
+  stmt(
+    db,
+    `DELETE FROM lauf
+       WHERE id <= (SELECT id FROM lauf ORDER BY id DESC LIMIT 1 OFFSET ?)
+         AND status <> 'laufend'
+         AND id <> COALESCE((SELECT MAX(id) FROM lauf WHERE status IN ('erfolg', 'teilweise')), -1)`,
+  ).run(LAEUFE_BEHALTEN);
 }
 
 export function letzter(db: DatabaseSync): Lauf | null {

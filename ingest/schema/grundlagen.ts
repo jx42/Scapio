@@ -64,6 +64,12 @@ function sicher<T extends bigint>(um: (v: string | number) => T, feldart: string
 export const Geld = z.union([z.number(), z.string().max(40)]).transform(sicher<Cent>(zuCent, 'Betrag'));
 export const Menge = z.union([z.number(), z.string().max(40)]).transform(sicher<MengeE8>(zuMengeE8, 'Menge'));
 export const Kurs = z.union([z.number(), z.string().max(40)]).transform(sicher<KursE6>(zuKursE6, 'Kurs'));
+/**
+ * Waehrung jedes Betrags und Kurses, der in die Datenbank geht. Umgerechnet wird nirgends:
+ * ein USD-Kurs landete sonst als Euro-Cent, und die Sprungpruefung faengt 5-15 % nicht.
+ * `pruefe` macht daraus `E_WAEHRUNG`.
+ */
+export const Euro = z.literal('EUR');
 
 export const Isin = z.string().length(GRENZE.isin).regex(ISIN_MUSTER);
 /** Fremdtext. Speichern, anzeigen — nie auswerten, nie loggen. [INV-06] */
