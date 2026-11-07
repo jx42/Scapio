@@ -39,3 +39,11 @@ und nennt danach die übrigen Schritte.
   das Skript die Deinstallation. Das ist der gewollte, sichere Fehlschlag.
 - Den Inhalt des Browser-`localStorage` (ausgeblendete Kacheln, Zeitraum) löscht das Skript
   nicht. Er enthält keine Depotwerte.
+
+## Nachtrag: Hinweise und Zielaufteilung
+
+Seit [ADR-056](ADR-056-datenverzeichnis-und-dateirechte-aus-einer-hand.md) und
+[ADR-057](ADR-057-rebalancing-rechner.md) liegen im `localStorage` auch ausgeblendete Hinweise
+und die Zielaufteilung (`portfolio.zielaufteilung`) — Positionen nur als FNV-1a-Prüfsumme, dazu
+die selbst gesetzten Zielanteile. Das bleibt ein Restbestand, den die Deinstallation nicht
+erreicht; die Prüfsumme pseudonymisiert nur (ADR-056, Nachtrag).

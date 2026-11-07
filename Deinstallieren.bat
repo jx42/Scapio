@@ -7,7 +7,8 @@ rem loescht der Nutzer danach selbst - cmd haelt die laufende .bat und ihren Ord
 rem offen. [ADR-049]
 rem
 rem `call` vor npm: npm ist unter Windows selbst eine .cmd-Datei, und ohne `call` kehrt
-rem sie nie zurueck. Nur ASCII, keine Umlaute - siehe Start.bat.
+rem sie nie zurueck. Kein `chcp 65001` und darum nur ASCII: ohne Emojis, Umlaute als
+rem "ae", "oe", "ue", "ss" wie in Start.bat (Punkt 5).
 
 setlocal enabledelayedexpansion
 cd /d "%~dp0" || exit /b 1

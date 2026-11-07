@@ -172,15 +172,16 @@ Der Start zieht beide einmalig aus dem Projektordner um (`start/uebernahme.ts`)
 | `mcpZeitlimitMs` | `300000` | Zeitlimit je MCP-Aufruf |
 | `csvZeitlimitMs` | `30000` | Zeitlimit je Holdings-/CSV-Abruf (iShares, Xtrackers, Amundi) |
 | `csvGroesstMb` | `32` | Größtgrenze einer Holdings-/CSV-Antwort |
+| `fondsKatalogFrischeTage` | `5` | Tage, die ein Anbieterkatalog gilt, bevor die Fondsauflösung ihn neu abruft [ADR-018](entscheidungen/ADR-018-fondskataloge-statt-einzelabfrage.md) |
 | `erlaubteHosts` | `www.ishares.com`, `etf.dws.com`, `www.amundietf.de`, `ec.europa.eu`, `data-api.ecb.europa.eu` | Allowlist für jeden Netzabruf, keine Musterliste; Vorgabe abgeleitet aus `shared/hosts.ts` |
 | `inflationsquelle` | `eurostat` | siehe [ADR-003](entscheidungen/ADR-003-eurostat-statt-destatis.md) |
 | `zinsquelle` | `ecb` | siehe [ADR-009](entscheidungen/ADR-009-risikokennzahlen.md) |
 | `driftSchwellen` | `{ hinweis: 0.001, banner: 0.005, abbruch: 0.02 }` | müssen aufsteigend sein, siehe [`docs/RUNBOOK.md`](RUNBOOK.md) |
 | `top25` | `false` | Reiter „Analyse“ der Aufteilung und der Abruf der Fondsbestandslisten; der Server meldet den Wert in `/api/health` [ADR-038](entscheidungen/ADR-038-top25-nur-auf-wunsch.md) |
 
-`port` und `driftSchwellen` liest der Server, `erlaubteHosts`/die Zeitlimits liest der
-Ingest, `top25` lesen beide, `datenverzeichnis` lesen beide über `start/` — `core/` liest `config.json`
-nie [INV-04].
+`port` und `driftSchwellen` liest der Server, `erlaubteHosts`, die Zeitlimits und
+`fondsKatalogFrischeTage` liest der Ingest, `top25` lesen beide, `datenverzeichnis` lesen beide
+über `start/` — `core/` liest `config.json` nie [INV-04].
 
 ## Sicherheitsarchitektur (Kurzfassung)
 
@@ -227,7 +228,7 @@ vollständige Neuberechnung aus `raw_snapshot`, sobald `KERN_VERSION` steigt.
 
 Dateien in dieser Reihenfolge; was der Compiler nicht bindet, ist vermerkt.
 
-**Neue Kennzahl** (Rechnung im Kern, Anzeige auf einer Karte über dem Verlauf oder im Fuß der Sankey-Kachel)
+**Neue Kennzahl** (Rechnung im Kern, Anzeige auf einer Karte über dem Verlauf oder in der Summenzeile über der Sankey)
 
 | # | Datei | Was |
 |---|---|---|

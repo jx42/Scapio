@@ -1,7 +1,7 @@
 # ADR-057: Rebalancing-Rechner als Rechnung, nicht als Empfehlung
 
-Vorschlag in [`plans/rebalancing-rechner.md`](../../plans/rebalancing-rechner.md) (dort noch als
-ADR-055 geführt; die Nummer war vergeben).
+Vorschlag im nicht eingecheckten `plans/rebalancing-rechner.md` (dort noch als ADR-055 geführt;
+die Nummer war vergeben).
 
 ## Kontext
 
