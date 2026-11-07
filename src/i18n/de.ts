@@ -504,6 +504,8 @@ export const de = {
     nicht_konvergiert:
       'Nicht berechenbar: das Verfahren hat für diese Zahlungsreihe keine eindeutige Lösung gefunden.',
     ausserhalb_bereich: 'Nicht berechenbar: die Rendite läge unter −99,99 % oder über 1.000 % im Jahr.',
+    nicht_eindeutig:
+      'Nicht berechenbar: Ein- und Auszahlungen wechseln sich so ab, dass mehrere Renditen rechnerisch richtig sind und keine davon vorzuziehen ist.',
     nicht_bestimmbar: 'Nicht berechenbar: alle Zahlungen fallen auf einen Tag, ohne Zeitraum gibt es keinen Jahreszins.',
     mehrdeutig:
       'Ein- und Auszahlungen wechseln sich mehrfach ab; für diese Zahlungsreihe gibt es mehr als eine rechnerisch richtige Rendite. Gezeigt ist eine davon.',

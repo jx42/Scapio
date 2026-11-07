@@ -56,19 +56,19 @@ export function minusMonate(t: Tag, monate: number): Tag {
   );
 }
 
-/** Erster Tag eines Zeitraums, kalendarisch bestimmt. */
-export function beginnVon(zeitraum: Zeitraum, heute: Tag, erster: Tag): Tag {
+/** Erster Tag eines Zeitraums, kalendarisch vom Stichtag (letzter Reihentag) zurueck. [ADR-053] */
+export function beginnVon(zeitraum: Zeitraum, stichtag: Tag, erster: Tag): Tag {
   switch (zeitraum) {
     case '1m':
-      return minusMonate(heute, 1);
+      return minusMonate(stichtag, 1);
     case 'ytd':
-      return alsTag(`${heute.slice(0, 4)}-01-01`);
+      return alsTag(`${stichtag.slice(0, 4)}-01-01`);
     case '1j':
-      return minusMonate(heute, 12);
+      return minusMonate(stichtag, 12);
     case '3j':
-      return minusMonate(heute, 36);
+      return minusMonate(stichtag, 36);
     case '5j':
-      return minusMonate(heute, 60);
+      return minusMonate(stichtag, 60);
     case 'max':
       return erster;
   }

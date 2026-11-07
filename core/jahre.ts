@@ -6,9 +6,12 @@
  * Jahre wieder zur Gesamtrendite multiplizieren. Der Vergleich rechnet genauso ueber das
  * Vergleichsdepot (`core/benchmark.ts`). Ein angebrochenes Jahr wird nicht hochgerechnet. [P-10]
  *
- * Die Teuerung eines Jahres ist Dezember gegen Dezember, im ersten Jahr ab dem Monat vor
- * dem ersten Tag, im laufenden bis zum letzten Monat mit echter Zahl. Fortgeschrieben wird
- * nichts: eine unterstellte Nullinflation waere eine erfundene Realrendite. [P-05]
+ * Die Teuerung eines Jahres laeuft vom Monat des ersten Flusses der Zeile bis zum letzten
+ * Monat mit echter Zahl: Dezember gegen Dezember, im ersten Jahr ab dem Monat des ersten
+ * Flusses — dieselbe Basis, mit der die Realrendite diesen Fluss deflationiert. Die
+ * Teuerung wird nicht fortgeschrieben: eine unterstellte Nullinflation waere eine erfundene
+ * Realrendite. Die Realrendite deflationiert auf den letzten Monat der Zeile; fehlt dessen
+ * Zahl, gilt die letzte echte, also derselbe Endmonat wie die Teuerung. [P-05] [ADR-062]
  *
  * Der IZF eines Jahres laeuft vom Depotwert am Vorjahresende (als Einzahlung) ueber die
  * externen Fluesse bis zum Depotwert am Jahresende. Wie die TWR gilt er fuer den Zeitraum
@@ -20,7 +23,7 @@ import type { Cent } from './dezimal.ts';
 import type { Vpi } from './inflation.ts';
 import { deflationiere } from './inflation.ts';
 import type { Tag } from './kalender.ts';
-import { alsTag, monatVon, tageZwischen, vergleiche } from './kalender.ts';
+import { alsTag, frueher, monatVon, tageZwischen, vergleiche } from './kalender.ts';
 import { twr } from './twr.ts';
 import { TAGE_IM_JAHR, renditeFluesse, xirr } from './xirr.ts';
 import type { DepotTag, Fluss } from './typen.ts';
@@ -85,14 +88,7 @@ function jahresrendite(index: readonly Indexpunkt[], jahr: string): number | nul
   return ende / basis - 1;
 }
 
-function vorMonat(monat: string): string {
-  const j = Number(monat.slice(0, 4));
-  const m = Number(monat.slice(5, 7));
-  return m === 1 ? `${String(j - 1)}-12` : `${String(j)}-${String(m - 1).padStart(2, '0')}`;
-}
-
-function teuerungImJahr(vpi: Vpi, ab: Tag | null, bis: Tag, jahr: string): { teuerung: number | null; bisMonat: string | null } {
-  const basisMonat = ab === null ? `${vorjahr(jahr)}-12` : vorMonat(monatVon(ab));
+function teuerungImJahr(vpi: Vpi, basisMonat: string, bis: Tag): { teuerung: number | null; bisMonat: string | null } {
   const grenze = monatVon(bis);
   let endeMonat: string | null = null;
   for (const monat of vpi.keys()) {
@@ -143,7 +139,6 @@ export function jahresuebersicht(e: JahreEingaben): Jahreszeile[] {
     const ab = jahr !== erstesJahr || erster.tag === alsTag(`${jahr}-01-01`) ? null : erster.tag;
     const bis = jahr !== letztesJahr || letzter.tag === alsTag(`${jahr}-12-31`) ? null : letzter.tag;
     const rendite = jahresrendite(index, jahr);
-    const { teuerung, bisMonat } = teuerungImJahr(e.vpi, ab, letzter.tag, jahr);
 
     const gewinnVorher = vorher === null ? 0n : vorher.gesamtCent - vorher.nettoEinzahlungKumCent;
     const einzahlungVorher = vorher === null ? 0n : vorher.nettoEinzahlungKumCent;
@@ -155,6 +150,7 @@ export function jahresuebersicht(e: JahreEingaben): Jahreszeile[] {
     const start: Fluss[] = vorher === null ? [] : [{ tag: vorher.tag, betrag: vorher.gesamtCent }];
     const fluesse = renditeFluesse([...start, ...imJahr], letzter.gesamtCent, letzter.tag);
     const izf = periodenIzf(fluesse);
+    const { teuerung, bisMonat } = teuerungImJahr(e.vpi, monatVon(frueher(fluesse[0]!.tag, erster.tag)), letzter.tag);
     const real =
       izf === null || teuerung === null
         ? null

@@ -27,6 +27,7 @@ der Definition sichtbar, nicht als Bedingung im Kurslauf.
 **Der Vergleichskurs ist ein synthetischer, täglich verzinster Index, kein Marktkurs.**
 `core/benchmark.ts` bekommt `risikofreiesRaster()`: startet bei 1,000000 am ersten Tag mit
 einem €STR-Wert und verzinst jeden Folgetag mit dem zuletzt bekannten Satz auf 365 Tage.
+*Seit dem Nachtrag ACT/360.*
 Das Ergebnis hat dieselbe `Rasterwert`-Form wie ein echtes Kursraster und läuft deshalb
 unverändert durch `baueBenchmarkreihe()` — dieselbe Simulation aus echten Flüssen wie bei
 jedem ETF-Benchmark (Entscheidung 2 aus ADR-020), nur mit einer gerechneten statt einer
@@ -61,3 +62,9 @@ dieselbe feste Adresse wie „EZB (Zins)“ im Footer (ADR-021).
   risikofreie Zins in der Benchmarkwahl wählbar, zeigt aber keine oder eine lückenhafte
   Linie — dieselbe Verschlechterung, die Sharpe-Ratio in diesem Fall schon zeigt
   (`SharpeErgebnis['art'] === 'kein_zins'`).
+
+## Nachtrag: ACT/360 (`KERN_VERSION` 47)
+
+€STR ist ein Geldmarktsatz und gilt ACT/360. `risikofreiesRaster()` verzinst je Kalendertag mit
+Satz/360 (`ZINSTAGE_IM_JAHR`); bei 3 % p. a. lag die Linie vorher rund 0,04 Prozentpunkte im
+Jahr zu tief. Die Sharpe-Ratio rechnet den Monatszins weiter als Jahressatz/12.

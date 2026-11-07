@@ -14,8 +14,6 @@ import type { DriftErgebnis } from './drift.ts';
 import { fifo, positionsFluesse } from './fifo.ts';
 import type { Gewinnquellen, PositionsBeitrag } from './gewinnquellen.ts';
 import { gewinnquellen } from './gewinnquellen.ts';
-import type { Flussuebersicht } from './fluesse.ts';
-import { monatsFluesse } from './fluesse.ts';
 import type { Vpi, RealErgebnis } from './inflation.ts';
 import { realeRendite } from './inflation.ts';
 import type { Tag } from './kalender.ts';
@@ -130,11 +128,7 @@ export type Kennzahlen = {
   readonly maxDrawdown: MaxDrawdownErgebnis;
   readonly volatilitaetProJahr: VolatilitaetErgebnis;
   readonly sharpe: SharpeErgebnis;
-  readonly sparrateCent: Cent;
-  readonly sparrate12Cent: Cent;
-  readonly medianCent: Cent;
   readonly positionen: readonly Position[];
-  readonly fluesse: Flussuebersicht;
   readonly hinweise: readonly Hinweis[];
   /** Einzeltransaktionen hinter `zinsenCent`, neueste zuerst. */
   readonly zinsenTransaktionen: readonly ErtragsZeile[];
@@ -293,8 +287,6 @@ export function berechneKennzahlen(e: KennzahlenEingaben): Kennzahlen {
   const rendite = renditeFluesse(externe, gesamt, stichtag);
   const nominal = xirr(rendite);
 
-  const uebersicht = monatsFluesse(externe, heute);
-
   const kursgewinn = wertpapiere - investiert;
 
   // Rest gegen den Gesamtgewinn, nicht eine weitere Summe: so geht die Zerlegung immer
@@ -324,11 +316,7 @@ export function berechneKennzahlen(e: KennzahlenEingaben): Kennzahlen {
     maxDrawdown: maxDrawdown(twrErgebnis.index),
     volatilitaetProJahr: volatilitaetProJahr(renditen),
     sharpe: sharpeRatio(renditen, e.zinsreihe),
-    sparrateCent: uebersicht.schnitt,
-    sparrate12Cent: uebersicht.schnitt12,
-    medianCent: uebersicht.median,
     positionen,
-    fluesse: uebersicht,
     hinweise: sammleHinweise(e, sortierteReihe, { ausbuchungen, ueberverkaeufe, cashNegativ: wertpapiere > 0n && gesamt < wertpapiere }),
     zinsenTransaktionen,
     steuernTransaktionen,

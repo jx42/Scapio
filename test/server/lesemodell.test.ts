@@ -3,9 +3,10 @@ import { zuCent } from '../../core/dezimal.ts';
 import { tagAus } from '../../core/kalender.ts';
 import { testDatenbank } from '../../db/verbindung.ts';
 import { baueLesemodell } from '../../server/lesemodell.ts';
+import * as repository from '../../db/repository/index.ts';
 import { markenAus } from '../../server/marken.ts';
 import { konfiguration } from '../api/hilfen.ts';
-import { T, WELT, EUROPA, einzahlung, kauf, uebertragRaus, uebertragRein, verkauf } from '../hilfen.ts';
+import { T, WELT, EUROPA, depotTag, einzahlung, kauf, uebertragRaus, uebertragRein, verkauf } from '../hilfen.ts';
 
 describe('baueLesemodell, Kalendertag', () => {
   it('liest ohne Vorgabe die Uhr', async () => {
@@ -14,12 +15,33 @@ describe('baueLesemodell, Kalendertag', () => {
     db.close();
   });
 
-  it('friert den Tag auf die Vorgabe ein — Grundlage der Fenster im Demo-Betrieb', async () => {
-    // `start/demoServer.ts` bedient ein Szenario, dessen Kurshistorie an einem festen Tag
-    // endet. Rechnete der Server die Fenster gegen die Systemuhr, laegen "1W" und "1M"
-    // hinter dem letzten Datenpunkt und die Verlaufskachel bliebe leer.
+  it('friert den Tag auf die Vorgabe ein — Grundlage des Demo-Betriebs', async () => {
+    // `start/demoServer.ts` bedient ein Szenario, dessen Kurshistorie an einem festen Tag endet.
     const db = await testDatenbank();
     expect(baueLesemodell(db, konfiguration(), T('2026-01-30')).heute).toBe('2026-01-30');
+    db.close();
+  });
+});
+
+describe('baueLesemodell, Fluesse', () => {
+  it('fuehrt die Monate bis zum letzten Reihentag fort, auch nach einer Kaufpause [ADR-053]', async () => {
+    // Letzter Kauf im Januar, letzter Lauf im April: Februar bis April stehen mit null da.
+    // Der Mai, in dem die Uhr steht, hat noch keinen Kurs und gehoert nicht dazu.
+    const db = await testDatenbank();
+    repository.transaktion.schreibe(db, { ...kauf('2026-01-05', WELT, '1', '100'), gesehenAm: '2026-01-05T18:00:00+01:00' });
+    repository.depotTag.schreibeViele(
+      db,
+      [T('2026-01-05'), T('2026-04-30')].map((t) => ({
+        ...depotTag(t, '100'),
+        kernVersion: 1,
+        eingabeHash: 'test',
+        berechnetAm: `${t}T18:00:00+01:00`,
+        positionen: new Map(),
+      })),
+    );
+    const f = baueLesemodell(db, konfiguration(), T('2026-05-20')).fluesse();
+    expect(f.monate.map((m) => m.monat)).toEqual(['2026-01', '2026-02', '2026-03', '2026-04']);
+    expect(f.schnitt12).toBe(zuCent('25'));
     db.close();
   });
 });

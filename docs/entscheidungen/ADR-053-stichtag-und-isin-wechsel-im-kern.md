@@ -18,7 +18,8 @@ Nachtrag zu [ADR-036](ADR-036-kennzahlen-korrekturen-nach-pruefung.md) und
 
 - **Stichtag = letzter Reihentag.** `berechneKennzahlen` datiert Endwert, Realrendite und
   Monatsrenditen auf `letzte.tag`; `heute` gilt nur, wenn die Reihe leer ist. Die Sparrate
-  bleibt bei `heute` — sie zählt Kalendermonate.
+  bleibt bei `heute` — sie zählt Kalendermonate. *Seit dem Nachtrag „Fenster und Flüsse“
+  entfernt.*
 - **Topf nur am selben Tag.** Ein Abgang ohne Bestand wird nur mit Zugängen desselben Tags
   verpaart. Ohne Zugang am selben Tag wird der Einstand sofort als realisierter Verlust
   gebucht und als Hinweis `H_AUSBUCHUNG` gezählt.
@@ -52,3 +53,17 @@ Ein Kennzahlen-Hinweis ist jetzt `{ code, anzahl }` wie ein Lauf-Hinweis; den Sa
 Drift-Banner sagen dasselbe schon.
 
 Seit [ADR-059](ADR-059-kennzahlen-kachel-aufgeloest.md) steht der `HinweisKnopf` im Kopf der Verlaufskachel.
+
+## Nachtrag: Fenster und Flüsse vom Stichtag
+
+Befund aus dem Audit vom 2026-11-06. Der Verlauf rechnete den Beginn von „1M“ bis „5J“ und
+YTD von `heute`, das Ende vom letzten Reihentag: ohne neuen Lauf wurden die Fenster kürzer, am
+1. Januar war YTD leer. „Käufe & Verkäufe“ endete beim letzten Kaufmonat, nach einer Kaufpause
+zeigten „3M“ und der Schnitt Monate vor der Pause.
+
+- `beginnVon` rechnet vom letzten Reihentag; die Auswahl der angebotenen Zeiträume ebenso.
+- `monatsFluesse` für Kachel 5 läuft bis zum letzten Reihentag (ohne Reihe `heute`), Monate
+  ohne Kauf zählen mit null — wie ADR-036 Nr. 4 es für die Sparrate verlangte.
+- `sparrateCent`, `sparrate12Cent`, `medianCent` und `fluesse` fallen aus den Kennzahlen und
+  `/api/kennzahlen`: die Oberfläche las sie nicht, die Kachel 5 nimmt `/api/fluesse`.
+- `heute` gilt im Lesemodell noch für den Lauf und den Abrufstand der Fondsbestandteile.

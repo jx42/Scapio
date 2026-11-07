@@ -97,8 +97,6 @@ export function kennzahlenAntwort(ueberschreibungen: Partial<KennzahlenAntwort> 
     xirr: xirrOk(0.058),
     inflation: 0.021,
     real: realFixture(xirrOk(0.036), { fisher: 0.037, teuerungBisMonat: '2026-07' }),
-    sparrateCent: 50_000,
-    sparrate12Cent: 55_000,
     maxDrawdown: maxDrawdownOk(-0.152, '2026-02-15', '2026-03-20'),
     volatilitaetProJahr: volatilitaetOk(0.142, 18),
     sharpe: sharpeOk(0.85, 18, 0.023),

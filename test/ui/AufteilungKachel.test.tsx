@@ -53,8 +53,6 @@ const KENNZAHLEN_MINIMAL = kennzahlenAntwort({
   steuernCent: 0,
   inflation: null,
   real: realFixture(xirrOhne('zu_wenige_fluesse')),
-  sparrateCent: 0,
-  sparrate12Cent: 0,
   maxDrawdown: maxDrawdownOhne('zu_wenig_daten'),
   volatilitaetProJahr: volatilitaetOhne('zu_wenig_daten'),
   sharpe: sharpeOhne('zu_wenig_daten'),
