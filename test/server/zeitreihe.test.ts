@@ -17,7 +17,7 @@ const ERSTER = T('2021-01-01');
 const LETZTER = T('2026-01-01');
 const MARKE = T('2023-06-14');
 
-async function anfrage(query: string, mitVergleich = false) {
+async function anfrage(query: string, mitVergleich = false, heute = LETZTER) {
   const db = await testDatenbank();
   const tage = [];
   for (let t = ERSTER; vergleiche(t, LETZTER) <= 0; t = plusTage(t, 1)) {
@@ -48,7 +48,7 @@ async function anfrage(query: string, mitVergleich = false) {
     db,
     konfiguration: konfiguration(),
     distPfad: join(tmpdir(), 'portfolio-kein-dist'),
-    heute: LETZTER,
+    heute,
   });
   return app.inject({ method: 'GET', url: `/api/zeitreihe?${query}`, headers: eigeneHerkunft() });
 }
@@ -104,6 +104,14 @@ describe('/api/zeitreihe, frei gewaehlter Zeitraum', () => {
     const r = await zeitreihe('1j');
     expect(r.zeitraum).toBe('1j');
     expect(r.ausschnitt).toEqual({ von: '2025-01-01', bis: LETZTER });
+  });
+
+  it('rechnet das Fenster vom letzten Reihentag, nicht von der Uhr [ADR-053]', async () => {
+    // Letzter Lauf am 01.01., heute ist Maerz: "1M" heisst der Monat bis zum Stichtag.
+    const r = JSON.parse((await anfrage('zeitraum=1m', false, T('2026-03-15'))).body) as Zeitreihe;
+    expect(r.ausschnitt).toEqual({ von: '2025-12-01', bis: LETZTER });
+    expect(r.punkte[0]!.tag).toBe('2025-12-01');
+    expect(r.zeitraeume).toContain('ytd');
   });
 
   it.each([

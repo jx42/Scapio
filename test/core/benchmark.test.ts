@@ -171,12 +171,12 @@ describe('risikofreiesRaster', () => {
     expect(raster.get(T('2026-01-01'))).toEqual({ kurs: zuKursE6('1'), gefuellt: false });
   });
 
-  it('verzinst jeden Folgetag mit dem zuletzt bekannten Satz auf 365 Tage', () => {
-    // 0,0365 = 3,65 % p.a., wie in `db/repository/zins.ts` gespeichert (`roh / 100`).
-    const zinsreihe: Zinsreihe = new Map([[T('2026-01-01'), 0.0365]]);
+  it('verzinst jeden Folgetag mit dem zuletzt bekannten Satz nach ACT/360 [ADR-026]', () => {
+    // 0,036 = 3,6 % p.a., wie in `db/repository/zins.ts` gespeichert (`roh / 100`).
+    const zinsreihe: Zinsreihe = new Map([[T('2026-01-01'), 0.036]]);
     const raster = risikofreiesRaster(zinsreihe, T('2026-01-01'), T('2026-01-03'));
 
-    // 3,65 %/365 Tage = 0,01 %/Tag, also je Tag mal 1,0001.
+    // €STR ist ein Geldmarktsatz: 3,6 %/360 Tage = 0,01 %/Tag, also je Tag mal 1,0001.
     expect(raster.get(T('2026-01-02'))).toEqual({ kurs: zuKursE6('1.0001'), gefuellt: true });
     expect(raster.get(T('2026-01-03'))).toEqual({ kurs: zuKursE6('1.00020001'), gefuellt: true });
   });

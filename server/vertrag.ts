@@ -159,8 +159,6 @@ export type KennzahlenAntwort = MitStand & {
   readonly maxDrawdown: MaxDrawdownErgebnis;
   readonly volatilitaetProJahr: VolatilitaetErgebnis;
   readonly sharpe: SharpeErgebnis;
-  readonly sparrateCent: number;
-  readonly sparrate12Cent: number;
   readonly hinweise: readonly Hinweis[];
   readonly zinsenTransaktionen: readonly ErtragsZeile[];
   readonly steuernTransaktionen: readonly ErtragsZeile[];

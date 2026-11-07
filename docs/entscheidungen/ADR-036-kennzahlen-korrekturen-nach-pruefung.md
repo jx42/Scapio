@@ -22,7 +22,8 @@ Diese ADR hält fest, wie gerechnet wird, wo es mehrere vertretbare Wege gab.
    gewichtet, den er im Depot war. Bei Tagesperioden ist das Gewicht 1 und die Rechnung
    unverändert.
 4. **Sparrate bis heute.** Die Monate laufen von der ersten Zahlung bis zum heutigen Monat,
-   nicht bis zur letzten Zahlung; Monate ohne Zahlung zählen mit null.
+   nicht bis zur letzten Zahlung; Monate ohne Zahlung zählen mit null. *Seit ADR-053, Nachtrag
+   „Fenster und Flüsse“: die Sparrate ist entfernt, Kachel 5 läuft bis zum Stichtag.*
 5. **Positions-IZF mit Ausschüttungen.** Erträge mit derselben ISIN fließen in den IZF der
    Position ein; Steuern nicht, weil sie sich keiner Position verlässlich zurechnen lassen.
 6. **Gebühren als eigene Kennzahl.** `FEE`-Buchungen werden summiert und als Liste

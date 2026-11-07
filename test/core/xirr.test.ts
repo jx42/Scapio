@@ -32,15 +32,41 @@ describe('xirr', () => {
     expect(rate([fluss('2025-01-01', '-1000'), fluss('2026-01-01', '900')])).toBeCloseTo(-0.1, 9);
   });
 
-  it('faellt bei mehreren Vorzeichenwechseln auf Bisektion zurueck, statt zu divergieren', () => {
+  it('findet bei mehreren Vorzeichenwechseln die einzige Loesung im Bereich', () => {
+    // Referenz: Bisektion in 50 Stellen, eine Nullstelle in [UNTERGRENZE; OBERGRENZE].
     const e = xirr([
       fluss('2020-01-01', '-1000'),
       fluss('2021-01-01', '5000'),
       fluss('2022-01-01', '-6000'),
       fluss('2023-01-01', '2500'),
     ]);
-    expect(['ok', 'nicht_konvergiert', 'ausserhalb_bereich']).toContain(e.art);
-    if (e.art === 'ok') expect(Number.isFinite(e.rate)).toBe(true);
+    expect(e.art).toBe('ok');
+    if (e.art !== 'ok') return;
+    expect(e.rate).toBeCloseTo(2.464690733990733, 9);
+    expect(e.mehrdeutig).toBe(true);
+  });
+
+  it('haelt Norstroem nur fuer positive Loesungen, nicht fuer eine zweite negative [ADR-043]', () => {
+    // y = 1/(1+r): y² − 2,5y + 1 = 0, also r = −50 % oder +100 %. Die kumulierte Summe
+    // wechselt einmal; Norstroem sichert nur die positive Loesung.
+    const e = xirr([fluss('2021-01-01', '-1000'), fluss('2022-01-01', '2500'), fluss('2023-01-01', '-1000')]);
+    expect(e.art).toBe('ok');
+    if (e.art !== 'ok') return;
+    expect([-0.5, 1].some((r) => Math.abs(e.rate - r) < 1e-9)).toBe(true);
+    expect(e.mehrdeutig).toBe(true);
+  });
+
+  it('nennt zwei Loesungen im Bereich nicht eindeutig, statt ausserhalb des Bereichs [ADR-043]', () => {
+    // y = 1/(1+r): (y − 10)(y − 5) = 0, also r = −90 % und −80 %. Newton verlaesst den
+    // Bereich, und die Bisektion sieht an beiden Grenzen dasselbe Vorzeichen.
+    const e = xirr([fluss('2021-01-01', '-5000'), fluss('2022-01-01', '1500'), fluss('2023-01-01', '-100')]);
+    expect(e).toEqual({ art: 'nicht_eindeutig' });
+  });
+
+  it('bleibt bei einer Loesung jenseits der Obergrenze ausserhalb des Bereichs, auch mit Vorzeichenwechseln', () => {
+    // Keine reelle Loesung: −1000 + 1000y − 1000y² hat keine Nullstelle.
+    const e = xirr([fluss('2021-01-01', '-1000'), fluss('2022-01-01', '1000'), fluss('2023-01-01', '-1000')]);
+    expect(e.art).toBe('ausserhalb_bereich');
   });
 
   it('nennt fehlenden Vorzeichenwechsel beim Namen, statt zu werfen', () => {

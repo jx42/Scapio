@@ -41,3 +41,11 @@ rechnet `berechneKennzahlen` den Rest `gesamt − netto − Σ Töpfe` aus und z
 „Nicht zugeordnet“ (`nichtZugeordnet`, ohne Buchungsliste). Damit gilt
 `nettoCent = gesamtCent − nettoEinzahlungCent` per Konstruktion, geprüft in
 `test/gewinnquellen-summe.test.ts`. Der Topf ist im Normalfall leer. Steht er, ist er ein Befund.
+
+## Nachtrag: Basis der ersten Jahreszeile (`KERN_VERSION` 47)
+
+Die Teuerung der ersten Zeile lief ab Dezember des Vorjahres, die Realrendite deflationierte ab
+dem Monat des ersten Flusses: IZF 0 %, Teuerung 3 %, Realrendite −1,94 % statt −2,91 %. Jetzt
+beginnt die Teuerung der ersten Zeile beim Monat des ersten Flusses, also bei derselben Basis.
+Folgejahre bleiben Dezember gegen Dezember. Beginnt die Reihe im Dezember, bleiben Teuerung und
+Realrendite der ersten Zeile leer, bis der VPI des Folgemonats da ist.

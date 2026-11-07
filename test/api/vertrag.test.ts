@@ -223,8 +223,6 @@ describe('Vertragstest: server/vertrag.ts gegen die tatsaechliche Antwort', () =
         xirr: true,
         inflation: true,
         real: true,
-        sparrateCent: true,
-        sparrate12Cent: true,
         maxDrawdown: true,
         volatilitaetProJahr: true,
         sharpe: true,

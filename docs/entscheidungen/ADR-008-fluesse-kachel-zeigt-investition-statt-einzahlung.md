@@ -51,3 +51,5 @@ getrennten Felder.
   (INV-10), und die gesamte Historie wird beim naechsten Lauf neu aufgebaut. Das aendert an
   den gespeicherten Werten nichts, weil `investitionsFluesse` nicht in `baueDepotreihe`
   einfliesst — nur der Fingerabdruck des Ordners hat sich veraendert.
+- *Nachtrag:* Die Sparraten-Kennzahl ist entfernt, Kachel 5 läuft bis zum Stichtag
+  ([ADR-053](ADR-053-stichtag-und-isin-wechsel-im-kern.md), Nachtrag „Fenster und Flüsse“).

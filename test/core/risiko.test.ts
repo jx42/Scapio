@@ -49,6 +49,35 @@ describe('monatsrenditen', () => {
     expect(monatsrenditen(index, T('2026-03-31')).map((r) => r.monat)).toEqual(['2026-02', '2026-03']);
   });
 
+  it('nimmt je Monat den letzten Tag mit Kurs, nicht einen lueckenhaften Ultimo', () => {
+    // Am 31.03. fehlen Kurse: der Index steht dort flach auf dem 30.03., die Rendite des
+    // Ultimos kommt erst im April. Gemessen wird Maerz bis zum 30.03., April ab dort.
+    const index = [
+      { tag: T('2026-02-28'), wert: 100 },
+      { tag: T('2026-03-30'), wert: 110 },
+      { tag: T('2026-03-31'), wert: 110, lueckenhaft: true as const },
+      { tag: T('2026-04-30'), wert: 121 },
+    ];
+    const renditen = monatsrenditen(index, HEUTE);
+    expect(renditen.map((r) => r.monat)).toEqual(['2026-03', '2026-04']);
+    expect(renditen[0]!.rendite).toBeCloseTo(0.1, 12);
+    expect(renditen[1]!.rendite).toBeCloseTo(0.1, 12);
+  });
+
+  it('zaehlt eine Rendite ueber einen Monat ohne jeden Kurs nicht als Einmonatswert', () => {
+    // Februar ganz lueckenhaft: Januar bis Maerz sind zwei Monate, keine Monatsrendite.
+    const index = [
+      { tag: T('2026-01-31'), wert: 100 },
+      { tag: T('2026-02-15'), wert: 100, lueckenhaft: true as const },
+      { tag: T('2026-02-28'), wert: 100, lueckenhaft: true as const },
+      { tag: T('2026-03-31'), wert: 106 },
+      { tag: T('2026-04-30'), wert: 106 * 1.02 },
+    ];
+    const renditen = monatsrenditen(index, HEUTE);
+    expect(renditen.map((r) => r.monat)).toEqual(['2026-04']);
+    expect(renditen[0]!.rendite).toBeCloseTo(0.02, 12);
+  });
+
   it('ueberspringt einen Monat, dessen Vormonat auf Null steht — kein sinnvolles Verhaeltnis', () => {
     const index = [
       { tag: T('2026-01-31'), wert: 0 },

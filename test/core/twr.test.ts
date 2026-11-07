@@ -126,6 +126,9 @@ describe('twr', () => {
     expect(e.teilperioden).toBe(1);
     expect(e.index).toHaveLength(3);
     expect(e.index[1]!.wert).toBeCloseTo(100, 9);
+    // Markiert, damit Monats- und Jahresenden den letzten gemessenen Tag nehmen koennen.
+    expect(e.index[1]!.lueckenhaft).toBe(true);
+    expect(e.index[2]!.lueckenhaft).toBeUndefined();
   });
 
   it('traegt einen Cashflow von einem luekenhaften Tag zum naechsten brauchbaren Tag mit', () => {
