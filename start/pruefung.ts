@@ -48,7 +48,12 @@ export const SCHRITTE: readonly Schritt[] = [
     argumente: ['.', '--max-warnings', '0'],
     fehlerzeilen: /\b(error|warning)\b/,
   },
-  { name: 'test', werkzeug: 'vitest', argumente: ['run'], fehlerzeilen: /^\s*(FAIL|×|→)|Error:/ },
+  {
+    name: 'test:abdeckung',
+    werkzeug: 'vitest',
+    argumente: ['run', '--coverage'],
+    fehlerzeilen: /^\s*(FAIL|×|→)|Error:|^ERROR: Coverage/,
+  },
 ];
 
 /** Vergleichsstand fuer `--geaendert`: was dieser Branch gegenueber `main` anfasst. */
@@ -78,6 +83,7 @@ export const ZUSATZTESTS: readonly { readonly pfad: RegExp; readonly tests: read
   { pfad: /^test\/fixtures\//, tests: ['test/ingest/', 'test/db/', 'test/ui/'] },
   { pfad: /\.(command|bat)$|^package\.json$|^start\/nodeVersion\.mjs$/, tests: ['test/start/mindestNode.test.ts'] },
   { pfad: /^package\.json$/, tests: ['test/pruefung.test.ts'] },
+  { pfad: /^tsconfig\.json$/, tests: ['test/pruefschwellen.test.ts'] },
   { pfad: /^\.claude\/settings\.json$/, tests: ['test/agentensperre.test.ts'] },
   { pfad: /^src\/App\.tsx$/, tests: ['test/drittlizenzen.test.ts'] },
   { pfad: /^docs\/RUNBOOK\.md$/, tests: ['test/laufFehler.test.ts'] },
@@ -95,6 +101,7 @@ export function zusatztests(dateien: readonly string[]): string[] {
  * ganz, weil eine Typaenderung beliebig weit traegt; eslint nur ueber die geaenderten
  * Quelldateien, vitest ueber die Tests, die von ihnen abhaengen, plus `ZUSATZTESTS`.
  * Zwei vitest-Laeufe, weil `--changed` zusammen mit Dateifiltern die Schnittmenge bildet.
+ * Ohne `--coverage`: ein Teillauf laege immer unter den Schwellen je Ordner.
  */
 export function geaenderteSchritte(dateien: readonly string[], basis: string = BASIS): Schritt[] {
   const [typecheck, lint, test] = SCHRITTE as readonly [Schritt, Schritt, Schritt];
@@ -103,7 +110,7 @@ export function geaenderteSchritte(dateien: readonly string[], basis: string = B
   return [
     typecheck,
     ...(quellen.length > 0 ? [{ ...lint, argumente: [...quellen, '--max-warnings', '0'] }] : []),
-    { ...test, argumente: ['run', '--changed', basis, '--passWithNoTests'] },
+    { ...test, name: 'test', argumente: ['run', '--changed', basis, '--passWithNoTests'] },
     ...(zusatz.length > 0 ? [{ ...test, name: 'test:zusatz', argumente: ['run', ...zusatz] }] : []),
   ];
 }

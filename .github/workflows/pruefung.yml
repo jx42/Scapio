@@ -67,7 +67,7 @@ jobs:
       # Nur `vite build`: den Typecheck macht `check` gleich danach.
       - run: npx --no-install vite build
 
-      # typecheck + lint + tests + Invarianten.
+      # typecheck + lint + tests mit Abdeckung je Ordner + Invarianten + Bundle-Budget.
       - run: npm run check
 
   # Westlich und oestlich von Berlin, je eine Fehlerart. UTC hat `check` schon. [INV-03, ADR-050]
@@ -105,6 +105,7 @@ jobs:
 
       # Eigener Job, nicht Teil von `check`: das hier braucht das Netz, `check` nicht.
       # Ein Fund haelt den Lauf an, aendert aber nichts an der Aussage der Tests.
+      # Prueft auch das Lockfile von `demo-worker/` (wrangler), ohne es zu installieren.
       - run: npm run audit
 
       # Dazu der volle Bericht, mit Dev-Paketen und ab `moderate`: zur Kenntnis, nicht als
@@ -112,3 +113,7 @@ jobs:
       - name: npm audit (voll, nicht blockierend)
         continue-on-error: true
         run: npm audit
+
+      - name: npm audit demo-worker (voll, nicht blockierend)
+        continue-on-error: true
+        run: npm audit --prefix demo-worker
