@@ -1,6 +1,6 @@
 /**
  * Die Hinweise eines Laufs: Art plus Werte. Den Satz baut die Oberflaeche
- * (`src/i18n/de.ts`, `hinweisText`). Der Ingest formuliert nichts mehr, damit keine
+ * (`src/i18n/laufhinweise.ts`, `hinweisText`). Der Ingest formuliert nichts mehr, damit keine
  * Komponente einen Hinweis an seinem Wortlaut erkennen muss. Die Werte sind Zahlen,
  * Tage, ISINs und eigene Schluessel. Die einzige Ausnahme ist `name` beim
  * Tagessprung: ein Wertpapiername der Bank, der nur als Text erscheint [INV-06].
