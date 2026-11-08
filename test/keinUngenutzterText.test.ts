@@ -84,7 +84,7 @@ function aufgeloest(q: Quelldatei): string {
 }
 
 const QUELLTEXT = dateien(['src']).map(aufgeloest).join('\n');
-const escape = (s: string): string => s.replace(/[.$]/g, '\\$&');
+const escape = (s: string): string => s.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&');
 
 describe('kein ungenutzter Text in i18n/de.ts', () => {
   it('jeder Blattschluessel wird gelesen', () => {
