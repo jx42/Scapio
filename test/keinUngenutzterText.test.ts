@@ -64,7 +64,7 @@ function aufgeloest(q: Quelldatei): string {
     .replace(/\?\.(?=[A-Za-z_$])/g, '.')
     .replace(/\s+\.(?=[A-Za-z_$])/g, '.');
   const ersetze = (name: string, pfad: string): void => {
-    text = text.replace(new RegExp(`(?<![\\w$.])${name.replace('$', '\\$')}(?=[.[])`, 'g'), pfad);
+    text = text.replace(new RegExp(`(?<![\\w$.])${name.replace(/\$/g, '\\$')}(?=[.[])`, 'g'), pfad);
   };
   for (const [, name, pfad] of text.matchAll(
     new RegExp(`\\b(?:const|let)\\s+(${BEZEICHNER})\\s*(?::[^;]+?)?=\\s*(${PFAD})\\s*;`, 'g'),
