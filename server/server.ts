@@ -38,13 +38,13 @@ import { registriereHealth } from './routen/health.ts';
 import { registriereJahre } from './routen/jahre.ts';
 import { registriereKennzahlen } from './routen/kennzahlen.ts';
 import { registriereLauf } from './routen/lauf.ts';
-import { registriereMcpAnmeldung } from './routen/mcpAnmeldung.ts';
+import { registriereMcpAnmeldung, registriereMcpAnmeldungAbfrage, type Anmeldezustand } from './routen/mcpAnmeldung.ts';
 import { registriereRebalancing } from './routen/rebalancing.ts';
 import { registriereRefresh } from './routen/refresh.ts';
 import { registriereSparplaene } from './routen/sparplaene.ts';
 import { registriereTop25 } from './routen/top25.ts';
 import { registriereZeitreihe } from './routen/zeitreihe.ts';
-import { LESENDE_ROUTEN, MUTIERENDE_ROUTEN } from '../shared/routen.ts';
+import { LESENDE_ROUTEN, MUTIERENDE_ROUTEN, type LesendeRoute } from '../shared/routen.ts';
 
 /** Nicht konfigurierbar. [INV-07] */
 export const HOST = '127.0.0.1';
@@ -53,10 +53,32 @@ export type Kontext = {
   readonly db: DatabaseSync;
   readonly konfiguration: Konfiguration;
   readonly sperre: Sperre;
+  readonly anmeldung: Anmeldezustand;
   readonly version: string;
   /** Eingefrorener Kalendertag statt Systemuhr — siehe `ServerOptionen.heute`. */
   readonly heute?: Tag;
 };
+
+type Registrierung = (app: FastifyInstance, ctx: Kontext) => void;
+
+/**
+ * Je lesende Route ihre Registrierung; fehlt eine, meldet das `tsc`. Die beiden mutierenden
+ * stehen bewusst nicht hier, sondern einzeln in `baueServer`. [INV-08]
+ */
+const REGISTRIERUNG = {
+  health: registriereHealth,
+  zeitreihe: registriereZeitreihe,
+  kennzahlen: registriereKennzahlen,
+  jahre: registriereJahre,
+  aufteilung: registriereAufteilung,
+  rebalancing: registriereRebalancing,
+  top25: registriereTop25,
+  gewinnquellen: registriereGewinnquellen,
+  fluesse: registriereFluesse,
+  sparplaene: registriereSparplaene,
+  lauf: registriereLauf,
+  mcpAnmeldung: registriereMcpAnmeldungAbfrage,
+} satisfies Record<LesendeRoute, Registrierung>;
 
 export type ServerOptionen = {
   readonly db: DatabaseSync;
@@ -265,23 +287,21 @@ export function baueServer(optionen: ServerOptionen): { app: FastifyInstance; to
   registriereSicherheit(app, { port: konfiguration.port, token });
   registriereFehlerbehandlung(app);
 
-  const ctx: Kontext = { db, konfiguration, sperre, version: projektVersion(), heute: optionen.heute };
+  const ctx: Kontext = {
+    db,
+    konfiguration,
+    sperre,
+    anmeldung: { laeuft: false, letzterFehler: null },
+    version: projektVersion(),
+    heute: optionen.heute,
+  };
 
-  registriereHealth(app, ctx);
-  registriereZeitreihe(app, ctx);
-  registriereKennzahlen(app, ctx);
-  registriereJahre(app, ctx);
-  registriereAufteilung(app, ctx);
-  registriereRebalancing(app, ctx);
-  registriereTop25(app, ctx);
-  registriereGewinnquellen(app, ctx);
-  registriereFluesse(app, ctx);
-  registriereSparplaene(app, ctx);
-  registriereLauf(app, ctx);
+  for (const registriere of Object.values(REGISTRIERUNG)) registriere(app, ctx);
   registriereRefresh(app, ctx);
   registriereMcpAnmeldung(app, ctx);
 
-  // Fehlt ein `registriere…`-Aufruf, antwortete die Route sonst still mit 404.
+  // Die Tabelle bindet den Namen, nicht den Pfad: registriert ein Eintrag einen anderen
+  // Pfad, antwortete die Route sonst still mit 404.
   const fehlend = Object.values(LESENDE_ROUTEN).filter((r) => !lesend.has(r.pfad));
   if (fehlend.length > 0) throw new Error(`Nicht registriert: ${fehlend.map((r) => r.pfad).join(', ')}`);
 
