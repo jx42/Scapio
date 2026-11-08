@@ -52,6 +52,7 @@ npm run verify:zaehlung # dasselbe, aber nur Tag und Feld — der Weg für Agent
 npm run ingest         # Ingest einmalig, für die Fehlersuche — nicht für Agenten
 npm run vertrag        # zod-Schemata des Ingest gegen den echten MCP prüfen (ruft die Bank, nur lesend)
 npm run kontrast       # Kontrasttabelle in docs/BARRIEREFREIHEIT.md aus theme.css neu schreiben
+npm run shadcn:abgleich # abweichende Zeilen je ui/-Baustein gegen new-york-v4 (ADR-024) — geht ins Netz, nur auf Aufruf
 npm run abdruck        # Hash über core/ neu schreiben, nach einer KERN_VERSION-Erhöhung
 npm run kern:version   # KERN_VERSION einmal je Branch gegenüber origin/main erhöhen und den Abdruck schreiben — beliebig oft aufrufbar
 npm run backup         # Sicherung der Datenbank

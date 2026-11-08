@@ -14,7 +14,7 @@ Registry taugten dadurch nicht mehr als Aktualisierungsweg.
 ## Entscheidung
 
 1. **Ein Registry-Stand: `new-york-v4`, Basis `radix`** — der, den `components.json`
-   nennt (`style`; die Basis leitet die CLI aus dem Stil ab). Alle siebzehn Bausteine
+   nennt (`style`; die Basis leitet die CLI aus dem Stil ab). Alle sechzehn Bausteine
    folgen Struktur und API dieses Stands: `import { X as XPrimitive } from 'radix-ui'`,
    `data-slot`, `data-variant`/`data-size` (außer `tabs` und `toggle-group`, die keine Varianten haben), Vorgabewerte in der Signatur, `className`
    über `cn(variants({ … }), className)`.
@@ -24,7 +24,11 @@ Registry taugten dadurch nicht mehr als Aktualisierungsweg.
 3. **Vergleich mit der Registry per `npx shadcn@latest add <baustein> --diff
    <baustein>.tsx`.** `shadcn diff` liefert in dieser CLI-Version für jeden Baustein „No
    updates found" und taugt nicht als Prüfung. `--overwrite` nur nach Durchsicht der
-   Liste unten, nie pauschal: es würde jede Abweichung tilgen.
+   Liste unten, nie pauschal: es würde jede Abweichung tilgen. Den Überblick über alle
+   Bausteine gibt `npm run shadcn:abgleich` (`start/shadcnAbgleich.ts`): abweichende Zeilen
+   je Datei, ohne Anführungszeichen, Semikolon, Leerraum und Kommentare. Es geht ins Netz und
+   läuft deshalb nur auf Aufruf, nie in `check` oder einem Test; anders umbrochene Zeilen
+   zählen mit, die Zahl ist ein Wegweiser, kein Maß.
 4. **Das Aussehen bleibt unser eigenes.** Die Abweichungen unten sind gewollt; alles
    Übrige soll dem Registry-Stand entsprechen. Ein neuer Unterschied, der nicht in der
    Liste steht, ist ein Fehler oder gehört hier eingetragen.
@@ -41,15 +45,18 @@ Fokusring setzt `theme.css` global und unlayerte; Bausteine tragen deshalb kein 
 `focus-visible:ring-…` (Ausnahme: `triggerVariants`, siehe unten). `outline-none` ohne
 Fokusring in derselben Klasse ist per Lint verboten (`eslint.config.js`, Block `ui/**`),
 `button.tsx` nimmt die begründete Ausnahme. Übergänge mit `transition-farben` statt
-`transition-colors`, damit der Fokusring nicht einblendet (`theme.css`).
+`transition-colors`, damit der Fokusring nicht einblendet (`theme.css`). `cn()` nutzt
+`twMerge` ohne `extendTailwindMerge`: Farb-Tokens (`text-text-leise` neben `text-sm`) trennt es
+richtig; `transition-farben` neben `transition-*` und `shadow-primaer`/`-kachel` neben
+`shadow-none`/`-sm` löst es nicht auf — beides kommt in keinem Aufruf zusammen vor, sonst
+gehören die Klassengruppen ergänzt.
 
 | Baustein | Abweichung |
 |---|---|
 | `alert` | Varianten `default`, `gewinn`, `warnung`, `verlust` statt `default`/`destructive`. Kompakter (`px-2.5 py-2`). `AlertAction` bleibt (aus `radix-nova`). Beschreibung ist ein Block statt eines Grids, damit gemischter Inline-Inhalt nicht in Zeilen zerfällt. `AlertAction` steht unter `sm` unter dem Text statt daneben (WCAG 1.4.10 bei 320 px). |
 | `badge` | Varianten `default`, `gewinnLeise`, `verlustLeise`, `link` statt der shadcn-Palette; eckiger, Großbuchstaben, eigene Größen. `link` mit `text-text` statt `text-text-leise`: auf `rand-licht` kam das leise Grau nur auf 4,23:1 (WCAG 1.4.3). |
-| `button` | Varianten `default`, `outline`, `ghost`, `link` (kein `destructive`/`secondary` — die Anwendung löscht nichts); `link` ist der eine Linkstil aus `lib/linkStil.ts`, nicht `text-primary`. Größen `default`, `sm`, `icon` (kein `lg`, `xs`, keine `icon-*`) (kein `xs`, keine `icon-*`); `cursor-pointer`, `transition-farben`, kein `disabled:cursor-not-allowed` (neben `pointer-events-none` wirkungslos); keine `aria-invalid`-Stile (ein Knopf ist nie ungültig). Symbolgröße steht wie in der Registry in der Basisklasse — Symbole im Knopf tragen kein eigenes `size-4`. |
+| `button` | Varianten `default`, `outline`, `ghost`, `link` (kein `destructive`/`secondary` — die Anwendung löscht nichts); `link` ist der eine Linkstil aus `lib/linkStil.ts`, nicht `text-primary`. Größen `default`, `sm`, `icon` (kein `lg`, `xs`, keine `icon-*`); `buttonVariants` nicht exportiert (ein Link im Knopfstil kommt nicht vor); `cursor-pointer`, `transition-farben`, kein `disabled:cursor-not-allowed` (neben `pointer-events-none` wirkungslos); keine `aria-invalid`-Stile (ein Knopf ist nie ungültig). Symbolgröße steht wie in der Registry in der Basisklasse — Symbole im Knopf tragen kein eigenes `size-4`. |
 | `card` | `glas glas-hover rounded-lg` statt `rounded-xl border bg-card shadow-sm`; nur `Card`, `CardHeader`, `CardTitle`, `CardDescription`, `CardContent` (kein `CardAction`, kein `CardFooter`); `asChild` als Erweiterung. |
-| `collapsible` | `cursor-pointer` am Auslöser. |
 | `dialog` | Nur `Dialog`, `DialogContent`, `DialogHeader`, `DialogTitle`, `DialogDescription` (Overlay und Portal intern, kein `DialogTrigger`/`DialogClose`/`DialogFooter`). `schwebend`, Tokens, Überschrift in `font-heading`; Schließen-Text aus `i18n/de.ts`. `DialogContent` merkt sich den Auslöser beim Öffnen und fokussiert ihn beim Schließen — Radix gibt den Fokus nur an einen `DialogTrigger` zurück, und unsere Dialoge sind gesteuert (WCAG 2.4.3). |
 | `dropdown-menu` | Nur `DropdownMenu`, `Trigger`, `Content`, `CheckboxItem`. `CheckboxItem` mit Farbpunkt (`punkt`) und rechtem Inhalt (`rechts`) für Linien- und Benchmarkwahl. |
 | `hover-card` | Fläche `schwebend`, Pfeil `fill-rand`, `sideOffset 6`, `max-w-xs` statt `w-64`, ohne Ein-/Ausblend-Animation — wie `popover`. Nur für Zusatzwissen zu Namen, das die Zeile für Screenreader schon verborgen trägt (Top 25, ADR-058); nie die einzige Stelle eines Textes. |
@@ -73,5 +80,5 @@ Fokusring in derselben Klasse ist per Lint verboten (`eslint.config.js`, Block `
 - Ein `shadcn add` eines neuen Bausteins ist wieder möglich: Ergebnis prüfen, Tokens statt
   shadcn-Namen einsetzen (Aliase aus ADR-019 fangen das Vergessene ab), INV-05 wahren und
   die neue Abweichung hier eintragen.
-- `ui/**` hat einen eigenen, reduzierten Lint-Regelsatz (Barrierefreiheit mit `jsx-a11y` `strict`, `outline-none`);
+- `ui/**` hat einen eigenen, reduzierten Lint-Regelsatz (Barrierefreiheit mit `jsx-a11y` `strict`, `outline-none`, kein `title=`);
   die Oberflächenregeln aus `src/**` gelten dort nicht.

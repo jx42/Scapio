@@ -547,7 +547,7 @@ describe('VerlaufKachel', () => {
     // "Gesamtgewinn" allein steht dort nur noch als Spaltenkopf der verborgenen
     // Tabelle, nicht mehr an einer Kopfzahl.
     expect(
-      screen.queryByRole('button', { name: `${de.erklaerungOeffnen}: ${de.verlauf.gesamtgewinn}` }),
+      screen.queryByRole('button', { name: `${de.erklaerungOeffnen}: ${de.verlauf.jahre.spalteGewinn}` }),
     ).not.toBeInTheDocument();
   });
 

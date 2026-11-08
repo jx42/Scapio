@@ -43,6 +43,7 @@
     "verify:zaehlung": "node start/nodeVersion.mjs && node --disable-warning=ExperimentalWarning --experimental-strip-types start/verify.ts --nur-zaehlung",
     "mcp-login": "node start/nodeVersion.mjs && node --disable-warning=ExperimentalWarning --experimental-strip-types start/mcpLogin.ts",
     "kontrast": "node --experimental-strip-types start/kontrast.ts",
+    "shadcn:abgleich": "node --experimental-strip-types start/shadcnAbgleich.ts",
     "abdruck": "node --experimental-strip-types start/abdruck.ts",
     "kern:version": "node --experimental-strip-types start/abdruck.ts --erhoehen",
     "vertrag": "node --experimental-strip-types start/vertrag.ts",

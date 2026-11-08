@@ -37,6 +37,7 @@ import { anteilProzent, euroAusCent, richtungswert } from '@/lib/format';
 import { FARBE, richtungTon } from '@/lib/farben';
 import { linkVariants } from '@/lib/linkStil';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 import { InfoKnopf } from '@/components/InfoKnopf';
 import { useZahlZaehler } from '@/hooks/useZahlZaehler';
 import { ChartRahmen } from '@/components/ChartRahmen';
@@ -248,6 +249,7 @@ export function GewinnquellenAnsicht({ daten, realisiertCent, onAuswahl }: Gewin
   const nettoAnzeige = useZahlZaehler(netto.wert);
   const nettoSumme = (
     <Summe
+      // eslint-disable-next-line no-restricted-syntax -- Tupfer zeigt die Farbe des Netto-Knotens im Sankey (chart-1 oder verlust), keine Richtung.
       tupfer={daten.nettoCent < 0 ? 'bg-verlust' : 'bg-chart-1'}
       bezeichnung={daten.nettoCent < 0 ? de.gewinnquellen.nettoverlust : de.gewinnquellen.nettogewinn}
       wert={nettoAnzeige}
@@ -267,20 +269,17 @@ export function GewinnquellenAnsicht({ daten, realisiertCent, onAuswahl }: Gewin
               <InfoKnopf bezeichnung={de.kennzahlen.realisiert}>
                 <p>{de.kennzahlen.erklaerung.realisiert}</p>
               </InfoKnopf>
-              <button
+              <Button
                 type="button"
+                variant="link"
                 disabled={onAuswahl === undefined}
                 onClick={() => onAuswahl?.({ art: 'realisiert' })}
-                className={cn(
-                  'ml-1.5 min-h-6 cursor-pointer text-sm font-medium tabular-nums',
-                  richtungTon[realisiert.richtung],
-                  linkVariants({ abstand: 'weit' }),
-                )}
+                className={cn('ml-1.5 h-auto min-h-6 gap-0 p-0 tabular-nums', richtungTon[realisiert.richtung])}
               >
                 <span className="sr-only">{de.kennzahlen.detailsOeffnen(de.kennzahlen.realisiert)} </span>
                 <RichtungsPfeil pfeil={realisiert.pfeil} className="mr-0.5" />
                 {realisiert.wert}
-              </button>
+              </Button>
             </span>
           )}
           {daten.nettoCent < 0 ? nettoSumme : null}
@@ -389,6 +388,7 @@ function KnotenForm({ x, y, width, height, payload, breite, zeichen, stufe, akti
     <g
       opacity={aktiv ? 1 : GEWINN_KNOTEN_DECKKRAFT_GEDIMMT}
       className={cn('transition-opacity duration-300 ease-out', auswahl !== null && 'cursor-pointer')}
+      // eslint-disable-next-line no-restricted-syntax -- Sankey-Klick nur fuer Zeiger, in role="img" liegt nichts Bedienbares (ADR-059).
       onClick={auswahl === null ? undefined : () => onAuswahl?.(auswahl)}
     >
       {knoten}
@@ -450,6 +450,7 @@ function BandForm(
   const deckkraft = !hervorgehoben ? GEWINN_BAND_DECKKRAFT.normal : aktiv ? GEWINN_BAND_DECKKRAFT.aktiv : GEWINN_BAND_DECKKRAFT.gedimmt;
   const d = `M${sourceX},${sourceY} C${sourceControlX},${sourceY} ${targetControlX},${targetY} ${targetX},${targetY}`;
   return (
+    // eslint-disable-next-line no-restricted-syntax -- Sankey-Klick nur fuer Zeiger, in role="img" liegt nichts Bedienbares (ADR-059).
     <g className={cn(auswahl !== null && 'cursor-pointer')} onClick={auswahl === null ? undefined : () => onAuswahl?.(auswahl)}>
       <path
         d={d}

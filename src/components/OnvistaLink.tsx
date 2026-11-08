@@ -39,6 +39,7 @@ export function OnvistaLink({ isin, name, children, className, variant = 'dezent
       href={link} /* INV-AUSNAHME: link kommt aus onvistaLink(), geschlossener Zeichenraum — ADR-021 */
       target="_blank"
       rel="noopener noreferrer"
+      // eslint-disable-next-line no-restricted-syntax -- Zusatz zum Link, dessen Ziel aria-label und sichtbarer Text schon nennen (test/keinTooltip.test.ts).
       title={de.aufteilung.onvistaTitel}
       aria-label={de.aufteilung.onvistaOeffnen(name)}
       className={cn(stil, className)}
