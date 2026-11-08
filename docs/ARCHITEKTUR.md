@@ -238,7 +238,7 @@ Dateien in dieser Reihenfolge; was der Compiler nicht bindet, ist vermerkt.
 | 4 | `server/json.ts` | JSON-Hilfe, wenn der Wert `bigint` oder `NaN` tragen kann; ein neuer Ergebnistyp bekommt sein Schema über `objektSchema<Vereinigt<T>>()`, dann meldet `tsc` ein fehlendes Feld |
 | 5 | `server/vertrag.ts` | Feld in `KennzahlenAntwort` — die eine Typquelle |
 | 6 | `server/routen/kennzahlen.ts` | Schema und Handler; ein fehlendes Schemafeld meldet `tsc` |
-| 7 | `src/lib/format.ts`, `src/i18n/de.ts` | Format und Text |
+| 7 | `src/lib/format.ts`, `src/i18n/kennzahlen.ts` | Format und Text; gelesen über `de.kennzahlen` |
 | 8 | `src/features/verlauf/VerlaufKennzahlen.tsx` oder `src/features/gewinnquellen/GewinnquellenBuchungen.tsx` | Karte, Kartenzeile oder Popover-Wert; Buchungsliste hinter einem Sankey-Knoten |
 | 9 | `test/core/` | Rechentest |
 | 10 | `test/api/vertrag.test.ts` | `felder<…>()` des Ergebnistyps; ein fehlendes Feld meldet `tsc` |
@@ -255,9 +255,9 @@ unter `server/routen/` und der Kachel unter `src/features/`.
 | 1 | `shared/routen.ts` | Pfad und erlaubte Query-Parameter in `LESENDE_ROUTEN`; Demo-Abzug und Randfallseite folgen daraus |
 | 2 | `server/vertrag.ts` | Antworttyp |
 | 3 | `server/routen/<name>.ts` | `registriere<Name>(app, ctx)`: `objektSchema<T>()` für die Antwort, `nurDieseParameter(…, LESENDE_ROUTEN.<name>.parameter)` für die Query, `umschlagAus` für `stand` und `drift`; Vorlage `sparplaene.ts` |
-| 4 | `server/server.ts` | Import und Aufruf neben den anderen `registriere…` — fehlt der Aufruf, bricht der Start ab |
+| 4 | `server/server.ts` | Eintrag in `REGISTRIERUNG` (`satisfies Record<LesendeRoute, …>`) — fehlt er, meldet das `tsc` |
 | 5 | `server/fehler.ts` | nur bei neuem Fehlercode: `FehlerCode` und Fabrikfunktion |
-| 6 | `src/lib/api.ts` | Eintrag `holen<T>(LESENDE_ROUTEN.<name>.pfad)` und Query-Key in `schluessel` |
+| 6 | `src/lib/api.ts` | Eintrag `holen<T>(LESENDE_ROUTEN.<name>.pfad)` in `lesen` und Query-Key in `schluessel`; fehlt einer, meldet das `tsc` |
 | 7 | `src/features/<kachel>/` | Hook und Anzeige |
 | 8 | `test/api/vertrag.test.ts` | `felder<T>()` der Antwort; ein fehlendes Feld meldet `tsc` |
 | 9 | `docs/ARCHITEKTUR.md` | Zeile in der Tabelle unter „API-Vertrag" |
