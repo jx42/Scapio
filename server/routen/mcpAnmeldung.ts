@@ -75,6 +75,13 @@ function angemeldet(k: Konfiguration): boolean {
 type Anmeldefehler = { readonly code: string; readonly text: string };
 
 /**
+ * Laufender Anmeldeversuch, geteilt von GET und POST. Er lebt an der Serverinstanz
+ * (`Kontext.anmeldung`), nicht im Modul: ein Test, der zwei Server baut, soll nicht den
+ * Zustand des anderen sehen.
+ */
+export type Anmeldezustand = { laeuft: boolean; letzterFehler: Anmeldefehler | null };
+
+/**
  * Nie die Meldung aus dem Anmeldeablauf — sie kann eine Antwort der Gegenstelle
  * enthalten. Nur der eigene Code und ein eigener Satz, wie bei `lauf.fehlerText`.
  */
@@ -86,22 +93,21 @@ function fehlerAus(fehler: unknown): Anmeldefehler {
   };
 }
 
-export function registriereMcpAnmeldung(app: FastifyInstance, ctx: Kontext): void {
-  // Zustand des laufenden Anmeldeversuchs. Er lebt an der Serverinstanz, nicht im Modul:
-  // ein Test, der zwei Server baut, soll nicht den Zustand des anderen sehen.
-  let laeuft = false;
-  let letzterFehler: Anmeldefehler | null = null;
-
+export function registriereMcpAnmeldungAbfrage(app: FastifyInstance, ctx: Kontext): void {
   app.get('/api/mcp-anmeldung', { schema: { response: { 200: ANTWORT_SCHEMA } } }, (anfrage: FastifyRequest): McpAnmeldung => {
     nurDieseParameter(anfrage.query, []);
     const lm = baueLesemodell(ctx.db, ctx.konfiguration, ctx.heute);
     return {
       angemeldet: angemeldet(ctx.konfiguration),
-      laeuft,
-      fehler: letzterFehler,
+      laeuft: ctx.anmeldung.laeuft,
+      fehler: ctx.anmeldung.letzterFehler,
       ...umschlagAus(lm.stand(), lm.drift()),
     };
   });
+}
+
+export function registriereMcpAnmeldung(app: FastifyInstance, ctx: Kontext): void {
+  const zustand = ctx.anmeldung;
 
   app.post('/api/mcp-anmeldung', { schema: { response: { 202: ANTWORT_SCHEMA } } }, async (
     anfrage: FastifyRequest,
@@ -111,7 +117,7 @@ export function registriereMcpAnmeldung(app: FastifyInstance, ctx: Kontext): voi
 
     // Zwei offene Anmeldungen hiessen zwei Browserfenster und zwei Listener auf
     // demselben Port 8732 — der zweite scheiterte ohnehin. Also 409, wie beim Lauf.
-    if (laeuft) {
+    if (zustand.laeuft) {
       throw new ApiFehler(
         'E_SPERRE',
         409,
@@ -125,8 +131,8 @@ export function registriereMcpAnmeldung(app: FastifyInstance, ctx: Kontext): voi
     ctx.sperre.pruefeFrei();
 
     const modul = await ladeAnmeldung();
-    laeuft = true;
-    letzterFehler = null;
+    zustand.laeuft = true;
+    zustand.letzterFehler = null;
 
     // Der Ablauf wartet auf einen Menschen im Browser und darf deshalb nicht an dieser
     // Antwort haengen: 202 geht sofort hinaus, den Ausgang holt sich die Oberflaeche
@@ -136,11 +142,11 @@ export function registriereMcpAnmeldung(app: FastifyInstance, ctx: Kontext): voi
       // lassen, falls der Browser nicht aufgeht.
       .anmelden(ctx.konfiguration, { melde: (text) => process.stdout.write(`${text}\n`) })
       .catch((fehler: unknown) => {
-        letzterFehler = fehlerAus(fehler);
-        app.log.error({ stelle: 'mcp-anmeldung' }, letzterFehler.code);
+        zustand.letzterFehler = fehlerAus(fehler);
+        app.log.error({ stelle: 'mcp-anmeldung' }, zustand.letzterFehler.code);
       })
       .finally(() => {
-        laeuft = false;
+        zustand.laeuft = false;
       });
 
     const antwortKoerper: McpAnmeldung = {

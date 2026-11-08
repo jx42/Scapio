@@ -84,7 +84,7 @@ Die technischen Grenzen (Invarianten, Routen, Allowlist) stehen in [AGENTS.md](A
 - **Name**: Scapio. Ein Community-Projekt, kein Produkt von Scalable Capital. Das steht in
   README und Footer. Weder das Logo noch die Markenfarben von Scalable werden verwendet.
 - **Sprache**: Deutsch, Leser per „du“. Fachvokabular deutsch, Grenzfälle im Glossar.
-  Alle Texte stehen in `src/i18n/de.ts`.
+  Alle Texte kommen aus `src/i18n/de.ts`.
 - **Ton**: sachlich, ruhig, ohne Ausrufezeichen und ohne Werbung. Eine Fehlermeldung sagt,
   was nicht ging, was das für die Zahlen bedeutet und was man tun kann.
 - **Jede Zahl ist erklärbar.** Hinter Kennzahlen und Gewinnzahlen steht ein `InfoKnopf`

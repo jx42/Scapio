@@ -6,8 +6,7 @@
  * fliesst links als Gesamtverlust zu, und die Mitte ist die Summe der Abzuege. So bleibt jeder
  * Fluss positiv, und links steht immer, was hereinkam, rechts, was abging.
  *
- * Alle Betraege und Anteile kommen fertig aus `core/gewinnquellen.ts`; hier werden nur
- * Knoten und Baender fuer Recharts zusammengesteckt.
+ * Knoten und Baender baut `graph.ts`, die SVG-Formen zeichnet `SankeyFormen.tsx`.
  *
  * Ein Klick auf Knoten oder Band oeffnet die Buchungen dahinter. Nur fuer Zeiger: In
  * role="img" liegt nichts Bedienbares (ChartRahmen); die Tastatur erreicht dieselben Listen
@@ -18,31 +17,19 @@ import { useCallback, useMemo, useRef, useState, type ComponentProps, type Point
 import { ResponsiveContainer, Sankey } from 'recharts';
 
 import { de } from '@/i18n/de';
-import type { Gewinnquelle, Gewinnquellen } from '@/lib/api';
-import {
-  GEWINN_BAND_DECKKRAFT,
-  GEWINN_BAND_KLICKBREITE,
-  GEWINN_BESCHRIFTUNG_ABSTAND,
-  GEWINN_BESCHRIFTUNG_HOEHE,
-  GEWINN_CHART_HOEHE,
-  GEWINN_KNOTEN_ABSTAND,
-  GEWINN_KNOTEN_BREITE,
-  GEWINN_KNOTEN_DECKKRAFT_GEDIMMT,
-  GEWINN_KNOTEN_RUNDUNG,
-  GEWINN_MARGIN,
-  GEWINN_ZWEIZEILIG_AB,
-  gewinnBeschriftungZeichen,
-} from '@/lib/chartmasse';
+import type { Gewinnquellen } from '@/lib/api';
+import { GEWINN_CHART_HOEHE, GEWINN_KNOTEN_ABSTAND, GEWINN_KNOTEN_BREITE, GEWINN_MARGIN, gewinnBeschriftungZeichen } from '@/lib/chartmasse';
 import { anteilProzent, euroAusCent, richtungswert } from '@/lib/format';
-import { FARBE, richtungTon } from '@/lib/farben';
-import { linkVariants } from '@/lib/linkStil';
+import { richtungTon } from '@/lib/farben';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { InfoKnopf } from '@/components/InfoKnopf';
 import { useZahlZaehler } from '@/hooks/useZahlZaehler';
 import { ChartRahmen } from '@/components/ChartRahmen';
-import { RichtungsPfeil, TextMitPfeil } from '@/components/RichtungsPfeil';
-import { beschriftung, noetigeStufe, type BeschriftungEingabe, type Stufe } from './beschriftung';
+import { RichtungsPfeil } from '@/components/RichtungsPfeil';
+import { noetigeStufe, type Stufe } from './beschriftung';
+import { beschriftungEingabe, graph } from './graph';
+import { BandForm, KnotenForm, type BandProps, type KnotenProps } from './SankeyFormen';
 import type { Auswahl } from './GewinnquellenBuchungen';
 
 export type GewinnquellenAnsichtProps = {
@@ -53,145 +40,9 @@ export type GewinnquellenAnsichtProps = {
   readonly onAuswahl?: ((a: Auswahl) => void) | undefined;
 };
 
-type Spalte = 0 | 1 | 2;
-
-type Knoten = {
-  readonly schluessel: string;
-  readonly name: string;
-  readonly farbe: string;
-  readonly spalte: Spalte;
-  /** Mit Vorzeichen, wie er beschriftet wird. */
-  readonly betragCent: number;
-  /** Anteil an der Mitte; `null` an der Mitte selbst. */
-  readonly anteil: number | null;
-  /** Einziger Knoten seiner Spalte: sein Anteil ist 100 % und wird nicht beschriftet. */
-  readonly allein: boolean;
-  /** Welche Buchungen ein Klick oeffnet; `null` bei Mitte und Netto. */
-  readonly auswahl: Auswahl | null;
-};
-
-type Band = {
-  readonly source: number;
-  readonly target: number;
-  readonly value: number;
-};
-
 type Hover = { readonly art: 'node' | 'link'; readonly index: number } | null;
 
-type SankeyProps = ComponentProps<typeof Sankey>;
-type KnotenProps = Parameters<Extract<SankeyProps['node'], (...args: never[]) => unknown>>[0];
-type BandProps = Parameters<Extract<SankeyProps['link'], (...args: never[]) => unknown>>[0];
-type SankeyMausEreignis = NonNullable<SankeyProps['onMouseEnter']>;
-
-function quellenName(q: Gewinnquelle): string {
-  switch (q.art) {
-    case 'position':
-      return q.name ?? q.isin ?? '';
-    case 'uebrige':
-      return de.gewinnquellen.uebrige(q.anzahl);
-    case 'ertraege':
-      return de.gewinnquellen.ertraege;
-    case 'steuern':
-      return de.gewinnquellen.steuern;
-    case 'gebuehren':
-      return de.gewinnquellen.gebuehren;
-    case 'nichtZugeordnet':
-      return de.gewinnquellen.nichtZugeordnet;
-  }
-}
-
-function quellenAuswahl(q: Gewinnquelle, name: string): Auswahl | null {
-  switch (q.art) {
-    case 'position':
-      return q.isin === null ? null : { art: 'position', isin: q.isin, name };
-    case 'uebrige':
-      return { art: 'uebrige', isins: q.isins, name };
-    case 'nichtZugeordnet':
-      // Ein Rest gegen den Gesamtgewinn, keine Liste von Buchungen.
-      return null;
-    default:
-      return { art: q.art };
-  }
-}
-
-function quellenKnoten(q: Gewinnquelle, spalte: Spalte, index: number): Knoten {
-  const zufluss = q.betragCent > 0;
-  const farbe = !zufluss ? FARBE.verlust : q.art === 'position' || q.art === 'uebrige' ? FARBE.gewinn : FARBE.chart5;
-  const name = quellenName(q);
-  return {
-    schluessel: `${spalte}-${q.art}-${q.isin ?? index}`,
-    name,
-    farbe,
-    spalte,
-    betragCent: q.betragCent,
-    anteil: q.anteil,
-    allein: false,
-    auswahl: quellenAuswahl(q, name),
-  };
-}
-
-/**
- * Knoten in Recharts-Reihenfolge: je Spalte von oben nach unten, wie sie die API liefert.
- * Jedes Band laeuft in die Mitte hinein oder aus ihr heraus.
- */
-function graph(d: Gewinnquellen): {
-  readonly knoten: readonly Knoten[];
-  readonly baender: readonly Band[];
-} {
-  const verlust = d.nettoCent < 0;
-  const links = d.zufluesse.map((q, i) => quellenKnoten(q, 0, i));
-  const rechts = d.abfluesse.map((q, i) => quellenKnoten(q, 2, i));
-  const netto: Knoten | null =
-    d.nettoCent === 0
-      ? null
-      : {
-          schluessel: 'netto',
-          name: verlust ? de.gewinnquellen.nettoverlust : de.gewinnquellen.nettogewinn,
-          farbe: verlust ? FARBE.verlust : FARBE.chart1,
-          spalte: verlust ? 0 : 2,
-          betragCent: d.nettoCent,
-          anteil: d.nettoAnteil,
-          allein: false,
-          auswahl: null,
-        };
-  const mitte: Knoten = {
-    schluessel: 'mitte',
-    name: verlust ? de.gewinnquellen.abzuege : de.gewinnquellen.brutto,
-    farbe: FARBE.chart1,
-    spalte: 1,
-    betragCent: d.mitteCent,
-    anteil: null,
-    allein: true,
-    auswahl: null,
-  };
-
-  const reihe = [...links, ...(netto !== null && verlust ? [netto] : []), mitte, ...(netto !== null && !verlust ? [netto] : []), ...rechts];
-  const knoten = reihe.map((k) => ({
-    ...k,
-    allein: reihe.filter((j) => j.spalte === k.spalte).length === 1,
-  }));
-  const m = reihe.indexOf(mitte);
-  const baender = knoten.flatMap((k, i): Band[] => {
-    if (k.spalte === 0) return [{ source: i, target: m, value: Math.abs(k.betragCent) }];
-    if (k.spalte === 2) return [{ source: m, target: i, value: Math.abs(k.betragCent) }];
-    return [];
-  });
-  return { knoten, baender };
-}
-
-function betragText(cent: number): string {
-  const r = richtungswert(cent, euroAusCent);
-  return r.pfeil === '' ? r.wert : `${r.pfeil}\u00a0${r.wert}`;
-}
-
-function beschriftungEingabe(k: Knoten, zeichen: number): BeschriftungEingabe {
-  return {
-    name: k.name,
-    betrag: betragText(k.betragCent),
-    anteil: k.anteil === null || k.allein ? null : anteilProzent(k.anteil),
-    zeichen,
-  };
-}
+type SankeyMausEreignis = NonNullable<ComponentProps<typeof Sankey>['onMouseEnter']>;
 
 export function GewinnquellenAnsicht({ daten, realisiertCent, onAuswahl }: GewinnquellenAnsichtProps) {
   const [hover, setHover] = useState<Hover>(null);
@@ -352,118 +203,5 @@ function Summe({
         {wert}
       </span>
     </span>
-  );
-}
-
-type KnotenFormProps = KnotenProps & {
-  readonly breite: number;
-  readonly zeichen: number;
-  readonly stufe: Stufe;
-  readonly aktiv: boolean;
-  /** Knoten oder sein Band liegt unter dem Zeiger: der Name unterstreicht sich. */
-  readonly betont: boolean;
-  readonly onAuswahl: ((a: Auswahl) => void) | undefined;
-};
-
-/**
- * Beschriftung als HTML im `foreignObject`, damit der Richtungspfeil dasselbe Icon ist wie im
- * Rest der Seite. Sie steht zwischen Knoten und Mitte, senkrecht mittig am Knoten. Die Mitte
- * bleibt unbeschriftet: ihre Summe steht ueber dem Diagramm.
- */
-function KnotenForm({ x, y, width, height, payload, breite, zeichen, stufe, aktiv, betont, onAuswahl }: KnotenFormProps) {
-  const k = payload as unknown as Knoten;
-  const auswahl = onAuswahl === undefined ? null : k.auswahl;
-  const knoten = <rect x={x} y={y} width={width} height={height} rx={GEWINN_KNOTEN_RUNDUNG} fill={k.farbe} />;
-  if (k.spalte === 1) return knoten;
-
-  const einzeilig = height < GEWINN_ZWEIZEILIG_AB;
-  const { name, wert } = beschriftung(beschriftungEingabe(k, zeichen), einzeilig, stufe);
-  const mitteRand = breite / 2;
-  const links =
-    k.spalte === 0 ? x + width + GEWINN_BESCHRIFTUNG_ABSTAND : mitteRand + GEWINN_KNOTEN_BREITE / 2 + GEWINN_BESCHRIFTUNG_ABSTAND;
-  const rechts = k.spalte === 0 ? mitteRand - GEWINN_KNOTEN_BREITE / 2 - GEWINN_BESCHRIFTUNG_ABSTAND : x - GEWINN_BESCHRIFTUNG_ABSTAND;
-  const oben = y + height / 2 - GEWINN_BESCHRIFTUNG_HOEHE / 2;
-
-  return (
-    <g
-      opacity={aktiv ? 1 : GEWINN_KNOTEN_DECKKRAFT_GEDIMMT}
-      className={cn('transition-opacity duration-300 ease-out', auswahl !== null && 'cursor-pointer')}
-      // eslint-disable-next-line no-restricted-syntax -- Sankey-Klick nur fuer Zeiger, in role="img" liegt nichts Bedienbares (ADR-059).
-      onClick={auswahl === null ? undefined : () => onAuswahl?.(auswahl)}
-    >
-      {knoten}
-      {auswahl === null ? null : (
-        // Klickflaeche ueber Knoten und Beschriftung, nach oben und unten bis in die Mitte des
-        // Abstands: Auch ein Knoten von einem Pixel ist so gut zu treffen.
-        <rect
-          x={k.spalte === 0 ? x : links}
-          y={y - GEWINN_KNOTEN_ABSTAND / 2}
-          width={Math.max(0, k.spalte === 0 ? rechts - x : x + width - links)}
-          height={height + GEWINN_KNOTEN_ABSTAND}
-          fill="none"
-          pointerEvents="all"
-        />
-      )}
-      <foreignObject
-        x={links}
-        y={oben}
-        width={Math.max(0, rechts - links)}
-        height={GEWINN_BESCHRIFTUNG_HOEHE}
-        className="pointer-events-none overflow-visible"
-      >
-        <div
-          className={cn(
-            'flex h-full text-sm leading-snug whitespace-nowrap text-text',
-            einzeilig ? 'items-center gap-x-2' : 'flex-col justify-center',
-            k.spalte === 2 && (einzeilig ? 'justify-end' : 'items-end'),
-          )}
-        >
-          <span className={cn(auswahl !== null && betont && cn(linkVariants({ abstand: 'weit' }), 'decoration-current'))}>
-            {name}
-          </span>
-          {wert === null ? null : (
-            <span className="tabular-nums">
-              <TextMitPfeil text={wert} />
-            </span>
-          )}
-        </div>
-      </foreignObject>
-    </g>
-  );
-}
-
-function BandForm(
-  props: BandProps & {
-    readonly aktiv: boolean;
-    readonly hervorgehoben: boolean;
-    readonly onAuswahl: ((a: Auswahl) => void) | undefined;
-  },
-) {
-  const { sourceX, sourceY, targetX, targetY, sourceControlX, targetControlX, linkWidth, payload, aktiv, hervorgehoben, onAuswahl } =
-    props;
-  const quelle = payload.source as unknown as Knoten;
-  const ziel = payload.target as unknown as Knoten;
-  // Hinein in die Mitte in der Farbe der Herkunft, hinaus in der des Ziels.
-  const aussen = quelle.spalte === 0 ? quelle : ziel;
-  const farbe = aussen.farbe;
-  const auswahl = onAuswahl === undefined ? null : aussen.auswahl;
-  const deckkraft = !hervorgehoben ? GEWINN_BAND_DECKKRAFT.normal : aktiv ? GEWINN_BAND_DECKKRAFT.aktiv : GEWINN_BAND_DECKKRAFT.gedimmt;
-  const d = `M${sourceX},${sourceY} C${sourceControlX},${sourceY} ${targetControlX},${targetY} ${targetX},${targetY}`;
-  return (
-    // eslint-disable-next-line no-restricted-syntax -- Sankey-Klick nur fuer Zeiger, in role="img" liegt nichts Bedienbares (ADR-059).
-    <g className={cn(auswahl !== null && 'cursor-pointer')} onClick={auswahl === null ? undefined : () => onAuswahl?.(auswahl)}>
-      <path
-        d={d}
-        fill="none"
-        stroke={farbe}
-        strokeWidth={Math.max(linkWidth, 1)}
-        strokeOpacity={deckkraft}
-        className="transition-[stroke-opacity] duration-300 ease-out"
-      />
-      {/* Unsichtbar breiter: Duenne Baender sind sonst kaum zu treffen. */}
-      {auswahl === null ? null : (
-        <path d={d} fill="none" stroke={farbe} strokeWidth={Math.max(linkWidth, GEWINN_BAND_KLICKBREITE)} strokeOpacity={0} />
-      )}
-    </g>
   );
 }

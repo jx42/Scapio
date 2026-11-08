@@ -1,7 +1,7 @@
 /**
  * Die Routen der API an einer Stelle. Server, Oberfläche, Demo-Abzug und Randfallseite
- * leiten ihre Listen hier ab; der Server bricht beim Start ab, wenn eine lesende Route
- * hier steht, aber nicht registriert ist.
+ * leiten ihre Listen hier ab. Eine lesende Route ohne Eintrag in `REGISTRIERUNG`
+ * (`server/server.ts`) oder in `api`/`schluessel` (`src/lib/api.ts`) meldet `tsc`.
  */
 
 /** Lesende Routen mit den Query-Parametern, die der Server annimmt. */

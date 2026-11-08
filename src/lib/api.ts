@@ -56,7 +56,7 @@ import type {
 
 import { BENCHMARKS, RISIKOFREI, RISIKOFREI_ISIN, STANDARD_BENCHMARK } from '../../shared/benchmarks.ts';
 import type { BenchmarkIsin } from '../../shared/benchmarks.ts';
-import { LESENDE_ROUTEN, MUTIERENDE_ROUTEN } from '../../shared/routen.ts';
+import { LESENDE_ROUTEN, MUTIERENDE_ROUTEN, type LesendeRoute } from '../../shared/routen.ts';
 import { FENSTER, ZEITRAEUME } from '../../shared/zeitfenster.ts';
 
 import type { ReactNode } from 'react';
@@ -259,7 +259,8 @@ async function postMitToken(pfad: string): Promise<Response> {
   }
 }
 
-export const api = {
+/** Je lesende Route ein Abruf; fehlt einer, meldet das `tsc`. */
+const lesen = {
   health: () => holen<Health>(LESENDE_ROUTEN.health.pfad),
 
   zeitreihe: (auswahl: ZeitraumAuswahl, benchmark: string | null) =>
@@ -291,6 +292,10 @@ export const api = {
   lauf: () => holen<Lauf>(LESENDE_ROUTEN.lauf.pfad),
 
   mcpAnmeldung: () => holen<McpAnmeldung>(LESENDE_ROUTEN.mcpAnmeldung.pfad),
+} satisfies Record<LesendeRoute, (...args: never[]) => Promise<MitStand>>;
+
+export const api = {
+  ...lesen,
 
   /**
    * Die erste der beiden mutierenden Routen. Kein Rumpf, keine Parameter, Token
@@ -361,4 +366,4 @@ export const schluessel = {
   sparplaene: ['sparplaene'] as const,
   lauf: ['lauf'] as const,
   mcpAnmeldung: ['mcpAnmeldung'] as const,
-};
+} satisfies Record<LesendeRoute, readonly unknown[] | ((...args: never[]) => readonly unknown[])>;
