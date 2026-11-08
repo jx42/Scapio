@@ -54,6 +54,8 @@ function knoten(pfad: string): unknown {
     .reduce<unknown>((wert, k) => (istBaum(wert) ? wert[k] : undefined), de);
 }
 
+const escape = (s: string): string => s.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&');
+
 /** Quelltext ohne reine Kommentarzeilen, Ketten in einer Zeile, Aliasse durch ihren Pfad ersetzt. */
 function aufgeloest(q: Quelldatei): string {
   let text = q.inhalt
@@ -84,7 +86,6 @@ function aufgeloest(q: Quelldatei): string {
 }
 
 const QUELLTEXT = dateien(['src']).map(aufgeloest).join('\n');
-const escape = (s: string): string => s.replace(/[\\^$.*+?()[\]{}|]/g, '\\$&');
 
 describe('kein ungenutzter Text in i18n/de.ts', () => {
   it('jeder Blattschluessel wird gelesen', () => {
