@@ -35,8 +35,8 @@ const BASIS: AktualisierenAnsichtProps = {
 describe('AktualisierenAnsicht — Anmeldung am MCP [ADR-012]', () => {
   it('zeigt keinen eigenen Anmeldeknopf — der steht im Alert der Seite (App.tsx)', () => {
     rendern(<AktualisierenAnsicht {...BASIS} anmeldungNoetig={true} anmeldungLaeuft={true} />);
-    expect(screen.queryByRole('button', { name: de.mcpAnmeldung.knopf })).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: new RegExp(de.mcpAnmeldung.laeuft) })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: de.mcpAnmeldung.anmeldenKnopf })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Anmeldung läuft/ })).not.toBeInTheDocument();
   });
 
   it('sperrt den Aktualisieren-Knopf, solange die Anmeldung faellig ist', () => {

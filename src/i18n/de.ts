@@ -95,7 +95,6 @@ export const de = {
     demoBandLinkOeffnen: 'Scapio auf GitHub öffnen, neuer Tab',
     skip: 'Direkt zu den Kacheln',
     haupt: 'Kacheln',
-    standUnbekannt: 'noch kein abgeschlossener Lauf',
     willkommenTitel: 'Willkommen bei Scapio',
     willkommen:
       'Noch sind keine Daten da. „Aktualisieren“ holt Bestand, Umsätze und Kurse von Scalable Capital; der erste Abruf dauert etwas länger.',
@@ -124,17 +123,15 @@ export const de = {
     beschriftet: (bezeichnung: string, wert: string) => `${bezeichnung}: ${wert}`,
     inKlammern: (wert: string) => `(${wert})`,
     mitNebenwert: (hauptwert: string, nebenwert: string) => `${hauptwert} (${nebenwert})`,
+    trenner: ' · ',
   },
 
   pfeil: {
-    auf: '',
     ab: '',
-    neutral: '',
   },
 
   zustand: {
     laedt: 'Lädt…',
-    laedtBeschreibung: 'Die Kachel holt ihre Daten.',
     leerBeschreibung: 'Erscheint nach dem ersten Abruf.',
     fehler: 'Diese Kachel konnte nicht geladen werden',
     fehlerUnbekannt: 'Der Grund ist unbekannt. Ein Neuladen der Seite hilft meist. Der Rest der Seite bleibt bedienbar.',
@@ -459,10 +456,8 @@ export const de = {
     /** Der Text zu `E_MCP_ANMELDUNG` — abgelaufener Token oder nicht freigeschalteter Zugang. */
     noetig:
       'Die Anmeldung bei Scalable Capital ist abgelaufen. Sie gilt aus Sicherheitsgründen nur eine Woche, danach musst du dich erneut anmelden. Klappt das nicht, prüfe, ob in deinem Konto unter „Agentic Investing“ der MCP-Zugang aktiviert ist.',
-    knopf: 'Anmelden',
     /** Beschriftung des Action-Buttons im Alert selbst; den Rahmen nennt der Alert-Titel. */
     anmeldenKnopf: 'Anmelden',
-    laeuft: 'Anmeldung läuft…',
     laeuftBeschreibung:
       'Im Browser öffnet sich ein Fenster von Scalable Capital. Schließe die Anmeldung dort ab, dann drücke „Aktualisieren“.',
     erfolg: 'Anmeldung abgeschlossen. Drücke „Aktualisieren“, um die Daten zu holen.',
@@ -476,13 +471,6 @@ export const de = {
       E_MCP_TRANSIENT: 'Scalable Capital war nicht erreichbar.',
       sonst: 'Die Anmeldung wurde nicht abgeschlossen.',
     } satisfies CodeTexte<string> & { readonly sonst: string } as Readonly<Record<string, string>> & { readonly sonst: string },
-  },
-
-  laufStatus: {
-    laufend: 'läuft',
-    erfolg: 'erfolgreich',
-    teilweise: 'teilweise',
-    fehler: 'gescheitert',
   },
 
   drift: {
@@ -557,13 +545,6 @@ export const de = {
     reglerDemo: 'In der Demo nicht verfügbar',
     depotwert: 'Depotwert',
     einzahlung: 'Eingezahltes Kapital',
-    /**
-     * Bewusst NICHT „Kursgewinn“ — diese Kachel rechnet Depotwert minus
-     * eingezahltes Kapital und zählt damit das Verrechnungskonto, Erträge, Steuern und Gebühren mit.
-     * Der Kursgewinn auf der Karte darüber lässt genau das weg und steht deshalb auf
-     * einer anderen Zahl. [ADR-016]
-     */
-    gesamtgewinn: 'Gesamtgewinn',
     /** Kopfzeile über dem Chart, in beiden Modi; der Zeitraum steht in der Zeitraumwahl daneben. */
     gesamtgewinnDepot: 'Gesamtgewinn Depot',
     /** Kurzform in der Rendite-Ansicht, wo Prozent vor dem Betrag steht. */
@@ -607,8 +588,6 @@ export const de = {
       ertrag: 'Ertrag',
     },
     benchmark: 'Vergleich',
-    erklaerungBenchmark:
-      'Wie sich dieselben Ein- und Auszahlungen entwickelt hätten, wenn sie am selben Tag in diesen ETF geflossen wären. Gerechnet wird mit dem Kurs des ETF, nicht mit dem Index selbst — laufende Kosten des Fonds sind also enthalten. Steuern, Ordergebühren und Spread sind es nicht.',
     linien: 'Einzahlungen',
     marken: 'Käufe, Verkäufe & Erträge',
     differenz: 'Differenz',
@@ -708,11 +687,7 @@ export const de = {
     richtungPositiv: 'positiv',
     richtungNegativ: 'negativ',
     realisiert: 'Realisierte Gewinne',
-    zinsen: 'Zinsen und Erträge',
-    steuern: 'Steuern',
-    gebuehren: 'Gebühren',
     twr: 'Marktrendite (TWR) gesamt',
-    twrProJahr: 'Marktrendite (TWR) p.a.',
     /** Kurzform fuer die Karte ueber dem Verlauf: die Langform passt dort samt Info-Knopf nicht in eine Zeile. */
     twrProJahrKurz: 'Marktrendite p.a.',
     xirr: 'Interner Zinsfuß (IZF)',
@@ -721,7 +696,6 @@ export const de = {
     realUeberTeuerung: 'Ersatzweise über die durchschnittliche Teuerung gerechnet: für die Zahlungsreihe fehlen Indexwerte.',
     inflationLaufendesJahr: (jahr: string, wert: string) => `${jahr} bisher ${wert}`,
     volatilitaet: 'Volatilität p.a.',
-    maxDrawdown: 'Maximum Drawdown',
     maxDrawdownKurz: 'Max. Drawdown',
     sharpe: 'Sharpe-Ratio',
     erklaerung: {
@@ -731,12 +705,6 @@ export const de = {
         'Der aktuelle Wert der gehaltenen Wertpapiere abzüglich des investierten Kapitals — wie viel deine noch gehaltenen Anteile heute mehr oder weniger wert sind, als du dafür bezahlt hast. Solange du nichts verkauft hast, ist das ein Buchgewinn oder -verlust: Geld, das du noch nicht realisiert hast. Der Prozentwert setzt den Kursgewinn ins Verhältnis zum investierten Kapital, ohne zu berücksichtigen, wie lange das Geld investiert war — anders als bei der Marktrendite. Nicht zu verwechseln mit dem „Gesamtgewinn“ über dem Verlauf: der rechnet den ganzen Depotwert gegen das eingezahlte Kapital und zählt deshalb auch das Verrechnungskonto, Erträge, Steuern und Gebühren mit.',
       realisiert:
         'Gewinne oder Verluste aus Anteilen, die tatsächlich verkauft wurden — im Unterschied zum Kursgewinn also bereits fest, nicht nur auf dem Papier. Abgerechnet nach FIFO: Beim Verkauf gelten die am längsten gehaltenen Anteile einer Position als verkauft, der Gewinn ergibt sich aus deren ursprünglichem Kaufpreis. Ein reiner Depotübertrag — dieselbe ISIN, dieselbe Menge, innerhalb von 30 Tagen hinaus- und wieder hereingebucht — zählt dabei nicht als Verkauf.',
-      zinsen:
-        'Alle Erträge, die gutgeschrieben wurden, ohne dass dafür etwas verkauft werden musste: Zinsen auf das Verrechnungskonto, Ausschüttungen von Fonds, Dividenden und Boni. Diese Beträge erhöhen den Depotwert, zählen aber nicht zum investierten Kapital — sie sind Ertrag, keine Einzahlung.',
-      steuern:
-        'Auf Erträge und Verkäufe einbehaltene Steuern — vor allem die jährliche Vorabpauschale auf thesaurierende Fonds —, saldiert mit späteren Erstattungen zu einem einzigen Betrag. Ein negativer Wert heißt: unterm Strich abgeführt.',
-      gebuehren:
-        'Gebühren, die als eigene Buchung abgerechnet wurden, etwa für ein Abo oder das Depot. Kaufkosten stehen hier nicht: sie stecken im Kaufpreis und damit im investierten Kapital.',
       gesamt: 'Wertpapiere plus Verrechnungskonto zum letzten bekannten Kurs.',
       twr: 'Die Marktrendite ist die zeitgewichtete Rendite (TWR, englisch Time-Weighted Return): sie misst, wie gut die Geldanlage selbst gelaufen ist — unabhängig davon, wann und wie viel du ein- oder ausgezahlt hast. Dafür wird die Anlagedauer an jeder Zahlung in Teilperioden zerlegt, die einzeln berechnet und verkettet werden. „Gesamt“ heißt: über die komplette Anlagedauer gerechnet, nicht auf ein Jahr umgelegt. Dadurch ist die Marktrendite direkt mit einem Index oder Fonds vergleichbar, der ebenfalls keine Ein- und Auszahlungen kennt — anders als der interne Zinsfuß, der dein persönliches Timing mit einrechnet. Gemessen wird das ganze Depot einschließlich Guthaben auf dem Verrechnungskonto: Geld, das dort uninvestiert liegt, bremst die Marktrendite in einem steigenden Markt.',
       twrProJahr:
@@ -818,7 +786,6 @@ export const de = {
   },
 
   top25: {
-    titel: 'Top 25 Unternehmen',
     laender: 'Länder',
     sektoren: 'Sektoren',
     unternehmen: 'Unternehmen',

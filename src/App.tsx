@@ -176,7 +176,8 @@ function Seite() {
       <footer className="mx-auto flex max-w-8xl flex-wrap items-center justify-between gap-2 px-4 pb-8 text-xs text-text-leise">
         {health.data === undefined ? null : (
           <p>
-            {de.seite.fussVersion(health.data.version)} ·{' '}
+            {de.seite.fussVersion(health.data.version)}
+            {de.satz.trenner}
             <a
               href="https://github.com/jx42/Scapio#readme" /* INV-AUSNAHME: feste Adresse, kein Wert — ADR-046 */
               target="_blank"
@@ -185,8 +186,8 @@ function Seite() {
               className={FUSS_LINK}
             >
               {de.seite.fussReadme}
-            </a>{' '}
-            ·{' '}
+            </a>
+            {de.satz.trenner}
             <a
               href="https://github.com/jx42/Scapio/releases" /* INV-AUSNAHME: feste Adresse, kein Wert — ADR-022 */
               target="_blank"
@@ -195,8 +196,8 @@ function Seite() {
               className={FUSS_LINK}
             >
               {de.seite.fussVersionen}
-            </a>{' '}
-            ·{' '}
+            </a>
+            {de.satz.trenner}
             <a
               href="/assets/drittlizenzen.txt" /* INV-AUSNAHME: feste Adresse, kein Wert; gleich DRITTLIZENZEN_DATEI — ADR-055 */
               target="_blank"
@@ -219,8 +220,8 @@ function Seite() {
             className={FUSS_LINK}
           >
             {de.seite.fussScalable}
-          </a>{' '}
-          ·{' '}
+          </a>
+          {de.satz.trenner}
           <a
             href="https://ec.europa.eu/eurostat/databrowser/view/prc_hicp_aind/default/table?lang=de" /* INV-AUSNAHME: feste Adresse, kein Wert — ADR-021 */
             target="_blank"
@@ -229,8 +230,8 @@ function Seite() {
             className={FUSS_LINK}
           >
             {de.seite.fussEurostat}
-          </a>{' '}
-          ·{' '}
+          </a>
+          {de.satz.trenner}
           <a
             href="https://data.ecb.europa.eu/data/datasets/EST/EST.B.EU000A2X2A25.WT" /* INV-AUSNAHME: feste Adresse, kein Wert — ADR-021 */
             target="_blank"

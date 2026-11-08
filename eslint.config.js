@@ -63,6 +63,27 @@ const TON_MAP_REGEL = {
   message: 'Richtungs-Ton ueber richtungTon/richtungBgTon aus lib/farben.ts.',
 };
 
+// Welche Richtung ein Wert hat, entscheidet richtungswert(); ein Ternaer mit Ton-Klasse legt
+// die Grenze (< 0 oder <= 0, neutral?) jedes Mal neu fest.
+const RICHTUNGS_TERNAER_REGEL = {
+  selector:
+    ':matches(ConditionalExpression > Literal[value=/\\b(text|bg)-(gewinn|verlust)\\b/], ConditionalExpression > TemplateLiteral > TemplateElement[value.raw=/\\b(text|bg)-(gewinn|verlust)\\b/])',
+  message: 'Richtungs-Ton ueber richtungTon/richtungBgTon aus lib/farben.ts, kein Ternaer mit text-/bg-gewinn/verlust.',
+};
+
+// Der Browser-Tooltip erreicht weder Tastatur noch Touch; Ausnahmen begruendet in test/keinTooltip.test.ts.
+const TITEL_REGEL = {
+  selector: "JSXAttribute[name.name='title']",
+  message: 'Erklaerung ueber InfoKnopf (Popover), kein title= — siehe test/keinTooltip.test.ts.',
+};
+
+// jsx-a11y prueft SVG-Elemente nicht: ein Klick dort waere fuer Tastatur unerreichbar, ohne dass es auffiele.
+const SVG_KLICK_REGEL = {
+  selector:
+    "JSXOpeningElement[name.name=/^(svg|g|path|rect|circle|ellipse|line|polyline|polygon|text|tspan|foreignObject|use)$/] > JSXAttribute[name.name='onClick']",
+  message: 'Kein onClick auf einem SVG-Element — Bedienung ueber einen Knopf (Ausnahme Sankey, ADR-059).',
+};
+
 // `react/jsx-no-literals` laesst Props durch; vorgelesener Text gehoert trotzdem nach i18n/de.ts.
 const ARIA_TEXT_REGEL = {
   selector: 'JSXAttribute[name.name=/^aria-(label|description|valuetext|roledescription|placeholder)$/] > Literal',
@@ -84,6 +105,9 @@ const OBERFLAECHEN_SYNTAX_REGELN = [
     message: 'Betrag ohne Vorzeichen ueber richtungswert() oder betragOhneVorzeichen() aus lib/format.ts.',
   },
   TON_MAP_REGEL,
+  RICHTUNGS_TERNAER_REGEL,
+  TITEL_REGEL,
+  SVG_KLICK_REGEL,
   {
     selector: "NewExpression[callee.object.name='Intl']",
     message: 'Formatierung ausschliesslich ueber lib/format.ts.',
@@ -112,7 +136,6 @@ const A11Y_SETTINGS = {
       TabsTrigger: 'button',
       ToggleGroupItem: 'button',
       PopoverTrigger: 'button',
-      CollapsibleTrigger: 'button',
       DropdownMenuTrigger: 'button',
       Input: 'input',
       Table: 'table',
@@ -305,6 +328,7 @@ export default tseslint.config(
         ARIA_TEXT_REGEL,
         FARB_REGEL,
         PALETTEN_REGEL,
+        TITEL_REGEL,
         {
           // Menue-Eintraege zeigen den Fokus als Flaeche (`focus:bg-…`), theme.css nimmt sie vom Ring aus.
           selector: "Literal[value=/\\boutline-(none|hidden)\\b/]:not([value=/focus(-visible)?:/])",
@@ -316,7 +340,7 @@ export default tseslint.config(
 
   // Sichtbarer Text kommt aus i18n/de.ts, nicht als Literal zwischen zwei Tags.
   {
-    files: ['src/features/**/*.tsx', 'src/components/**/*.tsx'],
+    files: ['src/*.tsx', 'src/features/**/*.tsx', 'src/components/**/*.tsx'],
     ignores: ['src/components/ui/**'],
     rules: { 'react/jsx-no-literals': ['error', { noStrings: false, ignoreProps: true }] },
   },
