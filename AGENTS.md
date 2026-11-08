@@ -129,8 +129,9 @@ hin ([ADR-042](docs/entscheidungen/ADR-042-agenten-lesen-keine-depotwerte.md)). 
   `lauf.log` lesen. Kein `npm run ingest`, kein `npm run verify`, kein `sqlite3` auf die echte
   Datenbank. Statt `verify` gibt es `npm run verify:zaehlung` (Tag und Feld, ohne Werte).
 - Die echte App nicht starten (`npm start`, `npm run dev`) und nicht ansehen: Browser,
-  Bildschirmfoto, Playwright, `curl` und WebFetch nur gegen Demo (4791), Edgecases (4793) oder
+  Bildschirmfoto, Playwright und `curl` nur gegen Demo (4791), Edgecases (4793) oder
   e2e (4790), nie gegen den Port aus `einstellungen.json` (Vorgabe 4732) — auch nicht nach Freigabe.
+  WebFetch auf `127.0.0.1`/`localhost` ist ganz gesperrt, eine Domain-Regel kennt keinen Port (ADR-054).
 - Wo eine Frage nur mit echten Werten zu klären ist: ein Skript schreiben, das lokal zählt oder
   prüft und nur Befundart, Code, ISIN oder Tag ausgibt — und den Nutzer fragen, ob er es laufen
   lässt. Gerechnet und getestet wird auf Fixtures und synthetischen Depots.
