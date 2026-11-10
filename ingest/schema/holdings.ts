@@ -9,8 +9,8 @@ import { Euro, GRENZE, Geld, ISIN_MUSTER, Kurs, Menge, Zeitstempel } from './gru
  * Verifiziert gegen die echte Antwort von `npm run vertrag` (Bauanleitung 6.3, korrigiert —
  * der urspruengliche Auszug war eine Annahme, keine Beobachtung). Kein `cash` auf dieser
  * Ebene: der Kontostand kommt aus `get_portfolio_cash_breakdown`, siehe `CashBreakdownAntwort`.
- * `cryptoHoldings` wird deklariert, damit ein umbenanntes Feld auffaellt, aber nicht
- * ausgewertet — Krypto ist ausserhalb des Anwendungsbereichs. Ebenso `fifoPrice`, `valuation`
+ * `cryptoHoldings` wird deklariert, aber nicht ausgewertet — Krypto ist ausserhalb des
+ * Anwendungsbereichs; optional, weil es seit November 2026 fehlt. Ebenso `fifoPrice`, `valuation`
  * und `valuationCurrency`: Einstand und Wert rechnet der Kern selbst; optional, weil sie erst
  * seit Oktober 2026 mitkommen.
  */
@@ -51,7 +51,7 @@ export const HoldingsAntwort = z
           .strict(),
       )
       .max(GRENZE.positionen),
-    cryptoHoldings: z.array(z.unknown()).max(GRENZE.positionen),
+    cryptoHoldings: z.array(z.unknown()).max(GRENZE.positionen).optional(),
   })
   .strict();
 
