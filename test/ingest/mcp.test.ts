@@ -310,21 +310,19 @@ describe('mcpAufrufRoh', () => {
       expect(antwort.bloecke).toHaveLength(60);
     });
 
-    it('koppelt die Decke an totalCount und die gelieferte Seitengroesse', async () => {
-      // 250 Zeilen zu je 50 sind 5 Seiten; der Server blaettert endlos weiter.
-      const { calls } = blaettern(250, 50, null);
-      const fehler = await fehlerVon(mcpAufrufRoh(TRANSAKTIONEN_TOOL, { konfiguration: frischeKonfiguration(), warte: sofort }));
-      expect(fehler).toBeInstanceOf(McpFehler);
-      expect((fehler as InstanceType<typeof McpFehler>).code).toBe('E_MCP_SEITEN');
-      expect(seitenAufrufe(calls)).toBeGreaterThan(5);
-      expect(seitenAufrufe(calls)).toBeLessThan(10);
+    it('liest alle Seiten, auch wenn totalCount wie beim echten Server nur die Seitenzeilen zaehlt', async () => {
+      // Echte Antwort: 100/100/100/74, totalCount je Seite gleich returnedCount.
+      const { calls } = blaettern(100, 100, 4);
+      const antwort = await mcpAufrufRoh(TRANSAKTIONEN_TOOL, { konfiguration: frischeKonfiguration(), warte: sofort });
+      expect(antwort.bloecke).toHaveLength(4);
+      expect(seitenAufrufe(calls)).toBe(4);
     });
 
-    it('bricht ohne Blaettern ab, wenn totalCount ueber der Decke liegt', async () => {
-      const { calls } = blaettern((HOECHSTENS_SEITEN + 1) * 100, 100, null);
+    it('bricht an HOECHSTENS_SEITEN ab, wenn der Server endlos blaettert', async () => {
+      const { calls } = blaettern(100, 100, null);
       const fehler = await fehlerVon(mcpAufrufRoh(TRANSAKTIONEN_TOOL, { konfiguration: frischeKonfiguration(), warte: sofort }));
       expect((fehler as InstanceType<typeof McpFehler>).code).toBe('E_MCP_SEITEN');
-      expect(seitenAufrufe(calls)).toBe(1);
+      expect(seitenAufrufe(calls)).toBe(HOECHSTENS_SEITEN);
     });
 
     it('bricht bei einem wiederholten Cursor sofort ab', async () => {

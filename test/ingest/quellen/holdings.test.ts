@@ -44,6 +44,14 @@ describe('holeHoldings', () => {
     expect(ernte.daten.kurseAus).toBe('2026-05-14T09:00:00+02:00');
   });
 
+  it('nimmt eine Antwort ohne cryptoHoldings an, wie sie seit November 2026 kommt', async () => {
+    const ohneKrypto = json(FIXTURE.holdings) as Record<string, unknown>;
+    delete ohneKrypto.cryptoHoldings;
+    mcp.mockResolvedValue(antwort(ohneKrypto));
+    const ernte = await holeHoldings(kontext());
+    expect(ernte.daten.bestaende).toHaveLength(3);
+  });
+
   it('bricht bei einer kaputten Antwort mit SchemaFehler ab, statt stillschweigend zu ignorieren', async () => {
     mcp.mockResolvedValue(antwort(json(FIXTURE.holdingsFeld)));
     await expect(holeHoldings(kontext())).rejects.toThrow(SchemaFehler);
