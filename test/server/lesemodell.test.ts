@@ -4,7 +4,7 @@ import { tagAus } from '../../core/kalender.ts';
 import { testDatenbank } from '../../db/verbindung.ts';
 import { baueLesemodell } from '../../server/lesemodell.ts';
 import * as repository from '../../db/repository/index.ts';
-import { markenAus } from '../../server/marken.ts';
+import { kaufTageJeIsin, markenAus } from '../../server/marken.ts';
 import { konfiguration } from '../api/hilfen.ts';
 import { T, WELT, EUROPA, depotTag, einzahlung, kauf, uebertragRaus, uebertragRein, verkauf } from '../hilfen.ts';
 
@@ -105,5 +105,44 @@ describe('markenAus', () => {
       { betragCent: -zuCent('100'), isin: WELT },
       { betragCent: -zuCent('50'), isin: EUROPA },
     ]);
+  });
+});
+
+describe('kaufTageJeIsin', () => {
+  const VON = T('2026-01-01');
+  const BIS = T('2026-12-31');
+
+  it('zaehlt Einzelkauf und Sparplan, je Tag ein Eintrag', () => {
+    const tage = kaufTageJeIsin(
+      [
+        kauf('2026-01-05', WELT, '1', '100'),
+        kauf('2026-02-05', WELT, '1', '100', { typ: 'SAVINGS_PLAN' }),
+        kauf('2026-02-05', WELT, '2', '200'),
+        kauf('2026-02-05', EUROPA, '1', '50'),
+      ],
+      VON,
+      BIS,
+    );
+    expect(tage.get(WELT)).toEqual(['2026-01-05', '2026-02-05']);
+    expect(tage.get(EUROPA)).toEqual(['2026-02-05']);
+  });
+
+  it('kennt weder Verkauf noch Uebertrag, noch einen stornierten Kauf', () => {
+    const tage = kaufTageJeIsin(
+      [
+        verkauf('2026-03-05', WELT, '1', '110'),
+        uebertragRein('2026-03-06', WELT, '1', '110'),
+        uebertragRaus('2026-03-07', WELT, '1', '110'),
+        kauf('2026-03-08', WELT, '1', '100', { status: 'CANCELED' }),
+      ],
+      VON,
+      BIS,
+    );
+    expect(tage.size).toBe(0);
+  });
+
+  it('laesst Kaeufe ausserhalb des Fensters weg', () => {
+    const tage = kaufTageJeIsin([kauf('2025-12-31', WELT, '1', '100'), kauf('2026-06-30', WELT, '1', '100')], VON, T('2026-06-30'));
+    expect(tage.get(WELT)).toEqual(['2026-06-30']);
   });
 });

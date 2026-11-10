@@ -18,6 +18,9 @@ import type {
   KennzahlenAntwort,
   Lauf,
   McpAnmeldung,
+  Positionsverlauf,
+  PositionsverlaufLinie,
+  PositionsverlaufPunkt,
   Rebalancing,
   Sparplaene,
   Top25,
@@ -90,6 +93,72 @@ const laufend = (quellen: Lauf['quellen'], schritt: Lauf['schritt'] = 'kurse'): 
   lauf({ laufId: LAUF_ID, status: 'laufend', schritt, quellen, hinweise: [], gestartet: JETZT, beendet: null, fehler: null });
 const beendet = (status: 'erfolg' | 'teilweise' | 'fehler', teil: Partial<Lauf> = {}): Antwort =>
   lauf({ laufId: LAUF_ID, status, schritt: null, hinweise: [], gestartet: JETZT, beendet: JETZT, fehler: null, ...teil });
+
+/* ------------------------------------------------ synthetischer Positionsverlauf */
+
+const MS_JE_TAG = 86_400_000;
+const tagNach = (start: string, tage: number): string =>
+  new Date(Date.parse(`${start}T00:00:00Z`) + tage * MS_JE_TAG).toISOString().slice(0, 10);
+
+/** Zwei Jahre Monatsenden, dann ein Jahr täglich: die gemischte Auflösung, die der Server liefert. */
+const VERLAUF_TAGE: readonly string[] = [
+  ...Array.from({ length: 24 }, (_, i) => tagNach(`${String(2023 + Math.floor(i / 12))}-${String((i % 12) + 1).padStart(2, '0')}-01`, 27)),
+  ...Array.from({ length: 366 }, (_, i) => tagNach('2025-01-01', i)),
+];
+
+const verlaufIsin = (i: number): string => `DE000A${String(i).padStart(5, '0')}0`;
+const verlaufName = (i: number): string => (i === 1 ? 'Ein Fonds mit einem ausgesprochen langen Namen, der in keine Zeile passt' : `Position ${String(i).padStart(2, '0')}`);
+const verlaufWert = (i: number, schritt: number): number =>
+  Math.round((Math.sin(schritt / (9 + i)) * 0.08 + (schritt / VERLAUF_TAGE.length) * (0.1 + i * 0.03)) * 10_000) / 10_000;
+
+const verlaufPositionen = (anzahl: number): Aufteilung['positionen'] =>
+  Array.from({ length: anzahl }, (_, index) => ({
+    isin: verlaufIsin(index + 1),
+    name: verlaufName(index + 1),
+    art: 'ETF',
+    wertCent: (anzahl - index) * 100_000,
+    anteil: (anzahl - index) / ((anzahl * (anzahl + 1)) / 2),
+    investiertCent: (anzahl - index) * 90_000,
+    gewinnCent: (anzahl - index) * 10_000,
+    gewinnProzent: 0.11,
+    realisiertCent: 0,
+    xirr: xirrOhne('nicht_konvergiert'),
+  }));
+
+type VerlaufBau = {
+  readonly anzahl: number;
+  /** Erste Zeile, die Kurse hat, je Position; ohne Angabe die erste. `null`: gar keine. */
+  readonly start?: (position: number) => number | null;
+  /** Kauf an jedem wievielten Schritt, 0: keine. */
+  readonly kaufSchritt?: number;
+};
+
+function verlaufAntwort({ anzahl, start = () => 0, kaufSchritt = 30 }: VerlaufBau): (b: Positionsverlauf) => Positionsverlauf {
+  const positionen = Array.from({ length: anzahl }, (_, i) => i + 1);
+  const punkte: PositionsverlaufPunkt[] = VERLAUF_TAGE.map((tag, schritt) => ({
+    tag,
+    werte: Object.fromEntries(
+      positionen.map((p) => {
+        const beginn = start(p);
+        return [verlaufIsin(p), beginn === null || schritt < beginn ? null : verlaufWert(p, schritt - beginn)];
+      }),
+    ),
+  }));
+  const linien: PositionsverlaufLinie[] = positionen.map((p) => ({
+    isin: verlaufIsin(p),
+    name: verlaufName(p),
+    kaeufe:
+      kaufSchritt === 0 || start(p) === null
+        ? []
+        : VERLAUF_TAGE.filter((_, schritt) => schritt >= (start(p) ?? 0) && schritt % kaufSchritt === 0).map((tag) => ({ tag, punktTag: tag })),
+  }));
+  return (b) => ({ ...b, linien, punkte, zeitraeume: ['1m', '3m', 'ytd', '1j', '3j', '5j', 'max'] });
+}
+
+const verlaufRouten = (bau: VerlaufBau): Partial<Record<Route, Antwort>> => ({
+  aufteilung: aendern<Aufteilung>((b) => ({ ...b, positionen: verlaufPositionen(bau.anzahl), cashCent: 0, cashAnteil: 0 })),
+  positionsverlauf: aendern<Positionsverlauf>(verlaufAntwort(bau)),
+});
 
 /** Die Standardantwort der POST-Routen, falls ein Fall sie nicht festlegt. */
 export const POST_STANDARD = fehler(
@@ -458,6 +527,46 @@ export const FAELLE: readonly Fall[] = [
     ansicht: 'aufteilung',
     titel: 'Weder Positionen noch Bargeld',
     routen: { aufteilung: aendern<Aufteilung>((b) => ({ ...b, positionen: [], cashCent: 0, cashAnteil: 0 })) },
+  },
+  {
+    id: 'positionsverlauf-25',
+    gruppe: 'positionsverlauf',
+    ansicht: 'aufteilung',
+    titel: '25 Positionen',
+    beschreibung: 'Ring und Strichelung im Filter, langer Name, Tooltip mit vielen Linien.',
+    routen: verlaufRouten({ anzahl: 25 }),
+    klick: 'Position 02',
+    mindesthoehe: 900,
+  },
+  {
+    id: 'positionsverlauf-spaeter-beginn',
+    gruppe: 'positionsverlauf',
+    ansicht: 'aufteilung',
+    titel: 'Kurse beginnen später',
+    beschreibung: 'Position 02 startet im Fenster bei 0 %, die Lücke davor bleibt leer.',
+    routen: verlaufRouten({ anzahl: 3, start: (p) => (p === 2 ? 120 : 0) }),
+    klick: 'Position 02',
+    mindesthoehe: 900,
+  },
+  {
+    id: 'positionsverlauf-keine-kurse',
+    gruppe: 'positionsverlauf',
+    ansicht: 'aufteilung',
+    titel: 'Position ohne Kurse',
+    beschreibung: 'Der Eintrag bleibt im Filter, statt des Charts der Hinweis.',
+    routen: verlaufRouten({ anzahl: 3, start: (p) => (p === 2 ? null : 0) }),
+    klick: 'Position 02',
+    mindesthoehe: 900,
+  },
+  {
+    id: 'positionsverlauf-sparplan',
+    gruppe: 'positionsverlauf',
+    ansicht: 'aufteilung',
+    titel: 'Wöchentlicher Sparplan über Jahre',
+    beschreibung: 'Dicht liegende Kaufpunkte.',
+    routen: verlaufRouten({ anzahl: 3, kaufSchritt: 7 }),
+    klick: 'Position 02',
+    mindesthoehe: 900,
   },
   {
     id: 'rebalancing-ohne-ziel',

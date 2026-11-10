@@ -6,12 +6,18 @@
 
 import type { Tag } from '../core/kalender.ts';
 import { alsTag, tageImMonat } from '../core/kalender.ts';
-import type { Fenster, Zeitraum } from '../shared/zeitfenster.ts';
-import { FENSTER, ZEITRAEUME } from '../shared/zeitfenster.ts';
+import type { Fenster, KursZeitraum, Zeitraum } from '../shared/zeitfenster.ts';
+import { FENSTER, KURS_ZEITRAEUME, ZEITRAEUME } from '../shared/zeitfenster.ts';
 import { parameterAbgelehnt } from './fehler.ts';
 
 export function alsZeitraum(roh: unknown): Zeitraum {
   if (typeof roh === 'string' && (ZEITRAEUME as readonly string[]).includes(roh)) return roh as Zeitraum;
+  if (roh === undefined) return 'max';
+  throw parameterAbgelehnt('zeitraum');
+}
+
+export function alsKursZeitraum(roh: unknown): KursZeitraum {
+  if (typeof roh === 'string' && (KURS_ZEITRAEUME as readonly string[]).includes(roh)) return roh as KursZeitraum;
   if (roh === undefined) return 'max';
   throw parameterAbgelehnt('zeitraum');
 }
@@ -57,10 +63,12 @@ export function minusMonate(t: Tag, monate: number): Tag {
 }
 
 /** Erster Tag eines Zeitraums, kalendarisch vom Stichtag (letzter Reihentag) zurueck. [ADR-053] */
-export function beginnVon(zeitraum: Zeitraum, stichtag: Tag, erster: Tag): Tag {
+export function beginnVon(zeitraum: KursZeitraum, stichtag: Tag, erster: Tag): Tag {
   switch (zeitraum) {
     case '1m':
       return minusMonate(stichtag, 1);
+    case '3m':
+      return minusMonate(stichtag, 3);
     case 'ytd':
       return alsTag(`${stichtag.slice(0, 4)}-01-01`);
     case '1j':

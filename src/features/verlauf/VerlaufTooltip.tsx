@@ -41,7 +41,7 @@ function TooltipPunkt({ farbe }: { readonly farbe: string }) {
 }
 
 /** Trennlinie im Tooltip, nur zwischen Datum und den Werten sowie vor der Differenz. */
-function TooltipTrennlinie() {
+export function TooltipTrennlinie() {
   return <div className="my-1 border-t border-rand" />;
 }
 

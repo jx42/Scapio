@@ -285,6 +285,80 @@ export function datumAlsTagMonat(tag: string): string {
   return datum === null ? String(tag ?? '') : tagMonatFormat.format(datum);
 }
 
+const MS_JE_TAG = 86_400_000;
+
+/** Ganze UTC-Tage seit 1970: nur die Lage auf einer zeitgetreuen Achse, keine Kennzahl. */
+export function tagAchsenwert(tag: string): number {
+  const datum = tagAlsDatum(tag);
+  return datum === null ? 0 : datum.getTime() / MS_JE_TAG;
+}
+
+const ZEITACHSE_WOCHEN_BIS_TAGE = 120;
+const ZEITACHSE_WOCHEN_SCHRITTE = [1, 2, 3, 4, 6, 8] as const;
+const ZEITACHSE_MONATS_SCHRITTE = [1, 2, 3, 6, 12, 24] as const;
+const ZEITACHSE_HOECHSTENS_TICKS = 6;
+/** Ein Tick so nah am rechten Rand liefe mit seiner Beschriftung aus dem Chart. */
+const ZEITACHSE_RAND_ANTEIL = 0.07;
+const TAGE_JE_WOCHE = 7;
+/** Der 1.1.1970 war ein Donnerstag: Tag + 3 ist bei Montagen durch 7 teilbar. */
+const MONTAG_VERSATZ = 3;
+const MONATE_JE_JAHR = 12;
+
+/** Aus dem Text gelesen: Datumsteile eines `Date` gibt es nur im Kalender. [INV-03] */
+function monatsIndex(tag: string): number {
+  return Number(tag.slice(0, 4)) * MONATE_JE_JAHR + Number(tag.slice(5, 7)) - 1;
+}
+
+function monatsErster(index: number): number {
+  return Date.UTC(Math.floor(index / MONATE_JE_JAHR), index % MONATE_JE_JAHR, 1) / MS_JE_TAG;
+}
+
+function wochenTicks(von: number, bis: number, schritt: number): number[] {
+  const ticks: number[] = [];
+  for (let woche = Math.ceil((von + MONTAG_VERSATZ) / TAGE_JE_WOCHE); woche * TAGE_JE_WOCHE - MONTAG_VERSATZ <= bis; woche++) {
+    if (woche % schritt === 0) ticks.push(woche * TAGE_JE_WOCHE - MONTAG_VERSATZ);
+  }
+  return ticks;
+}
+
+function monatsTicks(ersterTag: string, von: number, bis: number, schritt: number): number[] {
+  const ticks: number[] = [];
+  for (let index = monatsIndex(ersterTag); monatsErster(index) <= bis; index++) {
+    if (index % schritt === 0 && monatsErster(index) >= von) ticks.push(monatsErster(index));
+  }
+  return ticks;
+}
+
+function kleinsterSchritt(
+  schritte: readonly number[],
+  ticksFuer: (schritt: number) => number[],
+): { schritt: number; ticks: number[] } {
+  const gefunden = schritte.map((schritt) => ({ schritt, ticks: ticksFuer(schritt) }));
+  return (
+    gefunden.find((stufe) => stufe.ticks.length <= ZEITACHSE_HOECHSTENS_TICKS) ??
+    gefunden.at(-1) ?? { schritt: 1, ticks: [] }
+  );
+}
+
+/**
+ * Ticks und Beschriftung einer zeitgetreuen Achse, immer kalendertreu und nie an Datenzeilen
+ * gebunden: an einem Monatsende stünde sonst der falsche Monat.
+ */
+export function zeitachse(ersterTag: string, letzterTag: string): { ticks: number[]; format: (x: number) => string } {
+  const von = tagAchsenwert(ersterTag);
+  const bis = tagAchsenwert(letzterTag);
+  const spanne = bis - von;
+  const grenze = bis - spanne * ZEITACHSE_RAND_ANTEIL;
+  const ohneRand = (ticks: number[]) => (spanne === 0 ? ticks : ticks.filter((tick) => tick <= grenze));
+
+  if (spanne < ZEITACHSE_WOCHEN_BIS_TAGE) {
+    const { ticks } = kleinsterSchritt(ZEITACHSE_WOCHEN_SCHRITTE, (s) => ohneRand(wochenTicks(von, bis, s)));
+    return { ticks, format: (x) => tagMonatFormat.format(new Date(x * MS_JE_TAG)) };
+  }
+  const { ticks } = kleinsterSchritt(ZEITACHSE_MONATS_SCHRITTE, (s) => ohneRand(monatsTicks(ersterTag, von, bis, s)));
+  return { ticks, format: (x) => monatKurzFormat.format(new Date(x * MS_JE_TAG)) };
+}
+
 /** Ab dieser Spannweite in Tagen beschriftet die Zeitachse Monat und Jahr statt Tag und Monat. */
 const ACHSE_TAG_MONAT_BIS_TAGE = 92;
 

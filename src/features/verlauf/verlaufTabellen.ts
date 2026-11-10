@@ -31,7 +31,7 @@ export function tabellenAufloesung(anzahlPunkte: number): TabellenAufloesung {
  * der erste ebenfalls, damit der Anfang des Fensters lesbar bleibt. Woechentlich zaehlt von hinten
  * (jeder siebte Punkt), monatlich nimmt den letzten Punkt je Kalendermonat.
  */
-export function tabellenPunkte(punkte: readonly Zeitpunkt[]): { punkte: Zeitpunkt[]; aufloesung: TabellenAufloesung } {
+export function tabellenPunkte<T extends { readonly tag: string }>(punkte: readonly T[]): { punkte: T[]; aufloesung: TabellenAufloesung } {
   const aufloesung = tabellenAufloesung(punkte.length);
   if (aufloesung === 'taeglich') return { punkte: [...punkte], aufloesung };
 

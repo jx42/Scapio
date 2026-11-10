@@ -36,6 +36,14 @@ describe('tabellenAufloesung', () => {
 });
 
 describe('tabellenPunkte', () => {
+  it('verdichtet jede Reihe mit einem Tag, nicht nur Zeitpunkte', () => {
+    const reihe = tagesreihe(365).map(({ tag }) => ({ tag, werte: { [tag]: 0 } }));
+    const { punkte, aufloesung } = tabellenPunkte(reihe);
+    expect(aufloesung).toBe('woechentlich');
+    expect(punkte.at(-1)).toBe(reihe.at(-1));
+    expect(punkte.length).toBeLessThan(reihe.length);
+  });
+
   it('laesst kurze Fenster taeglich', () => {
     const reihe = tagesreihe(30);
     expect(tabellenPunkte(reihe).punkte).toEqual(reihe);

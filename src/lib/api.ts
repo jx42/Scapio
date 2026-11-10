@@ -37,6 +37,10 @@ import type {
   MitStand,
   Monatsfluss,
   PositionZeile,
+  Positionsverlauf,
+  PositionsverlaufKauf,
+  PositionsverlaufLinie,
+  PositionsverlaufPunkt,
   Rebalancing,
   RebalancingZeile,
   RealisierteZeile,
@@ -48,6 +52,7 @@ import type {
   VolatilitaetErgebnis,
   XirrErgebnis,
   Zeitpunkt,
+  KursZeitraum,
   Zeitraum,
   VergleichAbstand,
   Zeitreihe,
@@ -96,6 +101,10 @@ export type {
   MitStand,
   Monatsfluss,
   PositionZeile,
+  Positionsverlauf,
+  PositionsverlaufKauf,
+  PositionsverlaufLinie,
+  PositionsverlaufPunkt,
   Rebalancing,
   RebalancingZeile,
   RealisierteZeile,
@@ -107,6 +116,7 @@ export type {
   VolatilitaetErgebnis,
   XirrErgebnis,
   Zeitpunkt,
+  KursZeitraum,
   Zeitraum,
   VergleichAbstand,
   Zeitreihe,
@@ -280,6 +290,9 @@ const lesen = {
 
   rebalancing: (ziel: string) => holen<Rebalancing>(`${LESENDE_ROUTEN.rebalancing.pfad}?ziel=${encodeURIComponent(ziel)}`),
 
+  positionsverlauf: (zeitraum: KursZeitraum) =>
+    holen<Positionsverlauf>(`${LESENDE_ROUTEN.positionsverlauf.pfad}?zeitraum=${encodeURIComponent(zeitraum)}`),
+
   top25: () => holen<Top25>(LESENDE_ROUTEN.top25.pfad),
 
   gewinnquellen: () => holen<Gewinnquellen>(LESENDE_ROUTEN.gewinnquellen.pfad),
@@ -360,6 +373,7 @@ export const schluessel = {
   jahre: (benchmark: string | null) => ['jahre', benchmark] as const,
   aufteilung: ['aufteilung'] as const,
   rebalancing: (ziel: string) => ['rebalancing', ziel] as const,
+  positionsverlauf: (zeitraum: KursZeitraum) => ['positionsverlauf', zeitraum] as const,
   top25: ['top25'] as const,
   fluesse: (fenster: Fenster) => ['fluesse', fenster] as const,
   gewinnquellen: ['gewinnquellen'] as const,

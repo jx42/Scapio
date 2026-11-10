@@ -26,6 +26,8 @@ import type { Kurspunkt, Rasterwert } from '../core/kursraster.ts';
 import { letzterKursBis, rasterFuer, verschmelzeKurse } from '../core/kursraster.ts';
 import type { LookThroughErgebnis } from '../core/lookthrough.ts';
 import { lookThrough, LEERES_ERGEBNIS as LEERER_DURCHBLICK } from '../core/lookthrough.ts';
+import type { PositionsverlaufErgebnis } from '../core/positionsverlauf.ts';
+import { berechnePositionsverlauf } from '../core/positionsverlauf.ts';
 import type { TwrErgebnis } from '../core/twr.ts';
 import { twr } from '../core/twr.ts';
 import type { Bestand, Fluss, Isin, Tx } from '../core/typen.ts';
@@ -36,6 +38,7 @@ import { FUNDS_JSON_ANBIETER } from '../db/repository/fondsAufloesung.ts';
 import type { Lauf } from '../db/repository/lauf.ts';
 import type { Sparplan } from '../db/repository/sparplan.ts';
 import * as repository from '../db/repository/index.ts';
+import { kaufTageJeIsin } from './marken.ts';
 
 /**
  * Der gemeldete Cashbestand steht im Schema nirgends eigens — er kommt als Zeile in
@@ -81,6 +84,7 @@ export type Lesemodell = {
   readonly ersterTag: () => Tag | null;
   readonly positionswerte: () => ReadonlyMap<Isin, Cent>;
   readonly wertpapierBestand: () => readonly Bestand[];
+  readonly positionsverlauf: (von: Tag, bis: Tag, ausduennen: boolean) => PositionsverlaufErgebnis;
   readonly gemeldeterCash: () => Cent;
   readonly drift: () => DriftErgebnis;
   readonly kennzahlen: () => Kennzahlen;
@@ -249,6 +253,17 @@ export function baueLesemodell(
     return ergebnis;
   });
 
+  const positionsverlauf = (von: Tag, bis: Tag, ausduennen: boolean): PositionsverlaufErgebnis => {
+    const kaeufe = kaufTageJeIsin(transaktionen(), von, bis);
+    const positionen = wertpapierBestand().map((b) => ({
+      isin: b.isin,
+      name: b.name,
+      kurse: verschmelzeKurse(repository.kurs.fuerIsin(db, b.isin)),
+      kaufTage: kaeufe.get(b.isin) ?? [],
+    }));
+    return berechnePositionsverlauf(positionen, von, bis, ausduennen);
+  };
+
   return {
     heute,
     stand,
@@ -261,6 +276,7 @@ export function baueLesemodell(
     ersterTag,
     positionswerte,
     wertpapierBestand,
+    positionsverlauf,
     gemeldeterCash,
     drift: driftErgebnis,
     kennzahlen,

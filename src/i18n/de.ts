@@ -264,6 +264,7 @@ export const de = {
     zeitraum: 'Zeitraum',
     zeitraeume: {
       '1m': '1M',
+      '3m': '3M',
       ytd: 'YTD',
       '1j': '1J',
       '3j': '3J',
@@ -357,7 +358,6 @@ export const de = {
       realOhneInflation: 'Ohne Inflation keine Realrendite.',
       /** Wofür eine Erklärung in der Tabelle gilt, für das aria-label des Info-Knopfs. */
       grundZu: (spalte: string, jahr: string) => `${spalte} ${jahr}`,
-      inflationBis: (monat: string) => `Inflation bis ${monat}, neuere Monate sind noch nicht veröffentlicht.`,
       leer: 'Noch kein Kalenderjahr in der Historie.',
     },
   },
@@ -377,7 +377,8 @@ export const de = {
     spalteAnteil: 'Anteil',
     spalteWert: 'Wert',
     spalteGewinn: 'Kursgewinn',
-    spalteDetails: 'Details',
+    spalteInfo: 'Info',
+    onvista: 'onvista',
     /** Anzeigename je Wertpapierart der Bank; alles andere erscheint unverändert, ohne Art als Strich. */
     art: (art: string | null) => (art === null ? '–' : (ARTEN[art] ?? art)),
     cash: 'Bargeld (Verrechnungskonto)',
@@ -386,6 +387,25 @@ export const de = {
     hervorheben: (name: string) => `${name} hervorheben`,
     onvistaTitel: 'Details bei onvista',
     onvistaOeffnen: (name: string) => `${name} bei onvista öffnen, neuer Tab`,
+    verlaufOeffnen: (name: string) => `Kursentwicklung von ${name} öffnen`,
+  },
+
+  positionsverlauf: {
+    beschreibung: 'Liniendiagramm der Kursentwicklung, weitere Positionen lassen sich einblenden.',
+    titel: 'Kursentwicklung',
+    infoMass:
+      'Reine Kursentwicklung je Position, ab Beginn des Zeitraums gleich 0 %. Nicht geldgewichtet, damit die Positionen untereinander vergleichbar sind.',
+    infoKaeufe:
+      'Ein Punkt auf der Linie ist ein Kauf. Kurse vor dem eigenen Kauf sind mit dabei. Ausschüttungen sind nicht enthalten: Ausschütter sehen dadurch schlechter aus als Thesaurierer.',
+    leer: 'Keine Position eingeblendet. Wähle oben mindestens eine aus.',
+    ohneKurse: 'Für die eingeblendeten Positionen gibt es in diesem Zeitraum keine Kurse.',
+    filter: 'Positionen',
+    chart: 'Kursentwicklung der eingeblendeten Positionen',
+    tabelle: 'Kursentwicklung je Position seit Beginn des Zeitraums',
+    spalteKaeufe: 'Käufe',
+    weitere: (anzahl: number) => `und ${String(anzahl)} weitere`,
+    kauf: (datum: string) => `Kauf ${datum}`,
+    kaeufe: (anzahl: number, tage: string, letztesDatum: string) => `${String(anzahl)} Käufe: ${tage}, ${letztesDatum}`,
   },
 
   rebalancing: {

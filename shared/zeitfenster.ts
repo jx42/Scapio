@@ -12,6 +12,10 @@
 export const ZEITRAEUME = ['1m', 'ytd', '1j', '3j', '5j', 'max'] as const;
 export type Zeitraum = (typeof ZEITRAEUME)[number];
 
+/** Die Kursentwicklung je Position kennt zusätzlich drei Monate, die Verlauf-Kachel nicht (ADR-063). */
+export const KURS_ZEITRAEUME = ['1m', '3m', 'ytd', '1j', '3j', '5j', 'max'] as const;
+export type KursZeitraum = (typeof KURS_ZEITRAEUME)[number];
+
 export const FENSTER = ['3m', '6m', '12m', '36m', '60m', 'max'] as const;
 export type Fenster = (typeof FENSTER)[number];
 

@@ -40,6 +40,7 @@ import { registriereKennzahlen } from './routen/kennzahlen.ts';
 import { registriereLauf } from './routen/lauf.ts';
 import { registriereMcpAnmeldung, registriereMcpAnmeldungAbfrage, type Anmeldezustand } from './routen/mcpAnmeldung.ts';
 import { registriereRebalancing } from './routen/rebalancing.ts';
+import { registrierePositionsverlauf } from './routen/positionsverlauf.ts';
 import { registriereRefresh } from './routen/refresh.ts';
 import { registriereSparplaene } from './routen/sparplaene.ts';
 import { registriereTop25 } from './routen/top25.ts';
@@ -72,6 +73,7 @@ const REGISTRIERUNG = {
   jahre: registriereJahre,
   aufteilung: registriereAufteilung,
   rebalancing: registriereRebalancing,
+  positionsverlauf: registrierePositionsverlauf,
   top25: registriereTop25,
   gewinnquellen: registriereGewinnquellen,
   fluesse: registriereFluesse,
