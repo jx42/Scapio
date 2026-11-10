@@ -6,7 +6,7 @@
 import { de } from '@/i18n/de';
 import type { Jahre, Jahreszeile } from '@/lib/api';
 import { richtungTon } from '@/lib/farben';
-import { datumAlsTagMonat, euroAusCent, monatLang, prozent, richtungswert } from '@/lib/format';
+import { datumAlsTagMonat, euroAusCent, prozent, richtungswert } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { InfoKnopf } from '@/components/InfoKnopf';
 import { RichtungsPfeil } from '@/components/RichtungsPfeil';
@@ -16,7 +16,7 @@ const t = de.verlauf.jahre;
 const ZAHL = 'text-right whitespace-nowrap tabular-nums';
 
 /**
- * Ein Wert mit Erklaerung im Popover — fuer "nicht berechenbar" und eine verkuerzte Inflation.
+ * Ein Wert mit Erklaerung im Popover — fuer "nicht berechenbar".
  * Kein `title`: der ist ohne Maus nicht erreichbar.
  */
 function MitGrund({ grund, children }: { readonly grund: Grund; readonly children: string }) {
@@ -76,17 +76,6 @@ function Jahr({ zeile }: { readonly zeile: Jahreszeile }) {
   );
 }
 
-/**
- * Endet die Inflation vor dem letzten Monat der Zeile, sagt die Erklaerung, bis wann — auch bei
- * einem abgeschlossenen Jahr, solange Eurostat den Dezember noch nicht veroeffentlicht hat.
- */
-function Teuerung({ zeile, teuerung }: { readonly zeile: Jahreszeile; readonly teuerung: number }) {
-  const bisMonat = zeile.teuerungBisMonat;
-  const letzterMonat = zeile.bis === null ? `${zeile.jahr}-12` : zeile.bis.slice(0, 7);
-  if (bisMonat === null || bisMonat >= letzterMonat) return prozent(teuerung);
-  return <MitGrund grund={grund(t.spalteInflation, zeile, t.inflationBis(monatLang(bisMonat)))}>{prozent(teuerung)}</MitGrund>;
-}
-
 export function JahresTabelle({ daten }: { readonly daten: Jahre }) {
   const mitVergleich = daten.benchmark !== null;
 
@@ -140,7 +129,7 @@ export function JahresTabelle({ daten }: { readonly daten: Jahre }) {
               {z.teuerung === null ? (
                 <MitGrund grund={grund(t.spalteInflation, z, t.ohneInflation)}>{de.xirr.nichtBerechenbar}</MitGrund>
               ) : (
-                <Teuerung zeile={z} teuerung={z.teuerung} />
+                prozent(z.teuerung)
               )}
             </TableCell>
             <Gerichtet

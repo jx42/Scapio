@@ -42,15 +42,22 @@ describe('Demo-Abzug — Abbildung', () => {
     expect(abbilden('/api/zeitreihe')).toBe('/api/zeitreihe/max/ohne.json');
     expect(abbilden('/api/zeitreihe?zeitraum=1j&benchmark=XX0000000000')).toBe('/api/zeitreihe/1j/ohne.json');
     expect(abbilden('/api/fluesse')).toBe('/api/fluesse/12m.json');
+    expect(abbilden('/api/positionsverlauf')).toBe('/api/positionsverlauf/max.json');
+    expect(abbilden('/api/positionsverlauf?zeitraum=3j')).toBe('/api/positionsverlauf/3j.json');
+    expect(abbilden('/api/positionsverlauf?zeitraum=3m')).toBe('/api/positionsverlauf/3m.json');
   });
 
   it.each([
     '/api/kennzahlen?x=1',
     '/api/zeitreihe?zeitraum=1j&zeitraum=3j',
     '/api/zeitreihe?zeitraum=../../index',
+    '/api/zeitreihe?zeitraum=3m',
     '/api/zeitreihe?zeitraum=1j&benchmark=a&benchmark=b',
     '/api/zeitreihe?fenster=12m',
     '/api/fluesse?fenster=7m',
+    '/api/positionsverlauf?zeitraum=../../index',
+    '/api/positionsverlauf?zeitraum=7m',
+    '/api/positionsverlauf?von=2024-01-01',
     '/api/rebalancing',
     '/api/rebalancing?ziel=KONTO:10000',
     '/api/rebalancing?ziel=KONTO:10000&ohneVerkaeufe=1',

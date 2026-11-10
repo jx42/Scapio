@@ -26,6 +26,10 @@ import type {
   Lauf,
   MaxDrawdownErgebnis,
   McpAnmeldung,
+  Positionsverlauf,
+  PositionsverlaufKauf,
+  PositionsverlaufLinie,
+  PositionsverlaufPunkt,
   Rebalancing,
   RebalancingZeile,
   SharpeErgebnis,
@@ -174,6 +178,69 @@ describe('Vertragstest: server/vertrag.ts gegen die tatsaechliche Antwort', () =
     );
     schluessel('rebalancing.drift', body.drift, DRIFT);
   });
+
+  it('GET /api/positionsverlauf', async () => {
+    // Mit Demodaten: `werte` hat ISINs als Schluessel, die das Schema nicht einzeln nennt.
+    const db = await testDatenbank();
+    const jetzt = new Date().toISOString();
+    const { heute } = seedeDatenbank(db, tagAus(jetzt), jetzt);
+    const { app } = baueServer({
+      db,
+      konfiguration: konfiguration(),
+      distPfad: join(tmpdir(), 'portfolio-kein-dist'),
+      heute,
+      protokoll: false,
+    });
+    const body = await holen(app, '/api/positionsverlauf?zeitraum=3m');
+    schluessel(
+      'positionsverlauf',
+      body,
+      felder<Positionsverlauf>({
+        linien: true,
+        punkte: true,
+        zeitraeume: true,
+        stand: true,
+        drift: true,
+      }),
+    );
+    schluessel('positionsverlauf.drift', body.drift, DRIFT);
+    // Drei Monate gibt es nur hier, nicht in der Zeitreihe.
+    expect(body.zeitraeume).toEqual(expect.arrayContaining(['1m', '3m', 'max']));
+    const zeitreihe = await app.inject({ method: 'GET', url: '/api/zeitreihe?zeitraum=3m', headers: eigeneHerkunft() });
+    expect(zeitreihe.statusCode).toBe(400);
+
+    const linien = body.linien as { isin: string; kaeufe: unknown[] }[];
+    const punkte = body.punkte as { werte: Record<string, number | null> }[];
+    const mitKauf = linien.find((l) => l.kaeufe.length > 0);
+    expect(mitKauf).toBeDefined();
+    schluessel(
+      'positionsverlauf.linien[0]',
+      linien[0],
+      felder<PositionsverlaufLinie>({ isin: true, name: true, kaeufe: true }),
+    );
+    schluessel('positionsverlauf.linien[].kaeufe[0]', mitKauf?.kaeufe[0], felder<PositionsverlaufKauf>({ tag: true, punktTag: true }));
+    schluessel('positionsverlauf.punkte[0]', punkte[0], felder<PositionsverlaufPunkt>({ tag: true, werte: true }));
+    expect(Object.keys(punkte.at(-1)?.werte ?? {})).toEqual(expect.arrayContaining(linien.map((l) => l.isin)));
+    expect(Object.values(punkte.at(-1)?.werte ?? {}).some((w) => typeof w === 'number')).toBe(true);
+  });
+
+  it('GET /api/positionsverlauf ohne Depot', async () => {
+    const { app } = await testServer();
+    const body = await holen(app, '/api/positionsverlauf');
+    expect(body.linien).toEqual([]);
+    expect(body.punkte).toEqual([]);
+    expect(body.zeitraeume).toEqual(['max']);
+  });
+
+  it.each(['/api/positionsverlauf?zeitraum=7m', '/api/positionsverlauf?von=2024-01-01', '/api/positionsverlauf?zeitraum=1j&zeitraum=3j'])(
+    'lehnt %s ab',
+    async (url) => {
+      const { app } = await testServer();
+      const antwort = await app.inject({ method: 'GET', url, headers: eigeneHerkunft() });
+      expect(antwort.statusCode).toBe(400);
+      expect((JSON.parse(antwort.body) as { fehler: { code: string } }).fehler.code).toBe('E_PARAMETER');
+    },
+  );
 
   it('GET /api/fluesse', async () => {
     const { app } = await testServer();

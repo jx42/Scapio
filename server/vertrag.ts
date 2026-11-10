@@ -22,14 +22,14 @@ import type {
   VolatilitaetJson,
   XirrJson,
 } from './json.ts';
-import type { Fenster, Zeitraum } from '../shared/zeitfenster.ts';
+import type { Fenster, KursZeitraum, Zeitraum } from '../shared/zeitfenster.ts';
 import { BENCHMARKS, RISIKOFREI, RISIKOFREI_ISIN } from '../shared/benchmarks.ts';
 import type { BenchmarkIsin } from '../shared/benchmarks.ts';
 
 export { BENCHMARKS, JUNGE_SPANNE_TAGE, RISIKOFREI, RISIKOFREI_ISIN };
 export type { BenchmarkIsin };
 
-export type { LaufSchritt, LaufStatus, QuellenStatus, Fenster, Zeitraum, LaufHinweis, LaufHinweisArt };
+export type { LaufSchritt, LaufStatus, QuellenStatus, Fenster, KursZeitraum, Zeitraum, LaufHinweis, LaufHinweisArt };
 export type Drift = DriftJson;
 export type DriftStufe = Drift['stufe'];
 export type MitStand = Umschlag;
@@ -107,6 +107,32 @@ export type Zeitreihe = MitStand & {
   readonly benchmark: { readonly isin: string; readonly name: string } | null;
   /** Abstand des Depots zu jedem Vergleich mit Kursen am Fensterende, unabhaengig von `benchmark`. */
   readonly abstaende: readonly VergleichAbstand[];
+};
+
+export type PositionsverlaufKauf = {
+  readonly tag: string;
+  /** Zeile in `punkte`, auf der der Kauf liegt. */
+  readonly punktTag: string;
+};
+
+export type PositionsverlaufLinie = {
+  readonly isin: string;
+  readonly name: string;
+  /** Nur Käufe im Fenster. */
+  readonly kaeufe: readonly PositionsverlaufKauf[];
+};
+
+export type PositionsverlaufPunkt = {
+  readonly tag: string;
+  /** Je ISIN als Anteil: 0.224 ist +22,4 %. */
+  readonly werte: Readonly<Record<string, number | null>>;
+};
+
+export type Positionsverlauf = MitStand & {
+  /** Reihenfolge ohne Bedeutung, die Farbe kommt vom Ring. */
+  readonly linien: readonly PositionsverlaufLinie[];
+  readonly punkte: readonly PositionsverlaufPunkt[];
+  readonly zeitraeume: readonly KursZeitraum[];
 };
 
 export type VergleichAbstand = {

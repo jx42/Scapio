@@ -61,7 +61,7 @@ export function RebalancingDialog({ anfangsOffen = false, ...props }: Rebalancin
         {de.rebalancing.knopf}
       </Button>
       <Dialog open={offen} onOpenChange={setOffen}>
-        <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-3xl">
+        <DialogContent className="sm:max-w-3xl">
           <DialogHeader>
             <DialogTitle>{de.rebalancing.titel}</DialogTitle>
             <DialogDescription className="sr-only">{de.rebalancing.beschreibung}</DialogDescription>

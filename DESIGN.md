@@ -102,7 +102,8 @@ Tiefe entsteht aus zwei Ebenen, nicht aus Schattenstufen:
   ohne `backdrop-filter`. Kachel und Karte.
 - **Schwebend**: `schwebend` mit Blur, Abdunkeln und `shadow-schwebend`. Menü, Select,
   Popover, Chart-Tooltip, Dialog und Toast teilen diese eine Fläche. Lesbar wird sie durch
-  Blur, nicht durch Deckkraft.
+  Blur, nicht durch Deckkraft. Der Dialog nutzt dieselben Werte als `schwebend-ebene` auf
+  `::before`, damit ein Tooltip darin noch verschwimmt ([ADR-063](docs/entscheidungen/ADR-063-kursentwicklung-je-position.md)).
 
 Bedienelemente (Auswahl-Knöpfe, Reiter, Zeitraum-Leiste) liegen auf `bg-bedien` mit
 derselben `lichtkante`. Das gewählte Segment hebt sich über `bedien-aktiv` und

@@ -6,7 +6,7 @@
 
 import { BENCHMARKS, RISIKOFREI_ISIN } from './benchmarks.ts';
 import { LESENDE_ROUTEN } from './routen.ts';
-import { FENSTER, ZEITRAEUME } from './zeitfenster.ts';
+import { FENSTER, KURS_ZEITRAEUME, ZEITRAEUME } from './zeitfenster.ts';
 
 const OHNE_PARAMETER: readonly string[] = Object.values(LESENDE_ROUTEN)
   .filter((r) => r.parameter.length === 0)
@@ -50,6 +50,11 @@ export function abzugPfad(pfad: string, parameter: URLSearchParams): string | nu
     const benchmark = benchmarke[0] !== undefined && BENCHMARK_WAHL.includes(benchmarke[0]) ? benchmarke[0] : OHNE_BENCHMARK;
     return `/api/zeitreihe/${zeitraum}/${benchmark}.json`;
   }
+  if (`/api/${name}` === LESENDE_ROUTEN.positionsverlauf.pfad) {
+    if (!nurErlaubte(parameter, ['zeitraum'])) return null;
+    const zeitraum = einzeln(parameter, 'zeitraum', KURS_ZEITRAEUME, 'max');
+    return zeitraum === null ? null : `/api/positionsverlauf/${zeitraum}.json`;
+  }
   if (`/api/${name}` === LESENDE_ROUTEN.jahre.pfad) {
     if (!nurErlaubte(parameter, ['benchmark'])) return null;
     const benchmarke = parameter.getAll('benchmark');
@@ -81,6 +86,7 @@ export function abzugAnfragen(): string[] {
       anfragen.push(`${LESENDE_ROUTEN.zeitreihe.pfad}?zeitraum=${z}&benchmark=${encodeURIComponent(b)}`);
     }
   }
+  for (const z of KURS_ZEITRAEUME) anfragen.push(`${LESENDE_ROUTEN.positionsverlauf.pfad}?zeitraum=${z}`);
   anfragen.push(LESENDE_ROUTEN.jahre.pfad);
   for (const b of BENCHMARK_WAHL) anfragen.push(`${LESENDE_ROUTEN.jahre.pfad}?benchmark=${encodeURIComponent(b)}`);
   for (const f of FENSTER) anfragen.push(`${LESENDE_ROUTEN.fluesse.pfad}?fenster=${f}`);

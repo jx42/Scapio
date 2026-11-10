@@ -173,26 +173,26 @@ describe('AufteilungKachel', () => {
     expect(ersteZeile.closest('li')).not.toHaveAttribute('data-aktiv');
   });
 
-  it('verlinkt jeden Positionsnamen zu seiner ISIN bei onvista, Cash nicht', async () => {
+  it('macht jeden Positionsnamen zum Knopf fuer den Verlauf, Cash nicht', async () => {
     wiederherstellen = fetchErsatz(planZweiAbfragen(() => ({ body: AUFTEILUNG })));
     rendern(<AufteilungKachel />);
     await screen.findByText(de.aufteilung.tabelle);
 
-    const linkErsterEtf = screen.getByRole('link', {
-      name: de.aufteilung.onvistaOeffnen('iShares Core MSCI World'),
-    });
-    expect(linkErsterEtf).toHaveAttribute('href', 'https://www.onvista.de/suche?searchValue=IE00B4L5Y983');
-    expect(linkErsterEtf).toHaveAttribute('target', '_blank');
-    expect(linkErsterEtf).toHaveAttribute('rel', 'noopener noreferrer');
-    // Der Name ist der Link; eine eigene onvista-Spalte gibt es nicht mehr.
-    expect(linkErsterEtf).toHaveTextContent('iShares Core MSCI World');
-    expect(screen.queryByText('onvista')).not.toBeInTheDocument();
+    const knopf = screen.getByRole('button', { name: de.aufteilung.verlaufOeffnen('iShares Core MSCI World') });
+    expect(knopf).toHaveTextContent('iShares Core MSCI World');
+    expect(knopf).toHaveAttribute('aria-haspopup', 'dialog');
+    expect(screen.queryByRole('button', { name: de.aufteilung.verlaufOeffnen(de.aufteilung.cash) })).not.toBeInTheDocument();
+  });
 
-    expect(
-      screen.queryByRole('link', {
-        name: de.aufteilung.onvistaOeffnen(de.aufteilung.cash),
-      }),
-    ).not.toBeInTheDocument();
+  it('fuehrt in der Spalte Info je Position zu onvista, Cash nicht', async () => {
+    wiederherstellen = fetchErsatz(planZweiAbfragen(() => ({ body: AUFTEILUNG })));
+    rendern(<AufteilungKachel />);
+    await screen.findByText(de.aufteilung.tabelle);
+
+    const link = screen.getByRole('link', { name: de.aufteilung.onvistaOeffnen('iShares Core MSCI World') });
+    expect(link).toHaveTextContent(de.aufteilung.onvista);
+    expect(link).toHaveAttribute('href', expect.stringContaining('IE00B4L5Y983'));
+    expect(screen.queryByRole('link', { name: de.aufteilung.onvistaOeffnen(de.aufteilung.cash) })).not.toBeInTheDocument();
   });
 
   it('zeigt den Gewinn je Position mit Pfeil, Cash ohne Gewinn', async () => {
@@ -230,29 +230,6 @@ describe('AufteilungKachel', () => {
     const legende = within(screen.getByRole('list'));
     expect(legende.getByText(de.aufteilung.art('ETF'))).toBeInTheDocument();
     expect(legende.getByText(de.aufteilung.art('STOCK'))).toBeInTheDocument();
-  });
-
-  it('verlinkt Fonds wie jede andere Art ueber die ISIN-Suche', async () => {
-    const [etf, zweite] = AUFTEILUNG.positionen;
-    const mitFonds: Aufteilung = {
-      ...AUFTEILUNG,
-      positionen: [
-        etf!,
-        {
-          ...zweite!,
-          isin: 'LU0171310443',
-          name: 'BGF World Technology Fund',
-          art: 'FUND',
-        },
-      ],
-    };
-    wiederherstellen = fetchErsatz(planZweiAbfragen(() => ({ body: mitFonds })));
-    rendern(<AufteilungKachel />);
-    await screen.findByText(de.aufteilung.tabelle);
-
-    expect(
-      screen.getByRole('link', { name: de.aufteilung.onvistaOeffnen('BGF World Technology Fund') }),
-    ).toHaveAttribute('href', 'https://www.onvista.de/suche?searchValue=LU0171310443');
   });
 
   it('besteht axe ohne Verstoss, sobald der Ring steht', async () => {

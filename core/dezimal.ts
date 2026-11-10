@@ -118,6 +118,15 @@ export function anteil(teil: Cent, ganzes: Cent): number {
   return Number(teil) / Number(ganzes);
 }
 
+/**
+ * Kursentwicklung gegen eine Basis als Anteil (0.224 ist +22,4 %), auf 1e-5 gerundet. Nur zur
+ * Anzeige. `basis` muss positiv sein.
+ */
+export function entwicklung(kurs: KursE6, basis: KursE6): number {
+  const teiler = 100_000n;
+  return Number(rundeAufCent((kurs - basis) * teiler, basis)) / Number(teiler);
+}
+
 /** Summe ohne Zwischenrundung. */
 export function summe(werte: readonly bigint[]): bigint {
   let s = 0n;

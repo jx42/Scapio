@@ -65,3 +65,21 @@ export function markenAus(transaktionen: readonly Tx[], von: Tag, bis: Tag): Mar
 
   return [...jeSchluessel.values()].sort((a, b) => vergleiche(a.tag, b.tag));
 }
+
+/**
+ * Kauftage je ISIN für die Punkte im Positionsverlauf: dieselbe Auswahl wie die Marken, damit
+ * ein Kauf überall dasselbe heißt; je ISIN und Tag ein Eintrag, aufsteigend.
+ */
+export function kaufTageJeIsin(transaktionen: readonly Tx[], von: Tag, bis: Tag): Map<Isin, Tag[]> {
+  const jeIsin = new Map<Isin, Set<Tag>>();
+  for (const marke of markenAus(transaktionen, von, bis)) {
+    if (marke.typ !== 'sparplan' && marke.typ !== 'kauf') continue;
+    for (const { isin } of marke.vorgaenge) {
+      if (isin === null) continue;
+      const tage = jeIsin.get(isin);
+      if (tage === undefined) jeIsin.set(isin, new Set([marke.tag]));
+      else tage.add(marke.tag);
+    }
+  }
+  return new Map([...jeIsin].map(([isin, tage]) => [isin, [...tage]]));
+}

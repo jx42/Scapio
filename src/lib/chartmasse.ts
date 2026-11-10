@@ -70,6 +70,8 @@ export function achsenTextBreite(text: string): number {
 }
 
 export const VERLAUF_CHART_HOEHE = 320;
+/** Entspricht `h-140` der Hinweise im Dialog. */
+export const POSITIONSVERLAUF_CHART_HOEHE = 560;
 /** Abstand der Datumsbeschriftung von ihrer Vorschaulinie und vom oberen Rand. */
 export const VORSCHAU_BESCHRIFTUNG_ABSTAND = 8;
 export const VORSCHAU_BESCHRIFTUNG_OBEN = 6;
@@ -133,6 +135,11 @@ export const LINIE_MARKE_HERVORGEHOBEN = 2;
 /** Hover-Punkt der Rendite-Flaeche: Radius und Randstaerke. */
 export const AKTIV_PUNKT_RADIUS = 4;
 export const AKTIV_PUNKT_RAND = 2;
+/** Kaufpunkte im Positionsverlauf; der Rand in Grundfarbe löst sie von der Linie. */
+export const KAUF_PUNKT_RADIUS = 4.5;
+export const KAUF_PUNKT_RAND = 1.5;
+/** Ab der elften Position wiederholt sich die Farbreihe; der Strich hält die Linien auseinander. */
+export const LINIE_WIEDERHOLT_STRICHELUNG = '6 3';
 
 /** Farbpunkt vor einem Namen in der Legende (Durchmesser; der Radius folgt daraus). */
 export const FARBTUPFER_GROESSE = 10;

@@ -49,7 +49,7 @@ function DialogContent({
         data-slot="dialog-content"
         className={cn(
           // eslint-disable-next-line no-restricted-syntax -- outline-none ohne eigenen Ring: der globale, unlayerte Ring aus styles/theme.css gilt unbedingt.
-          'fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 schwebend rounded-lg p-5 text-sm text-text duration-100 outline-none sm:max-w-lg data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
+          'fixed top-1/2 left-1/2 z-50 flex max-h-[85vh] w-full max-w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 flex-col schwebend-ebene rounded-lg text-sm text-text duration-100 outline-none sm:max-w-lg data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
           className,
         )}
         onOpenAutoFocus={(event) => {
@@ -64,15 +64,19 @@ function DialogContent({
         }}
         {...props}
       >
-        {children}
-        {showCloseButton && (
-          <DialogPrimitive.Close data-slot="dialog-close" asChild>
-            <Button variant="ghost" size="icon" className="absolute top-3.5 right-3 size-7">
-              <XIcon />
-              <span className="sr-only">{de.dialog.schliessen}</span>
-            </Button>
-          </DialogPrimitive.Close>
-        )}
+        {/* Der Knopf liegt im Scroller, damit Pfeiltasten scrollen, wenn er den Fokus hat; er
+            richtet sich nach dem Dialog und scrollt nicht mit. */}
+        <div className="grid min-h-0 gap-4 overflow-y-auto p-5">
+          {children}
+          {showCloseButton && (
+            <DialogPrimitive.Close data-slot="dialog-close" asChild>
+              <Button variant="ghost" size="icon" className="absolute top-3.5 right-3 size-7">
+                <XIcon />
+                <span className="sr-only">{de.dialog.schliessen}</span>
+              </Button>
+            </DialogPrimitive.Close>
+          )}
+        </div>
       </DialogPrimitive.Content>
     </DialogPortal>
   );

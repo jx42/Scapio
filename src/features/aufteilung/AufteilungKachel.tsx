@@ -13,16 +13,17 @@
  */
 
 import { useState, type ReactNode } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 
 import { de } from '@/i18n/de';
-import { api, kachelZustand, schluessel } from '@/lib/api';
+import { api, kachelZustand, schluessel, type KursZeitraum, type PositionZeile } from '@/lib/api';
 import { istDemoModus } from '@/lib/demoModus';
 import { tokenVorhanden } from '@/lib/token';
 import { Kachel } from '@/components/Kachel';
 import { Driftfussnote } from '@/components/Driftbanner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AufteilungAnsicht } from '@/features/aufteilung/AufteilungAnsicht';
+import { PositionsverlaufDialog } from '@/features/aufteilung/PositionsverlaufDialog';
 import { RebalancingDialog } from '@/features/aufteilung/RebalancingDialog';
 import { AnalyseAnsicht } from '@/features/aufteilung/analyse/AnalyseAnsicht';
 import { FondsHinweise } from '@/features/aufteilung/analyse/FondsHinweise';
@@ -40,6 +41,8 @@ export function AufteilungKachel() {
   const [hervorgehoben, setHervorgehoben] = useState<string | null>(null);
   const [gehoverter, setGehoverter] = useState<string | null>(null);
   const [anfrage, setAnfrage] = useState<string | null>(null);
+  const [verlaufPosition, setVerlaufPosition] = useState<PositionZeile | null>(null);
+  const [verlaufZeitraum, setVerlaufZeitraum] = useState<KursZeitraum>('max');
 
   const abfrage = useQuery({ queryKey: schluessel.aufteilung, queryFn: api.aufteilung });
   const kennzahlen = useQuery({ queryKey: schluessel.kennzahlen, queryFn: api.kennzahlen });
@@ -52,6 +55,12 @@ export function AufteilungKachel() {
     queryFn: () => api.rebalancing(anfrage ?? ''),
     enabled: anfrage !== null,
     retry: false,
+  });
+  const positionsverlauf = useQuery({
+    queryKey: schluessel.positionsverlauf(verlaufZeitraum),
+    queryFn: () => api.positionsverlauf(verlaufZeitraum),
+    enabled: verlaufPosition !== null,
+    placeholderData: keepPreviousData,
   });
 
   const daten = abfrage.data;
@@ -123,17 +132,37 @@ export function AufteilungKachel() {
             ausgewaehlt={hervorgehoben}
             onHervorheben={setHervorgehoben}
             onHover={setGehoverter}
+            onOeffnen={(position) => {
+              setVerlaufZeitraum('max');
+              setVerlaufPosition(position);
+            }}
           />
         </AufteilungInhalt>
       )}
     </Kachel>
   );
 
-  if (!mitReitern) return kachel;
   return (
-    <Tabs value={analyse ? 'analyse' : 'aufteilung'} onValueChange={(wert) => setReiter(wert as Reiter)} className="gap-0">
-      {kachel}
-    </Tabs>
+    <>
+      {mitReitern ? (
+        <Tabs value={analyse ? 'analyse' : 'aufteilung'} onValueChange={(wert) => setReiter(wert as Reiter)} className="gap-0">
+          {kachel}
+        </Tabs>
+      ) : (
+        kachel
+      )}
+      {verlaufPosition === null ? null : (
+        <PositionsverlaufDialog
+          key={verlaufPosition.isin}
+          isin={verlaufPosition.isin}
+          positionen={daten?.positionen ?? []}
+          zeitraum={verlaufZeitraum}
+          ergebnis={{ daten: positionsverlauf.data, fehler: positionsverlauf.error }}
+          onZeitraum={setVerlaufZeitraum}
+          onSchliessen={() => setVerlaufPosition(null)}
+        />
+      )}
+    </>
   );
 }
 

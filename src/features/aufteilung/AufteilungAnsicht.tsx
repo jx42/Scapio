@@ -5,8 +5,8 @@
  * darin. Deshalb traegt jede Legendenzeile Prozent UND Betrag, und der Ring ist nur
  * das Bild dazu. [P-06]
  *
- * Der Name fuehrt zu onvista, Art und Werte sind ein Knopf: Hervorheben muss mit der Tastatur
- * gehen, ein Hover-Effekt allein waere fuer die halbe Bedienung unerreichbar.
+ * Der Name oeffnet den Positionsverlauf, Info fuehrt zu onvista, Anteil und Wert sind ein Knopf: Hervorheben muss mit der
+ * Tastatur gehen, ein Hover-Effekt allein waere fuer die halbe Bedienung unerreichbar.
  */
 
 import { Cell, Label, Pie, PieChart, ResponsiveContainer } from 'recharts';
@@ -16,13 +16,15 @@ import { de } from '@/i18n/de';
 import type { PositionZeile } from '@/lib/api';
 import { AUFTEILUNG_CHART_HOEHE, DECKKRAFT_GEDIMMT, LINIE_HAUPT, RING_AUSSEN, RING_INNEN, RING_LUECKE_GRAD } from '@/lib/chartmasse';
 import { anteilProzent, betragOhneVorzeichen, euroAusCent, prozent } from '@/lib/format';
+import { linkVariants } from '@/lib/linkStil';
+import { onvistaLink } from '@/lib/onvista';
 import { cn } from '@/lib/utils';
 import { FARBE } from '@/lib/farben';
 import { useZahlZaehler } from '@/hooks/useZahlZaehler';
 import { ChartRahmen } from '@/components/ChartRahmen';
-import { OnvistaLink } from '@/components/OnvistaLink';
 import { RichtungsBadge } from '@/components/RichtungsBadge';
 import { Farbtupfer, RingMitte, ringFarbe as farbe } from '@/components/Ring';
+import { OnvistaLink } from '@/components/OnvistaLink';
 import { LeerZustand } from '@/components/Zustaende';
 
 const CASH_SCHLUESSEL = 'cash';
@@ -35,6 +37,9 @@ const ZEILE = 'grid grid-cols-1 items-baseline gap-x-3 @3xl/legende:grid-cols-[m
 
 /** Die Art-Spalte: feste Breite, bricht Langes um statt es zu kürzen (WCAG 1.4.10) und entfällt auf schmalen Bildschirmen, damit der Name Platz behält. */
 const ART_SPALTE = 'hidden w-16 shrink-0 break-words sm:block';
+
+/** Die Info-Spalte mit dem onvista-Link: entfällt schmal wie die Art. */
+const INFO_SPALTE = 'hidden w-20 shrink-0 sm:block';
 
 type Stueck = {
   readonly schluessel: string;
@@ -55,6 +60,7 @@ export type AufteilungAnsichtProps = {
   readonly ausgewaehlt: string | null;
   readonly onHervorheben: (schluessel: string | null) => void;
   readonly onHover: (schluessel: string | null) => void;
+  readonly onOeffnen: (position: PositionZeile) => void;
 };
 
 export function AufteilungAnsicht({
@@ -66,6 +72,7 @@ export function AufteilungAnsicht({
   ausgewaehlt,
   onHervorheben,
   onHover,
+  onOeffnen,
 }: AufteilungAnsichtProps) {
   // Nur zusammengestellt, nicht gerechnet: Anteile kommen fertig vom Server,
   // Cash steht hinten, weil es keine Anlageentscheidung ist.
@@ -109,7 +116,7 @@ export function AufteilungAnsicht({
               de.aufteilung.spalteAnteil,
               de.aufteilung.spalteWert,
               de.aufteilung.spalteGewinn,
-              de.aufteilung.spalteDetails,
+              de.aufteilung.spalteInfo,
             ],
             zeilen: stuecke.map((s) => [
               s.name,
@@ -166,6 +173,7 @@ export function AufteilungAnsicht({
             <span className="flex items-baseline gap-x-3">
               <span className="min-w-0 flex-1 break-words">{de.aufteilung.spaltePosition}</span>
               <span className={ART_SPALTE}>{de.aufteilung.spalteArt}</span>
+              <span className={INFO_SPALTE}>{de.aufteilung.spalteInfo}</span>
               <span className="min-w-16 shrink-0 text-right">{de.aufteilung.spalteAnteil}</span>
               <span className="min-w-24 shrink-0 text-right">{de.aufteilung.spalteWert}</span>
             </span>
@@ -175,15 +183,15 @@ export function AufteilungAnsicht({
             {stuecke.map((s, i) => {
               const aktiv = hervorgehoben === s.schluessel;
               return (
-                // Die Zeile traegt Hover und Fokus, damit Link und Knopf gleich hervorheben.
-                // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- nur Hervorhebung; bedient wird ueber Link und Knopf darin.
+                // Die Zeile traegt Hover und Fokus, damit beide Knoepfe gleich hervorheben.
+                // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- nur Hervorhebung; bedient wird ueber die Knoepfe darin.
                 <li
                   key={s.schluessel}
                   data-aktiv={aktiv ? '' : undefined}
                   onMouseEnter={() => onHover(s.schluessel)}
                   onMouseLeave={() => onHover(null)}
                   onFocus={() => onHover(s.schluessel)}
-                  // Beim Wechsel vom Link zum Knopf derselben Zeile nicht kurz loslassen.
+                  // Beim Wechsel zwischen den Knoepfen derselben Zeile nicht kurz loslassen.
                   onBlur={(e) => {
                     if (!(e.relatedTarget instanceof Node && e.currentTarget.contains(e.relatedTarget))) onHover(null);
                   }}
@@ -195,8 +203,27 @@ export function AufteilungAnsicht({
                       {s.position === null ? (
                         s.name
                       ) : (
-                        <OnvistaLink variant="name" isin={s.position.isin} name={s.name}>
+                        <button
+                          type="button"
+                          aria-haspopup="dialog"
+                          aria-label={de.aufteilung.verlaufOeffnen(s.name)}
+                          onClick={() => {
+                            if (s.position !== null) onOeffnen(s.position);
+                          }}
+                          className={cn(linkVariants({ strich: 'hover' }), 'min-h-6 cursor-pointer text-left')}
+                        >
                           {s.name}
+                        </button>
+                      )}
+                    </span>
+                    <span className={cn(ART_SPALTE, 'text-text-leise')}>
+                      {s.position === null ? de.aufteilung.artCash : de.aufteilung.art(s.art)}
+                    </span>
+                    <span className={INFO_SPALTE}>
+                      {/* Ohne gültige ISIN gäbe OnvistaLink das Wort unverlinkt aus. */}
+                      {s.position === null || onvistaLink(s.position.isin) === null ? null : (
+                        <OnvistaLink isin={s.position.isin} name={s.name} className="text-sm">
+                          {de.aufteilung.onvista}
                         </OnvistaLink>
                       )}
                     </span>
@@ -210,9 +237,6 @@ export function AufteilungAnsicht({
                     >
                       {/* Leerraum zwischen Flex-Kindern rendert nicht, trennt aber die Woerter im Namen des Knopfs. */}
                       <span className="sr-only">{de.aufteilung.hervorheben(s.name)}</span>{' '}
-                      <span className={cn(ART_SPALTE, 'text-text-leise')}>
-                        {s.position === null ? de.aufteilung.artCash : de.aufteilung.art(s.art)}
-                      </span>{' '}
                       <LegendenWerte anteil={s.anteil} wertCent={s.wertCent} />
                     </button>
                   </span>

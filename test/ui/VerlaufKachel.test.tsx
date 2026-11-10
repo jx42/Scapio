@@ -567,9 +567,8 @@ describe('VerlaufKachel', () => {
     // Ohne Vergleich keine Vergleichsspalte; der Verlust traegt Pfeil, nicht nur Farbe.
     expect(within(tabelle).queryByText(/^Vergleich/)).toBeNull();
     expect(within(zeilen[1]!).getAllByRole('img', { name: de.kennzahlen.richtungNegativ }).length).toBeGreaterThan(0);
-    await userEvent.click(within(zeilen[2]!).getByRole('button', { name: erklaerung(de.verlauf.jahre.spalteInflation, '2026') }));
-    expect(await screen.findByText(/Inflation bis Juni 2026/)).toBeInTheDocument();
-    await userEvent.keyboard('{Escape}');
+    // Eine Inflation, die vor dem Zeilenende aufhoert, steht ohne Erklaerung da.
+    expect(within(zeilen[2]!).queryByRole('button', { name: erklaerung(de.verlauf.jahre.spalteInflation, '2026') })).toBeNull();
 
     expect(screen.getByRole('tab', { name: de.verlauf.jahreReiter })).toHaveAttribute('aria-selected', 'true');
     expect(screen.queryByRole('radiogroup', { name: de.verlauf.zeitraum })).toBeNull();
@@ -580,14 +579,6 @@ describe('VerlaufKachel', () => {
     await userEvent.click(screen.getByRole('tab', { name: de.verlauf.vermoegen }));
     expect(await screen.findByRole('table', { name: de.verlauf.tabelleVermoegen })).toBeInTheDocument();
     expect(localStorage.getItem('portfolio.verlaufDarstellung')).toBe('verlauf');
-  });
-
-  it('nennt den Inflationsstand auch bei einem abgeschlossenen Jahr ohne Dezemberzahl', async () => {
-    const [aelter, neuer] = JAHRE_FIXTURE.jahre;
-    rendern(<JahresTabelle daten={{ ...JAHRE_FIXTURE, jahre: [{ ...aelter!, teuerungBisMonat: '2025-11' }, neuer!] }} />);
-    const zeilen = screen.getAllByRole('row');
-    await userEvent.click(within(zeilen[1]!).getByRole('button', { name: erklaerung(de.verlauf.jahre.spalteInflation, aelter!.jahr) }));
-    expect(await screen.findByText(/Inflation bis November 2025/)).toBeInTheDocument();
   });
 
   it('schreibt die Spanne eines Jahres, das in sich beginnt und endet, in eine Klammer', () => {

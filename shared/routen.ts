@@ -12,6 +12,7 @@ export const LESENDE_ROUTEN = {
   jahre: { pfad: '/api/jahre', parameter: ['benchmark'] },
   aufteilung: { pfad: '/api/aufteilung', parameter: [] },
   rebalancing: { pfad: '/api/rebalancing', parameter: ['ziel'] },
+  positionsverlauf: { pfad: '/api/positionsverlauf', parameter: ['zeitraum'] },
   top25: { pfad: '/api/top25', parameter: [] },
   gewinnquellen: { pfad: '/api/gewinnquellen', parameter: [] },
   fluesse: { pfad: '/api/fluesse', parameter: ['fenster'] },

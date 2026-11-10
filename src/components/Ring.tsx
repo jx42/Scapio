@@ -18,6 +18,7 @@ import {
 } from '@/lib/chartmasse';
 import { CHART_REIHE, FARBE } from '@/lib/farben';
 import type { Flagge } from '@/lib/flaggen';
+import { cn } from '@/lib/utils';
 import { useZahlZaehler } from '@/hooks/useZahlZaehler';
 
 /** Lucide-Symbol oder, bei einem Land, dessen Flagge. */
@@ -31,14 +32,14 @@ export function ringFarbe(index: number): string {
  * Der Farbpunkt vor dem Namen. Ein SVG-Kreis, weil `fill` ein Zeichenattribut ist
  * und kein Inline-CSS — die Farbe selbst bleibt ein Token. [INV-05]
  */
-export function Farbtupfer({ farbe: wert }: { readonly farbe: string }) {
+export function Farbtupfer({ farbe: wert, className }: { readonly farbe: string; readonly className?: string }) {
   return (
     <svg
       width={FARBTUPFER_GROESSE}
       height={FARBTUPFER_GROESSE}
       viewBox={`0 0 ${String(FARBTUPFER_GROESSE)} ${String(FARBTUPFER_GROESSE)}`}
       aria-hidden="true"
-      className="shrink-0"
+      className={cn('shrink-0', className)}
     >
       <circle cx={FARBTUPFER_GROESSE / 2} cy={FARBTUPFER_GROESSE / 2} r={FARBTUPFER_GROESSE / 2} fill={wert} />
     </svg>

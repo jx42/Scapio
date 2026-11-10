@@ -14,23 +14,30 @@
  */
 
 import { de } from '@/i18n/de';
-import type { Zeitraum } from '@/lib/api';
+import type { KursZeitraum } from '@/lib/api';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
 const EIGEN = 'eigen';
 
-export type ZeitraumwahlProps = {
+/** `Z`: die Verlauf-Kachel kennt `Zeitraum`, der Positionsverlauf zusaetzlich drei Monate. */
+export type ZeitraumwahlProps<Z extends KursZeitraum> = {
   /** `null`: der Zeitraumregler ist offen. */
-  readonly gewaehlt: Zeitraum | null;
+  readonly gewaehlt: Z | null;
   /** Vom Server: nur Zeitraeume, die ein anderes Fenster als `max` zeigen, und `max`. */
-  readonly angeboten: readonly Zeitraum[];
+  readonly angeboten: readonly Z[];
   /** Ohne Regler (weniger als zwei Tage) kein Segment dafuer. */
   readonly eigenMoeglich: boolean;
-  readonly onWahl: (zeitraum: Zeitraum) => void;
+  readonly onWahl: (zeitraum: Z) => void;
   readonly onEigen: () => void;
 };
 
-export function Zeitraumwahl({ gewaehlt, angeboten, eigenMoeglich, onWahl, onEigen }: ZeitraumwahlProps) {
+export function Zeitraumwahl<Z extends KursZeitraum>({
+  gewaehlt,
+  angeboten,
+  eigenMoeglich,
+  onWahl,
+  onEigen,
+}: ZeitraumwahlProps<Z>) {
   // Ein gemerkter Zeitraum ohne Knopf zeigt dasselbe Fenster wie `max`.
   const aktiv = gewaehlt === null ? EIGEN : angeboten.includes(gewaehlt) ? gewaehlt : 'max';
   return (
@@ -41,7 +48,7 @@ export function Zeitraumwahl({ gewaehlt, angeboten, eigenMoeglich, onWahl, onEig
       value={aktiv}
       onValueChange={(wert) => {
         if (wert === EIGEN) onEigen();
-        else if (wert !== '') onWahl(wert as Zeitraum);
+        else if (wert !== '') onWahl(wert as Z);
       }}
     >
       {angeboten.map((zeitraum) => (

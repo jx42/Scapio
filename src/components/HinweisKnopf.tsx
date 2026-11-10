@@ -35,7 +35,7 @@ export function HinweisKnopf({ anzahl, titel, beschreibung, breit = false, child
         {de.hinweisKnopf.anzahl(anzahl, zahl(anzahl))}
       </Button>
       <Dialog open={offen} onOpenChange={setOffen}>
-        <DialogContent className={breit ? 'max-h-[85vh] overflow-y-auto sm:max-w-2xl' : 'max-h-[85vh] overflow-y-auto'}>
+        <DialogContent className={breit ? 'sm:max-w-2xl' : undefined}>
           <DialogHeader>
             <DialogTitle>{titel}</DialogTitle>
             <DialogDescription className="sr-only">{beschreibung}</DialogDescription>
