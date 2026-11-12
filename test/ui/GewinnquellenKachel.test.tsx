@@ -9,6 +9,7 @@ import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { de } from '@/i18n/de';
+import { euroAusCent } from '@/lib/format';
 import type { Gewinnquellen } from '@/lib/api';
 import { GewinnquellenKachel } from '@/features/gewinnquellen/GewinnquellenKachel';
 import { GewinnquellenBuchungen } from '@/features/gewinnquellen/GewinnquellenBuchungen';
@@ -104,6 +105,36 @@ describe('GewinnquellenKachel', () => {
       <GewinnquellenBuchungen daten={daten} auswahl={{ art: 'uebrige', isins: ['C'], name: '1 weitere' }} onSchliessen={() => undefined} />,
     );
     expect(within(screen.getByRole('dialog')).getByText(de.gewinnquellen.nichtsRealisiert)).toBeInTheDocument();
+  });
+
+  it('zeigt unter Abzuege Verkaeufe der Positionen rechts, Steuern und Gebuehren, neueste zuerst, mit Vorzeichen', () => {
+    const verkauf = (isin: string, name: string, tag: string) => ({ txId: isin, tag, isin, name, gewinnCent: -10_00 });
+    const buchung = (txId: string, typ: string, tag: string) => ({
+      txId,
+      tag,
+      typ,
+      isin: null,
+      name: null,
+      bezug: 'verrechnungskonto' as const,
+      betragCent: -5_00,
+    });
+    const daten = kennzahlenAntwort({
+      realisierteVerkaeufe: [verkauf('A', 'Alpha', '2026-03-01'), verkauf('B', 'Beta', '2026-02-01')],
+      steuernTransaktionen: [buchung('s', 'Steuerbuchung', '2026-04-01')],
+      gebuehrenTransaktionen: [buchung('g', 'Gebuehrbuchung', '2026-01-01')],
+    });
+    rendern(<GewinnquellenBuchungen daten={daten} auswahl={{ art: 'abzuege', isins: ['A'] }} onSchliessen={() => undefined} />);
+
+    const dialog = screen.getByRole('dialog');
+    expect(within(dialog).getByRole('heading', { name: de.gewinnquellen.abzuege })).toBeInTheDocument();
+    expect(within(dialog).queryByText('Beta')).toBeNull();
+    const zeilen = within(dialog).getAllByRole('row').slice(1);
+    expect(zeilen.map((z) => z.textContent)).toEqual([
+      expect.stringContaining('Steuerbuchung'),
+      expect.stringContaining('Alpha'),
+      expect.stringContaining('Gebuehrbuchung'),
+    ]);
+    expect(zeilen[1]?.textContent).toContain(euroAusCent(-10_00, true));
   });
 
   it('zeigt das Skeleton, solange die Abfrage haengt', () => {
