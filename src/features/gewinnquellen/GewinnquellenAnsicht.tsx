@@ -19,14 +19,14 @@ import { ResponsiveContainer, Sankey } from 'recharts';
 import { de } from '@/i18n/de';
 import type { Gewinnquellen } from '@/lib/api';
 import { GEWINN_CHART_HOEHE, GEWINN_KNOTEN_ABSTAND, GEWINN_KNOTEN_BREITE, GEWINN_MARGIN, gewinnBeschriftungZeichen } from '@/lib/chartmasse';
-import { anteilProzent, euroAusCent, richtungswert } from '@/lib/format';
-import { richtungTon } from '@/lib/farben';
+import { anteilProzent, betragOhneVorzeichen, euroAusCent } from '@/lib/format';
 import { cn } from '@/lib/utils';
+import { linkVariants } from '@/lib/linkStil';
 import { Button } from '@/components/ui/button';
 import { InfoKnopf } from '@/components/InfoKnopf';
 import { useZahlZaehler } from '@/hooks/useZahlZaehler';
 import { ChartRahmen } from '@/components/ChartRahmen';
-import { RichtungsPfeil } from '@/components/RichtungsPfeil';
+import { RichtungsBadge } from '@/components/RichtungsBadge';
 import { noetigeStufe, type Stufe } from './beschriftung';
 import { beschriftungEingabe, graph } from './graph';
 import { BandForm, KnotenForm, type BandProps, type KnotenProps } from './SankeyFormen';
@@ -92,52 +92,55 @@ export function GewinnquellenAnsicht({ daten, realisiertCent, onAuswahl }: Gewin
     return b !== undefined && (b.source === i || b.target === i);
   };
 
-  const brutto = useZahlZaehler(euroAusCent(daten.bruttoCent));
-  const abzuege = richtungswert(daten.abzuegeCent, euroAusCent);
-  const abzuegeAnzeige = useZahlZaehler(abzuege.wert);
-  const realisiert = richtungswert(realisiertCent ?? 0, euroAusCent);
-  const netto = richtungswert(daten.nettoCent, euroAusCent);
-  const nettoAnzeige = useZahlZaehler(netto.wert);
+  const brutto = useZahlZaehler(betragOhneVorzeichen(daten.bruttoCent, euroAusCent));
+  const abzuege = useZahlZaehler(betragOhneVorzeichen(daten.abzuegeCent, euroAusCent));
+  const realisiert = useZahlZaehler(betragOhneVorzeichen(realisiertCent ?? 0, euroAusCent));
+  const netto = useZahlZaehler(betragOhneVorzeichen(daten.nettoCent, euroAusCent));
   const nettoSumme = (
     <Summe
       // eslint-disable-next-line no-restricted-syntax -- Tupfer zeigt die Farbe des Netto-Knotens im Sankey (chart-1 oder verlust), keine Richtung.
       tupfer={daten.nettoCent < 0 ? 'bg-verlust' : 'bg-chart-1'}
       bezeichnung={daten.nettoCent < 0 ? de.gewinnquellen.nettoverlust : de.gewinnquellen.nettogewinn}
-      wert={nettoAnzeige}
-      pfeil={netto.pfeil}
+      wert={daten.nettoCent}
+      anzeige={netto}
     />
   );
 
   return (
     <div className="flex flex-col gap-3">
       {/* Jede Summe steht ueber der Seite des Diagramms, auf der ihr Knoten liegt. */}
-      <p className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
-        <span className="flex flex-wrap items-baseline gap-x-6 gap-y-1">
-          <Summe tupfer="bg-gewinn" bezeichnung={de.gewinnquellen.brutto} wert={brutto} pfeil="" />
+      <p className="flex flex-wrap items-center justify-between gap-x-6 gap-y-1">
+        <span className="flex flex-wrap items-center gap-x-6 gap-y-1">
+          <Summe tupfer="bg-gewinn" bezeichnung={de.gewinnquellen.brutto} wert={daten.bruttoCent} anzeige={brutto} />
           {realisiertCent === null ? null : (
-            <span className="inline-flex items-baseline">
-              <span className="mr-1.5 text-sm text-text-leise">{de.satz.beschriftung(de.gewinnquellen.realisiert)}</span>
+            <span className="inline-flex items-center gap-1.5">
+              <span className="text-sm text-text-leise">{de.satz.beschriftung(de.gewinnquellen.realisiert)}</span>
+              <BadgeLink
+                wert={realisiertCent}
+                anzeige={realisiert}
+                bezeichnung={de.kennzahlen.realisiert}
+                onClick={waehle === undefined ? undefined : () => waehle({ art: 'realisiert' })}
+              />
               <InfoKnopf bezeichnung={de.kennzahlen.realisiert}>
                 <p>{de.kennzahlen.erklaerung.realisiert}</p>
               </InfoKnopf>
-              <Button
-                type="button"
-                variant="link"
-                disabled={onAuswahl === undefined}
-                onClick={() => onAuswahl?.({ art: 'realisiert' })}
-                className={cn('ml-1.5 h-auto min-h-6 gap-0 p-0 tabular-nums', richtungTon[realisiert.richtung])}
-              >
-                <span className="sr-only">{de.kennzahlen.detailsOeffnen(de.kennzahlen.realisiert)} </span>
-                <RichtungsPfeil pfeil={realisiert.pfeil} className="mr-0.5" />
-                {realisiert.wert}
-              </Button>
             </span>
           )}
           {daten.nettoCent < 0 ? nettoSumme : null}
         </span>
-        <span className="flex flex-wrap items-baseline gap-x-6 gap-y-1">
+        <span className="flex flex-wrap items-center gap-x-6 gap-y-1">
           {daten.abzuegeCent === 0 ? null : (
-            <Summe tupfer="bg-verlust" bezeichnung={de.gewinnquellen.abzuege} wert={abzuegeAnzeige} pfeil={abzuege.pfeil} />
+            <Summe
+              tupfer="bg-verlust"
+              bezeichnung={de.gewinnquellen.abzuege}
+              wert={daten.abzuegeCent}
+              anzeige={abzuege}
+              onClick={
+                waehle === undefined
+                  ? undefined
+                  : () => waehle({ art: 'abzuege', isins: daten.abfluesse.flatMap((q) => (q.art === 'position' || q.art === 'uebrige' ? q.isins : [])) })
+              }
+            />
           )}
           {daten.nettoCent < 0 ? null : nettoSumme}
         </span>
@@ -187,21 +190,53 @@ function Summe({
   tupfer,
   bezeichnung,
   wert,
-  pfeil,
+  anzeige,
+  onClick,
 }: {
   readonly tupfer: string;
   readonly bezeichnung: string;
-  readonly wert: string;
-  readonly pfeil: string;
+  /** Mit Vorzeichen: bestimmt Farbe und Pfeil des Badges. */
+  readonly wert: number;
+  /** Betrag ohne Vorzeichen, formatiert. */
+  readonly anzeige: string;
+  /** Mit: das Badge oeffnet die Buchungen dahinter. */
+  readonly onClick?: (() => void) | undefined;
 }) {
   return (
-    <span className="inline-flex items-baseline">
-      <span aria-hidden="true" className={cn('mr-2 size-2 self-center rounded-full', tupfer)} />
-      <span className="mr-1.5 text-sm text-text-leise">{de.satz.beschriftung(bezeichnung)}</span>
-      <span className="text-sm font-medium tabular-nums text-text">
-        <RichtungsPfeil pfeil={pfeil} className="mr-0.5" />
-        {wert}
-      </span>
+    <span className="inline-flex items-center gap-1.5">
+      <span aria-hidden="true" className={cn('mr-0.5 size-2 rounded-full', tupfer)} />
+      <span className="text-sm text-text-leise">{de.satz.beschriftung(bezeichnung)}</span>
+      {onClick === undefined ? (
+        <RichtungsBadge wert={wert}>{anzeige}</RichtungsBadge>
+      ) : (
+        <BadgeLink wert={wert} anzeige={anzeige} bezeichnung={bezeichnung} onClick={onClick} />
+      )}
     </span>
+  );
+}
+
+/**
+ * Badge als Link zu den Buchungen. Unterstrichen wird das Badge, nicht der Knopf: sonst
+ * naehme der Strich die Textfarbe des Knopfs statt der Gewinn- oder Verlustfarbe.
+ */
+function BadgeLink({
+  wert,
+  anzeige,
+  bezeichnung,
+  onClick,
+}: {
+  readonly wert: number;
+  readonly anzeige: string;
+  readonly bezeichnung: string;
+  /** Ohne: deaktiviert, etwa solange die Buchungen fehlen. */
+  readonly onClick: (() => void) | undefined;
+}) {
+  return (
+    <Button type="button" variant="link" disabled={onClick === undefined} onClick={onClick} className="group h-auto min-h-6 p-0 no-underline">
+      <span className="sr-only">{de.kennzahlen.detailsOeffnen(bezeichnung)} </span>
+      <RichtungsBadge wert={wert} className={linkVariants({ abstand: 'weit', hover: 'gruppe' })}>
+        {anzeige}
+      </RichtungsBadge>
+    </Button>
   );
 }

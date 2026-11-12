@@ -115,7 +115,7 @@ function Top25Zeile({ zeile, angeschnitten, aktiv, onHover }: Top25ZeileProps) {
       onMouseLeave={() => onHover(null)}
     >
       <TableCell className="py-2 pr-1 align-top tabular-nums text-text-leise">{angezeigterRang}</TableCell>
-      <TableHead scope="row" className="h-auto min-w-0 py-2 pr-2 text-[length:inherit] font-normal">
+      <TableHead scope="row" className="h-auto min-w-0 py-2 pr-2 text-[length:inherit] font-normal whitespace-normal">
         <HoverCard openDelay={150} closeDelay={100}>
           <HoverCardTrigger asChild>
             <span className="block break-words text-text">{zeile.name}</span>

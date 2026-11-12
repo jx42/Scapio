@@ -1,7 +1,7 @@
 /*
  * Gewinne & Abzüge, Buchungen: welche Liste hinter einem Knoten des Sankey oder der
- * Summe „Realisierte Gewinne“ steht. Eine Position zeigt ihre realisierten Verkaeufe; ihr
- * Buchgewinn hat keine Buchung.
+ * Summen „Realisierte Gewinne“ und „Abzüge“ steht. Eine Position zeigt ihre realisierten
+ * Verkaeufe; ihr Buchgewinn hat keine Buchung.
  */
 
 import { de } from '@/i18n/de';
@@ -15,7 +15,9 @@ import {
 export type Auswahl =
   | { readonly art: 'realisiert' | 'ertraege' | 'steuern' | 'gebuehren' }
   | { readonly art: 'position'; readonly isin: string; readonly name: string }
-  | { readonly art: 'uebrige'; readonly isins: readonly string[]; readonly name: string };
+  | { readonly art: 'uebrige'; readonly isins: readonly string[]; readonly name: string }
+  /** Alle Knoten rechts im Sankey; `isins` sind die der Positionen darunter. */
+  | { readonly art: 'abzuege'; readonly isins: readonly string[] };
 
 function inhalt(a: Auswahl, d: KennzahlenAntwort) {
   switch (a.art) {
@@ -38,6 +40,16 @@ function inhalt(a: Auswahl, d: KennzahlenAntwort) {
         spalteMitte: de.kennzahlen.detailsSpaltePosition,
         zeilen: realisierteZeilenAlsDetails(d.realisierteVerkaeufe.filter((z) => a.isins.includes(z.isin))),
         leer: de.gewinnquellen.nichtsRealisiert,
+      };
+    case 'abzuege':
+      return {
+        titel: de.gewinnquellen.abzuege,
+        spalteMitte: de.kennzahlen.detailsSpalteWofuer,
+        zeilen: [
+          ...realisierteZeilenAlsDetails(d.realisierteVerkaeufe.filter((z) => a.isins.includes(z.isin))),
+          ...ertragsZeilenAlsDetails(d.steuernTransaktionen),
+          ...ertragsZeilenAlsDetails(d.gebuehrenTransaktionen),
+        ].sort((x, y) => (x.tag < y.tag ? 1 : x.tag > y.tag ? -1 : 0)),
       };
     case 'ertraege':
       return {
