@@ -160,6 +160,12 @@ type BeobachteterLauf = {
    * noch laufender angezeigt wurde: dann ist der naechstbeste angezeigte Lauf unserer.
    */
   readonly vorher: number | null;
+  /**
+   * Lief der Lauf schon beim Laden der Seite — meist der aus `npm start` [ADR-064]? Dann hat
+   * niemand hier geklickt, und ein Toast bestaetigte nichts: Erfolg zeigt die Zeile
+   * „Gerade aktualisiert“, Warnung und Fehler die Alert-Reihe.
+   */
+  readonly uebernommen: boolean;
 };
 
 export function Aktualisieren({ onAnmeldungStatus, verborgen = false }: AktualisierenProps) {
@@ -202,6 +208,7 @@ export function Aktualisieren({ onAnmeldungStatus, verborgen = false }: Aktualis
       setBeobachtet({
         laufId: ergebnis.laufId > 0 ? ergebnis.laufId : null,
         vorher: zuvor !== null && zuvor.status !== 'laufend' ? zuvor.laufId : null,
+        uebernommen: false,
       });
       // Im Cache steht noch die Antwort von vor dem Klick. Sofort neu holen, sonst
       // bliebe der Fortschritt bis zum ersten Takt der Abfrage leer.
@@ -241,12 +248,14 @@ export function Aktualisieren({ onAnmeldungStatus, verborgen = false }: Aktualis
       ? gezeigteLaufId === beobachtet.laufId
       : gezeigteLaufId !== null && gezeigteLaufId !== beobachtet.vorher);
 
-  // Ein Lauf, der schon beim Laden der Seite unterwegs ist — meist der erste aus `npm start`,
+  // Ein Lauf, der schon beim Laden der Seite unterwegs ist — meist der aus `npm start`,
   // der Browser oeffnet sich vor dessen Ende [ADR-039]. Ohne Uebernahme sprange nichts an,
   // und die leeren Kacheln blieben bis zum Neuladen leer.
   if (beobachtet === null && status === 'laufend' && gezeigteLaufId !== null) {
-    setBeobachtet({ laufId: gezeigteLaufId, vorher: null });
+    setBeobachtet({ laufId: gezeigteLaufId, vorher: null, uebernommen: true });
   }
+
+  const uebernommen = beobachtet?.uebernommen ?? false;
 
   useEffect(() => {
     if (!unsererLauf) return;
@@ -256,11 +265,12 @@ export function Aktualisieren({ onAnmeldungStatus, verborgen = false }: Aktualis
     // Der Lauf ist zu Ende: alles neu holen, nichts aus dem Cache stehen lassen.
     void queryClient.invalidateQueries();
     // Die Toast bestaetigt nur den Klick; die Einzelheiten stehen in der Alert-Reihe.
+    if (uebernommen) return;
     if (status === 'erfolg') toast.success(de.aktualisieren.erfolgreich);
     else if (status === 'teilweise')
       toast.warning(de.aktualisieren.teilweise, { description: de.aktualisieren.teilweiseBeschreibung });
     else toast.error(de.aktualisieren.gescheitert, { duration: Infinity });
-  }, [unsererLauf, status, queryClient]);
+  }, [unsererLauf, status, uebernommen, queryClient]);
 
   const anmeldungLaeuftLautServer = anmeldungQuery.data?.laeuft;
 

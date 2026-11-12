@@ -95,7 +95,11 @@ export const de = {
     willkommenTitel: 'Willkommen bei Scapio',
     willkommen:
       'Noch sind keine Daten da. „Aktualisieren“ holt Bestand, Umsätze und Kurse von Scalable Capital; der erste Abruf dauert etwas länger.',
-    stand: (zeitpunkt: string) => `Stand ${zeitpunkt}`,
+    aktualisiertGerade: 'Gerade aktualisiert',
+    aktualisiertGestern: 'Gestern aktualisiert',
+    /** `abstand` kommt fertig aus `lib/format.ts`, etwa "Vor 3 Tagen". */
+    aktualisiert: (abstand: string) => `${abstand} aktualisiert`,
+    aktualisiertAm: (tag: string) => `Aktualisiert am ${tag}`,
     fussVersion: (version: string) => `Version ${version.split('.').slice(0, 2).join('.')}`,
     fussReadme: 'Readme',
     fussReadmeOeffnen: 'Readme von Scapio auf GitHub öffnen, neuer Tab',

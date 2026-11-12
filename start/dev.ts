@@ -21,10 +21,11 @@ import { starteMitWatch } from './kinder.ts';
 export function haupt(): void {
   // `--watch` laedt den Server neu, sobald server/, core/ oder db/ sich aendern.
   // `--ohne-bau`, weil das Bauen schon das andere Kind erledigt; `--ohne-browser`,
-  // damit nicht bei jedem Neustart ein Tab aufgeht; `--neuladen` haengt das
+  // damit nicht bei jedem Neustart ein Tab aufgeht; `--ohne-startlauf`, damit nicht jedes
+  // Speichern einen Lauf gegen den MCP ausloest [ADR-064]; `--neuladen` haengt das
   // Neulade-Skript in die Seite, siehe `server/entwicklungReload.ts`.
   starteMitWatch(
-    [join(PROJEKTWURZEL, 'start', 'start.ts'), '--ohne-bau', '--ohne-browser', '--neuladen'],
+    [join(PROJEKTWURZEL, 'start', 'start.ts'), '--ohne-bau', '--ohne-browser', '--ohne-startlauf', '--neuladen'],
     ladeKonfiguration().port,
   );
 }

@@ -127,14 +127,16 @@ const zeitpunktTagFormat = new Intl.DateTimeFormat('de-DE', {
   timeZone: ZEITZONE,
 });
 
-const zeitpunktFormat = new Intl.DateTimeFormat('de-DE', {
-  day: '2-digit',
-  month: '2-digit',
+/** Nur fuer `kalendertagNummer`: die Teile des Berliner Kalendertags als Zahlen. */
+const kalendertagTeileFormat = new Intl.DateTimeFormat('de-DE', {
+  day: 'numeric',
+  month: 'numeric',
   year: 'numeric',
-  hour: '2-digit',
-  minute: '2-digit',
   timeZone: ZEITZONE,
 });
+
+// 'always', nicht 'auto': sonst hiesse es bei zwei Tagen "vorgestern" statt "vor 2 Tagen".
+const relativFormat = new Intl.RelativeTimeFormat('de-DE', { numeric: 'always' });
 
 /** Ist die Zahl brauchbar? Alles andere wird als "unbekannt" behandelt, nie als NaN gezeigt. */
 function istZahl(wert: unknown): wert is number {
@@ -406,14 +408,48 @@ export function jahrAusMonat(monat: string): string {
   return datum === null ? String(monat ?? '') : jahrFormat.format(datum);
 }
 
-/** ISO-Zeitstempel mit Offset zu "26.08.2026, 12:08" in Europe/Berlin. */
-export function zeitpunktKurz(iso: string | null | undefined): string | null {
-  if (typeof iso !== 'string' || iso === '') return null;
-  const datum = new Date(iso);
-  return Number.isNaN(datum.getTime()) ? null : zeitpunktFormat.format(datum);
+const MINUTE_MS = 60_000;
+const STUNDE_MS = 60 * MINUTE_MS;
+const TAG_MS = 24 * STUNDE_MS;
+/** Ab so vielen Kalendertagen steht das Datum statt eines Abstands. */
+const DATUM_AB_TAGEN = 7;
+
+/** Fortlaufende Nummer des Kalendertags in Europe/Berlin — die Differenz zweier ist die Zahl der Mitternaechte dazwischen. */
+function kalendertagNummer(datum: Date): number {
+  const teile = kalendertagTeileFormat.formatToParts(datum);
+  const teil = (art: Intl.DateTimeFormatPartTypes): number => Number(teile.find((t) => t.type === art)?.value);
+  return Date.UTC(teil('year'), teil('month') - 1, teil('day')) / TAG_MS;
 }
 
-/** Wie `zeitpunktKurz`, aber nur der Tag — fuer Stellen, an denen die Uhrzeit nicht hinpasst. */
+function grossAnfang(text: string): string {
+  return text.charAt(0).toLocaleUpperCase('de-DE') + text.slice(1);
+}
+
+/**
+ * Wann zuletzt aktualisiert wurde, relativ zu `jetzt`: Minuten, Stunden, dann Kalendertage
+ * in Europe/Berlin, ab sieben Tagen das Datum. Ab 24 Stunden zaehlen Mitternaechte, nicht
+ * 24-Stunden-Bloecke — sonst waere Freitag 18 Uhr am Montag um 9 Uhr "vor 2 Tagen".
+ * Ein Zeitpunkt in der Zukunft (Uhr verstellt, Takt noch nicht nachgezogen) gilt als gerade.
+ */
+export function aktualisiertRelativ(iso: string | null | undefined, jetzt: Date): string | null {
+  if (typeof iso !== 'string' || iso === '') return null;
+  const datum = new Date(iso);
+  if (Number.isNaN(datum.getTime())) return null;
+
+  const abstand = jetzt.getTime() - datum.getTime();
+  if (abstand < MINUTE_MS) return de.seite.aktualisiertGerade;
+  if (abstand < STUNDE_MS)
+    return de.seite.aktualisiert(grossAnfang(relativFormat.format(-Math.floor(abstand / MINUTE_MS), 'minute')));
+  if (abstand < TAG_MS)
+    return de.seite.aktualisiert(grossAnfang(relativFormat.format(-Math.floor(abstand / STUNDE_MS), 'hour')));
+
+  const tage = kalendertagNummer(jetzt) - kalendertagNummer(datum);
+  if (tage <= 1) return de.seite.aktualisiertGestern;
+  if (tage < DATUM_AB_TAGEN) return de.seite.aktualisiert(grossAnfang(relativFormat.format(-tage, 'day')));
+  return de.seite.aktualisiertAm(zeitpunktTagFormat.format(datum));
+}
+
+/** Nur der Tag eines Zeitpunkts — fuer Stellen, an denen die Uhrzeit nicht hinpasst. */
 export function zeitpunktNurTag(iso: string | null | undefined): string | null {
   if (typeof iso !== 'string' || iso === '') return null;
   const datum = new Date(iso);

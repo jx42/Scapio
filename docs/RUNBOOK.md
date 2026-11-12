@@ -467,5 +467,5 @@ Erwartet: `npm start` öffnet die Datenbank, serviert und öffnet den Browser. D
 die Oberfläche (nur wenn `dist/` älter ist als eine Quelldatei — sonst steht dort „Die
 Oberflaeche ist aktuell"), solange zeigt der Browser „Scapio wird gebaut“ — oder, während der erste Lauf unterwegs ist,
 „Anmeldung abgeschlossen“ mit dem Schritt des Laufs. Gleichzeitig
-ingestiert es einmalig, nur wenn die Datenbank noch leer ist; ein zweiter Start holt nichts
-erneut [ADR-039].
+holt es die Daten, wenn die Datenbank leer ist oder der letzte erfolgreiche Lauf mindestens
+15 Minuten zurückliegt; `npm run dev` holt nur bei leerer Datenbank [ADR-039] [ADR-064].

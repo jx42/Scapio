@@ -319,7 +319,10 @@ export function baueServer(optionen: ServerOptionen): { app: FastifyInstance; to
       if (neuladen === true) html = mitNeuladeSkript(html);
     } else {
       const nonce = neuerToken();
-      html = hinweisseite(nonce, repository.lauf.letzter(db));
+      // Nur der erste Lauf ersetzt "wird gebaut"; holt der Start bei vorhandenen Daten, haengt
+      // die Seite am Bau, nicht am Lauf [ADR-064].
+      const ersterLauf = repository.transaktion.anzahl(db) === 0 ? repository.lauf.letzter(db) : null;
+      html = hinweisseite(nonce, ersterLauf);
       antwort.header('Content-Security-Policy', hinweisseiteCsp(nonce));
     }
     const mitAllem = demoModus === true ? mitDemoKennzeichen(mitToken(html, token)) : mitToken(html, token);

@@ -13,6 +13,7 @@ import { Profiler, useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { toast } from 'sonner';
 
 import { de } from '@/i18n/de';
 import {
@@ -213,9 +214,12 @@ describe('Aktualisieren — der Lauf, auf den der Klick wartet', () => {
     await waitFor(() => expect(screen.getByRole('button', { name: de.aktualisieren.laeuft })).toBeInTheDocument());
 
     // Erst der naechste Takt der Abfrage bringt den Endstatus. Ohne ihn bleibt der Knopf im Lauf.
+    const erfolg = vi.spyOn(toast, 'success');
     laufJetzt = laufAntwort(8, 'erfolg');
     await vi.advanceTimersByTimeAsync(ABFRAGETAKT_MS);
     await waitFor(() => expect(screen.getByRole('button', { name: de.aktualisieren.knopf })).toBeEnabled());
+    expect(erfolg).toHaveBeenCalledWith(de.aktualisieren.erfolgreich);
+    erfolg.mockRestore();
   });
 
   it('haengt sich bei 409 an den bereits laufenden Lauf, statt einen zweiten zu starten', async () => {
@@ -233,17 +237,23 @@ describe('Aktualisieren — der Lauf, auf den der Klick wartet', () => {
     expect(refreshAbrufe).toBe(1);
   });
 
-  it('uebernimmt einen Lauf, der beim Laden schon unterwegs ist — den ersten aus npm start [ADR-039]', async () => {
+  it('uebernimmt still einen Lauf, der beim Laden schon unterwegs ist — den aus npm start [ADR-039] [ADR-064]', async () => {
     laufJetzt = laufAntwort(5, 'laufend');
     falscheUhr();
+    const toasts = [vi.spyOn(toast, 'success'), vi.spyOn(toast, 'warning'), vi.spyOn(toast, 'error')];
 
     rendern(<Aktualisieren />);
     await waitFor(() => expect(screen.getByRole('button', { name: de.aktualisieren.laeuft })).toBeInTheDocument());
 
-    laufJetzt = laufAntwort(5, 'erfolg');
+    laufJetzt = laufAntwort(5, 'teilweise');
     await vi.advanceTimersByTimeAsync(ABFRAGETAKT_MS);
     await waitFor(() => expect(screen.getByRole('button', { name: de.aktualisieren.knopf })).toBeEnabled());
     expect(refreshAbrufe).toBe(0);
+    // Die Hinweise zeigt die Alert-Reihe der Seite, nicht ein Toast.
+    for (const spion of toasts) {
+      expect(spion).not.toHaveBeenCalled();
+      spion.mockRestore();
+    }
   });
 
   it('nennt den Schritt, den der Server meldet, nur in der Statusregion', async () => {
