@@ -24,10 +24,10 @@ import { de } from '@/i18n/de';
 import { api, istNetzFehler, schluessel } from '@/lib/api';
 import { istDemoModus } from '@/lib/demoModus';
 import { tokenVorhanden } from '@/lib/token';
-import { zeitpunktKurz } from '@/lib/format';
 import { linkVariants } from '@/lib/linkStil';
 import { cn } from '@/lib/utils';
 import { Aktualisieren, type McpAnmeldungStatus } from '@/components/Aktualisieren';
+import { AktualisiertAngabe } from '@/components/AktualisiertAngabe';
 import { AktualisierenHinweise } from '@/components/AktualisierenHinweise';
 import { Driftbanner } from '@/components/Driftbanner';
 import { Fehlergrenze } from '@/components/Fehlergrenze';
@@ -71,7 +71,7 @@ function Seite() {
   // Dieselbe Query wie in `Aktualisieren` — react-query teilt sich den Cache ueber
   // den Schluessel, kein zweiter Netzwerkzugriff.
   const lauf = useQuery({ queryKey: schluessel.lauf, queryFn: api.lauf });
-  const stand = zeitpunktKurz(health.data?.stand);
+  const stand = health.data?.stand ?? null;
   const [anmeldungStatus, setAnmeldungStatus] = useState<McpAnmeldungStatus>({
     noetig: false,
     erstmals: false,
@@ -122,7 +122,7 @@ function Seite() {
           </h1>
         </div>
         <div className="flex items-center gap-3">
-          {!kopfAusblenden && stand !== null && <p className="text-xs text-text-leise">{de.seite.stand(stand)}</p>}
+          {!kopfAusblenden && stand !== null && <AktualisiertAngabe stand={stand} />}
           <Aktualisieren onAnmeldungStatus={setAnmeldungStatus} verborgen={kopfAusblenden} />
         </div>
       </header>

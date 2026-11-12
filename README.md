@@ -42,7 +42,7 @@ Du brauchst einen Mac oder Windows-PC, Zugang zu deinem Scalable-Depot und etwa 
 5. Es öffnet sich unter macOS das **Terminal**, unter Windows die **Eingabeaufforderung** (unter Windows 11 ebenfalls „Terminal“ genannt). Lass es offen, solange du Scapio benutzt, denn darin läuft Scapio. Beim ersten Start lädt Scapio seine Softwarebausteine, das dauert einige Minuten.
 6. Im Browser öffnet sich die Anmeldung von Scalable. Mit deinem gewohnten **Scalable-Capital-Login** anmelden und in der App bestätigen. Öffnet sich der Browser nicht, steht die Adresse zum Kopieren im Fenster aus Schritt 5.
 
-Das war's. Danach öffnet sich Scapio im Browser, baut beim ersten Mal seine Oberfläche und holt deine Depotdaten. Ab jetzt genügt ein Doppelklick auf Start.
+Das war's. Danach öffnet sich Scapio im Browser, baut beim ersten Mal seine Oberfläche und holt deine Depotdaten. Ab jetzt genügt ein Doppelklick auf Start; liegt der letzte Abruf mehr als 15 Minuten zurück, holt Scapio dabei die neuesten Daten.
 
 > [!TIP]
 > **Warnung beim ersten Start?** Die Startdateien sind nicht signiert, deshalb fragt das System einmal nach.

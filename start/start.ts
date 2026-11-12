@@ -1,12 +1,13 @@
 /**
- * `npm start` — der normale Weg: bauen (nur wenn noetig), Datenbank oeffnen, notfalls
- * einmal ingestieren, servieren, Browser oeffnen. [P-11]
+ * `npm start` — der normale Weg: bauen (nur wenn noetig), Datenbank oeffnen, servieren,
+ * einen Lauf anstossen, Browser oeffnen. [P-11]
  *
  * In dieser Reihenfolge, und aus Gruenden: Erst servieren und den Browser oeffnen, dann
  * bauen — waehrend des Baus zeigt der Server "Scapio wird gebaut …", und wer gerade aus
- * der Anmeldung kommt, steht nicht vor einem Fenster, das nichts tut [ADR-039]. Der erste Ingest laeuft NUR, wenn die Datenbank noch leer ist —
- * sonst wuerde jeder Start Daten vom Broker holen, und die Anwendung waere kein
- * Beobachter mehr, sondern ein Hintergrundprozess mit Startknopf.
+ * der Anmeldung kommt, steht nicht vor einem Fenster, das nichts tut [ADR-039]. Der Lauf
+ * beim Start ist EINER, und nur, wenn der letzte erfolgreiche mindestens
+ * `STARTLAUF_ABSTAND_MS` zurueckliegt — der Doppelklick ist der Anstoss, kein Timer und
+ * kein Dienst holt danach noch etwas [ADR-064].
  *
  * KEIN `tsc --noEmit` mehr an dieser Stelle: der Typecheck gehoert in `npm run check`
  * und in die CI. Beim Start eines Nutzers, der keine Zeile Code angefasst hat, kann er
@@ -48,6 +49,9 @@ export type Schalter = {
   readonly bauen: boolean;
   readonly browser: boolean;
   readonly ingest: boolean;
+  /** Lauf auch bei gefuellter Datenbank. `npm run dev` schaltet ihn ab: dort startet der
+   *  Server bei jeder gespeicherten Datei neu. */
+  readonly startlauf: boolean;
   /** Nur von `start/dev.ts` gesetzt — haengt das Neulade-Skript in die Seite. */
   readonly neuladen: boolean;
 };
@@ -57,6 +61,7 @@ function leseSchalter(argv: readonly string[]): Schalter {
     bauen: !argv.includes('--ohne-bau'),
     browser: !argv.includes('--ohne-browser'),
     ingest: !argv.includes('--ohne-ingest'),
+    startlauf: !argv.includes('--ohne-startlauf'),
     neuladen: argv.includes('--neuladen'),
   };
 }
@@ -233,40 +238,86 @@ async function rechneNachUpdateNeu(db: DatabaseSync, sperre: Sperre): Promise<vo
   }
 }
 
-/** Nur beim allerersten Start: ohne Transaktionen gibt es nichts zu zeigen. */
-async function ersterIngest(db: DatabaseSync, konfiguration: Konfiguration, sperre: Sperre): Promise<void> {
-  process.stdout.write('📥  Die Datenbank ist leer — hole die Daten einmalig …\n');
-  let modul: {
-    fuehreLaufAus: (optionen: {
-      db: DatabaseSync;
-      konfiguration: Konfiguration;
-      heute: Tag;
-    }) => Promise<unknown>;
-  };
+/** Wer kurz hintereinander neu startet, loest keinen zweiten vollen Lauf aus. */
+export const STARTLAUF_ABSTAND_MS = 15 * 60_000;
+
+export type StartlaufGrund = 'leer' | 'faellig';
+
+/**
+ * Ob und warum der Start einen Lauf anstoesst. Eine leere Datenbank holt immer — auch unter
+ * `npm run dev` —, sonst nur mit `startlauf` und nach Ablauf des Abstands. Liegt der letzte
+ * Erfolg in der Zukunft, ist die Uhr verstellt worden; dann lieber holen als nie wieder.
+ */
+export function startlaufGrund(eingabe: {
+  readonly schalter: Pick<Schalter, 'ingest' | 'startlauf'>;
+  readonly leer: boolean;
+  readonly letzterErfolg: string | null;
+  readonly jetztMs: number;
+}): StartlaufGrund | null {
+  const { schalter, leer, letzterErfolg, jetztMs } = eingabe;
+  if (!schalter.ingest) return null;
+  if (leer) return 'leer';
+  if (!schalter.startlauf) return null;
+  if (letzterErfolg === null) return 'faellig';
+  const abstand = jetztMs - Date.parse(letzterErfolg);
+  return Number.isNaN(abstand) || abstand < 0 || abstand >= STARTLAUF_ABSTAND_MS ? 'faellig' : null;
+}
+
+type LaufModul = {
+  fuehreLaufAus: (optionen: { db: DatabaseSync; konfiguration: Konfiguration; heute: Tag }) => Promise<{
+    readonly status: 'erfolg' | 'teilweise' | 'fehler';
+  }>;
+};
+
+/**
+ * Stoesst den Lauf an und liefert sein Ende als Promise, die nie verwirft. Zurueck kommt sie
+ * erst, wenn die `lauf`-Zeile steht — `fuehreLaufAus` legt sie vor seinem ersten `await` an.
+ * Erst danach oeffnet `haupt` den Browser: sonst saehe die Seite beim ersten Abfragen von
+ * `/api/lauf` noch den vorigen Lauf und uebernaehme den neuen nicht.
+ */
+async function stosseLaufAn(
+  db: DatabaseSync,
+  konfiguration: Konfiguration,
+  sperre: Sperre,
+  grund: StartlaufGrund,
+): Promise<Promise<void>> {
+  process.stdout.write(
+    grund === 'leer' ? '📥  Die Datenbank ist leer — hole die Daten einmalig …\n' : '📥  Hole die neuesten Daten …\n',
+  );
+  let modul: LaufModul;
   try {
-    modul = (await import('../ingest/lauf.ts')) as unknown as typeof modul;
+    modul = (await import('../ingest/lauf.ts')) as unknown as LaufModul;
   } catch {
-    process.stdout.write('❗  Der Ingest steht nicht bereit — der Server startet mit leerer Anzeige.\n');
-    return;
+    process.stdout.write('❗  Der Ingest steht nicht bereit — der Server startet mit den vorhandenen Daten.\n');
+    return Promise.resolve();
   }
 
   try {
     sperre.nimm('start');
   } catch {
     // Der Server lauscht schon; ein anderer Lauf holt die Daten gerade selbst.
-    process.stdout.write('⏳  Ein anderer Lauf holt gerade die Daten — der Server startet ohne eigenen ersten Lauf.\n');
-    return;
+    process.stdout.write('⏳  Ein anderer Lauf holt gerade die Daten — der Start stoesst keinen eigenen an.\n');
+    return Promise.resolve();
   }
-  try {
-    // Der heutige Kalendertag wird HIER einmal aus der Uhr gelesen und als Parameter
-    // weitergereicht — der Ingest und der Rechenkern lesen keine Uhr. [INV-03, INV-04]
-    await modul.fuehreLaufAus({ db, konfiguration, heute: tagAus(new Date().toISOString()) });
-  } catch (fehler) {
-    process.stdout.write(`❗  Der erste Lauf ist gescheitert: ${(fehler as Error).message}\n`);
-    process.stdout.write('    Der Server startet trotzdem. Siehe docs/RUNBOOK.md.\n');
-  } finally {
-    sperre.gibFrei();
-  }
+
+  // Der heutige Kalendertag wird HIER einmal aus der Uhr gelesen und als Parameter
+  // weitergereicht — der Ingest und der Rechenkern lesen keine Uhr. [INV-03, INV-04]
+  return modul
+    .fuehreLaufAus({ db, konfiguration, heute: tagAus(new Date().toISOString()) })
+    .then(
+      (ergebnis) => {
+        if (ergebnis.status === 'erfolg') process.stdout.write('✅  Daten aktualisiert.\n');
+        else if (ergebnis.status === 'teilweise') process.stdout.write('⚠️   Daten aktualisiert, aber nicht vollstaendig — Hinweise auf der Seite.\n');
+        else process.stdout.write('❗  Der Lauf ist gescheitert — die Seite zeigt die zuletzt geholten Daten. Siehe docs/RUNBOOK.md.\n');
+      },
+      (fehler: unknown) => {
+        process.stdout.write(`❗  Der Lauf ist gescheitert: ${(fehler as Error).message}\n`);
+        process.stdout.write('    Der Server laeuft weiter. Siehe docs/RUNBOOK.md.\n');
+      },
+    )
+    .finally(() => {
+      sperre.gibFrei();
+    });
 }
 
 /** Dieselbe Meldung fuer beide Stellen, an denen ein belegter Port den Start beendet:
@@ -419,14 +470,21 @@ export async function haupt(argv: readonly string[] = process.argv.slice(2)): Pr
   zustand.sperre = laufend.sperre;
 
   process.stdout.write(`✅  Scapio laeuft auf ${laufend.adresse}\n`);
-  if (schalter.browser) oeffneImBrowser(laufend.adresse);
 
-  // Bau und erster Ingest laufen nebeneinander: der eine rechnet, der andere wartet aufs Netz.
-  // `ersterIngest` faengt seine Fehler selbst und wirft nie.
-  const ingest =
-    schalter.ingest && repository.transaktion.anzahl(db) === 0
-      ? ersterIngest(db, konfiguration, laufend.sperre)
-      : Promise.resolve();
+  const grund = startlaufGrund({
+    schalter,
+    leer: repository.transaktion.anzahl(db) === 0,
+    letzterErfolg: repository.lauf.letzterErfolgreicher(db)?.beendet ?? null,
+    jetztMs: Date.now(),
+  });
+  if (grund === null && schalter.ingest && schalter.startlauf) {
+    process.stdout.write(`✅  Die Daten sind keine ${String(STARTLAUF_ABSTAND_MS / 60_000)} Minuten alt — kein neuer Abruf.\n`);
+  }
+  // Bau und Lauf laufen nebeneinander: der eine rechnet, der andere wartet aufs Netz.
+  // Die Promise des Laufs verwirft nie.
+  const ingest = grund === null ? Promise.resolve() : await stosseLaufAn(db, konfiguration, laufend.sperre, grund);
+
+  if (schalter.browser) oeffneImBrowser(laufend.adresse);
 
   if (bauNoetig) {
     try {

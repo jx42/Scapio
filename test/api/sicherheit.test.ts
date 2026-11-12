@@ -17,6 +17,7 @@ import { PROJEKTWURZEL } from '../../shared/konfiguration.ts';
 import { LESENDE_TOOLS } from '../../ingest/mcp.ts';
 import * as repository from '../../db/repository/index.ts';
 import { istUnveraenderlich, UNVERAENDERLICH } from '../../server/sicherheit.ts';
+import { einzahlung } from '../hilfen.ts';
 import { aufraeumen, eigeneHerkunft, eigeneNavigation, konfiguration, PORT, testServer, URSPRUNG } from './hilfen.ts';
 
 afterEach(() => {
@@ -193,6 +194,18 @@ describe('Seite ohne Bau', () => {
     expect(waehrendLauf).toContain('Anmeldung abgeschlossen');
     expect(waehrendLauf).toContain('Kurse abrufen');
     expect(waehrendLauf).not.toContain('Scapio wird gebaut');
+  });
+
+  it('bleibt bei "wird gebaut", wenn der Start bei vorhandenen Daten holt [ADR-064]', async () => {
+    const db = await testDatenbank();
+    repository.transaktion.schreibe(db, { ...einzahlung('2026-01-02', '1000'), gesehenAm: '2026-01-02T18:00:00+01:00' });
+    const { app } = baueServer({ db, konfiguration: konfiguration(), distPfad: join(tmpdir(), 'portfolio-kein-dist') });
+
+    const id = repository.lauf.starte(db, '2026-01-03T00:00:00.000Z');
+    repository.lauf.setzeSchritt(db, id, 'kurse');
+    const body = (await app.inject({ method: 'GET', url: '/', headers: { host: `127.0.0.1:${String(PORT)}` } })).body;
+    expect(body).toContain('Scapio wird gebaut');
+    expect(body).not.toContain('Anmeldung abgeschlossen');
   });
 });
 

@@ -17,7 +17,7 @@ der Geschichte stehen. Eine neue ADR bekommt die nächste freie Nummer und eine 
 | [010](ADR-010-direkte-mcp-anmeldung-ohne-claude-code.md) | Direkte OAuth/PKCE-Anmeldung am Scalable-MCP statt Claude-Code-Kindprozess | Nachtrag: 054 |
 | [011](ADR-011-kursgewinn-statt-twr-in-kachel-1.md) | Verlaufs-Rendite zeigt Kursgewinn, nicht TWR | Name präzisiert durch 016, Zählweise durch 023 |
 | [012](ADR-012-anmeldeknopf-als-zweite-mutierende-route.md) | Der Anmeldeknopf als zweite mutierende Route | gilt |
-| [013](ADR-013-update-nur-auf-knopfdruck.md) | Ein Update-Befehl, der nur auf Knopfdruck läuft | teilweise abgelöst durch 037; Nachtrag: 055 |
+| [013](ADR-013-update-nur-auf-knopfdruck.md) | Ein Update-Befehl, der nur auf Knopfdruck läuft | teilweise abgelöst durch 037; Nachtrag: 055, 064 |
 | [014](ADR-014-steuern-nach-typ-statt-nach-vorzeichen.md) | Zinsen und Steuern nach Typ trennen, nicht nach Vorzeichen | Nachtrag: 062 |
 | [015](ADR-015-summenprobe-nur-bei-gleichem-stand.md) | Die Summenprobe vergleicht nur, wenn beide Seiten denselben Moment beschreiben | ergänzt durch 033 |
 | [016](ADR-016-gesamtgewinn-statt-kursgewinn-im-verlauf.md) | Die Zahl über dem Verlauf heißt Gesamtgewinn, nicht Kursgewinn | gilt |
@@ -43,7 +43,7 @@ der Geschichte stehen. Eine neue ADR bekommt die nächste freie Nummer und eine 
 | [036](ADR-036-kennzahlen-korrekturen-nach-pruefung.md) | Kennzahlen-Korrekturen nach der Prüfung vom Oktober 2026 | Nachtrag: 043, 053 |
 | [037](ADR-037-eigene-dateien-im-datenverzeichnis.md) | Eigene Dateien im Datenverzeichnis, ZIP-Update ohne Kopieren | Nachtrag: 041 |
 | [038](ADR-038-top25-nur-auf-wunsch.md) | Top 25 nur auf Wunsch, Schalter in `einstellungen.json` | gilt |
-| [039](ADR-039-server-vor-dem-bau.md) | Server vor dem Bau, Browser sofort, Fortschritt auf der Anmeldeseite | gilt |
+| [039](ADR-039-server-vor-dem-bau.md) | Server vor dem Bau, Browser sofort, Fortschritt auf der Anmeldeseite | Nachtrag: 064 |
 | [040](ADR-040-aufgeraeumte-projektwurzel.md) | Aufgeräumte Projektwurzel | gilt |
 | [041](ADR-041-seed-im-datenverzeichnis.md) | `seed.json` im Datenverzeichnis | gilt |
 | [042](ADR-042-agenten-lesen-keine-depotwerte.md) | Agenten lesen keine Depotwerte | Nachtrag: 054 |
@@ -68,3 +68,4 @@ der Geschichte stehen. Eine neue ADR bekommt die nächste freie Nummer und eine 
 | [061](ADR-061-einzelaktien-im-durchblick.md) | Einzelaktien im Durchblick | gilt |
 | [062](ADR-062-gewinn-in-euro-rendite-in-prozent.md) | Gewinn heißt Euro, Rendite heißt Prozent | gilt |
 | [063](ADR-063-kursentwicklung-je-position.md) | Kursentwicklung je Position im Dialog der Aufteilung | gilt |
+| [064](ADR-064-lauf-beim-start.md) | Ein Lauf beim Start, relative Angabe im Kopf | gilt |

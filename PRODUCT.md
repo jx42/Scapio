@@ -45,8 +45,10 @@ kann das so nicht anbieten.
 
 - Der Start erfolgt per Doppelklick (`Start.command`/`.bat`). Gebaut wird nur bei
   Bedarf, danach öffnet sich der Browser.
-- Neue Daten holt nur der Knopf „Aktualisieren“, und zwar lesend über den Scalable-MCP.
-  Zwischen zwei Läufen ändert sich keine Zahl.
+- Neue Daten holt der Knopf „Aktualisieren“, und zwar lesend über den Scalable-MCP. Der Start
+  holt einmal von selbst, wenn der letzte Lauf mindestens 15 Minuten her ist
+  ([ADR-064](docs/entscheidungen/ADR-064-lauf-beim-start.md)). Zwischen zwei Läufen ändert
+  sich keine Zahl.
 - Die Anmeldung erfolgt einmal per OAuth im Browser. Läuft sie ab, bietet die Seite selbst
   die erneute Anmeldung an.
 - Ein Update gibt es nur auf Knopfdruck (`Aktualisieren.command`/`.bat`,
