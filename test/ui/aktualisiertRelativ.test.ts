@@ -2,10 +2,9 @@ import { describe, expect, it } from 'vitest';
 
 import { aktualisiertRelativ } from '@/lib/format';
 
-const ohneNbsp = (text: string | null) => text?.replaceAll(' ', ' ') ?? null;
 // Donnerstag, 12.11.2026, 10:00 in Berlin.
 const JETZT = new Date('2026-11-12T09:00:00Z');
-const text = (iso: string, jetzt = JETZT) => ohneNbsp(aktualisiertRelativ(iso, jetzt));
+const text = (iso: string, jetzt = JETZT) => aktualisiertRelativ(iso, jetzt);
 
 describe('aktualisiertRelativ [ADR-064]', () => {
   it('sagt „Gerade“ unter einer Minute und bei einem Zeitpunkt in der Zukunft', () => {
