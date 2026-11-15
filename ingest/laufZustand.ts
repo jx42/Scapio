@@ -26,6 +26,7 @@ import { istLaufFehlerCode, type LaufFehlerCode } from '../shared/laufFehler.ts'
 import type { QuellenSchluessel } from '../shared/quellen.ts';
 import type { EtfStand, Kontext, Schnappschuss } from './importieren.ts';
 import type { Befunde } from './plausibilitaet.ts';
+import { SchemaFehler } from './schema/pruefe.ts';
 
 export type QuellenStatus = 'erfolg' | 'fehler' | 'übersprungen';
 
@@ -63,7 +64,11 @@ export function grundVon(fehler: unknown): string {
   // Der JSON-RPC-Code ist eine Zahl aus dem geprueften Umschlag, kein Fremdtext — und ohne
   // ihn ist E_MCP_RPC im Protokoll nicht von einem anderen RPC-Fehler zu unterscheiden.
   const rpc = codeVon(fehler) === 'E_MCP_RPC' ? /JSON-RPC-Code (-?\d+)/.exec((fehler as Error).message) : null;
-  return rpc === null ? grund : `${grund} (${rpc[1]!})`;
+  if (rpc !== null) return `${grund} (${rpc[1]!})`;
+  // Ohne die Stelle bleibt ein E_SCHEMA nur mit echten Werten aufzuklaeren. Die Stellen
+  // nennen Pfad und zod-Code, nie den Wert (`pruefe`). [INV-12, ADR-042]
+  if (fehler instanceof SchemaFehler && fehler.stellen.length > 0) return `${grund} (${fehler.stellen.join('; ')})`;
+  return grund;
 }
 
 /**

@@ -10,11 +10,13 @@ import type { LaufFehlerCode } from '../../shared/laufFehler.ts';
 export class SchemaFehler extends Error {
   readonly code: LaufFehlerCode = 'E_SCHEMA';
   readonly quelle: string;
+  readonly stellen: readonly string[];
 
   constructor(quelle: string, stellen: readonly string[]) {
     super(`Antwort von ${quelle} passt nicht zum Schema: ${stellen.join('; ')}`);
     this.name = 'SchemaFehler';
     this.quelle = quelle;
+    this.stellen = stellen;
   }
 }
 
