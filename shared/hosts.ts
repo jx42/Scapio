@@ -9,16 +9,16 @@
  * Restrisiko 1.
  *
  * Ein neuer Anbieter braucht hier einen Eintrag: der Schluessel ist auf
- * `FundsJsonAnbieter` festgelegt, ein fehlender scheitert am Typcheck.
+ * `AutomatischerAnbieter` festgelegt, ein fehlender scheitert am Typcheck.
  */
 
-import type { FundsJsonAnbieter } from '../db/repository/fondsAufloesung.ts';
+import type { AutomatischerAnbieter } from '../db/repository/fondsAufloesung.ts';
 
 export const ANBIETER_HOSTS = {
   ishares: ['www.ishares.com'],
   xtrackers: ['etf.dws.com'],
   amundi: ['www.amundietf.de'],
-} as const satisfies Record<FundsJsonAnbieter, readonly string[]>;
+} as const satisfies Record<AutomatischerAnbieter, readonly string[]>;
 
 /** Eurostat (Inflation) und EZB (Zins) — keine Anbieter, aber Teil derselben Allowlist. */
 const STATISTIK_HOSTS = ['ec.europa.eu', 'data-api.ecb.europa.eu'] as const;

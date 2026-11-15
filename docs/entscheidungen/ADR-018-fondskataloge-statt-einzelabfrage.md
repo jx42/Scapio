@@ -1,9 +1,11 @@
 # ADR-018: Fondskataloge statt Einzelabfrage, `funds.json` bleibt als Vorrang
 
-> **Teilweise abgelöst:** iShares hat keinen Katalog mehr; iShares-Fonds kommen über
-> `funds.json` mit `produktId`, die Bestandteile per `get-product-data` —
-> [ADR-027](ADR-027-ishares-holdings-per-get-product-data.md). Für Xtrackers und Amundi gilt
-> diese ADR unverändert.
+> **Teilweise abgelöst:** iShares hat keinen Katalog mehr, die Bestandteile kommen per
+> `get-product-data` — [ADR-027](ADR-027-ishares-holdings-per-get-product-data.md). Die
+> Produkt-ID findet eine Suche je ISIN, dazu kommen Invesco, J.P. Morgan, Goldman Sachs und
+> Franklin Templeton; „Weitere Anbieter: nur drei“ gilt nicht mehr —
+> [ADR-065](ADR-065-fondsaufloesung-ohne-funds-json.md). Katalog vor Einzelabfrage und der
+> Vorrang von `funds.json` gelten weiter.
 
 ## Kontext
 

@@ -491,7 +491,7 @@ export const de = {
     leerAnleitungBeschreibung: 'Schritte, um die Fondsliste „funds.json“ anzulegen.',
     leerAnleitungSchritte: [
       `„ingest/funds.example.json“ aus dem Scapio-Ordner als „funds.json“ ${DATENORDNER} ablegen.`,
-      'Für jeden gehaltenen ETF einen Eintrag mit der ISIN eintragen. Bei „xtrackers“ oder „amundi“ als Anbieter reicht das schon — die Adresse wird automatisch abgefragt.',
+      'Für jeden ETF, den die App nicht von selbst erkennt, einen Eintrag mit der ISIN eintragen. Bei „xtrackers“ oder „amundi“ als Anbieter reicht das schon — die Adresse wird automatisch abgefragt.',
       'Bei „ishares“ zusätzlich die Produkt-ID eintragen: Produktseite des Fonds auf ishares.com öffnen → die Zahl hinter „/produkte/“ in der Adressleiste kopieren. Beispiel: ishares.com/de/privatanleger/de/produkte/251882/… → „251882“.',
       'Danach oben auf „Aktualisieren“ klicken.',
     ],
@@ -522,7 +522,7 @@ export const de = {
       `Die Datei „funds.json“ ${DATENORDNER} öffnen. Gibt es sie noch nicht, „ingest/funds.example.json“ aus dem Scapio-Ordner dorthin kopieren und so umbenennen.`,
       'Den Eintrag in die Liste unter „fonds“ einfügen.',
       ...(mitIshares
-        ? ['Bei iShares „PRODUKT-ID“ ersetzen: die Produktseite des Fonds auf ishares.com öffnen und die Zahl hinter „/produkte/“ aus der Adressleiste übernehmen.']
+        ? ['Bei iShares „PRODUKT-ID“ ersetzen, falls die automatische Suche den Fonds nicht findet: die Produktseite des Fonds auf ishares.com öffnen und die Zahl hinter „/produkte/“ aus der Adressleiste übernehmen.']
         : []),
       'Datei speichern und oben auf „Aktualisieren“ klicken.',
     ],

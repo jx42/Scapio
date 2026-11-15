@@ -13,14 +13,16 @@ import type { Bindung, Spalten } from './hilfen.ts';
 export type Anbietername = 'ishares' | 'xtrackers' | 'amundi' | 'firsttrust' | 'lgim';
 export type Durchsicht = 'moeglich' | 'gesperrt' | 'unbekannt';
 
+/** Die Anbieter, die `ingest/anbieter.ts` ohne `funds.json` aufloest [ADR-065]. */
+export type AutomatischerAnbieter = Exclude<Anbietername, 'firsttrust' | 'lgim'>;
+
 /**
- * Die drei Anbieter, die `ingest/anbieter.ts` automatisch aufloest und die auch von Hand
- * in `funds.json` eingetragen werden koennen — Typquelle fuer den funds.json-Pfad in
- * `ingest/lauf.ts`, fuer `server/lesemodell.ts` und, nur als Typ, fuer die Oberflaeche
- * (`import type`, kein Serverpfad im Bundle [INV-11]). `Anbietername` bleibt breiter:
- * `firsttrust`/`lgim` sind reserviert, aber nicht funds.json-faehig. [ADR-018]
+ * Die Anbieter, die auch von Hand in `funds.json` eingetragen werden koennen — Typquelle fuer
+ * den funds.json-Pfad in `ingest/lauf.ts`, fuer `server/lesemodell.ts` und, nur als Typ, fuer
+ * die Oberflaeche (`import type`, kein Serverpfad im Bundle [INV-11]). Die uebrigen
+ * automatischen Anbieter brauchen keinen Eintrag von Hand [ADR-018, ADR-065].
  */
-export const FUNDS_JSON_ANBIETER = ['ishares', 'xtrackers', 'amundi'] as const satisfies readonly Anbietername[];
+export const FUNDS_JSON_ANBIETER = ['ishares', 'xtrackers', 'amundi'] as const satisfies readonly AutomatischerAnbieter[];
 export type FundsJsonAnbieter = (typeof FUNDS_JSON_ANBIETER)[number];
 
 export type Aufloesung = {

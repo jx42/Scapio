@@ -34,5 +34,9 @@ weil man nicht sieht, welcher davon den Test rot gemacht hat.
 | `kaputt/ishares-schema.json` | | Gewichtsspalte kürzer als die ISIN-Spalte |
 | `kaputt/ishares-anteile.json` | | Gewichte als Anteil statt in Prozent (Summe 0,96 %) |
 | `kaputt/amundi-prozent.json` | `www.amundietf.de` | Gewichte in Prozent statt als Anteil (Summe 9600 %) |
+| `ishares-suche.json` | www.ishares.com (Produktsuche) | — |
+| `ishares-suche-leer.json` | | — (fremde ISIN, `totalResults: 0`) |
+| `ishares-kopf.json` | www.ishares.com (Fondskopf, `fundHeader`) | — |
+| `kaputt/ishares-suche-portfolioid.json` | | `portfolioId` als Zahl statt als Text |
 | `eurostat.json` | ec.europa.eu | — |
 | `kaputt/eurostat-zwei-laender.json` | | `geo` mit zwei Ausprägungen |

@@ -1,15 +1,16 @@
 /** `ingest/quellen/ishares.ts`: was die Quelle aus einer Antwort macht. Rahmen in `hilfen.ts`. */
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { Isin } from '../../../core/typen.ts';
 import { SchemaFehler } from '../../../ingest/schema.ts';
 import type { FondsIshares } from '../../../ingest/schema.ts';
-import { FIXTURE, text } from '../../fixtures/index.ts';
+import { FIXTURE, json, text } from '../../fixtures/index.ts';
 import { kontext, mcp, netz } from './hilfen.ts';
 
 vi.mock('../../../ingest/mcp.ts', () => ({ mcpAufrufRoh: vi.fn() }));
 vi.mock('../../../ingest/netz.ts', () => ({ holeText: vi.fn() }));
 
-const { holeIshares } = await import('../../../ingest/quellen/ishares.ts');
+const { holeIshares, sucheIshares } = await import('../../../ingest/quellen/ishares.ts');
 const { pruefeGewichtsSumme } = await import('../../../ingest/anbieter.ts');
 
 beforeEach(() => {
@@ -80,6 +81,52 @@ describe('holeIshares', () => {
       }),
     );
     await expect(holeIshares(kontext(), FONDS)).rejects.toThrow(/keine verwertbare Zeile/);
+  });
+});
+
+describe('sucheIshares', () => {
+  const ISIN = 'IE00B4L5Y983' as Isin;
+  const roh = (name: string) => JSON.stringify(json(name));
+
+  it('loest die ISIN ueber Suche und Fondskopf in die portfolioId auf', async () => {
+    netz.mockResolvedValueOnce(roh('ishares-suche.json')).mockResolvedValueOnce(roh('ishares-kopf.json'));
+
+    expect(await sucheIshares(kontext(), ISIN)).toEqual({ produktId: '251882' });
+    expect(netz.mock.calls[0]?.[0]).toContain(`query=${ISIN}`);
+    expect(netz.mock.calls[1]?.[0]).toMatch(/component=fundHeader&.*portfolioId=251882&/);
+  });
+
+  it('liefert null ohne Treffer und fragt den Fondskopf gar nicht erst', async () => {
+    netz.mockResolvedValueOnce(roh('ishares-suche-leer.json'));
+    expect(await sucheIshares(kontext(), 'IE00B3YCGJ38' as Isin)).toBeNull();
+    expect(netz).toHaveBeenCalledTimes(1);
+  });
+
+  it('verwirft einen Treffer, dessen Fondskopf eine fremde ISIN nennt', async () => {
+    const kopf = roh('ishares-kopf.json').replace(ISIN, 'IE00B3YCGJ38');
+    netz.mockResolvedValueOnce(roh('ishares-suche.json')).mockResolvedValueOnce(kopf);
+    expect(await sucheIshares(kontext(), ISIN)).toBeNull();
+  });
+
+  it('nimmt bei mehreren Treffern den, dessen Fondskopf die ISIN nennt', async () => {
+    const suche = { totalResults: 2, results: [{ portfolioId: '251881' }, { portfolioId: '251882' }] };
+    const fremd = roh('ishares-kopf.json').replace(ISIN, 'IE00B3YCGJ38');
+    netz
+      .mockResolvedValueOnce(JSON.stringify(suche))
+      .mockResolvedValueOnce(fremd)
+      .mockResolvedValueOnce(roh('ishares-kopf.json'));
+    expect(await sucheIshares(kontext(), ISIN)).toEqual({ produktId: '251882' });
+    expect(netz).toHaveBeenCalledTimes(3);
+  });
+
+  it('wirft einen SchemaFehler, wenn die portfolioId als Zahl kommt', async () => {
+    netz.mockResolvedValueOnce(roh('kaputt/ishares-suche-portfolioid.json'));
+    await expect(sucheIshares(kontext(), ISIN)).rejects.toThrow(SchemaFehler);
+  });
+
+  it('wirft einen SchemaFehler, wenn dem Fondskopf die ISIN fehlt', async () => {
+    netz.mockResolvedValueOnce(roh('ishares-suche.json')).mockResolvedValueOnce(JSON.stringify({ componentsByNameMap: {} }));
+    await expect(sucheIshares(kontext(), ISIN)).rejects.toThrow(SchemaFehler);
   });
 });
 

@@ -22,7 +22,7 @@ der Geschichte stehen. Eine neue ADR bekommt die nächste freie Nummer und eine 
 | [015](ADR-015-summenprobe-nur-bei-gleichem-stand.md) | Die Summenprobe vergleicht nur, wenn beide Seiten denselben Moment beschreiben | ergänzt durch 033 |
 | [016](ADR-016-gesamtgewinn-statt-kursgewinn-im-verlauf.md) | Die Zahl über dem Verlauf heißt Gesamtgewinn, nicht Kursgewinn | gilt |
 | [017](ADR-017-zweiter-eurostat-datensatz-fuer-den-rand.md) | Zwei Eurostat-Datensätze bilden eine Preisreihe | gilt |
-| [018](ADR-018-fondskataloge-statt-einzelabfrage.md) | Fondskataloge statt Einzelabfrage, `funds.json` bleibt als Vorrang | teilweise abgelöst durch 027 |
+| [018](ADR-018-fondskataloge-statt-einzelabfrage.md) | Fondskataloge statt Einzelabfrage, `funds.json` bleibt als Vorrang | teilweise abgelöst durch 027, 065 |
 | [019](ADR-019-shadcn-variablen-als-aliase.md) | shadcn-Variablen als Aliase auf fachliche Tokens statt als Ersatz | ergänzt durch 024 |
 | [020](ADR-020-benchmark-vergleich-etf-nav-und-echte-fluesse.md) | Benchmark-Vergleich mit ETF-Kurs statt Index, Vergleichsdepot aus echten Flüssen | Zählweise seit 023 |
 | [021](ADR-021-ausgehende-links-justetf-ezb-eurostat.md) | Ausgehende Links zu onvista (ursprünglich justETF), EZB und Eurostat | ISIN-Ziel seit 028 onvista |
@@ -31,7 +31,7 @@ der Geschichte stehen. Eine neue ADR bekommt die nächste freie Nummer und eine 
 | [024](ADR-024-shadcn-linie.md) | Die shadcn-Linie — `radix-ui`, `new-york-v4`, bewusst abweichende Bausteine | gilt |
 | [025](ADR-025-wertpapierart-per-get-security-quote.md) | Wertpapierart per `get_security_quote` | gilt |
 | [026](ADR-026-risikofreier-zins-als-benchmark.md) | Der risikofreie Zins als zehnter Eintrag in der Benchmarkwahl | Nachtrag: ACT/360 |
-| [027](ADR-027-ishares-holdings-per-get-product-data.md) | iShares-Bestandteile per `get-product-data` | gilt |
+| [027](ADR-027-ishares-holdings-per-get-product-data.md) | iShares-Bestandteile per `get-product-data` | teilweise abgelöst durch 065 |
 | [028](ADR-028-onvista-statt-justetf.md) | onvista statt justETF als Ziel des ISIN-Links | gilt |
 | [029](ADR-029-liquid-glass-dezent.md) | Liquid Glass dezent als einzige Darstellung | gilt |
 | [030](ADR-030-webseiten-antworten-ohne-strict.md) | Antworten von Anbieter-Webseiten ohne `.strict()` | gilt |
@@ -69,3 +69,4 @@ der Geschichte stehen. Eine neue ADR bekommt die nächste freie Nummer und eine 
 | [062](ADR-062-gewinn-in-euro-rendite-in-prozent.md) | Gewinn heißt Euro, Rendite heißt Prozent | gilt |
 | [063](ADR-063-kursentwicklung-je-position.md) | Kursentwicklung je Position im Dialog der Aufteilung | gilt |
 | [064](ADR-064-lauf-beim-start.md) | Ein Lauf beim Start, relative Angabe im Kopf | gilt |
+| [065](ADR-065-fondsaufloesung-ohne-funds-json.md) | Fondsauflösung ohne `funds.json` für weitere Anbieter | gilt |

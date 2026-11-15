@@ -33,3 +33,36 @@ export const IsharesAntwort = z.object({
     }),
   }),
 });
+
+// ---------------------------------------------------------------------------
+// iShares-Produktsuche (core-search) und Fondskopf (get-product-data, fundHeader)
+// ---------------------------------------------------------------------------
+
+/** `rows=5` in der Anfrage; mehr Treffer je Seite sind ein Formatwechsel. */
+const SUCHE_TREFFER = 5;
+
+/**
+ * Antwort der Produktsuche je ISIN. Ein Treffer traegt keine ISIN, nur die `portfolioId`;
+ * welche ISIN dahintersteht, prueft `sucheIshares` ueber `IsharesKopf`.
+ */
+export const IsharesSuche = z.object({
+  totalResults: z.number().int().nonnegative(),
+  results: z
+    .array(z.object({ portfolioId: z.string().regex(/^\d{1,9}$/) }))
+    .max(SUCHE_TREFFER),
+});
+
+/** Der Fondskopf der Produktseite: gelesen wird nur die ISIN der Anteilsklasse. */
+export const IsharesKopf = z.object({
+  componentsByNameMap: z.object({
+    fundHeader: z.object({
+      containersByNameMap: z.object({
+        fundName: z.object({
+          dataPointsByNameMap: z.object({
+            productIsin: z.object({ value: z.string().max(GRENZE.isin) }),
+          }),
+        }),
+      }),
+    }),
+  }),
+});

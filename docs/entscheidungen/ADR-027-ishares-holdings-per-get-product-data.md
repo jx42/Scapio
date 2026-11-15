@@ -1,5 +1,9 @@
 # ADR-027: iShares-Bestandteile per `get-product-data`
 
+> **Teilweise abgelöst durch [ADR-065](ADR-065-fondsaufloesung-ohne-funds-json.md).** Die
+> Produkt-ID findet eine Suche je ISIN; `funds.json` ist für iShares nur noch nötig, wenn sie
+> nichts findet, und `fondskatalog:ishares` steht nicht mehr dauerhaft auf „übersprungen“.
+
 ## Kontext
 
 iShares hat die deutsche Seite umgebaut. Die `.ajax?tab=all&fileType=json`-Adressen und der

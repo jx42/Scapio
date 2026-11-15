@@ -167,8 +167,12 @@ Ist der Look-Through eingeschaltet ([ADR-038](entscheidungen/ADR-038-top25-nur-a
 der Ingest bei iShares, Xtrackers und Amundi die Bestandsliste je gehaltenem Fonds ab: die ISIN
 steht im Pfad (`ingest/quellen/xtrackers.ts`) oder im Rumpf (`amundi.ts`, `productIds`); bei iShares
 steht statt ihrer die Produkt-ID des Fonds in der Query (`ishares.ts`, `portfolioId`). Zusammen mit IP-Adresse und Abrufzeit ergibt das beim Anbieter
-die Liste der gehaltenen ETFs dieses Anschlusses — keine Mengen, keine Beträge, kein Name. Die
-Kataloge, Eurostat und die EZB werden ohne Depotbezug abgefragt und verraten nichts.
+die Liste der gehaltenen ETFs dieses Anschlusses — keine Mengen, keine Beträge, kein Name.
+iShares hat keinen Listenkatalog, sondern eine Suche je ISIN; sie läuft nur für ISINs, die kein
+Listenkatalog kennt und die kein Einzeltitel sind (`wertpapier_art`). Findet sie nichts, erfährt
+iShares auch ISINs fremder Fonds, höchstens einmal je ISIN und Ablauffrist
+(`fondsKatalogFrischeTage`, [ADR-065](entscheidungen/ADR-065-fondsaufloesung-ohne-funds-json.md)).
+Die Listenkataloge, Eurostat und die EZB werden ohne Depotbezug abgefragt und verraten nichts.
 
 Getragen, weil ohne diese Abrufe die Kachel nicht entsteht und der Schalter ab Werk aus ist:
 wer ihn setzt, liest den Satz dazu in der Vorlage `docs/einstellungen.example.json` und in der

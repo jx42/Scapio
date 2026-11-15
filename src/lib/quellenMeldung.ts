@@ -27,8 +27,6 @@ const c = de.laufhinweise.quelleCode;
 /** Hier hilft kein zweiter Versuch, nur eine neue Version. */
 const SCHNITTSTELLE: ReadonlySet<string> = new Set(['E_MCP_RPC', 'E_SCHEMA', 'E_MCP_ARGUMENT', 'E_MCP_SEITEN'] satisfies LaufFehlerCode[]);
 
-const ANBIETER: Readonly<Record<string, string>> = { ishares: 'iShares', xtrackers: 'Xtrackers', amundi: 'Amundi' };
-
 function codeText(code: string): { readonly grund: string; readonly tun: string } {
   if (code in c) return c[code as keyof typeof c];
   if (SCHNITTSTELLE.has(code)) return c.schnittstelle;
@@ -42,7 +40,7 @@ function quellenText(art: string, teile: readonly string[]): { readonly titel: s
     case 'kurse':
       return { titel: q.kurse.titel, folge: q.kurse.folge(teile.length) };
     case 'fondskatalog':
-      return { titel: q.fondskatalog.titel, folge: q.fondskatalog.folge(teile.map((t) => ANBIETER[t] ?? t).join(', ')) };
+      return { titel: q.fondskatalog.titel, folge: q.fondskatalog.folge(teile.map((t) => de.top25.anbieterName[t] ?? t).join(', ')) };
     case 'holdings':
     case 'cash':
     case 'sparplaene':

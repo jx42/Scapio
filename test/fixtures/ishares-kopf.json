@@ -1,0 +1,32 @@
+{
+  "productId": 251882,
+  "portfolioType": "ISHARES_FUND_DATA",
+  "fundName": "iShares Core MSCI World UCITS ETF",
+  "componentsByNameMap": {
+    "fundHeader": {
+      "name": "fundHeader",
+      "containersByNameMap": {
+        "fundName": {
+          "name": "fundName",
+          "fullName": "fundHeader.fundName",
+          "dataPointsByNameMap": {
+            "fundName": {
+              "name": "fundName",
+              "visible": true,
+              "formattedValue": "iShares Core MSCI World UCITS ETF",
+              "value": "iShares Core MSCI World UCITS ETF",
+              "fullName": "fundHeader.fundName.fundName"
+            },
+            "productIsin": {
+              "name": "productIsin",
+              "visible": false,
+              "formattedValue": "-",
+              "value": "IE00B4L5Y983",
+              "fullName": "fundHeader.fundName.productIsin"
+            }
+          }
+        }
+      }
+    }
+  }
+}

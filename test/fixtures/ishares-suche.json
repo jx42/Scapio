@@ -1,0 +1,31 @@
+{
+  "facetResults": {
+    "fieldName": "",
+    "facetCounts": []
+  },
+  "results": [
+    {
+      "url": "/de-ishares-v2/individual/de/products/251882/",
+      "targetSite": "de-ishares-v2",
+      "locale": "de_DE",
+      "userType": "individual",
+      "fundName": "iShares Core MSCI World UCITS ETF",
+      "portfolioId": "251882",
+      "portfolioType": "ISHARES_FUND_DATA",
+      "assetClass": [
+        "Aktien"
+      ],
+      "fundTicker": [
+        "SWDA",
+        "IWDA",
+        "EUNL",
+        "IWDACL"
+      ],
+      "displayTicker": "EUNL",
+      "aladdinFundTicker": "ISIWDATTL"
+    }
+  ],
+  "rows": 1,
+  "start": 0,
+  "totalResults": 1
+}
