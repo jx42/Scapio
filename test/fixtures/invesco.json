@@ -1,0 +1,51 @@
+{
+  "effectiveDate": "2026-11-12",
+  "holdings": [
+    {
+      "name": "APPLE INC USD0.00001",
+      "isin": "US0378331005",
+      "cusip": "037833100",
+      "weight": 30.5
+    },
+    {
+      "name": "NVIDIA CORP USD0.001",
+      "isin": "US67066G1040",
+      "cusip": "67066G104",
+      "weight": 20.25
+    },
+    {
+      "name": "MICROSOFT CORP USD0.00000625",
+      "isin": "US5949181045",
+      "cusip": "594918104",
+      "weight": 15
+    },
+    {
+      "name": "AMAZON.COM INC USD0.01",
+      "isin": "US0231351067",
+      "cusip": "023135106",
+      "weight": 10
+    },
+    {
+      "name": "ALPHABET INC-CL A USD0.001",
+      "isin": "US02079K3059",
+      "cusip": "02079K305",
+      "weight": 8
+    },
+    {
+      "name": "ALPHABET INC-CL C USD0.001",
+      "isin": "US02079K1079",
+      "cusip": "02079K107",
+      "weight": 7
+    },
+    {
+      "name": "APPLE INC USD0.00001",
+      "isin": "US0378331005",
+      "cusip": "037833100",
+      "weight": 5.25
+    },
+    {
+      "name": "Cash and/or Derivatives",
+      "weight": -0.0283
+    }
+  ]
+}

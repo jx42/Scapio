@@ -1,0 +1,116 @@
+{
+  "effectiveDate": "2026-11-14",
+  "lastModified": "2026-10-12T20:55:04Z",
+  "primaryShareClassIndicator": true,
+  "shareClassCurrency": "USD",
+  "shareClassFullName": "Invesco EQQQ Nasdaq-100 UCITS ETF Dist",
+  "shareClassStatus": "open",
+  "shareClassSuffix": "Dist",
+  "shareClassInceptionDate": "2002-12-02",
+  "replicationMethod": "Physical",
+  "hedgedIndicator": false,
+  "distributionFrequency": "Quarterly",
+  "sippEligible": "Yes",
+  "ucitsCompliant": "Yes",
+  "isaEligible": "Yes",
+  "peaEligible": "No",
+  "shareClassReportingStatusUk": "Yes",
+  "audienceType": [
+    "Individual Investor",
+    "Financial Professional"
+  ],
+  "passports": [
+    "AT",
+    "BE.PP",
+    "CL (Financial Professional and Institutional)"
+  ],
+  "account": {
+    "accountName": "Invesco EQQQ Nasdaq-100 UCITS ETF",
+    "currency": "USD",
+    "domicileCountry": "IE",
+    "financialYearEnd": "--09-30",
+    "legalEntityIdentifier": "549300G3HDTLNIY9YW25",
+    "accountStatus": "open",
+    "securityLendingParticipationFlag": true,
+    "accountShortName": "EQQQ Nasdaq-100 UCITS ETF",
+    "investmentVehicleType": "ETF",
+    "inceptionDate": "2002-12-02",
+    "fundFocus": "Large cap",
+    "region": "US",
+    "strategy": "Core",
+    "legalForm": "Yes",
+    "investability": [
+      "ISA",
+      "SIPP"
+    ],
+    "productType": "ETF",
+    "sfdrClassification": [
+      "article6"
+    ]
+  },
+  "investmentStrategy": {
+    "assetType": "Equity",
+    "managementStyle": "PASSIVE"
+  },
+  "aliases": {
+    "isin": "IE0032077012",
+    "wkn": "801498",
+    "valor": "1527010",
+    "sedol": "B02V055",
+    "ticker": "EQQQ",
+    "bloombergTicker": "EQQQ SW",
+    "bloombergTickerInav": "EQQQUSIV"
+  },
+  "shareclassCharges": {
+    "exitCharge": "0.0001",
+    "fundManagementCharge": "0.3%",
+    "custodyCharge": "$200",
+    "createCharge": "0.0001"
+  },
+  "shareclassListings": [
+    {
+      "listingExchangeCode": "XMIL",
+      "listingExchangeName": "Euronext Milan",
+      "listingCurrency": "EUR",
+      "listingRic": "EQQQ.MI",
+      "listingDate": "2002-11-25",
+      "listingPrimaryIndicator": false,
+      "listingSedol": "7618354",
+      "listingBloombergTicker": "EQQQ IM",
+      "listingIsin": "IE0032077012",
+      "listingValor": "1527010",
+      "listingWKN": "801498",
+      "listingTicker": "EQQQ",
+      "listingBloombergTickerInav": "EQQQEUIV",
+      "listingReutersInav": "EQQQEUiv.P",
+      "listingMarkitTickerInav": "EQQQEUiv.P",
+      "listingMarkitTickerBidOfferPrice": "EQQQ.MI"
+    }
+  ],
+  "benchmarkRelationships": [
+    {
+      "benchmarkFullName": "NASDAQ - 100 Notional NTR Index",
+      "baseCurrency": "USD",
+      "indexProvider": "",
+      "indexBloombergTicker": "NNDX",
+      "indexRic": ".XNDXNNR"
+    }
+  ],
+  "links": {
+    "self": {
+      "href": "/*/de_DE/shareclasses/IE0032077012?idType=isin"
+    },
+    "nav": {
+      "href": "/*/de_DE/shareclasses/IE0032077012/nav?idType=isin"
+    },
+    "esg": {
+      "href": "/*/de_DE/shareclasses/IE0032077012/esg?idType=isin"
+    },
+    "distribution": {
+      "href": "/*/de_DE/shareclasses/IE0032077012/distribution?idType=isin"
+    },
+    "marketdata": {
+      "href": "/*/de_DE/shareclasses/IE0032077012/marketdata?idType=isin"
+    }
+  }
+}

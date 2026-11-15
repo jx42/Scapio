@@ -1,7 +1,8 @@
 # Ingest
 
-Holt Daten aus dem Scalable-MCP, von ETF-Anbietern (iShares, Xtrackers, Amundi), von
-Eurostat und der EZB und schreibt sie validiert in die Datenbank. Alles hier verarbeitet FREMDE Daten.
+Holt Daten aus dem Scalable-MCP, von ETF-Anbietern (iShares, Xtrackers, Amundi, Invesco,
+J.P. Morgan, Goldman Sachs, Franklin Templeton), von Eurostat und der EZB und schreibt sie
+validiert in die Datenbank. Alles hier verarbeitet FREMDE Daten.
 
 ## Regeln
 - Nur lesende MCP-Tools. Die Allowlist steht in `mcp.ts` als Union-Typ. [INV-01]

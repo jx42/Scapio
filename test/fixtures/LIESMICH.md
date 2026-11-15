@@ -38,5 +38,17 @@ weil man nicht sieht, welcher davon den Test rot gemacht hat.
 | `ishares-suche-leer.json` | | — (fremde ISIN, `totalResults: 0`) |
 | `ishares-kopf.json` | www.ishares.com (Fondskopf, `fundHeader`) | — |
 | `kaputt/ishares-suche-portfolioid.json` | | `portfolioId` als Zahl statt als Text |
+| `invesco-shareclass.json` | `dng-api.invesco.com` (Shareclass, Suche) | — |
+| `invesco.json` | `dng-api.invesco.com` (Holdings) | — |
+| `kaputt/invesco-gewicht-text.json` | | ein `weight` als Text (`"20.25"`) |
+| `jpmorgan-katalog.json` | am.jpmorgan.com (Fund Explorer) | — |
+| `jpmorgan.json` | am.jpmorgan.com (`product-data`) | — |
+| `kaputt/jpmorgan.json` | | `marketValuePercent: "30.0"` (Text statt Zahl) |
+| `goldmansachs-sitemap.xml` | am.gs.com (Sitemap) | — (Insights- und Nicht-ETF-Fondsadressen dabei) |
+| `goldmansachs.json` | am.gs.com | — (Gewichte auf ~100 % gesetzt) |
+| `kaputt/goldmansachs-gewicht-text.json` | | `portfolio: "n. v."` |
+| `franklin-sitemap.xml` | www.franklintempleton.de (Sitemap) | — (zwei Nicht-ETF-Fonds, ein Geldmarktfonds ohne ISIN, drei ETFs, davon zwei mit derselben fundid) |
+| `franklin.json` | www.franklintempleton.de (GraphQL `dailyholdings`) | — (Gewichte auf Summe 96 % gesetzt, TSMC doppelt, zwei Zeilen mit `—` statt ISIN) |
+| `kaputt/franklin.json` | | `pctofnetassets` mit Dezimalpunkt `"18.40"` statt Komma |
 | `eurostat.json` | ec.europa.eu | — |
 | `kaputt/eurostat-zwei-laender.json` | | `geo` mit zwei Ausprägungen |

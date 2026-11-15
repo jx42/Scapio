@@ -17,7 +17,7 @@ neue ADR dorthin, nicht in einen Kommentar.
 
 | Ordner | Aufgabe | Eigene Regeln |
 |---|---|---|
-| `ingest/` | holt Daten aus dem Scalable-MCP, von iShares, Xtrackers, Amundi, Eurostat und der EZB | `ingest/CLAUDE.md` |
+| `ingest/` | holt Daten aus dem Scalable-MCP, von iShares, Xtrackers, Amundi, Invesco, J.P. Morgan, Goldman Sachs, Franklin Templeton, Eurostat und der EZB | `ingest/CLAUDE.md` |
 | `core/` | reiner Rechenkern: XIRR, TWR, FIFO, Look-Through | `core/CLAUDE.md` |
 | `db/` | SQLite über `node:sqlite`, Migrationen, Repositories | `db/CLAUDE.md` |
 | `server/` | Fastify auf 127.0.0.1, API und Auslieferung | `server/CLAUDE.md` |

@@ -10,7 +10,16 @@ import type { DatabaseSync } from 'node:sqlite';
 import { platzhalter, spaltenliste, stmt, ueberschreibe } from './hilfen.ts';
 import type { Bindung, Spalten } from './hilfen.ts';
 
-export type Anbietername = 'ishares' | 'xtrackers' | 'amundi' | 'firsttrust' | 'lgim';
+export type Anbietername =
+  | 'ishares'
+  | 'xtrackers'
+  | 'amundi'
+  | 'invesco'
+  | 'jpmorgan'
+  | 'goldmansachs'
+  | 'franklin'
+  | 'firsttrust'
+  | 'lgim';
 export type Durchsicht = 'moeglich' | 'gesperrt' | 'unbekannt';
 
 /** Die Anbieter, die `ingest/anbieter.ts` ohne `funds.json` aufloest [ADR-065]. */
