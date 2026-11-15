@@ -29,7 +29,7 @@ function PopoverContent({
         sideOffset={sideOffset}
         className={cn(
           // eslint-disable-next-line no-restricted-syntax -- outline-none ohne eigenen Ring: der globale aus styles/theme.css gilt unbedingt; den Fokus nimmt der Inhalt nur beim Oeffnen.
-          'z-50 max-w-xs schwebend rounded-md px-3 py-2 text-sm leading-snug text-text outline-none',
+          'z-50 max-h-(--radix-popover-content-available-height) max-w-xs overflow-y-auto schwebend rounded-md px-3 py-2 text-sm leading-snug text-text outline-none',
           className,
         )}
         {...props}

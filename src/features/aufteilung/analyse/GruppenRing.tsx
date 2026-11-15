@@ -186,8 +186,10 @@ export const GruppenRing = memo(function GruppenRing({
         >
           <span className="w-6 shrink-0">{de.top25.spalteRangKurz}</span>
           <span className="min-w-0 flex-1">{spalte}</span>
-          <span className="min-w-14 shrink-0 text-right">{de.top25.spalteAnteil}</span>
-          <span className="min-w-24 shrink-0 text-right">{de.top25.spalteExposure}</span>
+          <span className={WERTE}>
+            <span className={ANTEIL}>{de.top25.spalteAnteil}</span>
+            <span className={EXPOSURE}>{de.top25.spalteExposure}</span>
+          </span>
         </div>
         {/* `-mx-2 px-2`: die Maske schneidet sonst den seitlichen Überstand des Zeilen-Hovers ab. */}
         <ul id={listeId} aria-label={titel} className={cn('-mx-2 flex flex-col px-2', angeschnitten && 'ausblenden-unten')}>
@@ -204,13 +206,18 @@ function rang(g: Gruppe, index: number): string {
 }
 
 /** Eigene Komponente, weil `useZahlZaehler` als Hook nicht in der `.map()`-Schleife stehen darf. */
+/** Anteil und Exposure: schmal untereinander (Exposure oben), sonst nebeneinander — nebeneinander blieben dem Namen bei 320 px 20 px. */
+const WERTE = 'flex shrink-0 flex-col items-end sm:flex-row sm:items-baseline sm:gap-x-2';
+const ANTEIL = 'text-right max-sm:order-last sm:min-w-14';
+const EXPOSURE = 'text-right sm:min-w-24';
+
 function GruppenWerte({ anteil, exposureCent }: { readonly anteil: number; readonly exposureCent: number }) {
   const angezeigterAnteil = useZahlZaehler(anteilProzent(anteil));
   const angezeigterWert = useZahlZaehler(euroAusCent(exposureCent));
   return (
-    <>
-      <span className="min-w-14 shrink-0 text-right tabular-nums text-text-leise">{angezeigterAnteil}</span>{' '}
-      <span className="min-w-24 shrink-0 text-right tabular-nums text-text">{angezeigterWert}</span>
-    </>
+    <span className={WERTE}>
+      <span className={cn(ANTEIL, 'tabular-nums text-text-leise max-sm:text-xs')}>{angezeigterAnteil}</span>{' '}
+      <span className={cn(EXPOSURE, 'tabular-nums text-text')}>{angezeigterWert}</span>
+    </span>
   );
 }

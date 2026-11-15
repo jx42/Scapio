@@ -57,7 +57,8 @@ export function Zeitraumwahl<Z extends KursZeitraum>({
         </ToggleGroupItem>
       ))}
       {eigenMoeglich || gewaehlt === null ? (
-        <ToggleGroupItem className="max-sm:min-w-0 max-sm:flex-1 max-sm:px-1" value={EIGEN}>
+        // Breiter als die Kürzel: bei gleich breiten Chips lief „Von–bis“ bei 320 px über den Rand.
+        <ToggleGroupItem className="max-sm:flex-none max-sm:px-1" value={EIGEN}>
           {de.verlauf.zeitraumEigen}
         </ToggleGroupItem>
       ) : null}

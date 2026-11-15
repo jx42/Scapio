@@ -25,9 +25,10 @@ function SliderThumb({ className, ...props }: React.ComponentProps<typeof Slider
     <SliderPrimitive.Thumb
       data-slot="slider-thumb"
       className={cn(
-        // Sichtbar 12 px, Klickziel per Pseudo-Element 24 px. [Barrierefreiheit: min. 24 × 24]
+        // Sichtbar 12 px, Klickziel per Pseudo-Element 24 px [Barrierefreiheit: min. 24 × 24];
+        // bei Touch sichtbar 20 px, Ziel 44 px — 24 px trifft ein Finger kaum.
         // Der Hof ist ein box-shadow-Ring, kein outline — das bleibt dem Fokusring.
-        'relative block size-3 cursor-ew-resize rounded-full border border-chart-1 bg-grund transition-[background-color,box-shadow,scale] duration-150 before:absolute before:-inset-1.5',
+        'relative block size-3 cursor-ew-resize rounded-full border border-chart-1 bg-grund transition-[background-color,box-shadow,scale] duration-150 before:absolute before:-inset-1.5 pointer-coarse:size-5 pointer-coarse:before:-inset-3',
         'hover:scale-125 hover:bg-chart-1 hover:ring-3 hover:ring-chart-1/25 active:scale-125 active:bg-chart-1 active:ring-4 active:ring-chart-1/30',
         'data-[disabled]:cursor-not-allowed data-[disabled]:hover:scale-100 data-[disabled]:hover:bg-grund data-[disabled]:hover:ring-0',
         className,

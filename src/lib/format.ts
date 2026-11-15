@@ -52,6 +52,13 @@ const prozentMitZeichenFormat = new Intl.NumberFormat('de-DE', {
   signDisplay: 'exceptZero',
 });
 
+// Achsen-Ticks liegen im 1-2-5-Raster; „+10,00 %“ machte die Y-Achse nur breiter, schmal fehlt der Platz.
+const prozentAchseFormat = new Intl.NumberFormat('de-DE', {
+  style: 'percent',
+  maximumFractionDigits: 2,
+  signDisplay: 'exceptZero',
+});
+
 const KLEINSTER_ANTEIL = 0.001;
 const anteilFormat = new Intl.NumberFormat('de-DE', {
   style: 'percent',
@@ -170,6 +177,12 @@ export function euroKompaktAusCent(cent: number): string {
 export function prozent(anteil: number, mitVorzeichen = false): string {
   if (!istZahl(anteil)) return '—';
   return mitVorzeichen ? prozentMitZeichenFormat.format(anteil) : prozentFormat.format(anteil);
+}
+
+/** Prozent an einer Chart-Achse, nur so viele Nachkommastellen wie nötig: „+10 %“, „−2,5 %“. Nie für eine Kennzahl. */
+export function prozentAchse(anteil: number): string {
+  if (!istZahl(anteil)) return '—';
+  return prozentAchseFormat.format(anteil);
 }
 
 /**

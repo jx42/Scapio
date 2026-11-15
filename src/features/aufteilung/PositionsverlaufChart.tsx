@@ -34,7 +34,6 @@ import {
   POSITIONSVERLAUF_CHART_HOEHE,
   VERLAUF_MARGIN,
   VERLAUF_X_ACHSE_TICK_ABSTAND,
-  yAchsenBreite,
 } from '@/lib/chartmasse';
 import { FARBE, richtungTon } from '@/lib/farben';
 import {
@@ -43,6 +42,7 @@ import {
   datumAlsTagMonat,
   datumKurz,
   prozent,
+  prozentAchse,
   tagAchsenwert,
   vorzeichen,
   zeitachse,
@@ -54,9 +54,9 @@ import { Farbtupfer } from '@/components/Ring';
 import { RichtungsPfeil } from '@/components/RichtungsPfeil';
 import {
   AktivPunktMitLinie,
-  domainBeschriftungen,
   leuchtLinie,
   yAchseImRaster,
+  xAchsenTick,
   zeichenflaecheLinks,
 } from '@/features/verlauf/verlaufAchsen';
 import { tabellenPunkte } from '@/features/verlauf/verlaufTabellen';
@@ -79,7 +79,7 @@ const FLACHE_ACHSE = 0.01;
 /** Mehr Zeilen je Spalte passen nicht in die Höhe des Charts. */
 const TOOLTIP_ZEILEN = 12;
 
-const achsenFormat = (wert: number): string => prozent(wert, true);
+const achsenFormat = prozentAchse;
 
 function wertVon(punkt: PositionsverlaufPunkt, isin: string): number | null {
   return punkt.werte[isin] ?? null;
@@ -246,7 +246,7 @@ export function PositionsverlaufChart({ punkte, linien }: PositionsverlaufChartP
             ticks={achse.ticks}
             tickFormatter={achse.format}
             stroke={FARBE.textLeise}
-            tick={{ fontSize: CHART_ACHSEN_SCHRIFTGROESSE, textAnchor: 'start' }}
+            tick={xAchsenTick(links)}
             tickLine={false}
             minTickGap={VERLAUF_X_ACHSE_TICK_ABSTAND}
           />
@@ -255,7 +255,7 @@ export function PositionsverlaufChart({ punkte, linien }: PositionsverlaufChartP
             stroke={FARBE.textLeise}
             tick={{ fontSize: CHART_ACHSEN_SCHRIFTGROESSE }}
             tickLine={false}
-            width={yAchsenBreite(domainBeschriftungen(yAchse.domain, achsenFormat))}
+            width={links - VERLAUF_MARGIN.left}
             domain={yAchse.domain}
             ticks={yAchse.ticks}
             interval={0}

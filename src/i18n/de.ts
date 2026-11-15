@@ -482,7 +482,7 @@ export const de = {
       ausFonds.length === 0
         ? '–'
         : ausFonds.map((f) => (f.isin === unternehmenIsin ? 'Direktanlage' : (f.name ?? f.isin))).join(', '),
-    /** Für Screenreader in der Zeile; sehend steht die Liste in der Hover-Karte. */
+    /** Für Screenreader in der Zeile; sehend steht die Liste in der Hover-Karte, per Touch unter dem Namen. */
     fondsHinweis: (liste: string) => `, enthalten in ${liste}`,
     mehrZeigen: 'Mehr zeigen',
     wenigerZeigen: 'Weniger zeigen',

@@ -41,6 +41,11 @@ const ART_SPALTE = 'hidden w-16 shrink-0 break-words sm:block';
 /** Die Info-Spalte mit dem onvista-Link: entfällt schmal wie die Art. */
 const INFO_SPALTE = 'hidden w-20 shrink-0 sm:block';
 
+/** Anteil und Wert: schmal untereinander (Wert oben), sonst nebeneinander — nebeneinander blieben dem Namen bei 375 px rund 100 px. */
+const WERTE_SPALTE = 'flex shrink-0 flex-col items-end @md/legende:flex-row @md/legende:items-baseline @md/legende:gap-x-3';
+const ANTEIL_SPALTE = 'text-right @max-md/legende:order-last @max-md/legende:text-xs @md/legende:min-w-16';
+const WERT_SPALTE = 'text-right @md/legende:min-w-24';
+
 type Stueck = {
   readonly schluessel: string;
   readonly name: string;
@@ -174,8 +179,10 @@ export function AufteilungAnsicht({
               <span className="min-w-0 flex-1 break-words">{de.aufteilung.spaltePosition}</span>
               <span className={ART_SPALTE}>{de.aufteilung.spalteArt}</span>
               <span className={INFO_SPALTE}>{de.aufteilung.spalteInfo}</span>
-              <span className="min-w-16 shrink-0 text-right">{de.aufteilung.spalteAnteil}</span>
-              <span className="min-w-24 shrink-0 text-right">{de.aufteilung.spalteWert}</span>
+              <span className={WERTE_SPALTE}>
+                <span className={ANTEIL_SPALTE}>{de.aufteilung.spalteAnteil}</span>
+                <span className={WERT_SPALTE}>{de.aufteilung.spalteWert}</span>
+              </span>
             </span>
             <span className="hidden text-right @3xl/legende:block">{de.aufteilung.spalteGewinn}</span>
           </div>
@@ -210,7 +217,7 @@ export function AufteilungAnsicht({
                           onClick={() => {
                             if (s.position !== null) onOeffnen(s.position);
                           }}
-                          className={cn(linkVariants({ strich: 'hover' }), 'min-h-6 cursor-pointer text-left')}
+                          className={cn(linkVariants({ strich: 'hover' }), 'min-h-6 cursor-pointer text-left pointer-coarse:min-h-9')}
                         >
                           {s.name}
                         </button>
@@ -233,7 +240,7 @@ export function AufteilungAnsicht({
                       onClick={() => {
                         onHervorheben(ausgewaehlt === s.schluessel ? null : s.schluessel);
                       }}
-                      className="flex min-h-6 shrink-0 items-baseline gap-x-3 text-left"
+                      className={cn(WERTE_SPALTE, 'min-h-6 pointer-coarse:min-h-9')}
                     >
                       {/* Leerraum zwischen Flex-Kindern rendert nicht, trennt aber die Woerter im Namen des Knopfs. */}
                       <span className="sr-only">{de.aufteilung.hervorheben(s.name)}</span>{' '}
@@ -262,8 +269,8 @@ function LegendenWerte({ anteil, wertCent }: { readonly anteil: number; readonly
   const angezeigterWert = useZahlZaehler(euroAusCent(wertCent));
   return (
     <>
-      <span className="min-w-16 shrink-0 text-right tabular-nums text-text-leise">{angezeigterAnteil}</span>{' '}
-      <span className="min-w-24 shrink-0 text-right tabular-nums text-text">{angezeigterWert}</span>
+      <span className={cn(ANTEIL_SPALTE, 'tabular-nums text-text-leise')}>{angezeigterAnteil}</span>{' '}
+      <span className={cn(WERT_SPALTE, 'tabular-nums text-text')}>{angezeigterWert}</span>
     </>
   );
 }

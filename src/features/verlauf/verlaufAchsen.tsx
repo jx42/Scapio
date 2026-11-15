@@ -3,7 +3,7 @@
  * Markierungslinien, Leuchtlinien, Y-Hoverlinie.
  */
 
-import { Line, ReferenceArea, ReferenceDot, ReferenceLine } from 'recharts';
+import { Line, ReferenceArea, ReferenceDot, ReferenceLine, Text, type XAxisTickContentProps } from 'recharts';
 
 import type { Marke, Zeitpunkt } from '@/lib/api';
 import { FARBE } from '@/lib/farben';
@@ -14,6 +14,8 @@ import {
   LINIE_MARKE_HERVORGEHOBEN,
   VERLAUF_MARGIN,
   VERLAUF_Y_ACHSE_PUFFER_ANTEIL,
+  CHART_ACHSEN_SCHRIFTGROESSE,
+  achsenTextBreite,
   yAchsenBreite,
 } from '@/lib/chartmasse';
 import { monatSchluessel, monatsnummer } from '@/lib/format';
@@ -182,12 +184,10 @@ export function yAchseImRaster(werte: readonly number[]): YAchse {
   return { domain: [unten, oben], ticks };
 }
 
-/** Beschriftungen an den Enden einer Y-Domain, fuer `yAchsenBreite`. */
-export function domainBeschriftungen(
-  domain: [number, number] | ['auto', 'auto'],
-  format: (wert: number) => string,
-): string[] {
-  return domain[0] === 'auto' ? [] : domain.map((wert) => format(wert as number));
+/** Beschriftungen der Y-Achse, fuer `yAchsenBreite`: die Ticks, ohne Raster die Enden der Domain. */
+export function achsenBeschriftungen(yAchse: YAchse, format: (wert: number) => string): string[] {
+  if (yAchse.ticks !== undefined) return yAchse.ticks.map(format);
+  return yAchse.domain[0] === 'auto' ? [] : yAchse.domain.map((wert) => format(wert as number));
 }
 
 /** Hoechstens so viele Monatsbeschriftungen; darueber wird auf 2, 3, 6 oder 12 Monate gestuft. */
@@ -215,7 +215,26 @@ export function monatsTicks(daten: readonly { readonly tag: string }[], nachMona
 
 /** Linker Rand der Zeichenflaeche: Y-Achse plus Aussenrand. */
 export function zeichenflaecheLinks(yAchse: YAchse, format: (wert: number) => string): number {
-  return VERLAUF_MARGIN.left + yAchsenBreite(domainBeschriftungen(yAchse.domain, format));
+  return VERLAUF_MARGIN.left + yAchsenBreite(achsenBeschriftungen(yAchse, format));
+}
+
+/**
+ * X-Beschriftung ab dem Tick statt um ihn herum: die erste beginnt buendig mit der
+ * Zeichenflaeche statt unter der Y-Achse. Recharts haelt am rechten Ende aber nur Platz fuer
+ * eine mittige Beschriftung frei — die letzte rueckt deshalb nach links, bis sie ganz in die
+ * Flaeche passt (schmal stand dort sonst „01/2“). `width` ist die Breite der Achse.
+ */
+export function xAchsenTick(links: number) {
+  return function XAchsenTick(props: XAxisTickContentProps) {
+    const { payload, index, tickFormatter } = props;
+    const text = tickFormatter === undefined ? String(payload.value) : tickFormatter(payload.value, index);
+    const rechts = links + Number(props.width);
+    return (
+      <Text {...props} x={Math.min(Number(props.x), rechts - achsenTextBreite(text))} textAnchor="start" fontSize={CHART_ACHSEN_SCHRIFTGROESSE}>
+        {text}
+      </Text>
+    );
+  };
 }
 
 /**
