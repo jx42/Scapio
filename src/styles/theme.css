@@ -219,6 +219,11 @@
     font-family: var(--font-sans);
     /* Tabellarische Ziffern: Spalten stehen still, wenn sich Zahlen aendern. [P-06] */
     font-variant-numeric: tabular-nums;
+    /* Lange Namen brechen schmal mit Trennstrich nach Woerterbuch (`lang="de"`) um;
+       `break-words` allein trennte mitten in der Silbe („Großbritann/ien“). Erst ab zehn
+       Zeichen: sonst trennt der Browser auch Namen, die in die naechste Zeile passten („iS-hares“). */
+    hyphens: auto;
+    hyphenate-limit-chars: 10 4 4;
     -webkit-font-smoothing: antialiased;
     background:
       radial-gradient(55rem 38rem at 8% -8%, oklch(0.45 0.11 245 / 0.34), transparent 70%),
@@ -292,6 +297,13 @@
     height: var(--chart-hoehe, 16rem);
     user-select: none;
     -webkit-user-select: none;
+    container-type: inline-size;
+  }
+
+  /* Recharts weicht nur innerhalb der Zeichenflaeche aus; ist der Tooltip breiter als sie
+     (Smartphone), laeuft er rechts aus dem Bildschirm. */
+  .chart-flaeche .recharts-tooltip-wrapper {
+    max-width: calc(100cqw - var(--chart-links, 0px));
   }
 
   .chart-fuss {

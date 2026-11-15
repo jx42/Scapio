@@ -241,7 +241,7 @@ function Kennzahlkarte({ karte }: { readonly karte: Karte }) {
         <CardTitle>
           <span className="relative z-10 inline-flex items-center gap-1.5">
             {karte.bezeichnung}
-            <InfoKnopf bezeichnung={karte.bezeichnung} inhaltKlasse="max-h-[70vh] overflow-y-auto">
+            <InfoKnopf bezeichnung={karte.bezeichnung}>
               <p>{karte.erklaerung}</p>
               {(karte.ergaenzungen ?? []).map((e) => (
                 <p key={e.bezeichnung} className="mt-2">

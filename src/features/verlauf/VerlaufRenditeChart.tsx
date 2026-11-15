@@ -10,7 +10,7 @@ import { Area, Line } from 'recharts';
 import { de } from '@/i18n/de';
 import type { Zeitpunkt } from '@/lib/api';
 import { LINIE_HAUPT, LINIE_NEBEN } from '@/lib/chartmasse';
-import { prozent, vorzeichen } from '@/lib/format';
+import { prozentAchse, vorzeichen } from '@/lib/format';
 import { serienAnimation } from '@/lib/bewegung';
 import { FARBE, richtungFarbe } from '@/lib/farben';
 import { VerlaufChartGeruest } from '@/features/verlauf/VerlaufChartGeruest';
@@ -38,7 +38,7 @@ function RenditeAktivPunkt({
   return <AktivPunktMitLinie cx={cx} cy={cy} links={links} fuellung={farbe} />;
 }
 
-const achsenFormat = (wert: number): string => prozent(wert, true);
+const achsenFormat = prozentAchse;
 
 export type VerlaufRenditeChartProps = {
   readonly punkte: Zeitpunkt[];

@@ -91,6 +91,8 @@ async function fuenfzigFuenfzig(user: ReturnType<typeof userEvent.setup>, dialog
 
 const feld = (dialog: HTMLElement, name: string) => within(dialog).getByLabelText(de.rebalancing.zielFeld(name));
 const ALLE = ['KONTO', WORLD, EM];
+/** Der Betrag steht zweimal im DOM: in seiner Spalte und, nur schmal sichtbar, unter dem Namen. */
+const SPALTE = { selector: 'td span' };
 const roh = () => localStorage.getItem('portfolio.zielaufteilung') ?? '';
 
 beforeEach(() => {
@@ -185,10 +187,10 @@ describe('RebalancingDialog', () => {
     const { user, dialog } = await oeffnen();
     await fuenfzigFuenfzig(user, dialog);
     await user.click(within(dialog).getByRole('button', { name: de.rebalancing.berechnen }));
-    expect(await within(dialog).findByText(de.rebalancing.betrag(euro(3_000_000, true), de.rebalancing.richtung.kaufen))).toBeInTheDocument();
+    expect(await within(dialog).findByText(de.rebalancing.betrag(euro(3_000_000, true), de.rebalancing.richtung.kaufen), SPALTE)).toBeInTheDocument();
     expect(within(dialog).getByRole('button', { name: de.rebalancing.berechnen })).toBeDisabled();
-    expect(within(dialog).getByText(de.rebalancing.betrag(euro(-2_000_000, true), de.rebalancing.richtung.verkaufen))).toBeInTheDocument();
-    expect(within(dialog).getByText(de.rebalancing.betrag(euro(-1_000_000, true), de.rebalancing.richtung.vomKonto))).toBeInTheDocument();
+    expect(within(dialog).getByText(de.rebalancing.betrag(euro(-2_000_000, true), de.rebalancing.richtung.verkaufen), SPALTE)).toBeInTheDocument();
+    expect(within(dialog).getByText(de.rebalancing.betrag(euro(-1_000_000, true), de.rebalancing.richtung.vomKonto), SPALTE)).toBeInTheDocument();
     expect(within(dialog).getByText(anteilText(-0.3, true))).toBeInTheDocument();
     expect(anfragen).toEqual([`/api/rebalancing?ziel=${encodeURIComponent(`KONTO:0,${WORLD}:5000,${EM}:5000`)}`]);
     expect(zielLesen(ALLE).ziel.get(EM)).toBe(5000);
@@ -201,7 +203,7 @@ describe('RebalancingDialog', () => {
     const { user, dialog } = await oeffnen();
     await fuenfzigFuenfzig(user, dialog);
     await user.click(within(dialog).getByRole('button', { name: de.rebalancing.berechnen }));
-    const betrag = await within(dialog).findByText(de.rebalancing.betrag(euro(3_000_000, true), de.rebalancing.richtung.kaufen));
+    const betrag = await within(dialog).findByText(de.rebalancing.betrag(euro(3_000_000, true), de.rebalancing.richtung.kaufen), SPALTE);
     await user.click(within(dialog).getByLabelText(de.rebalancing.einbeziehen(de.rebalancing.konto)));
     expect(betrag.closest('td')).toHaveClass('opacity-50');
     const knopf = within(dialog).getByRole('button', { name: de.rebalancing.berechnen });
@@ -249,7 +251,7 @@ describe('RebalancingDialog', () => {
     expect(feld(dialog, AUFTEILUNG.positionen[1]!.name)).toBeDisabled();
     expect(within(dialog).queryByText('US0378331005')).toBeNull();
     expect(within(dialog).getByRole('button', { name: de.rebalancing.berechnen })).toBeDisabled();
-    expect(await within(dialog).findByText(de.rebalancing.betrag(euro(-2_000_000, true), de.rebalancing.richtung.verkaufen))).toBeInTheDocument();
+    expect(await within(dialog).findByText(de.rebalancing.betrag(euro(-2_000_000, true), de.rebalancing.richtung.verkaufen), SPALTE)).toBeInTheDocument();
     expect(anfragen).toEqual([`/api/rebalancing?ziel=${encodeURIComponent(`KONTO:1000,${WORLD}:9000`)}`]);
     expect(roh()).not.toContain(WORLD);
   });

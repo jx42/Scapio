@@ -2,8 +2,9 @@
  * Reiter Analyse, dritte Spalte unter der Treemap: der Blick durch die ETFs auf die Unternehmen dahinter.
  *
  * Kompakt: eine Zeile je Unternehmen, Prozent vor Euro wie in den Legenden der Ringe. Die Fonds
- * stehen nur in der Hover-Karte und, für Screenreader, verborgen in der Zeile. Lange Namen brechen
- * in der Drittelbreite um, statt gekürzt zu werden: die Hover-Karte erreicht nur die Maus.
+ * stehen in der Hover-Karte und, für Screenreader, verborgen in der Zeile; per Touch öffnet keine
+ * Hover-Karte, dort stehen sie sichtbar unter dem Namen. Lange Namen brechen in der Drittelbreite
+ * um, statt gekürzt zu werden: die Hover-Karte erreicht nur die Maus.
  * „Mehr zeigen“ hält `AnalyseAnsicht` für alle drei Spalten.
  */
 
@@ -71,7 +72,7 @@ export const Top25Ansicht = memo(function Top25Ansicht({ id, zeilen, ausgeklappt
           <TableHead scope="col" className={cn(KOPF, 'pr-2')}>
             {de.top25.spalteName}
           </TableHead>
-          <TableHead scope="col" className={cn(KOPF, 'w-14 pl-1 text-right')}>
+          <TableHead scope="col" className={cn(KOPF, 'w-14 pl-1 text-right max-sm:hidden')}>
             {de.top25.spalteAnteil}
           </TableHead>
           <TableHead scope="col" className={cn(KOPF, 'w-24 pl-1 text-right')}>
@@ -125,10 +126,15 @@ function Top25Zeile({ zeile, angeschnitten, aktiv, onHover }: Top25ZeileProps) {
             <p>{fonds}</p>
           </HoverCardContent>
         </HoverCard>
-        <span className="sr-only">{de.top25.fondsHinweis(fonds)}</span>
+        <span className="sr-only pointer-coarse:hidden">{de.top25.fondsHinweis(fonds)}</span>
+        <span className="hidden text-xs text-text-leise pointer-coarse:block">{fonds}</span>
       </TableHead>
-      <TableCell className="py-2 pl-1 text-right align-top tabular-nums text-text-leise">{angezeigterAnteil}</TableCell>
-      <TableCell className="py-2 pl-1 text-right align-top tabular-nums text-text">{angezeigtesExposure}</TableCell>
+      <TableCell className="py-2 pl-1 text-right align-top tabular-nums text-text-leise max-sm:hidden">{angezeigterAnteil}</TableCell>
+      <TableCell className="py-2 pl-1 text-right align-top tabular-nums text-text">
+        {angezeigtesExposure}
+        {/* Schmal steht der Anteil hier statt in eigener Spalte: sonst blieben dem Namen bei 320 px 46 px. */}
+        <span className="block text-xs text-text-leise sm:hidden">{angezeigterAnteil}</span>
+      </TableCell>
     </TableRow>
   );
 }

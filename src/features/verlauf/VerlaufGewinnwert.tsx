@@ -48,17 +48,20 @@ export function Gewinnwert({
   return (
     <span className="flex flex-wrap items-center gap-1.5">
       <span className="text-sm text-text-leise">{de.satz.beschriftung(bezeichnung)}</span>
-      <RichtungsBadge wert={wert}>
-        {prozentwert === null
-          ? angezeigterBetrag
-          : prozentVorn
-            ? de.satz.mitNebenwert(angezeigterProzentwert, angezeigterBetrag)
-            : de.satz.mitNebenwert(angezeigterBetrag, angezeigterProzentwert)}
-      </RichtungsBadge>
-      <InfoKnopf bezeichnung={bezeichnung}>
-        <p>{erklaerung}</p>
-        {quelle === undefined ? null : <p className="mt-2">{quelle}</p>}
-      </InfoKnopf>
+      {/* Zahl und Knopf brechen gemeinsam um; einzeln stand der Knopf schmal allein in einer Zeile. */}
+      <span className="flex items-center gap-1.5">
+        <RichtungsBadge wert={wert}>
+          {prozentwert === null
+            ? angezeigterBetrag
+            : prozentVorn
+              ? de.satz.mitNebenwert(angezeigterProzentwert, angezeigterBetrag)
+              : de.satz.mitNebenwert(angezeigterBetrag, angezeigterProzentwert)}
+        </RichtungsBadge>
+        <InfoKnopf bezeichnung={bezeichnung}>
+          <p>{erklaerung}</p>
+          {quelle === undefined ? null : <p className="mt-2">{quelle}</p>}
+        </InfoKnopf>
+      </span>
     </span>
   );
 }
@@ -98,15 +101,17 @@ export function Vergleichswert({
           ? de.satz.mitNebenwert(angezeigterProzentwert, angezeigterBetrag)
           : de.satz.mitNebenwert(angezeigterBetrag, angezeigterProzentwert)}
       </RichtungsBadge>
-      <span className="text-sm text-text-leise">{de.verlauf.vergleichSatz(wert, benchmarkName)}</span>
-      <InfoKnopf bezeichnung={de.verlauf.differenz} inhaltKlasse="max-w-sm">
-        <p>{de.verlauf.erklaerungDifferenz}</p>
-        <p className="mt-2 flex flex-wrap items-center gap-1.5">
-          {de.satz.beschriftung(benchmarkName)} {vergleichGewinn}
-        </p>
-        <p className="mt-2">{de.verlauf.erklaerungBenchmarkGewinn(benchmarkName)}</p>
-        {quelle === undefined ? null : <p className="mt-2">{quelle}</p>}
-      </InfoKnopf>
+      <span className="flex min-w-0 items-center gap-1.5">
+        <span className="text-sm text-text-leise">{de.verlauf.vergleichSatz(wert, benchmarkName)}</span>
+        <InfoKnopf bezeichnung={de.verlauf.differenz} inhaltKlasse="max-w-sm">
+          <p>{de.verlauf.erklaerungDifferenz}</p>
+          <p className="mt-2 flex flex-wrap items-center gap-1.5">
+            {de.satz.beschriftung(benchmarkName)} {vergleichGewinn}
+          </p>
+          <p className="mt-2">{de.verlauf.erklaerungBenchmarkGewinn(benchmarkName)}</p>
+          {quelle === undefined ? null : <p className="mt-2">{quelle}</p>}
+        </InfoKnopf>
+      </span>
     </span>
   );
 }

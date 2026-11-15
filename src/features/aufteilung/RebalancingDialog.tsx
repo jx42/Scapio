@@ -189,13 +189,13 @@ function RebalancingInhalt({
             <TableHead scope="col" className="text-right max-sm:hidden">
               {de.rebalancing.spalteIstAnteil}
             </TableHead>
-            <TableHead scope="col" className="text-right">
+            <TableHead scope="col" className="text-right max-sm:pr-0">
               {de.rebalancing.spalteZiel}
             </TableHead>
             <TableHead scope="col" className="text-right max-sm:hidden">
               {de.rebalancing.spalteAbweichung}
             </TableHead>
-            <TableHead scope="col" className="text-right">
+            <TableHead scope="col" className="text-right max-sm:hidden">
               {de.rebalancing.spalteBetrag}
             </TableHead>
           </TableRow>
@@ -223,6 +223,12 @@ function RebalancingInhalt({
                   <span className="block text-xs text-text-leise sm:hidden">
                     {de.rebalancing.istKurz(euroAusCent(z.istCent), anteilProzent(z.istAnteil))}
                   </span>
+                  {/* Schmal steht der Betrag hier statt in eigener Spalte: neben Name und Zielfeld laeuft er sonst aus dem Dialog. */}
+                  {aus || e === undefined ? null : (
+                    <span className={cn('block tabular-nums sm:hidden', veraltet && 'opacity-50')}>
+                      <Betrag zeile={e} />
+                    </span>
+                  )}
                 </TableHead>
                 <TableCell className={cn('text-right tabular-nums max-sm:hidden', aus && 'text-text-leise')}>
                   {euroAusCent(z.istCent)}
@@ -230,7 +236,7 @@ function RebalancingInhalt({
                 <TableCell className={cn('text-right tabular-nums max-sm:hidden', aus && 'text-text-leise')}>
                   {anteilProzent(z.istAnteil)}
                 </TableCell>
-                <TableCell className="text-right">
+                <TableCell className="text-right max-sm:pr-0">
                   <label htmlFor={feldId} className="sr-only">
                     {de.rebalancing.zielFeld(z.name)}
                   </label>
@@ -245,13 +251,13 @@ function RebalancingInhalt({
                     disabled={gesperrt || aus}
                     aria-invalid={ungueltig ? true : undefined}
                     aria-describedby={ungueltig ? feldFehlerId : undefined}
-                    className="h-8 w-20 px-2 text-right tabular-nums"
+                    className="h-8 w-16 px-2 text-right tabular-nums sm:w-20"
                   />
                 </TableCell>
                 <TableCell className={cn('text-right tabular-nums whitespace-nowrap max-sm:hidden', veraltet && 'opacity-50')}>
                   {aus || e === undefined ? '' : anteilProzent(e.abweichung, true)}
                 </TableCell>
-                <TableCell className={cn('text-right tabular-nums whitespace-nowrap', veraltet && 'opacity-50')}>
+                <TableCell className={cn('text-right tabular-nums whitespace-nowrap max-sm:hidden', veraltet && 'opacity-50')}>
                   {aus || e === undefined ? '' : <Betrag zeile={e} />}
                 </TableCell>
               </TableRow>
@@ -267,11 +273,11 @@ function RebalancingInhalt({
               {gesamtCent === null ? '' : euroAusCent(gesamtCent)}
             </TableCell>
             <TableCell className="max-sm:hidden" />
-            <TableCell className={cn('text-right tabular-nums', !bereit && 'text-warnung')}>
+            <TableCell className={cn('text-right tabular-nums max-sm:pr-0', !bereit && 'text-warnung')}>
               {anteilProzent(summe / BP_GANZ)}
             </TableCell>
             <TableCell className="max-sm:hidden" />
-            <TableCell />
+            <TableCell className="max-sm:hidden" />
           </TableRow>
         </TableFooter>
       </Table>

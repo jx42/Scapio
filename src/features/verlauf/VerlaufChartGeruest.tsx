@@ -34,7 +34,7 @@ import {
 import { achsenDatumFormat, achseNachMonat } from '@/lib/format';
 import { FARBE } from '@/lib/farben';
 import { ChartRahmen, type ChartTabelle } from '@/components/ChartRahmen';
-import { domainBeschriftungen, monatsTicks, type YAchse } from '@/features/verlauf/verlaufAchsen';
+import { achsenBeschriftungen, monatsTicks, xAchsenTick, type YAchse } from '@/features/verlauf/verlaufAchsen';
 import {
   LageMelder,
   VorschauUeberlage,
@@ -78,7 +78,8 @@ export function VerlaufChartGeruest({
   const letzterTag = daten.at(-1)?.tag;
   const xFormat = useMemo(() => achsenDatumFormat(ersterTag, letzterTag), [ersterTag, letzterTag]);
   const xTicks = useMemo(() => monatsTicks(daten, achseNachMonat(ersterTag, letzterTag)), [daten, ersterTag, letzterTag]);
-  const yBreite = yAchsenBreite(domainBeschriftungen(yAchse.domain, yFormat));
+  const yBreite = yAchsenBreite(achsenBeschriftungen(yAchse, yFormat));
+  const xTick = useMemo(() => xAchsenTick(VERLAUF_MARGIN.left + yBreite), [yBreite]);
   const [lage] = useState(() => beobachtbar<ChartLage | null>(null));
 
   return (
@@ -98,9 +99,7 @@ export function VerlaufChartGeruest({
             ticks={xTicks}
             tickFormatter={xFormat}
             stroke={FARBE.textLeise}
-            // Ab dem Tick statt um ihn herum: so beginnt die erste Beschriftung buendig mit
-            // der Zeichenflaeche, statt unter die Y-Achse zu ragen.
-            tick={{ fontSize: CHART_ACHSEN_SCHRIFTGROESSE, textAnchor: 'start' }}
+            tick={xTick}
             tickLine={false}
             minTickGap={VERLAUF_X_ACHSE_TICK_ABSTAND}
           />
