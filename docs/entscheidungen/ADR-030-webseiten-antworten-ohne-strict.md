@@ -31,7 +31,7 @@ Schema, das die unbekannten Felder im geprüften Objekt mitführt.
 
 Ohne `.strict()` fällt ein Einheitenwechsel eines Anbieters (Prozent statt Anteil oder
 umgekehrt) durch jede Typprüfung, und `core/lookthrough.ts` normiert nicht. Deshalb prüfen alle
-drei Anbieter über `pruefeGewichtsSumme` (`ingest/anbieter.ts`): Liegt die Summe der Gewichte
+Anbieter über `pruefeGewichtsSumme` (`ingest/anbieter.ts`): Liegt die Summe der Gewichte
 außerhalb von 0,5–1,5, gilt der Abruf als `SchemaFehler` und nichts wird übernommen (Hinweis
 `fondsNichtAbrufbar`). Zwischen 0,5 und 1,5, aber mehr als 5 Prozentpunkte neben 100 %, wird
 übernommen und `bestandteileSumme` gemeldet.

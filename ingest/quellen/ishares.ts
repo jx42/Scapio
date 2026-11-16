@@ -28,7 +28,7 @@ import { entschaerfe } from '../fremdtext.ts';
 import type { Ernte, Kontext } from '../importieren.ts';
 import { holeText } from '../netz.ts';
 import type { Fonds, FondsIshares } from '../schema.ts';
-import { FundsDatei, GRENZE, ISIN_MUSTER, IsharesAntwort, pruefe } from '../schema.ts';
+import { FundsDatei, GRENZE, ISIN_MUSTER, IsharesAntwort, IsharesKopf, IsharesSuche, pruefe } from '../schema.ts';
 
 export const quelleFuer = (isin: Isin): string => `ishares:${isin}`;
 
@@ -140,4 +140,35 @@ export async function bestandteileIshares(
   }
   const ernte = await holeIshares(ctx, { anbieter: 'ishares', isin, name: '', produktId });
   return { ernte, adresse: produktId };
+}
+
+const SUCHE_ADRESSE = 'https://www.ishares.com/varnish-api/core-search/search/products';
+
+const sucheAdresse = (isin: Isin): string =>
+  `${SUCHE_ADRESSE}?site=de-ishares-v2&locale=de-de&userType=individual&rows=5&start=0&query=${encodeURIComponent(isin)}`;
+
+const kopfAdresse = (produktId: string): string =>
+  `${HOLDINGS_ADRESSE}?appSubType=ISHARES&appType=PRODUCT_PAGE&component=fundHeader&locale=de_DE` +
+  `&portfolioId=${produktId}&targetSite=de-ishares-v2&userType=individual&excludeContent=true`;
+
+/**
+ * Loest eine ISIN ohne Katalog in die `portfolioId` auf. Die Suche ist eine Volltextsuche,
+ * ihre Treffer tragen keine ISIN: es zaehlt der erste, dessen Fondskopf genau diese ISIN
+ * nennt. `null`: iShares fuehrt die ISIN nicht.
+ */
+export async function sucheIshares(ctx: Kontext, isin: Isin): Promise<Katalogeintrag | null> {
+  const optionen = {
+    erlaubteHosts: ctx.konfiguration.erlaubteHosts,
+    zeitlimitMs: ctx.konfiguration.csvZeitlimitMs,
+    groesstMb: ctx.konfiguration.csvGroesstMb,
+    accept: 'application/json',
+  };
+  const suche = pruefe(`ishares-suche:${isin}`, IsharesSuche, JSON.parse(await holeText(sucheAdresse(isin), optionen)));
+  for (const treffer of suche.results) {
+    const kopfText = await holeText(kopfAdresse(treffer.portfolioId), optionen);
+    const kopf = pruefe(`ishares-kopf:${isin}`, IsharesKopf, JSON.parse(kopfText));
+    const kopfIsin = kopf.componentsByNameMap.fundHeader.containersByNameMap.fundName.dataPointsByNameMap.productIsin.value;
+    if (kopfIsin.toUpperCase() === isin) return { produktId: treffer.portfolioId };
+  }
+  return null;
 }

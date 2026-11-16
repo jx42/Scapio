@@ -3,7 +3,17 @@
   "mcpZeitlimitMs": 300000,
   "csvZeitlimitMs": 30000,
   "csvGroesstMb": 32,
-  "erlaubteHosts": ["www.ishares.com", "etf.dws.com", "www.amundietf.de", "ec.europa.eu", "data-api.ecb.europa.eu"],
+  "erlaubteHosts": [
+    "www.ishares.com",
+    "etf.dws.com",
+    "www.amundietf.de",
+    "dng-api.invesco.com",
+    "am.jpmorgan.com",
+    "am.gs.com",
+    "www.franklintempleton.de",
+    "ec.europa.eu",
+    "data-api.ecb.europa.eu"
+  ],
   "inflationsquelle": "eurostat",
   "zinsquelle": "ecb",
   "driftSchwellen": { "hinweis": 0.001, "banner": 0.005, "abbruch": 0.02 }

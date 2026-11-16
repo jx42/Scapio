@@ -1,20 +1,24 @@
 /**
- * Ein Anbieter kapselt Katalog und Bestandteile eines ETF-Hauses — genau das, was die
- * automatische Fondsaufloesung braucht, um einen gehaltenen Fonds ohne `funds.json`-Eintrag
- * zu erkennen und abzurufen.
+ * Ein Anbieter kapselt Katalog oder Suche und Bestandteile eines ETF-Hauses — genau das, was
+ * die automatische Fondsaufloesung braucht, um einen gehaltenen Fonds ohne `funds.json`-Eintrag
+ * zu erkennen und abzurufen [ADR-065].
  *
- * Ein neuer Anbieter ist eine neue Datei unter `ingest/quellen/` mit `katalogXxx`/
- * `bestandteileXxx`, dazu ein Eintrag in `ANBIETER` und einer in `ANBIETER_HOSTS`
- * (`hosts.ts`), aus dem die Host-Allowlist folgt.
+ * Ein neuer Anbieter ist eine neue Datei unter `ingest/quellen/` mit `katalogXxx` oder
+ * `sucheXxx` und `bestandteileXxx`, dazu ein Eintrag in `ANBIETER` und einer in
+ * `ANBIETER_HOSTS` (`hosts.ts`), aus dem die Host-Allowlist folgt.
  */
 
 import type { Bestandteil } from '../core/lookthrough.ts';
 import type { Isin } from '../core/typen.ts';
-import type { Anbietername } from '../db/repository/fondsAufloesung.ts';
+import type { AutomatischerAnbieter } from '../db/repository/fondsAufloesung.ts';
 import type { Ernte, Kontext } from './importieren.ts';
 import { SchemaFehler } from './schema/pruefe.ts';
 import { holeAmundi, katalogAmundi } from './quellen/amundi.ts';
-import { bestandteileIshares } from './quellen/ishares.ts';
+import { bestandteileFranklin, katalogFranklin } from './quellen/franklin.ts';
+import { bestandteileGoldmansachs, katalogGoldmansachs } from './quellen/goldmansachs.ts';
+import { bestandteileInvesco, sucheInvesco } from './quellen/invesco.ts';
+import { bestandteileIshares, sucheIshares } from './quellen/ishares.ts';
+import { bestandteileJpmorgan, katalogJpmorgan } from './quellen/jpmorgan.ts';
 import { holeXtrackers, katalogXtrackers } from './quellen/xtrackers.ts';
 
 /**
@@ -56,18 +60,24 @@ export function pruefeGewichtsSumme(
 }
 
 export type Anbieter = {
-  readonly name: Anbietername;
+  readonly name: AutomatischerAnbieter;
   /**
    * Ganze Produktliste in einem Abruf. ISIN -> Katalogeintrag fuer `bestandteile`. `null`:
-   * das Haus bietet keinen Katalog an (iShares, ADR-027) — neue Fonds nur ueber `funds.json`.
+   * das Haus bietet keinen Katalog an (iShares, ADR-027) und hat stattdessen eine `suche`.
    */
   readonly katalog: ((ctx: Kontext) => Promise<ReadonlyMap<Isin, Katalogeintrag>>) | null;
   /**
-   * Positionen eines Fonds. `cacheAdresse` ist nur fuer iShares relevant (die zuletzt
-   * aufgeloeste Holdings-Adresse); die Rueckgabe traegt die Adresse, die beim naechsten
-   * Lauf zuerst probiert werden soll (bei den anderen Anbietern immer `null`). `eintrag`
-   * ist `null`, wenn diesen Lauf kein Katalogabruf stattfand (die Zeile war noch frisch) —
-   * iShares braucht ihn dann nur, falls `cacheAdresse` zugleich fehlschlaegt.
+   * Suche je ISIN, fuer Haeuser ohne Katalog. `null` als Ergebnis: kein Treffer; ein Fehler
+   * wird geworfen. Laeuft nur fuer ISINs, die kein Katalog kennt — eine Suche ohne Treffer
+   * verraet dem Haus die ISIN eines fremden Fonds [ADR-065].
+   */
+  readonly suche: ((ctx: Kontext, isin: Isin) => Promise<Katalogeintrag | null>) | null;
+  /**
+   * Positionen eines Fonds. `cacheAdresse` ist die zuletzt gespeicherte Produkt-ID (iShares,
+   * Goldman Sachs, Franklin); die Rueckgabe traegt die, die beim naechsten Lauf gilt (bei
+   * Haeusern, deren Produkt-ID die ISIN ist, `null`). `eintrag` ist `null`, wenn diesen Lauf
+   * weder Katalog noch Suche die ISIN getroffen haben (die Zeile war noch frisch) — dann
+   * zaehlt `cacheAdresse`.
    */
   readonly bestandteile: (
     ctx: Kontext,
@@ -80,6 +90,7 @@ export type Anbieter = {
 const ishares: Anbieter = {
   name: 'ishares',
   katalog: null,
+  suche: sucheIshares,
   bestandteile: async (ctx, isin, eintrag, cacheAdresse) => {
     const { ernte, adresse } = await bestandteileIshares(ctx, isin, eintrag, cacheAdresse);
     return { ernte, adresse };
@@ -89,6 +100,7 @@ const ishares: Anbieter = {
 const xtrackers: Anbieter = {
   name: 'xtrackers',
   katalog: katalogXtrackers,
+  suche: null,
   bestandteile: async (ctx, isin) => ({
     ernte: await holeXtrackers(ctx, { anbieter: 'xtrackers', isin, name: '' }),
     adresse: null,
@@ -98,10 +110,40 @@ const xtrackers: Anbieter = {
 const amundi: Anbieter = {
   name: 'amundi',
   katalog: katalogAmundi,
+  suche: null,
   bestandteile: async (ctx, isin) => ({
     ernte: await holeAmundi(ctx, { anbieter: 'amundi', isin, name: '' }),
     adresse: null,
   }),
 };
 
-export const ANBIETER: readonly Anbieter[] = [ishares, xtrackers, amundi];
+const invesco: Anbieter = {
+  name: 'invesco',
+  katalog: null,
+  suche: sucheInvesco,
+  bestandteile: async (ctx, isin) => ({ ernte: await bestandteileInvesco(ctx, isin), adresse: null }),
+};
+
+const jpmorgan: Anbieter = {
+  name: 'jpmorgan',
+  katalog: katalogJpmorgan,
+  suche: null,
+  bestandteile: async (ctx, isin) => ({ ernte: await bestandteileJpmorgan(ctx, isin), adresse: null }),
+};
+
+const goldmansachs: Anbieter = {
+  name: 'goldmansachs',
+  katalog: katalogGoldmansachs,
+  suche: null,
+  bestandteile: bestandteileGoldmansachs,
+};
+
+const franklin: Anbieter = {
+  name: 'franklin',
+  katalog: katalogFranklin,
+  suche: null,
+  bestandteile: bestandteileFranklin,
+};
+
+/** Reihenfolge zaehlt fuer die Suche: der erste Treffer beendet sie (iShares vor Invesco). */
+export const ANBIETER: readonly Anbieter[] = [ishares, xtrackers, amundi, invesco, jpmorgan, goldmansachs, franklin];

@@ -18,7 +18,7 @@ verarbeitet wird — das ist, was `npm run verify` neu rechnet, ohne einen neuen
 | Feld | Typ | Bedeutung |
 |---|---|---|
 | `id` | `INTEGER PK` | fortlaufend |
-| `quelle` | `TEXT` | `holdings` \| `transaktionen` \| `cash` \| `gesamtwert` \| `sparplaene` \| `kurse:<isin>` \| `ishares:<isin>` \| `xtrackers:<isin>` \| `amundi:<isin>` \| `vpi` \| `vpi-aktuell` \| `zins` |
+| `quelle` | `TEXT` | `holdings` \| `transaktionen` \| `cash` \| `gesamtwert` \| `sparplaene` \| `kurse:<isin>` \| `ishares:<isin>` \| `xtrackers:<isin>` \| `amundi:<isin>` \| `invesco:<isin>` \| `jpmorgan:<isin>` \| `goldmansachs:<isin>` \| `franklin:<isin>` \| `vpi` \| `vpi-aktuell` \| `zins` |
 | `abgerufen_am` | `TEXT` | ISO 8601 mit Offset |
 | `payload_json` | `TEXT` | die Rohantwort, als JSON-Text |
 
@@ -168,8 +168,8 @@ Neuberechnung, ohne dass sich darauf verlassen wird.
 
 ## `etf_bestandteil`
 
-Look-Through-Daten aus den Holdings-Abrufen der ETF-Anbieter (iShares, Xtrackers, Amundi —
-siehe `funds.json` im Datenverzeichnis, Feld `anbieter`): welches Unternehmen steckt zu welchem Anteil in
+Look-Through-Daten aus den Holdings-Abrufen der ETF-Anbieter (siehe `fonds_aufloesung.anbieter`
+und `funds.json` im Datenverzeichnis, Feld `anbieter`): welches Unternehmen steckt zu welchem Anteil in
 welchem ETF. Wird nur neu gezogen, wenn der Abruf ein neueres Stand-Datum trägt.
 
 | Feld | Typ | Bedeutung |
@@ -189,19 +189,19 @@ Primärschlüssel `(fonds_isin, stand, unternehmen_isin)`. Beispiel:
 
 Je gehaltener ISIN, welcher Anbieter sie führt und ob dessen Bestandteile einsehbar sind —
 ersetzt das Durchprobieren gegen `funds.json` durch einen Katalogabruf je Anbieter
-(Xtrackers, Amundi), siehe
-[ADR-018](entscheidungen/ADR-018-fondskataloge-statt-einzelabfrage.md). iShares hat seit
-[ADR-027](entscheidungen/ADR-027-ishares-holdings-per-get-product-data.md) keinen Katalog mehr:
-bekannte iShares-Zeilen bleiben stehen, neue kommen über `funds.json`. `funds.json` hat
+(Xtrackers, Amundi, J.P. Morgan, Goldman Sachs, Franklin Templeton), siehe
+[ADR-018](entscheidungen/ADR-018-fondskataloge-statt-einzelabfrage.md). iShares und Invesco
+haben keinen Katalog, sondern eine Suche je ISIN, nur für abgelaufene ISINs ohne Katalogtreffer
+([ADR-065](entscheidungen/ADR-065-fondsaufloesung-ohne-funds-json.md)). `funds.json` hat
 weiterhin Vorrang: eine dort eingetragene ISIN bekommt keine Zeile hier.
 
 | Feld | Typ | Bedeutung |
 |---|---|---|
 | `isin` | `TEXT PK` | gehaltene ISIN |
-| `anbieter` | `TEXT?` | `ishares` \| `xtrackers` \| `amundi` \| `firsttrust` \| `lgim` \| `NULL` (kein Katalog kennt die ISIN) |
+| `anbieter` | `TEXT?` | `ishares` \| `xtrackers` \| `amundi` \| `invesco` \| `jpmorgan` \| `goldmansachs` \| `franklin` \| `NULL` (weder Katalog noch Suche kennt die ISIN); `firsttrust` und `lgim` sind reserviert, werden nicht geschrieben. Kein `CHECK`, der Kommentar in Migration 005 ist veraltet |
 | `durchsicht` | `TEXT` | `moeglich` \| `unbekannt` \| `gesperrt` (Altzustand, wird nicht mehr geschrieben) — eigene Spalte, nicht aus `anbieter IS NOT NULL` abgeleitet: ein Haus, das seinen Katalog führt, aber die Bestandteile nicht freigibt (`gesperrt`), ist etwas anderes als eine ISIN, die kein Katalog kennt (`unbekannt`) |
-| `adresse` | `TEXT?` | Name ist Altlast: nur `ishares`, die Produkt-ID des Fonds (ältere Zeilen tragen noch die alte `.ajax`-Adresse, aus der die ID gelesen wird) |
-| `geprueft_am` | `TEXT` | Kalendertag des Katalogabrufs [INV-03] |
+| `adresse` | `TEXT?` | Name ist Altlast: die Produkt-ID des Fonds — `ishares` die `portfolioId` (ältere Zeilen tragen noch die alte `.ajax`-Adresse, aus der die ID gelesen wird), `goldmansachs` die PV-Nummer, `franklin` die `fundid`; sonst `NULL`, dort ist die ISIN die Produkt-ID. Kommt aus dem Katalog- oder Suchtreffer |
+| `geprueft_am` | `TEXT` | Kalendertag des Katalogabrufs oder der Suche [INV-03] |
 
 Primärschlüssel `isin`. Eine Zeile wird ersetzt (`ON CONFLICT … DO UPDATE`), nie ergänzt.
 Beispiel: `('IE00B4L5Y983', 'ishares', 'moeglich', '251881', '2026-09-08')`.

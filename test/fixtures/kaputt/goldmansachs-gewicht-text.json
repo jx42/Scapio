@@ -1,0 +1,49 @@
+{
+  "data": {
+    "fundsDetail": {
+      "fundName": "Goldman Sachs ActiveBeta Paris-Aligned Sustainable US Large Cap Equity UCITS ETF",
+      "shareClassId": "IE00BJ5CNR11",
+      "allHoldings": {
+        "asAtDate": "2026-11-12",
+        "holdings": [
+          {
+            "holding": "ABBOTT LABORATORIES",
+            "isin": "US0028241000",
+            "portfolio": "30.00",
+            "level3": null
+          },
+          {
+            "holding": "ABBVIE INC.",
+            "isin": "US00287Y1091",
+            "portfolio": "n. v.",
+            "level3": null
+          },
+          {
+            "holding": "ACCENTURE PLC",
+            "isin": "IE00B4BNMY34",
+            "portfolio": "20.00",
+            "level3": null
+          },
+          {
+            "holding": "ZOETIS INC.",
+            "isin": "US98978V1035",
+            "portfolio": "12.25",
+            "level3": null
+          },
+          {
+            "holding": "ZOOM COMMUNICATIONS INC",
+            "isin": "US98980L1017",
+            "portfolio": "12.00",
+            "level3": null
+          },
+          {
+            "holding": "US DOLLAR",
+            "isin": "CSH_USD",
+            "portfolio": "0.30",
+            "level3": null
+          }
+        ]
+      }
+    }
+  }
+}

@@ -13,12 +13,22 @@ import { ANBIETER } from '../ingest/anbieter.ts';
 import { konfigurationVergessen, ladeKonfiguration } from '../shared/konfiguration.ts';
 
 describe('Host-Allowlist [ADR-018]', () => {
-  it('die Vorgabe der Konfiguration sind genau die fuenf bekannten Hosts', () => {
+  it('die Vorgabe der Konfiguration sind genau die bekannten Hosts', () => {
     konfigurationVergessen();
     const k = ladeKonfiguration(join(tmpdir(), 'scapio-gibt-es-nicht.json'));
     konfigurationVergessen();
     expect([...k.erlaubteHosts].sort()).toEqual(
-      ['data-api.ecb.europa.eu', 'ec.europa.eu', 'etf.dws.com', 'www.amundietf.de', 'www.ishares.com'].sort(),
+      [
+        'am.gs.com',
+        'am.jpmorgan.com',
+        'data-api.ecb.europa.eu',
+        'dng-api.invesco.com',
+        'ec.europa.eu',
+        'etf.dws.com',
+        'www.amundietf.de',
+        'www.franklintempleton.de',
+        'www.ishares.com',
+      ].sort(),
     );
     expect(k.erlaubteHosts).toEqual(vorgabeErlaubteHosts());
   });

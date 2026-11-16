@@ -19,8 +19,8 @@ import { BENCHMARKS } from '../shared/benchmarks.ts';
 import type { Hinweis } from '../shared/hinweise.ts';
 import type { QuellenSchluessel } from '../shared/quellen.ts';
 import { ANBIETER } from './anbieter.ts';
-import type { KatalogIndex } from './fondsaufloesung.ts';
-import { aufloese, istAbgelaufen, katalogeAbrufen } from './fondsaufloesung.ts';
+import type { KatalogErgebnis, KatalogIndex } from './fondsaufloesung.ts';
+import { aufloese, istAbgelaufen, katalogeAbrufen, sucheAbrufen } from './fondsaufloesung.ts';
 import type { Ernte } from './importieren.ts';
 import { ISIN_MUSTER } from './schema.ts';
 import { holeAmundi, quelleFuer as amundiQuelle } from './quellen/amundi.ts';
@@ -192,14 +192,15 @@ export async function ernteQuellen(lauf: Lauf): Promise<LaufErgebnis | null> {
   );
 
   setzeSchritt(lauf, 'fonds');
-  // Ohne `top25` kein Abruf bei iShares, Xtrackers oder Amundi: die Kachel ist aus [ADR-038].
+  // Vor der Fondsaufloesung: ihre Suche je ISIN laesst Einzeltitel aus.
+  lauf.arten = await ermittleArten(lauf);
+  // Ohne `top25` kein Abruf bei einem Fondsanbieter: die Kachel ist aus [ADR-038].
   if (lauf.konfiguration.top25) {
     const manuelleIsins = await ernteManuelleFonds(lauf);
     lauf.fondsAufloesungen = await loeseFondsAuf(lauf, manuelleIsins);
   } else {
     setzeStatus(lauf, 'fonds', 'übersprungen');
   }
-  lauf.arten = await ermittleArten(lauf);
 
   setzeSchritt(lauf, 'inflation');
   await ernte(
@@ -321,10 +322,13 @@ async function ermittleArten(lauf: Lauf): Promise<Wertpapierart[]> {
   return arten;
 }
 
+/** Wertpapierarten, die einen Fonds bezeichnen — wie `FONDSARTEN` in `server/routen/top25.ts`. */
+const FONDSARTEN: ReadonlySet<string> = new Set(['ETF', 'FUND']);
+
 /**
- * Jede gehaltene ISIN ausser den manuell eingetragenen wird gegen die Kataloge von
- * iShares, Xtrackers und Amundi geprueft — ein Treffer bestimmt Anbieter und
- * Produktschluessel, kein Treffer heisst „kein Fonds oder kein unterstuetzter Anbieter".
+ * Jede abgelaufene ISIN ausser den manuell eingetragenen wird gegen die Kataloge geprueft,
+ * was keiner kennt, danach gegen die Suche je ISIN [ADR-065] — ein Treffer bestimmt Anbieter
+ * und Produktschluessel, kein Treffer heisst „kein Fonds oder kein unterstuetzter Anbieter".
  * Eigene Funktion statt `ernte()`: der Ablauf (Katalogabruf, Aufloesung je ISIN,
  * Bestandteile je Treffer) hat eine eigene, mehrstufige Fehlerbehandlung.
  */
@@ -341,28 +345,38 @@ async function loeseFondsAuf(lauf: Lauf, manuelleIsins: ReadonlySet<Isin>): Prom
     );
 
     let index: KatalogIndex = new Map();
-    const ohneKatalog = new Set<Anbietername>();
+    const gescheitert = new Set<Anbietername>();
+    const melde = (name: Anbietername, ergebnis: KatalogErgebnis): void => {
+      const quelle: QuellenSchluessel = `fondskatalog:${name}`;
+      if (ergebnis.art === 'erfolg') {
+        setzeStatus(lauf, quelle, 'erfolg');
+        return;
+      }
+      gescheitert.add(name);
+      setzeGescheitert(lauf, quelle, ergebnis.fehler);
+      lauf.protokoll(`Fondsverzeichnis ${name} gescheitert: ${grundVon(ergebnis.fehler)}`);
+    };
     if (abgelaufen.length > 0) {
-      index = await katalogeAbrufen(ctx, ANBIETER, (name, ergebnis) => {
-        const quelle: QuellenSchluessel = `fondskatalog:${name}`;
-        if (ergebnis.art === 'erfolg') {
-          setzeStatus(lauf, quelle, 'erfolg');
-          return;
-        }
-        ohneKatalog.add(name);
-        if (ergebnis.art === 'ohne') {
-          setzeStatus(lauf, quelle, 'übersprungen');
-          return;
-        }
-        setzeGescheitert(lauf, quelle, ergebnis.fehler);
-        lauf.protokoll(`Katalog ${name} gescheitert: ${grundVon(ergebnis.fehler)}`);
+      const katalogIndex = await katalogeAbrufen(ctx, ANBIETER, melde);
+      // Die Suche verraet dem Anbieter die ISIN: nicht fuer Einzeltitel und nicht fuer Fonds
+      // eines Hauses, dessen Katalog gerade gescheitert ist — deren Zeile bleibt ohnehin.
+      const arten = new Map([...repo.wertpapierArt.alle(db), ...lauf.arten.map((a) => [a.isin, a.art] as const)]);
+      const ohneTreffer = abgelaufen.filter((isin) => {
+        const art = arten.get(isin);
+        const anbieter = bekannt.get(isin)?.anbieter ?? null;
+        return (
+          !katalogIndex.has(isin) &&
+          (art === undefined || FONDSARTEN.has(art)) &&
+          (anbieter === null || !gescheitert.has(anbieter))
+        );
       });
+      index = new Map([...katalogIndex, ...(await sucheAbrufen(ctx, ANBIETER, ohneTreffer, melde))]);
     }
 
     for (const isin of gehaltene) {
       const bestehend = bekannt.get(isin) ?? null;
       const aufloesung = abgelaufen.includes(isin)
-        ? aufloese(isin, index, ohneKatalog, bestehend, heute)
+        ? aufloese(isin, index, gescheitert, bestehend, heute)
         : bestehend;
       if (aufloesung === null) continue;
       fondsAufloesungen.push(aufloesung);

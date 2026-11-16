@@ -1,5 +1,5 @@
 {
-  "hinweis": "Fonds von Xtrackers und Amundi erkennt die App von selbst; bei iShares nur Fonds, die schon einmal erkannt wurden -- diese Datei ist fuer den Rest noetig. Vorlage als funds.json ins Datenverzeichnis kopieren (macOS: ~/Library/Application Support/scapio, Windows: %LOCALAPPDATA%\\scapio), mit den betroffenen Fonds befuellen. Pro Eintrag 'anbieter' setzen (fehlt es, gilt 'ishares'). Ein Eintrag hier gewinnt immer gegen die automatische Erkennung. 'xtrackers'/'amundi' brauchen nur 'isin'. 'ishares' braucht zusaetzlich 'produktId' -- die Zahl in der Adresse der Produktseite auf ishares.com (.../produkte/<produktId>/...).",
+  "hinweis": "Fonds von iShares, Xtrackers, Amundi, Invesco, J.P. Morgan, Goldman Sachs und Franklin Templeton erkennt die App von selbst -- diese Datei ist nur fuer Fonds noetig, bei denen das nicht klappt. Vorlage als funds.json ins Datenverzeichnis kopieren (macOS: ~/Library/Application Support/scapio, Windows: %LOCALAPPDATA%\\scapio), mit den betroffenen Fonds befuellen. Pro Eintrag 'anbieter' setzen (fehlt es, gilt 'ishares'). Ein Eintrag hier gewinnt immer gegen die automatische Erkennung. 'xtrackers'/'amundi' brauchen nur 'isin'. 'ishares' braucht zusaetzlich 'produktId' -- die Zahl in der Adresse der Produktseite auf ishares.com (.../produkte/<produktId>/...).",
   "fonds": [
     {
       "anbieter": "ishares",

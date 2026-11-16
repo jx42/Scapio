@@ -118,11 +118,13 @@ später als Fund auftauchen, den niemand kannte.
 Adressen privat ist. Danach verbindet sich `fetch` — und löst dabei selbst noch einmal auf. Ein
 DNS-Server, der beim zweiten Mal etwas anderes antwortet, könnte den Abruf also doch auf eine
 interne Adresse lenken (klassisches Time-of-check/time-of-use, hier als ausgehendes
-DNS-Rebinding). Getragen, nicht behoben. Die Allowlist nennt **fünf** Hosts —
-`www.ishares.com`, `etf.dws.com`, `www.amundietf.de`, `ec.europa.eu`,
-`data-api.ecb.europa.eu`. Drei Gründe tragen die Abwägung: Erstens sind alle fünf Hosts große, etablierte Institutionen mit stabiler
-eigener Infrastruktur — BlackRock/iShares, DWS/Xtrackers, Amundi, die Europäische Kommission
-und die EZB —, keine kurzlebigen Drittanbieter; der Angreifer müsste also bereits die
+DNS-Rebinding). Getragen, nicht behoben. Die Allowlist nennt **neun** Hosts —
+`www.ishares.com`, `etf.dws.com`, `www.amundietf.de`, `dng-api.invesco.com`, `am.jpmorgan.com`,
+`am.gs.com`, `www.franklintempleton.de`, `ec.europa.eu`, `data-api.ecb.europa.eu`
+([ADR-065](entscheidungen/ADR-065-fondsaufloesung-ohne-funds-json.md)). Drei Gründe tragen die
+Abwägung: Erstens sind alle neun Hosts große, etablierte Institutionen mit stabiler
+eigener Infrastruktur — BlackRock/iShares, DWS/Xtrackers, Amundi, Invesco, J.P. Morgan, Goldman
+Sachs, Franklin Templeton, die Europäische Kommission und die EZB —, keine kurzlebigen Drittanbieter; der Angreifer müsste also bereits die
 DNS-Antworten für eine dieser konkreten Domains kontrollieren, nicht für irgendeine aus einer
 langen, wechselnden Liste. Zweitens ist der Abruf rein lesend, das Ergebnis geht durch zod
 [INV-12], und was hinter einer internen Adresse liegt, erreicht der Angreifer damit nicht
@@ -134,7 +136,7 @@ Die Vorgabe der Liste steht in `shared/hosts.ts` (`ANBIETER_HOSTS` je Fondsanbie
 `STATISTIK_HOSTS`); `shared/konfiguration.ts` leitet `erlaubteHosts` von dort ab, ein neuer Anbieter
 trägt seinen Host dort ein. `config.json` kann die Liste nur einschränken — ein Host, der
 nicht in `shared/hosts.ts` steht, lässt die Konfiguration scheitern (`test/hosts.test.ts`). **Wenn die
-Liste weiter wächst, frei konfigurierbar wird, oder einer der fünf Hosts kein großes, stabiles
+Liste weiter wächst, frei konfigurierbar wird, oder einer der Hosts kein großes, stabiles
 Institut mehr ist, kippt diese Abwägung**: dann gehört das Festnageln der geprüften Adresse
 nachgezogen.
 
@@ -164,11 +166,18 @@ Abwägung**: dann gehört entweder `icacls` nachgezogen oder der Windows-Einstie
 
 **3. Mit `top25` erfahren die Fondsanbieter, welche ETFs im Depot liegen.**
 Ist der Look-Through eingeschaltet ([ADR-038](entscheidungen/ADR-038-top25-nur-auf-wunsch.md)), fragt
-der Ingest bei iShares, Xtrackers und Amundi die Bestandsliste je gehaltenem Fonds ab: die ISIN
-steht im Pfad (`ingest/quellen/xtrackers.ts`) oder im Rumpf (`amundi.ts`, `productIds`); bei iShares
-steht statt ihrer die Produkt-ID des Fonds in der Query (`ishares.ts`, `portfolioId`). Zusammen mit IP-Adresse und Abrufzeit ergibt das beim Anbieter
-die Liste der gehaltenen ETFs dieses Anschlusses — keine Mengen, keine Beträge, kein Name. Die
-Kataloge, Eurostat und die EZB werden ohne Depotbezug abgefragt und verraten nichts.
+der Ingest bei iShares, Xtrackers, Amundi, Invesco, J.P. Morgan, Goldman Sachs und Franklin
+Templeton die Bestandsliste je gehaltenem Fonds ab: die ISIN steht im Pfad (`xtrackers.ts`,
+`invesco.ts`), in der Query (`jpmorgan.ts`) oder im Rumpf (`amundi.ts`, `goldmansachs.ts`); bei
+iShares und Franklin steht statt ihrer die Produkt-ID des Fonds darin (`portfolioId`, `fundid`).
+Zusammen mit IP-Adresse und Abrufzeit ergibt das beim Anbieter die Liste der gehaltenen ETFs
+dieses Anschlusses — keine Mengen, keine Beträge, kein Name. iShares und Invesco haben keinen
+Listenkatalog, sondern eine Suche je ISIN; sie läuft nur für ISINs, die kein Listenkatalog
+kennt und die kein Einzeltitel sind (`wertpapier_art`). Findet sie nichts, erfahren iShares und Invesco auch ISINs fremder Fonds, höchstens
+einmal je ISIN und Ablauffrist (`fondsKatalogFrischeTage`,
+[ADR-065](entscheidungen/ADR-065-fondsaufloesung-ohne-funds-json.md)). Die Listenkataloge
+(Sitemaps, Amundi-Katalog, J.P.-Morgan-Fund-Explorer), Eurostat und die EZB werden ohne
+Depotbezug abgefragt und verraten nichts.
 
 Getragen, weil ohne diese Abrufe die Kachel nicht entsteht und der Schalter ab Werk aus ist:
 wer ihn setzt, liest den Satz dazu in der Vorlage `docs/einstellungen.example.json` und in der

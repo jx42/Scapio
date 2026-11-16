@@ -34,6 +34,7 @@ import type * as KonfigurationModul from '../../shared/konfiguration.ts';
 import type * as FondsaufloesungModul from '../../ingest/fondsaufloesung.ts';
 import type { Kontext } from '../../ingest/importieren.ts';
 import { FIXTURE, json } from '../fixtures/index.ts';
+import { ANBIETER_HOSTS } from '../../shared/hosts.ts';
 
 vi.mock('../../ingest/mcpAnmeldung.ts', () => ({ zugriffstoken: vi.fn() }));
 // Durchreichend: nur der Test zur gescheiterten Fondsaufloesung laesst den Katalogabruf werfen.
@@ -60,6 +61,7 @@ const { katalogeAbrufen } = await import('../../ingest/fondsaufloesung.ts');
 const ladeKonfigurationMock = vi.mocked(konfigurationModul.ladeKonfiguration);
 
 const HEUTE = '2026-08-26' as Tag;
+const ANBIETER_HOSTS_ALLE: string[] = Object.values(ANBIETER_HOSTS).flat();
 const JETZT = '2026-08-26T18:00:00+02:00';
 
 const tempDirs: string[] = [];
@@ -389,14 +391,21 @@ describe('fuehreLaufAus — Selbstkontrolle ohne Cash [ADR-053]', () => {
 });
 
 describe('fuehreLaufAus — Schalter top25 [ADR-038]', () => {
-  async function laufMit(top25: boolean): Promise<{ hosts: Set<string>; quellen: Readonly<Record<string, string>> }> {
+  async function laufMit(
+    top25: boolean,
+    vorbereiten: (db: DatabaseSync) => void = () => undefined,
+  ): Promise<{ hosts: Set<string>; adressen: string[]; quellen: Readonly<Record<string, string>> }> {
     const hosts = new Set<string>();
+    const adressen: string[] = [];
     vi.stubGlobal(
       'fetch',
       vi.fn(async (ziel: string | URL, optionen: RequestInit = {}) => {
         const host = new URL(String(ziel)).host;
         hosts.add(host);
-        if (host !== 'mcp.scalable.capital') return new Response('', { status: 404 });
+        if (host !== 'mcp.scalable.capital') {
+          adressen.push(String(ziel));
+          return new Response('', { status: 404 });
+        }
         const rpc = JSON.parse(String(optionen.body)) as RpcBody;
         if (rpc.method === 'initialize') return initOk();
         if (rpc.method === 'notifications/initialized') return notifOk();
@@ -407,15 +416,24 @@ describe('fuehreLaufAus — Schalter top25 [ADR-038]', () => {
       }),
     );
     const db = await testDatenbank();
-    const ergebnis = await fuehreLaufAus({ db, konfiguration: konfiguration({ top25, erlaubteHosts: ['www.ishares.com', 'etf.dws.com', 'www.amundietf.de'] }), heute: HEUTE });
-    return { hosts, quellen: ergebnis.quellen };
+    vorbereiten(db);
+    const ergebnis = await fuehreLaufAus({ db, konfiguration: konfiguration({ top25, erlaubteHosts: ANBIETER_HOSTS_ALLE }), heute: HEUTE });
+    return { hosts, adressen, quellen: ergebnis.quellen };
   }
 
   it('ruft ohne top25 keinen Fondsanbieter ab und meldet den Schritt als uebersprungen', async () => {
     const { hosts, quellen } = await laufMit(false);
     expect(quellen.fonds).toBe('übersprungen');
     expect(Object.keys(quellen).filter((q) => q.startsWith('fondskatalog:'))).toEqual([]);
-    for (const host of ['www.ishares.com', 'etf.dws.com', 'www.amundietf.de']) expect(hosts).not.toContain(host);
+    for (const host of ANBIETER_HOSTS_ALLE) expect(hosts).not.toContain(host);
+  });
+
+  it('verraet Einzeltitel keiner Suche je ISIN [ADR-065]', async () => {
+    const gehalten = (json(FIXTURE.holdings) as { holdings: { isin: string }[] }).holdings.map((h) => h.isin);
+    const { adressen } = await laufMit(true, (db) => {
+      for (const isin of gehalten) repository.wertpapierArt.setze(db, { isin, art: 'STOCK', geprueftAm: HEUTE });
+    });
+    expect(adressen.filter((a) => gehalten.some((isin) => a.includes(isin)))).toEqual([]);
   });
 
   it('fragt mit top25 die Fondskataloge ab', async () => {

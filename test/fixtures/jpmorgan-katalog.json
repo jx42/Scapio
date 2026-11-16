@@ -1,0 +1,38 @@
+[
+  {
+    "name": "JPMorgan ETFs (Ireland) ICAV - Global Research Enhanced Index Equity Active UCITS ETF",
+    "displayId": "JREG",
+    "fundTypeCode": "N_ETF",
+    "shareclassName": "JPM Global Research Enhanced Index Equity Active UCITS ETF - USD (acc)",
+    "identifier": "IE00BF4G6Y48",
+    "assetClass": "Aktien",
+    "currencyCode": "USD"
+  },
+  {
+    "name": "JPMorgan ETFs (Ireland) ICAV - AC Asia Pacific ex Japan Research Enhanced Index Equity Active UCITS ETF",
+    "displayId": "JREA",
+    "fundTypeCode": "N_ETF",
+    "shareclassName": "JPM AC Asia Pacific ex Japan Research Enhanced Index Equity Active UCITS ETF - USD (acc)",
+    "identifier": "IE00BMDV7354",
+    "assetClass": "Aktien",
+    "currencyCode": "USD"
+  },
+  {
+    "name": "JPMorgan ETFs (Ireland) ICAV - AC Asia Pacific ex Japan Research Enhanced Index Equity Active UCITS ETF",
+    "displayId": "JREX",
+    "fundTypeCode": "N_ETF",
+    "shareclassName": "JPM AC Asia Pacific ex Japan Research Enhanced Index Equity Active UCITS ETF - USD (dist)",
+    "identifier": "IE000P334X90",
+    "assetClass": "Aktien",
+    "currencyCode": "USD"
+  },
+  {
+    "name": "JPMorgan Funds - Beispiel Fonds",
+    "displayId": "JPM Beispiel Fonds A (acc) - EUR",
+    "fundTypeCode": "N_MF",
+    "shareclassName": "A (acc) - EUR",
+    "identifier": "LU0000000009",
+    "assetClass": "Aktien",
+    "currencyCode": "EUR"
+  }
+]
