@@ -652,7 +652,7 @@ export const FAELLE: readonly Fall[] = [
     gruppe: 'top25',
     ansicht: 'seite',
     titel: 'Top 25 ausgeschaltet (Vorgabe)',
-    beschreibung: 'Ohne "top25": true in einstellungen.json hat die Aufteilung keine Reiter.',
+    beschreibung: 'Mit "top25": false in einstellungen.json hat die Aufteilung keine Reiter.',
     routen: { health: aendern<Health>((b) => ({ ...b, top25: false })) },
   },
   {

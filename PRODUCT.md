@@ -27,7 +27,7 @@ die App offenlässt:
 3. **Wie unruhig ist mein Depot?** Volatilität, maximaler Drawdown, Sharpe-Ratio
    ([ADR-009](docs/entscheidungen/ADR-009-risikokennzahlen.md)).
 4. **Worin bin ich wirklich investiert?** Der Blick durch die ETFs auf Unternehmen, Länder und Sektoren
-   (Reiter Analyse der Aufteilung, nur auf Wunsch, [ADR-038](docs/entscheidungen/ADR-038-top25-nur-auf-wunsch.md),
+   (Reiter Analyse der Aufteilung, abschaltbar, [ADR-066](docs/entscheidungen/ADR-066-analyse-ab-werk-an.md),
    [ADR-058](docs/entscheidungen/ADR-058-laender-und-sektoren-neben-den-unternehmen.md)).
 5. **Was hat mich das gekostet, was hat es gebracht?** Erträge, Steuern und Gebühren einzeln.
 

@@ -178,7 +178,7 @@ Der Start zieht beide einmalig aus dem Projektordner um (`start/uebernahme.ts`)
 | `inflationsquelle` | `eurostat` | siehe [ADR-003](entscheidungen/ADR-003-eurostat-statt-destatis.md) |
 | `zinsquelle` | `ecb` | siehe [ADR-009](entscheidungen/ADR-009-risikokennzahlen.md) |
 | `driftSchwellen` | `{ hinweis: 0.001, banner: 0.005, abbruch: 0.02 }` | müssen aufsteigend sein, siehe [`docs/RUNBOOK.md`](RUNBOOK.md) |
-| `top25` | `false` | Reiter „Analyse“ der Aufteilung und der Abruf der Fondsbestandslisten; der Server meldet den Wert in `/api/health` [ADR-038](entscheidungen/ADR-038-top25-nur-auf-wunsch.md) |
+| `top25` | `true` | Reiter „Analyse“ der Aufteilung und der Abruf der Fondsbestandslisten; der Server meldet den Wert in `/api/health` [ADR-038](entscheidungen/ADR-038-top25-nur-auf-wunsch.md), [ADR-066](entscheidungen/ADR-066-analyse-ab-werk-an.md) |
 
 `port` und `driftSchwellen` liest der Server, `erlaubteHosts`, die Zeitlimits und
 `fondsKatalogFrischeTage` liest der Ingest, `top25` lesen beide, `datenverzeichnis` lesen beide

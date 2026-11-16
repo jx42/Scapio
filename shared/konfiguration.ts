@@ -84,7 +84,7 @@ const EINSTELLUNGEN = {
   inflationsquelle: z.enum(['eurostat', 'destatis']),
   zinsquelle: z.enum(['ecb', 'keine']),
   driftSchwellen: DriftSchwellen,
-  /** Reiter „Analyse“ der Aufteilung samt Abruf der Fondsbestandslisten [ADR-038, ADR-060]. */
+  /** Reiter „Analyse“ der Aufteilung samt Abruf der Fondsbestandslisten [ADR-038, ADR-060, ADR-066]. */
   top25: z.boolean(),
 };
 
@@ -122,7 +122,7 @@ const KonfigurationSchema = z
     inflationsquelle: EINSTELLUNGEN.inflationsquelle.default('eurostat'),
     zinsquelle: EINSTELLUNGEN.zinsquelle.default('ecb'),
     driftSchwellen: DriftSchwellen.default({ hinweis: 0.001, banner: 0.005, abbruch: 0.02 }),
-    top25: EINSTELLUNGEN.top25.default(false),
+    top25: EINSTELLUNGEN.top25.default(true),
   })
   .strict();
 

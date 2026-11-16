@@ -42,7 +42,7 @@ der Geschichte stehen. Eine neue ADR bekommt die nächste freie Nummer und eine 
 | [035](ADR-035-zip-als-standardweg-der-installation.md) | ZIP als Standardweg der Installation, Git als Alternative | gilt |
 | [036](ADR-036-kennzahlen-korrekturen-nach-pruefung.md) | Kennzahlen-Korrekturen nach der Prüfung vom Oktober 2026 | Nachtrag: 043, 053 |
 | [037](ADR-037-eigene-dateien-im-datenverzeichnis.md) | Eigene Dateien im Datenverzeichnis, ZIP-Update ohne Kopieren | Nachtrag: 041 |
-| [038](ADR-038-top25-nur-auf-wunsch.md) | Top 25 nur auf Wunsch, Schalter in `einstellungen.json` | gilt |
+| [038](ADR-038-top25-nur-auf-wunsch.md) | Top 25 nur auf Wunsch, Schalter in `einstellungen.json` | teilweise abgelöst durch 066 |
 | [039](ADR-039-server-vor-dem-bau.md) | Server vor dem Bau, Browser sofort, Fortschritt auf der Anmeldeseite | Nachtrag: 064 |
 | [040](ADR-040-aufgeraeumte-projektwurzel.md) | Aufgeräumte Projektwurzel | gilt |
 | [041](ADR-041-seed-im-datenverzeichnis.md) | `seed.json` im Datenverzeichnis | gilt |
@@ -70,3 +70,4 @@ der Geschichte stehen. Eine neue ADR bekommt die nächste freie Nummer und eine 
 | [063](ADR-063-kursentwicklung-je-position.md) | Kursentwicklung je Position im Dialog der Aufteilung | gilt |
 | [064](ADR-064-lauf-beim-start.md) | Ein Lauf beim Start, relative Angabe im Kopf | gilt |
 | [065](ADR-065-fondsaufloesung-ohne-funds-json.md) | Fondsauflösung ohne `funds.json` für weitere Anbieter | gilt |
+| [066](ADR-066-analyse-ab-werk-an.md) | Analyse ab Werk an, ausschalten mit `"top25": false` | gilt |

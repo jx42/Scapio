@@ -194,7 +194,7 @@ export async function ernteQuellen(lauf: Lauf): Promise<LaufErgebnis | null> {
   setzeSchritt(lauf, 'fonds');
   // Vor der Fondsaufloesung: ihre Suche je ISIN laesst Einzeltitel aus.
   lauf.arten = await ermittleArten(lauf);
-  // Ohne `top25` kein Abruf bei einem Fondsanbieter: die Kachel ist aus [ADR-038].
+  // Mit `"top25": false` kein Abruf bei einem Fondsanbieter: der Reiter Analyse ist aus [ADR-038, ADR-066].
   if (lauf.konfiguration.top25) {
     const manuelleIsins = await ernteManuelleFonds(lauf);
     lauf.fondsAufloesungen = await loeseFondsAuf(lauf, manuelleIsins);

@@ -488,15 +488,17 @@ export const de = {
     wenigerZeigen: 'Weniger zeigen',
     leer: 'Es liegen keine Fondsbestandteile vor.',
     leerAnleitungTitel: 'Analyseansicht hinzufügen',
-    leerAnleitungBeschreibung: 'Schritte, um die Fondsliste „funds.json“ anzulegen.',
+    leerAnleitungBeschreibung: 'Welche ETFs Scapio von selbst aufschlüsselt und wie sich ein fehlender eintragen lässt.',
+    leerAnleitungAutomatisch:
+      'Beim Aktualisieren erkennt Scapio ETFs von iShares, Xtrackers, Amundi, Invesco, J.P. Morgan, Goldman Sachs und Franklin Templeton von selbst. ETFs anderer Anbieter lassen sich leider nicht aufschlüsseln.',
+    leerAnleitungVonHand:
+      'Bleibt ein ETF von iShares, Xtrackers oder Amundi trotzdem außen vor, lässt er sich von Hand eintragen:',
     leerAnleitungSchritte: [
       `„ingest/funds.example.json“ aus dem Scapio-Ordner als „funds.json“ ${DATENORDNER} ablegen.`,
-      'Für jeden ETF, den die App nicht von selbst erkennt, einen Eintrag mit der ISIN eintragen. Bei „xtrackers“ oder „amundi“ als Anbieter reicht das schon — die Adresse wird automatisch abgefragt.',
+      'Für den ETF einen Eintrag mit ISIN und Anbieter anlegen: „ishares“, „xtrackers“ oder „amundi“.',
       'Bei „ishares“ zusätzlich die Produkt-ID eintragen: Produktseite des Fonds auf ishares.com öffnen → die Zahl hinter „/produkte/“ in der Adressleiste kopieren. Beispiel: ishares.com/de/privatanleger/de/produkte/251882/… → „251882“.',
       'Danach oben auf „Aktualisieren“ klicken.',
     ],
-    leerAnleitungAndereAnbieter:
-      'Nur ETFs von iShares, Xtrackers, Amundi, Invesco, J.P. Morgan, Goldman Sachs und Franklin Templeton lassen sich aufschlüsseln. Für ETFs anderer Anbieter ist die Analyse leider nicht möglich.',
 
     fehlendeFondsIsin: (isin: string) => `(${isin})`,
     fehlendeFondsTitel: 'Diese Fonds fehlen in der Auswertung',
