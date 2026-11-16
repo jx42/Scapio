@@ -35,7 +35,17 @@ export const netz = vi.mocked(holeText);
 export function konfiguration(teil: Partial<Konfiguration> = {}): Konfiguration {
   return konfigurationFuer('/tmp/nicht-verwendet', {
     port: 4732,
-    erlaubteHosts: ['www.ishares.com', 'etf.dws.com', 'www.amundietf.de', 'ec.europa.eu', 'data-api.ecb.europa.eu'],
+    erlaubteHosts: [
+      'www.ishares.com',
+      'etf.dws.com',
+      'www.amundietf.de',
+      'dng-api.invesco.com',
+      'am.jpmorgan.com',
+      'am.gs.com',
+      'www.franklintempleton.de',
+      'ec.europa.eu',
+      'data-api.ecb.europa.eu',
+    ],
     ...teil,
   });
 }

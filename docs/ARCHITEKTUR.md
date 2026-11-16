@@ -6,7 +6,7 @@ Ingest, Rechenkern, Server und Oberfläche vier getrennte Ordner statt eines gro
 ## Datenfluss
 
 ```
-MCP / iShares / Xtrackers / Amundi / Eurostat / EZB  →  Ingest (validiert)  →  SQLite  →  Rechenkern  →  API  →  Oberfläche
+MCP / ETF-Anbieter / Eurostat / EZB  →  Ingest (validiert)  →  SQLite  →  Rechenkern  →  API  →  Oberfläche
 ```
 
 Der Pfeil geht nur nach rechts. Kein Modul liest, was rechts von ihm steht:
@@ -171,10 +171,10 @@ Der Start zieht beide einmalig aus dem Projektordner um (`start/uebernahme.ts`)
 | `port` | `4732` | einziger Port, an dem der Server hört [INV-07] |
 | `datenverzeichnis` | plattformabhängig: macOS `~/Library/Application Support/scapio`, Windows `%LOCALAPPDATA%\scapio` | `vorgabeDatenverzeichnis()` in `shared/konfiguration.ts`, siehe [ADR-005](entscheidungen/ADR-005-datenbank-ausserhalb-des-projekts.md) |
 | `mcpZeitlimitMs` | `300000` | Zeitlimit je MCP-Aufruf |
-| `csvZeitlimitMs` | `30000` | Zeitlimit je Holdings-/CSV-Abruf (iShares, Xtrackers, Amundi) |
+| `csvZeitlimitMs` | `30000` | Zeitlimit je Abruf außerhalb des MCP (ETF-Anbieter, Eurostat, EZB) |
 | `csvGroesstMb` | `32` | Größtgrenze einer Holdings-/CSV-Antwort |
-| `fondsKatalogFrischeTage` | `5` | Tage, die ein Anbieterkatalog gilt, bevor die Fondsauflösung ihn neu abruft [ADR-018](entscheidungen/ADR-018-fondskataloge-statt-einzelabfrage.md) |
-| `erlaubteHosts` | `www.ishares.com`, `etf.dws.com`, `www.amundietf.de`, `ec.europa.eu`, `data-api.ecb.europa.eu` | Allowlist für jeden Netzabruf, keine Musterliste; Vorgabe abgeleitet aus `shared/hosts.ts` |
+| `fondsKatalogFrischeTage` | `5` | Tage, die eine Zeile der Fondsauflösung gilt, bevor sie Kataloge und, ohne Katalogtreffer, die Suche je ISIN neu befragt [ADR-018](entscheidungen/ADR-018-fondskataloge-statt-einzelabfrage.md), [ADR-065](entscheidungen/ADR-065-fondsaufloesung-ohne-funds-json.md) |
+| `erlaubteHosts` | `www.ishares.com`, `etf.dws.com`, `www.amundietf.de`, `dng-api.invesco.com`, `am.jpmorgan.com`, `am.gs.com`, `www.franklintempleton.de`, `ec.europa.eu`, `data-api.ecb.europa.eu` | Allowlist für jeden Netzabruf, keine Musterliste; Vorgabe abgeleitet aus `shared/hosts.ts` |
 | `inflationsquelle` | `eurostat` | siehe [ADR-003](entscheidungen/ADR-003-eurostat-statt-destatis.md) |
 | `zinsquelle` | `ecb` | siehe [ADR-009](entscheidungen/ADR-009-risikokennzahlen.md) |
 | `driftSchwellen` | `{ hinweis: 0.001, banner: 0.005, abbruch: 0.02 }` | müssen aufsteigend sein, siehe [`docs/RUNBOOK.md`](RUNBOOK.md) |

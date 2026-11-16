@@ -54,17 +54,17 @@ describe('katalogeAbrufen', () => {
 });
 
 describe('sucheAbrufen', () => {
-  it('der erste Treffer beendet die Suche (Reihenfolge der Liste)', async () => {
-    const amundi = vi.fn(() => Promise.resolve<Katalogeintrag | null>({ produktId: 'inv' }));
+  it('der erste Treffer beendet die Suche (iShares vor Invesco)', async () => {
+    const invesco = vi.fn(() => Promise.resolve<Katalogeintrag | null>({ produktId: 'inv' }));
     const { meldungen, melde } = protokoll();
     const index = await sucheAbrufen(
       ctx,
-      [anbieter('ishares', null, () => Promise.resolve({ produktId: '251882' })), anbieter('amundi', null, amundi)],
+      [anbieter('ishares', null, () => Promise.resolve({ produktId: '251882' })), anbieter('invesco', null, invesco)],
       [isin(1)],
       melde,
     );
     expect(index.get(isin(1))).toEqual({ anbieter: 'ishares', eintrag: { produktId: '251882' } });
-    expect(amundi).not.toHaveBeenCalled();
+    expect(invesco).not.toHaveBeenCalled();
     expect(meldungen).toEqual([['ishares', 'erfolg']]);
   });
 
@@ -72,11 +72,11 @@ describe('sucheAbrufen', () => {
     const { melde } = protokoll();
     const index = await sucheAbrufen(
       ctx,
-      [anbieter('ishares', null, () => Promise.resolve(null)), anbieter('amundi', null, (_, i) => Promise.resolve({ produktId: i }))],
+      [anbieter('ishares', null, () => Promise.resolve(null)), anbieter('invesco', null, (_, i) => Promise.resolve({ produktId: i }))],
       [isin(1)],
       melde,
     );
-    expect(index.get(isin(1))?.anbieter).toBe('amundi');
+    expect(index.get(isin(1))?.anbieter).toBe('invesco');
   });
 
   it('meldet einen Ausfall einmal je Lauf und fragt den Anbieter danach nicht mehr', async () => {
@@ -84,7 +84,7 @@ describe('sucheAbrufen', () => {
     const { meldungen, melde } = protokoll();
     const index = await sucheAbrufen(
       ctx,
-      [anbieter('ishares', null, ishares), anbieter('amundi', null, () => Promise.resolve(null))],
+      [anbieter('ishares', null, ishares), anbieter('invesco', null, () => Promise.resolve(null))],
       [isin(1), isin(2), isin(3)],
       melde,
     );
@@ -92,7 +92,7 @@ describe('sucheAbrufen', () => {
     expect(index.size).toBe(0);
     expect(meldungen).toEqual([
       ['ishares', 'fehler'],
-      ['amundi', 'erfolg'],
+      ['invesco', 'erfolg'],
     ]);
   });
 
@@ -106,15 +106,15 @@ describe('sucheAbrufen', () => {
     const gehalten = Array.from({ length: 10 }, (_, i) => isin(i));
     const katalog = new Map(gehalten.slice(0, 8).map((i) => [i, { produktId: i }]));
     const ishares = vi.fn(() => Promise.resolve(null));
-    const amundi = vi.fn(() => Promise.resolve(null));
-    const alle = [anbieter('xtrackers', () => Promise.resolve(katalog)), anbieter('ishares', null, ishares), anbieter('amundi', null, amundi)];
+    const invesco = vi.fn(() => Promise.resolve(null));
+    const alle = [anbieter('xtrackers', () => Promise.resolve(katalog)), anbieter('ishares', null, ishares), anbieter('invesco', null, invesco)];
     const { melde } = protokoll();
 
     const katalogIndex = await katalogeAbrufen(ctx, alle, melde);
     await sucheAbrufen(ctx, alle, gehalten.filter((i) => !katalogIndex.has(i)), melde);
 
     expect(ishares).toHaveBeenCalledTimes(2);
-    expect(amundi).toHaveBeenCalledTimes(2);
+    expect(invesco).toHaveBeenCalledTimes(2);
     expect(ishares.mock.calls.map((c) => (c as unknown[])[1])).toEqual([isin(8), isin(9)]);
   });
 });
@@ -129,8 +129,8 @@ describe('aufloese', () => {
   } as const;
 
   it('behaelt ohne Treffer die bekannte Zeile, wenn diesen Lauf ein Anbieter gescheitert ist', () => {
-    expect(aufloese('IE00B4L5Y983', new Map(), new Set(['amundi']), bestehend, heute)).toBe(bestehend);
-    expect(aufloese('IE00B4L5Y983', new Map(), new Set(['amundi']), null, heute)).toBeNull();
+    expect(aufloese('IE00B4L5Y983', new Map(), new Set(['invesco']), bestehend, heute)).toBe(bestehend);
+    expect(aufloese('IE00B4L5Y983', new Map(), new Set(['invesco']), null, heute)).toBeNull();
   });
 
   it('kein Treffer ohne gescheiterten Anbieter setzt die Zeile auf unbekannt', () => {
@@ -146,7 +146,7 @@ describe('aufloese', () => {
   it('ein Treffer traegt die Produkt-ID als Adresse, ausser sie ist die ISIN', () => {
     const neu = new Map([['IE00B4L5Y983', { anbieter: 'ishares' as const, eintrag: { produktId: '251883' } }]]);
     expect(aufloese('IE00B4L5Y983', neu, new Set(), bestehend, heute)).toMatchObject({ durchsicht: 'moeglich', adresse: '251883' });
-    const anderer = new Map([['IE00B4L5Y983', { anbieter: 'amundi' as const, eintrag: { produktId: 'IE00B4L5Y983' } }]]);
-    expect(aufloese('IE00B4L5Y983', anderer, new Set(), bestehend, heute)).toMatchObject({ anbieter: 'amundi', adresse: null });
+    const anderer = new Map([['IE00B4L5Y983', { anbieter: 'invesco' as const, eintrag: { produktId: 'IE00B4L5Y983' } }]]);
+    expect(aufloese('IE00B4L5Y983', anderer, new Set(), bestehend, heute)).toMatchObject({ anbieter: 'invesco', adresse: null });
   });
 });

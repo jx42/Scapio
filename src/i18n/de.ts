@@ -496,7 +496,7 @@ export const de = {
       'Danach oben auf „Aktualisieren“ klicken.',
     ],
     leerAnleitungAndereAnbieter:
-      'Nur ETFs von iShares, Xtrackers und Amundi lassen sich aufschlüsseln. Für ETFs anderer Anbieter ist die Analyse leider nicht möglich.',
+      'Nur ETFs von iShares, Xtrackers, Amundi, Invesco, J.P. Morgan, Goldman Sachs und Franklin Templeton lassen sich aufschlüsseln. Für ETFs anderer Anbieter ist die Analyse leider nicht möglich.',
 
     fehlendeFondsIsin: (isin: string) => `(${isin})`,
     fehlendeFondsTitel: 'Diese Fonds fehlen in der Auswertung',
@@ -511,6 +511,10 @@ export const de = {
       ishares: 'iShares',
       xtrackers: 'Xtrackers',
       amundi: 'Amundi',
+      invesco: 'Invesco',
+      jpmorgan: 'J.P. Morgan',
+      goldmansachs: 'Goldman Sachs',
+      franklin: 'Franklin Templeton',
       firsttrust: 'First Trust',
       lgim: 'L&G',
     } as Record<string, string>,

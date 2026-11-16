@@ -18,6 +18,10 @@ export const ANBIETER_HOSTS = {
   ishares: ['www.ishares.com'],
   xtrackers: ['etf.dws.com'],
   amundi: ['www.amundietf.de'],
+  invesco: ['dng-api.invesco.com'],
+  jpmorgan: ['am.jpmorgan.com'],
+  goldmansachs: ['am.gs.com'],
+  franklin: ['www.franklintempleton.de'],
 } as const satisfies Record<AutomatischerAnbieter, readonly string[]>;
 
 /** Eurostat (Inflation) und EZB (Zins) — keine Anbieter, aber Teil derselben Allowlist. */

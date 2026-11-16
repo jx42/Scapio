@@ -117,8 +117,8 @@ kennt vier Werte: `laufend`, `erfolg`, `teilweise`, `fehler`.
   - `E_SEED_KAPUTT`: `seed.json` im Datenverzeichnis ist kein gültiges JSON (meist ein Komma zu viel).
     Datei korrigieren oder auf `{"anfangsbestand": []}` zurücksetzen.
   - `E_DATEI_FREMD`: siehe [Datei im Datenverzeichnis abgelehnt](#datei-im-datenverzeichnis-abgelehnt).
-  - Fonds-Holdings nicht erreichbar — iShares, Xtrackers oder Amundi, je nach `anbieter`
-    in `funds.json` im Datenverzeichnis (Host-Allowlist in `erlaubteHosts`, Zeitlimit `csvZeitlimitMs`).
+  - Fonds-Holdings nicht erreichbar — beim ETF-Anbieter aus `funds.json` im Datenverzeichnis
+    oder aus der automatischen Fondsauflösung [ADR-065] (Host-Allowlist in `erlaubteHosts`, Zeitlimit `csvZeitlimitMs`).
     Abgerufen wird nur mit `"top25": true` in `einstellungen.json` [ADR-038].
     Die Codes kommen aus `ingest/netz.ts`:
     - `E_NETZ_HOST`: der Host steht nicht in `erlaubteHosts`.

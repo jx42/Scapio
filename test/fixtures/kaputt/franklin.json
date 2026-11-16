@@ -1,0 +1,82 @@
+{
+  "data": {
+    "Portfolio": {
+      "portfolio": {
+        "dailyholdings": [
+          {
+            "asofdate": "13.11.2026",
+            "secname": "TAIWAN SEMICONDUCT TWD 10",
+            "isinsecnbr": "TW0002330008",
+            "pctofnetassets": "40,51",
+            "sctrname": "—",
+            "countrynme": ""
+          },
+          {
+            "asofdate": "13.11.2026",
+            "secname": "SAMSUNG ELECTRONI KRW 100",
+            "isinsecnbr": "KR7005930003",
+            "pctofnetassets": "18.40",
+            "sctrname": "—",
+            "countrynme": ""
+          },
+          {
+            "asofdate": "13.11.2026",
+            "secname": "SK HYNIX INC KRW 5000",
+            "isinsecnbr": "KR7000660001",
+            "pctofnetassets": "16,15",
+            "sctrname": "—",
+            "countrynme": ""
+          },
+          {
+            "asofdate": "13.11.2026",
+            "secname": "Net Current Assets",
+            "isinsecnbr": "—",
+            "pctofnetassets": "0,21",
+            "sctrname": "—",
+            "countrynme": ""
+          },
+          {
+            "asofdate": "13.11.2026",
+            "secname": "MEDIATEK INC TWD 10",
+            "isinsecnbr": "TW0002454006",
+            "pctofnetassets": "8,18",
+            "sctrname": "—",
+            "countrynme": ""
+          },
+          {
+            "asofdate": "13.11.2026",
+            "secname": "DBS GROUP HOLDING SGD NPV",
+            "isinsecnbr": "SG1L01001701",
+            "pctofnetassets": "4,30",
+            "sctrname": "—",
+            "countrynme": ""
+          },
+          {
+            "asofdate": "13.11.2026",
+            "secname": "TAIWAN SEMICONDUCT TWD 10",
+            "isinsecnbr": "TW0002330008",
+            "pctofnetassets": "5,00",
+            "sctrname": "—",
+            "countrynme": ""
+          },
+          {
+            "asofdate": "13.11.2026",
+            "secname": "MSCI EmgMkt Dec26",
+            "isinsecnbr": "—",
+            "pctofnetassets": "-0,03",
+            "sctrname": "—",
+            "countrynme": ""
+          },
+          {
+            "asofdate": "13.11.2026",
+            "secname": "AIA GROUP LTD HKD NPV",
+            "isinsecnbr": "HK0000069689",
+            "pctofnetassets": "3,46",
+            "sctrname": "—",
+            "countrynme": ""
+          }
+        ]
+      }
+    }
+  }
+}

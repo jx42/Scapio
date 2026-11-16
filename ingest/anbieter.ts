@@ -14,7 +14,11 @@ import type { AutomatischerAnbieter } from '../db/repository/fondsAufloesung.ts'
 import type { Ernte, Kontext } from './importieren.ts';
 import { SchemaFehler } from './schema/pruefe.ts';
 import { holeAmundi, katalogAmundi } from './quellen/amundi.ts';
+import { bestandteileFranklin, katalogFranklin } from './quellen/franklin.ts';
+import { bestandteileGoldmansachs, katalogGoldmansachs } from './quellen/goldmansachs.ts';
+import { bestandteileInvesco, sucheInvesco } from './quellen/invesco.ts';
 import { bestandteileIshares, sucheIshares } from './quellen/ishares.ts';
+import { bestandteileJpmorgan, katalogJpmorgan } from './quellen/jpmorgan.ts';
 import { holeXtrackers, katalogXtrackers } from './quellen/xtrackers.ts';
 
 /**
@@ -69,8 +73,8 @@ export type Anbieter = {
    */
   readonly suche: ((ctx: Kontext, isin: Isin) => Promise<Katalogeintrag | null>) | null;
   /**
-   * Positionen eines Fonds. `cacheAdresse` ist die zuletzt gespeicherte Produkt-ID (iShares);
-   * die Rueckgabe traegt die, die beim naechsten Lauf gilt (bei
+   * Positionen eines Fonds. `cacheAdresse` ist die zuletzt gespeicherte Produkt-ID (iShares,
+   * Goldman Sachs, Franklin); die Rueckgabe traegt die, die beim naechsten Lauf gilt (bei
    * Haeusern, deren Produkt-ID die ISIN ist, `null`). `eintrag` ist `null`, wenn diesen Lauf
    * weder Katalog noch Suche die ISIN getroffen haben (die Zeile war noch frisch) — dann
    * zaehlt `cacheAdresse`.
@@ -113,5 +117,33 @@ const amundi: Anbieter = {
   }),
 };
 
-/** Reihenfolge zaehlt fuer die Suche: der erste Treffer beendet sie. */
-export const ANBIETER: readonly Anbieter[] = [ishares, xtrackers, amundi];
+const invesco: Anbieter = {
+  name: 'invesco',
+  katalog: null,
+  suche: sucheInvesco,
+  bestandteile: async (ctx, isin) => ({ ernte: await bestandteileInvesco(ctx, isin), adresse: null }),
+};
+
+const jpmorgan: Anbieter = {
+  name: 'jpmorgan',
+  katalog: katalogJpmorgan,
+  suche: null,
+  bestandteile: async (ctx, isin) => ({ ernte: await bestandteileJpmorgan(ctx, isin), adresse: null }),
+};
+
+const goldmansachs: Anbieter = {
+  name: 'goldmansachs',
+  katalog: katalogGoldmansachs,
+  suche: null,
+  bestandteile: bestandteileGoldmansachs,
+};
+
+const franklin: Anbieter = {
+  name: 'franklin',
+  katalog: katalogFranklin,
+  suche: null,
+  bestandteile: bestandteileFranklin,
+};
+
+/** Reihenfolge zaehlt fuer die Suche: der erste Treffer beendet sie (iShares vor Invesco). */
+export const ANBIETER: readonly Anbieter[] = [ishares, xtrackers, amundi, invesco, jpmorgan, goldmansachs, franklin];
