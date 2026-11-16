@@ -14,7 +14,7 @@
 - **Rendite:** deine persönliche Rendite (IZF, interner Zinsfuß) auch nach Abzug der Inflation. So weißt du, was real übrig bleibt.
 - **Benchmark:** dein Depot (TWR, Time-Weighted Return) im Vergleich zu MSCI World, MSCI ACWI, Gold, Bitcoin und dem risikofreien Zins. So siehst du, ob sich deine Strategie lohnt.
 - **Risiko:** Volatilität*, maximaler Drawdown und Sharpe-Ratio*. So erkennst du, wie stark dein Depot schwankt und ob sich das Risiko auszahlt. 
-- **Länder, Sektoren und Top 25 (optional):** in welchen Ländern, Sektoren und Unternehmen du über alle ETFs hinweg wirklich investiert bist. So erkennst du Klumpenrisiken. Standardmäßig aus, siehe [Länder, Sektoren und Unternehmen einschalten](#-länder-sektoren-und-unternehmen-einschalten).
+- **Länder, Sektoren und Top 25:** in welchen Ländern, Sektoren und Unternehmen du über alle ETFs hinweg wirklich investiert bist. So erkennst du Klumpenrisiken. Abschaltbar, siehe [Länder, Sektoren und Unternehmen ausschalten](#-länder-sektoren-und-unternehmen-ausschalten).
 - **Erträge & Steuern:** realisierte Gewinne, Zinsen, Ausschüttungen und Steuern einzeln aufgeschlüsselt.
 - **Sparen:** Käufe, Verkäufe und aktive Sparpläne. So siehst du, wie viel du monatlich investierst.
 
@@ -69,14 +69,14 @@ Datenbank, Sicherungen, Cache und Anmeldung liegen dort, wo das Betriebssystem A
 | macOS          | `~/Library/Application Support/scapio/` | Im Finder ⇧⌘G drücken („Gehe zu Ordner“), Pfad einfügen, Enter. |
 | Windows        | `%LOCALAPPDATA%\scapio\`                | Windows-Taste + R drücken („Ausführen“), Pfad einfügen, Enter.  |
 
-## 🏢 Länder, Sektoren und Unternehmen einschalten
+## 🏢 Länder, Sektoren und Unternehmen ausschalten
 
-Der Reiter „Analyse“ in der Kachel Aufteilung zeigt, in welche Länder, Sektoren und Unternehmen dein Geld fließt – über alle ETFs und Aktien zusammengerechnet. Er ist standardmäßig deaktiviert, weil sie nur mit ETFs von iShares, Xtrackers und Amundi funktionieren und dafür deren inoffizielle Schnittstellen abfragen. Sind sie deaktiviert, fragt Scapio diese Anbieter gar nicht erst ab. Sind sie aktiviert, erfahren die Anbieter mit jedem Abruf, welche ihrer ETFs du hältst (nicht wie viel). Um sie zu aktivieren:
+Der Reiter „Analyse“ in der Kachel Aufteilung zeigt, in welche Länder, Sektoren und Unternehmen dein Geld fließt – über alle ETFs und Aktien zusammengerechnet. Dafür fragt Scapio beim Aktualisieren die Bestandslisten deiner ETFs bei iShares, Xtrackers, Amundi, Invesco, J.P. Morgan, Goldman Sachs und Franklin Templeton ab, über deren inoffizielle Schnittstellen. ETFs dieser Anbieter erkennt Scapio selbst; ETFs anderer Anbieter lassen sich nicht aufschlüsseln. Der Reiter ist ab Werk eingeschaltet. Die Anbieter erfahren dadurch mit jedem Abruf, welche ihrer ETFs du hältst (nicht wie viel). Wer das nicht möchte, schaltet ihn aus, am besten vor dem ersten Aktualisieren:
 
-1. Die Datei `docs/einstellungen.example.json` aus dem Scapio-Ordner in den Datenordner kopieren (siehe [Wo liegen meine Daten?](#-wo-liegen-meine-daten)) und in `einstellungen.json` umbenennen. Liegt dort schon eine `einstellungen.json`, stattdessen die Zeile `"top25": true` in sie übernehmen.
-2. Scapio neu starten und auf „Aktualisieren“ klicken.
+1. Die Datei `docs/einstellungen.example.json` aus dem Scapio-Ordner in den Datenordner kopieren (siehe [Wo liegen meine Daten?](#-wo-liegen-meine-daten)) und in `einstellungen.json` umbenennen. Liegt dort schon eine `einstellungen.json`, stattdessen die Zeile `"top25": false` in sie übernehmen.
+2. Scapio neu starten.
 
-ETFs von Xtrackers und Amundi erkennt Scapio selbst. Fehlen iShares-Fonds, nennt der Reiter sie und erklärt, wie du sie in einer `funds.json` einträgst. Ausschalten: in `einstellungen.json` `true` durch `false` ersetzen und neu starten.
+Ausgeschaltet fragt Scapio keinen Fondsanbieter ab. Wieder einschalten: in `einstellungen.json` `false` durch `true` ersetzen oder die Zeile löschen und neu starten. Erkennt Scapio einen ETF von iShares, Xtrackers oder Amundi nicht, erklärt der Reiter, wie du ihn in einer `funds.json` einträgst.
 
 ## ⏹️ Beenden
 
