@@ -4,6 +4,8 @@
  * `npm audit` kennt keine Ausnahme. Ein Fund ohne Fix in einem Paket, das `Start.*` zum Bauen
  * braucht (`vite` steht deshalb in `dependencies`), hielte sonst jeden Push an. Jede Ausnahme
  * nennt Advisory und Paket und laeuft ab; danach ist der Fund wieder rot.
+ *
+ * `--voll` ist der nicht blockierende Bericht der CI: mit Dev-Paketen und ab `moderate`. [ADR-055]
  */
 
 import { spawnSync } from 'node:child_process';
@@ -18,7 +20,8 @@ export const AUSNAHMEN: readonly Ausnahme[] = [
   { advisory: 'GHSA-fc5q-39xc-vjpf', paket: 'picomatch', bis: '2027-02-17' as Tag },
 ];
 
-const SPERRSTUFEN = new Set(['high', 'critical']);
+const AB_HIGH: ReadonlySet<string> = new Set(['high', 'critical']);
+const AB_MODERATE: ReadonlySet<string> = new Set(['moderate', ...AB_HIGH]);
 
 type Advisory = { readonly name?: unknown; readonly url?: unknown; readonly severity?: unknown };
 type Bericht = {
@@ -37,7 +40,12 @@ function advisoryId(url: unknown): string {
   return typeof url === 'string' ? (url.split('/').pop() ?? url) : 'unbekannt';
 }
 
-export function bewerte(bericht: Bericht, ausnahmen: readonly Ausnahme[], heute: Tag): Bewertung {
+export function bewerte(
+  bericht: Bericht,
+  ausnahmen: readonly Ausnahme[],
+  heute: Tag,
+  stufen: ReadonlySet<string> = AB_HIGH,
+): Bewertung {
   if (bericht.error !== undefined || bericht.vulnerabilities === undefined) {
     throw new Error('npm audit lieferte keinen Bericht (Netz?).');
   }
@@ -49,7 +57,7 @@ export function bewerte(bericht: Bericht, ausnahmen: readonly Ausnahme[], heute:
       // Ein String verweist nur auf ein anderes Paket; dessen Advisory steht dort als Objekt.
       if (typeof via !== 'object' || via === null) continue;
       const a = via as Advisory;
-      if (typeof a.severity !== 'string' || !SPERRSTUFEN.has(a.severity)) continue;
+      if (typeof a.severity !== 'string' || !stufen.has(a.severity)) continue;
       const id = advisoryId(a.url);
       const paket = typeof a.name === 'string' ? a.name : 'unbekannt';
       const schluessel = `${paket} ${id}`;
@@ -86,15 +94,16 @@ function audit(...argumente: readonly string[]): Bericht {
   }
 }
 
-function haupt(): void {
+function haupt(voll: boolean): void {
   const heute = tagAus(new Date().toISOString());
+  const stufen = voll ? AB_MODERATE : AB_HIGH;
   let rot = false;
   const getroffen = new Set<Ausnahme>();
   for (const [name, argumente] of [
-    ['Hauptpaket', ['--omit=dev']],
+    ['Hauptpaket', voll ? [] : ['--omit=dev']],
     ['demo-worker', ['--prefix', 'demo-worker']],
   ] as const) {
-    const bewertung = bewerte(audit(...argumente), AUSNAHMEN, heute);
+    const bewertung = bewerte(audit(...argumente), AUSNAHMEN, heute, stufen);
     for (const z of bewertung.ausgenommen) console.log(`${name}: ausgenommen ${z}`);
     for (const z of bewertung.offen) console.error(`${name}: offen ${z}`);
     for (const a of bewertung.getroffen) getroffen.add(a);
@@ -102,12 +111,12 @@ function haupt(): void {
   }
   for (const z of ueberfluessig(AUSNAHMEN, getroffen, heute)) console.log(`Ausnahme trifft nichts mehr: ${z}`);
   if (rot) process.exitCode = 1;
-  else console.log('Kein offener Fund ab high.');
+  else console.log(`Kein offener Fund ab ${voll ? 'moderate' : 'high'}.`);
 }
 
 if (import.meta.filename === resolve(process.argv[1] ?? '')) {
   try {
-    haupt();
+    haupt(process.argv.includes('--voll'));
   } catch (fehler) {
     console.error((fehler as Error).message);
     process.exitCode = 1;

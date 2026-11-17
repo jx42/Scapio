@@ -109,11 +109,8 @@ jobs:
       - run: npm run audit
 
       # Dazu der volle Bericht, mit Dev-Paketen und ab `moderate`: zur Kenntnis, nicht als
-      # Sperre. Ein Fund hier steht als Anmerkung am Lauf und wird gemeldet. [ADR-055]
+      # Sperre. Ein Fund hier steht als Anmerkung am Lauf und wird gemeldet. Dieselben
+      # befristeten Ausnahmen wie oben. [ADR-055, ADR-068]
       - name: npm audit (voll, nicht blockierend)
         continue-on-error: true
-        run: npm audit
-
-      - name: npm audit demo-worker (voll, nicht blockierend)
-        continue-on-error: true
-        run: npm audit --prefix demo-worker
+        run: npm run audit -- --voll

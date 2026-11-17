@@ -19,6 +19,9 @@ Die Ausnutzbarkeit ist gering: `picomatch` läuft nur im Bau und nur mit Mustern
   Eine Ausnahme gilt nur für genau diese Advisory in genau diesem Paket. Nach dem Ablaufdatum ist der
   Fund wieder rot. Wer verlängert, begründet das im PR.
 - Eine Ausnahme, die keinen Fund mehr trifft, meldet das Skript, damit sie entfernt wird.
+- Der volle, nicht blockierende Bericht der CI ([ADR-055](ADR-055-update-und-release-kette.md)) ist
+  `npm run audit -- --voll`: mit Dev-Paketen, ab `moderate`, mit denselben Ausnahmen. Sonst stünde
+  derselbe ausgenommene Fund dort bei jedem Lauf als Anmerkung.
 
 ## Verworfene Alternativen
 

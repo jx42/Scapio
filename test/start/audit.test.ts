@@ -47,6 +47,12 @@ describe('bewerte', () => {
     expect(bewerte(b, [], '2027-01-01' as Tag).offen).toEqual([]);
   });
 
+  it('meldet moderate, wenn der volle Bericht danach fragt', () => {
+    const b = bericht({ name: 'paket-c', id: 'GHSA-mmmm-mmmm-mmmm', severity: 'moderate' });
+    const stufen = new Set(['moderate', 'high', 'critical']);
+    expect(bewerte(b, [], '2027-01-01' as Tag, stufen).offen).toEqual(['paket-c GHSA-mmmm-mmmm-mmmm']);
+  });
+
   it('wirft, wenn npm keinen Bericht liefert', () => {
     expect(() => bewerte({ error: { code: 'ENOTFOUND' } }, [], '2027-01-01' as Tag)).toThrow();
   });
