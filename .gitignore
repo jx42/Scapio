@@ -21,3 +21,6 @@ tsconfig.tsbuildinfo
 
 # Demo-Abzug (`npm run demo:export`), nur fuer den Deploy. [ADR-048]
 .demo-export/
+
+# Kritik-Protokolle des Design-Skills: enthalten lokale Pfade.
+.impeccable/

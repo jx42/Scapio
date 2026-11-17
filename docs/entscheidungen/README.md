@@ -72,3 +72,4 @@ der Geschichte stehen. Eine neue ADR bekommt die nächste freie Nummer und eine 
 | [065](ADR-065-fondsaufloesung-ohne-funds-json.md) | Fondsauflösung ohne `funds.json` für weitere Anbieter | gilt |
 | [066](ADR-066-analyse-ab-werk-an.md) | Analyse ab Werk an, ausschalten mit `"top25": false` | gilt |
 | [067](ADR-067-release-per-skript.md) | Release per Skript, Deploy-Token im Schlüsselbund | gilt |
+| [068](ADR-068-audit-mit-befristeten-ausnahmen.md) | `npm run audit` mit befristeten Ausnahmen je Advisory | gilt |

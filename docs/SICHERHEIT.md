@@ -214,5 +214,5 @@ Technische Hälfte deckt `npm run check` ab, der Rest wird gelesen und von Hand 
 - [ ] Dashboard einmal vollständig mit der Tastatur bedient, ohne Maus
 - [ ] Datenbank liegt außerhalb von `~/Documents` (Windows: außerhalb des Projektordners und
       nicht unter `%APPDATA%`), Rechte `0700`/`0600` auf POSIX, `sicherung/` gefüllt
-- [ ] `npm run audit` ohne Fund der Stufe `high` oder höher (braucht Netz, deshalb nicht in `check`)
+- [ ] `npm run audit` ohne Fund der Stufe `high` oder höher, ausgenommen unabgelaufene `AUSNAHMEN` in `start/audit.ts` ([ADR-068](entscheidungen/ADR-068-audit-mit-befristeten-ausnahmen.md)); braucht Netz, deshalb nicht in `check`
 - [ ] `docs/` vollständig, ADRs geschrieben, `README.md` von einem Menschen gelesen

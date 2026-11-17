@@ -72,6 +72,13 @@ describe('istPrivateAdresse', () => {
       '::ffff:127.0.0.1',
       '64:ff9b::127.0.0.1', // NAT64 (RFC 6052), eingebettetes Loopback
       '64:ff9b::10.0.0.1', // NAT64, eingebettetes 10/8
+      '64:ff9b::7f00:1', // dasselbe Loopback, wie dns.lookup es schreibt
+      '64:ff9b::a9fe:a9fe', // 169.254.169.254
+      '64:ff9b:1::5db8:d822', // RFC 8215, lokales NAT64-Praefix — pauschal abgelehnt
+      '::ffff:7f00:1',
+      '::ffff:0:7f00:1', // SIIT
+      '::127.0.0.1', // IPv4-kompatibel (veraltet)
+      '100::1', // Discard (RFC 6666)
       '2002::1', // 6to4 (RFC 3056) — pauschal abgelehnt, nicht dekodiert
       '2002:c000:0204::1',
     ]) {
@@ -82,6 +89,8 @@ describe('istPrivateAdresse', () => {
     // NAT64 mit eingebetteter oeffentlicher Adresse bleibt oeffentlich — dieselbe
     // Adresse wie OEFFENTLICH, nur durch das NAT64-Praefix hindurch dekodiert.
     expect(istPrivateAdresse(`64:ff9b::${OEFFENTLICH}`)).toBe(false);
+    expect(istPrivateAdresse('64:ff9b::5db8:d822')).toBe(false); // 93.184.216.34, hexadezimal
+    expect(istPrivateAdresse('2606:4700:0:0:0:0:0:1111')).toBe(false); // ausgeschrieben, ohne ::
   });
 
   it('lehnt ab, was gar keine Adresse ist', () => {

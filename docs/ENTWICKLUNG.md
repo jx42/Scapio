@@ -88,7 +88,8 @@ ist. Der Ablauf wird ohne Rückfrage durchlaufen:
    danach `npm ci --ignore-scripts` (der Fix räumt die devDependencies aus `node_modules`) und
    `npm run check` erneut — die Abhängigkeiten haben sich geändert. Hilft nur `npm audit fix --force`, wird es
    nicht erzwungen: das ist ein Breaking Change in einer Abhängigkeit, also melden und auf
-   Ansage warten. Ein Fund in `demo-worker/` heißt: `wrangler` in `demo-worker/package.json`
+   Ansage warten. Gibt es keinen Fix, ist eine befristete Ausnahme in `start/audit.ts` möglich
+   ([ADR-068](entscheidungen/ADR-068-audit-mit-befristeten-ausnahmen.md)). Ein Fund in `demo-worker/` heißt: `wrangler` in `demo-worker/package.json`
    heben ([ADR-055](entscheidungen/ADR-055-update-und-release-kette.md)).
 3. **Branch und PR:** `git switch -c <thema>`, committen, `git push -u origin <thema>`,
    `gh pr create` mit Warum-Zeile und Label (`neu`, `korrektur`, `intern` oder `ohne-notiz`,
