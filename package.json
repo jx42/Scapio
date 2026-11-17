@@ -39,6 +39,8 @@
     "audit": "node --experimental-strip-types start/audit.ts",
     "ingest": "node start/nodeVersion.mjs && node --disable-warning=ExperimentalWarning --experimental-strip-types ingest/lauf.ts",
     "verify": "node start/nodeVersion.mjs && node --disable-warning=ExperimentalWarning --experimental-strip-types start/verify.ts",
+    "release": "node start/nodeVersion.mjs && node --disable-warning=ExperimentalWarning --experimental-strip-types start/release.ts",
+    "release:vorbereiten": "node start/nodeVersion.mjs && node --disable-warning=ExperimentalWarning --experimental-strip-types start/release.ts vorbereiten",
     "leak-pruefung": "node start/nodeVersion.mjs && node --disable-warning=ExperimentalWarning --experimental-strip-types start/leakPruefung.ts",
     "verify:zaehlung": "node start/nodeVersion.mjs && node --disable-warning=ExperimentalWarning --experimental-strip-types start/verify.ts --nur-zaehlung",
     "mcp-login": "node start/nodeVersion.mjs && node --disable-warning=ExperimentalWarning --experimental-strip-types start/mcpLogin.ts",
