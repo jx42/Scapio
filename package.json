@@ -39,6 +39,8 @@
     "audit": "npm audit --omit=dev --audit-level=high && npm audit --prefix demo-worker --audit-level=high",
     "ingest": "node start/nodeVersion.mjs && node --disable-warning=ExperimentalWarning --experimental-strip-types ingest/lauf.ts",
     "verify": "node start/nodeVersion.mjs && node --disable-warning=ExperimentalWarning --experimental-strip-types start/verify.ts",
+    "release": "node start/nodeVersion.mjs && node --disable-warning=ExperimentalWarning --experimental-strip-types start/release.ts",
+    "release:vorbereiten": "node start/nodeVersion.mjs && node --disable-warning=ExperimentalWarning --experimental-strip-types start/release.ts vorbereiten",
     "leak-pruefung": "node start/nodeVersion.mjs && node --disable-warning=ExperimentalWarning --experimental-strip-types start/leakPruefung.ts",
     "verify:zaehlung": "node start/nodeVersion.mjs && node --disable-warning=ExperimentalWarning --experimental-strip-types start/verify.ts --nur-zaehlung",
     "mcp-login": "node start/nodeVersion.mjs && node --disable-warning=ExperimentalWarning --experimental-strip-types start/mcpLogin.ts",

@@ -51,15 +51,15 @@ der Geschichte stehen. Eine neue ADR bekommt die nächste freie Nummer und eine 
 | 044 | — | nicht vergeben |
 | [045](ADR-045-woechentliche-sicherung-beim-start.md) | Wöchentliche Sicherung beim Start | Nachtrag: 056 |
 | [046](ADR-046-footer-link-zur-readme.md) | Footer-Link zur Readme | gilt |
-| [047](ADR-047-release-kette-und-auslieferung.md) | Release-Kette und Auslieferung: ZIP aus Releases, Audit über den Bau-Pfad | Nachtrag: 055 |
-| [048](ADR-048-demo-als-statischer-abzug.md) | Demo als statischer Abzug | Nachtrag: 055 |
+| [047](ADR-047-release-kette-und-auslieferung.md) | Release-Kette und Auslieferung: ZIP aus Releases, Audit über den Bau-Pfad | Nachtrag: 055, 067 |
+| [048](ADR-048-demo-als-statischer-abzug.md) | Demo als statischer Abzug | Nachtrag: 055, 067 |
 | [049](ADR-049-deinstallation-loescht-nur-den-datenordner.md) | Deinstallation löscht nur den Datenordner | Nachtrag: 056 |
 | [050](ADR-050-zeitzonen-in-der-ci-nur-unter-linux.md) | Zeitzonen in der CI nur unter Linux, ohne UTC | gilt |
 | [051](ADR-051-main-nur-ueber-pull-requests.md) | `main` nur über Pull Requests, ohne Bypass | Nachtrag: 055 |
 | [052](ADR-052-demo-band-mit-repository-link.md) | Demo-Band mit Link zum Repository | gilt |
 | [053](ADR-053-stichtag-und-isin-wechsel-im-kern.md) | Stichtag der Kennzahlen, ISIN-Wechsel und Selbstkontrolle ohne Cash | Nachtrag: 059, Fenster und Flüsse |
 | [054](ADR-054-agentensperre-in-den-einstellungen.md) | Agentensperre in den Einstellungen, Toolnamen ohne Präfix | gilt |
-| [055](ADR-055-update-und-release-kette.md) | Update- und Release-Kette geschlossen | gilt |
+| [055](ADR-055-update-und-release-kette.md) | Update- und Release-Kette geschlossen | Nachtrag: 067 |
 | [056](ADR-056-datenverzeichnis-und-dateirechte-aus-einer-hand.md) | Datenverzeichnis und Dateirechte aus einer Hand | gilt |
 | [057](ADR-057-rebalancing-rechner.md) | Rebalancing-Rechner als Rechnung, nicht als Empfehlung | gilt |
 | [058](ADR-058-laender-und-sektoren-neben-den-unternehmen.md) | Länder und Sektoren neben den Unternehmen | Nachtrag: 060 |
@@ -71,3 +71,4 @@ der Geschichte stehen. Eine neue ADR bekommt die nächste freie Nummer und eine 
 | [064](ADR-064-lauf-beim-start.md) | Ein Lauf beim Start, relative Angabe im Kopf | gilt |
 | [065](ADR-065-fondsaufloesung-ohne-funds-json.md) | Fondsauflösung ohne `funds.json` für weitere Anbieter | gilt |
 | [066](ADR-066-analyse-ab-werk-an.md) | Analyse ab Werk an, ausschalten mit `"top25": false` | gilt |
+| [067](ADR-067-release-per-skript.md) | Release per Skript, Deploy-Token im Schlüsselbund | gilt |

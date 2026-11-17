@@ -63,6 +63,10 @@ describe('Agentensperre [ADR-054]', () => {
     'npm run --silent dev',
     'npm run leak-pruefung',
     'npm run -s leak-pruefung',
+    'npm run release',
+    'npm run release -- --nur-demo',
+    'npm run -s release:vorbereiten',
+    'node --experimental-strip-types start/release.ts vorbereiten',
     'node --experimental-strip-types start/verify.ts',
     'node start/nodeVersion.mjs && node --experimental-strip-types ingest/lauf.ts',
     'node --disable-warning=ExperimentalWarning --experimental-strip-types start/start.ts',
@@ -96,6 +100,7 @@ describe('Agentensperre [ADR-054]', () => {
     'npm run edgecases',
     'curl -s -o /dev/null http://127.0.0.1:4791/',
     'npm run pr-bild -- 42 verlauf',
+    'npm run test -- test/start/release.test.ts',
     'git diff -- Start.command Start.bat',
   ])('lässt `%s` durch', (befehl) => {
     expect(bashGesperrt(befehl)).toBe(false);

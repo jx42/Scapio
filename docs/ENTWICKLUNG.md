@@ -57,6 +57,8 @@ npm run abdruck        # Hash über core/ neu schreiben, nach einer KERN_VERSION
 npm run kern:version   # KERN_VERSION einmal je Branch gegenüber origin/main erhöhen und den Abdruck schreiben — beliebig oft aufrufbar
 npm run backup         # Sicherung der Datenbank
 npm run leak-pruefung  # Depotwerte, Token, Pfade im Repository suchen — vor jedem Release, nur der Nutzer
+npm run release:vorbereiten # Leak-Prüfung, Versions-PR, CI begleiten — nur der Nutzer (ADR-067)
+npm run release        # Leak-Prüfung, Release auslösen, ZIP prüfen, Demo deployen; -- --nur-demo — nur der Nutzer
 npm run audit          # Schwachstellen in den Laufzeitabhängigkeiten und in demo-worker/ — nicht Teil von check, aber Pflicht vor jedem Push
 ```
 
@@ -109,39 +111,29 @@ Ein PR, der rot endet und unkommentiert liegen bleibt, ist keine erledigte Aufga
 ## Release
 
 Ein Release ist ein Tag auf einem geprüften Stand von `main`, mit `Scapio.zip` als Anhang
-([ADR-047](entscheidungen/ADR-047-release-kette-und-auslieferung.md)).
+([ADR-047](entscheidungen/ADR-047-release-kette-und-auslieferung.md)). Ablauf in
+`start/release.ts` ([ADR-067](entscheidungen/ADR-067-release-per-skript.md)), nur vom Nutzer:
 
-1. **Version per PR:** `npm version X.Y.Z --no-git-tag-version`, mergen, sobald die CI grün ist.
-   SemVer: Korrekturen erhöhen die dritte Stelle, Neues die zweite.
-2. **Leak-Prüfung:** auf dem Stand von `main` `npm run leak-pruefung`. Sucht Depotwerte,
-   Kennungen, Token, Pfade und Benutzername aus Datenbank und Datenverzeichnis in jeder
-   Datei von `git ls-files` und nennt nur Art, Datei und Zeile ([ADR-042](entscheidungen/ADR-042-agenten-lesen-keine-depotwerte.md)).
-   Exit 1 hält den Release auf; Hinweise (runde Beträge, Depot-ISINs) ansehen — eine
-   Benchmark-ISIN ist kein Leak, ein Satz seltener ISINs zusammen schon.
-3. **Auslösen:** Actions → Release → Run workflow auf `main`. Der Lauf bricht ab, wenn
-   `vX.Y.Z` schon existiert.
-4. **Release-Seite prüfen:** `Scapio.zip`, `SHA256SUMS` und Attestation sind da (die
-   Attestation nur bei öffentlichem Repository), die Notizen nach Labels gegliedert (`neu`, `korrektur`, `intern`; `ohne-notiz` fällt heraus).
-5. **Rauchtest:** README-Link „ZIP herunterladen“ lädt die neue Version,
-   `gh attestation verify Scapio.zip --repo jx42/Scapio` ist grün, die Fußzeile zeigt die
-   Version (ADR-046), `Aktualisieren.command`/`.bat` öffnen das neue ZIP.
-6. **Demo deployen** ([ADR-048](entscheidungen/ADR-048-demo-als-statischer-abzug.md)), von Hand
-   auf dem getaggten Stand:
+1. **`npm run release:vorbereiten`** auf einem sauberen `main`. Das Skript schlägt die Version
+   aus den Labels seit dem letzten Tag vor: `neu` hebt die zweite Stelle, sonst die dritte.
+   Eine andere Version gibt man mit `-- X.Y.Z` an. Dann fährt es die Leak-Prüfung
+   ([ADR-042](entscheidungen/ADR-042-agenten-lesen-keine-depotwerte.md)), öffnet den Versions-PR
+   und begleitet die CI. Befunde der Leak-Prüfung halten an, bevor ein PR entsteht. Hinweise
+   (runde Beträge, Depot-ISINs) ansehen: Eine Benchmark-ISIN ist kein Leak, ein Satz seltener
+   ISINs zusammen schon. PRs ohne Label werden genannt; vor dem Release nachtragen.
+2. **Mergen** (Squash), dann `git pull --ff-only`.
+3. **`npm run release`** auf `main`. Nach Leak-Prüfung und Rückfrage folgen Workflow, ZIP mit
+   Prüfsumme und Attestation (nur bei öffentlichem Repository), dann der Demo-Deploy
+   ([ADR-048](entscheidungen/ADR-048-demo-als-statischer-abzug.md)). Am Ende muss
+   `/api/health` der Demo die neue Version melden. Den Cloudflare-Token (nur „Workers
+   Scripts: Edit“ auf dem einen Konto) fragt das Skript beim ersten Mal ab und legt ihn im
+   macOS-Schlüsselbund ab, unter Windows bei jedem Deploy.
+4. **Von Hand:** `Aktualisieren.command`/`.bat` holt das neue ZIP.
 
-   ```sh
-   git switch --detach vX.Y.Z
-   npm ci --ignore-scripts && npm run demo:export
-   cd demo-worker && npm ci --ignore-scripts && npm audit
-   read -rs CLOUDFLARE_API_TOKEN && export CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID=<konto-id>
-   npx --no-install wrangler deploy; unset CLOUDFLARE_API_TOKEN
-   ```
-
-   `wrangler` kommt aus dem eigenen Lockfile in `demo-worker/`, nicht über `npx` aus dem Netz.
-   Der Token ist ein Cloudflare-API-Token mit genau „Workers Scripts: Edit“ auf dem einen Konto,
-   gilt nur für diese Shell und wird nicht gespeichert; die Konto-ID ist kein Geheimnis.
-   Wer früher `wrangler login` benutzt hat, meldet sich einmal mit
-   `npx --no-install wrangler logout` ab ([ADR-055](entscheidungen/ADR-055-update-und-release-kette.md)).
-   Danach die Demo öffnen: Fußzeile zeigt `vX.Y.Z`.
+Scheitert nur der Deploy: `git switch --detach vX.Y.Z`, dann `npm run release -- --nur-demo`.
+Der Token ist abgelaufen? `security delete-generic-password -s scapio-demo-deploy`.
+`wrangler` kommt aus dem Lockfile in `demo-worker/`; gehoben wird es dort, mit `npm audit`
+([ADR-055](entscheidungen/ADR-055-update-und-release-kette.md)).
 
 ## Weiterführende Dokumentation
 
