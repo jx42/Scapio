@@ -36,7 +36,7 @@
     "test:invarianten": "vitest run test/invarianten",
     "test:e2e": "playwright test -c test/e2e/playwright.config.ts",
     "test:abdeckung": "vitest run --coverage",
-    "audit": "npm audit --omit=dev --audit-level=high && npm audit --prefix demo-worker --audit-level=high",
+    "audit": "node --experimental-strip-types start/audit.ts",
     "ingest": "node start/nodeVersion.mjs && node --disable-warning=ExperimentalWarning --experimental-strip-types ingest/lauf.ts",
     "verify": "node start/nodeVersion.mjs && node --disable-warning=ExperimentalWarning --experimental-strip-types start/verify.ts",
     "leak-pruefung": "node start/nodeVersion.mjs && node --disable-warning=ExperimentalWarning --experimental-strip-types start/leakPruefung.ts",
