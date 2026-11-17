@@ -71,3 +71,4 @@ der Geschichte stehen. Eine neue ADR bekommt die nächste freie Nummer und eine 
 | [064](ADR-064-lauf-beim-start.md) | Ein Lauf beim Start, relative Angabe im Kopf | gilt |
 | [065](ADR-065-fondsaufloesung-ohne-funds-json.md) | Fondsauflösung ohne `funds.json` für weitere Anbieter | gilt |
 | [066](ADR-066-analyse-ab-werk-an.md) | Analyse ab Werk an, ausschalten mit `"top25": false` | gilt |
+| [068](ADR-068-audit-mit-befristeten-ausnahmen.md) | `npm run audit` mit befristeten Ausnahmen je Advisory | gilt |

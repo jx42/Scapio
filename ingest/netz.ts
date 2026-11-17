@@ -30,6 +30,31 @@ export class NetzFehler extends Error {
   }
 }
 
+/** Die acht 16-Bit-Woerter einer IPv6-Adresse; ein gepunkteter IPv4-Schwanz zaehlt als zwei. */
+function ipv6Woerter(text: string): number[] | null {
+  let rest = text;
+  const v4 = /(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/.exec(rest);
+  if (v4 !== null) {
+    const [a, b, c, d] = v4.slice(1).map((t) => Number(t)) as [number, number, number, number];
+    if ([a, b, c, d].some((t) => t > 255)) return null;
+    rest = `${rest.slice(0, v4.index)}${((a << 8) | b).toString(16)}:${((c << 8) | d).toString(16)}`;
+  }
+  const haelften = rest.split('::');
+  if (haelften.length > 2) return null;
+  const lies = (teil: string): number[] =>
+    teil === '' ? [] : teil.split(':').map((h) => (/^[0-9a-f]{1,4}$/.test(h) ? Number.parseInt(h, 16) : Number.NaN));
+  const links = lies(haelften[0] ?? '');
+  const rechts = haelften.length === 2 ? lies(haelften[1] ?? '') : [];
+  const luecke = haelften.length === 2 ? 8 - links.length - rechts.length : 0;
+  if (luecke < 0) return null;
+  const woerter = [...links, ...new Array<number>(luecke).fill(0), ...rechts];
+  return woerter.length === 8 && woerter.every(Number.isInteger) ? woerter : null;
+}
+
+function ipv4Aus(hoch: number, tief: number): string {
+  return `${hoch >> 8}.${hoch & 0xff}.${tief >> 8}.${tief & 0xff}`;
+}
+
 /**
  * Private, lokale und Link-Local-Bereiche. Ein Abruf, der hier landet, ist kein Abruf
  * von iShares oder Eurostat mehr, sondern ein Zugriff auf diesen Rechner oder sein Netz.
@@ -55,25 +80,27 @@ export function istPrivateAdresse(adresse: string): boolean {
   }
 
   if (art === 6) {
-    const k = adresse.toLowerCase().split('%')[0] ?? '';
-    if (k === '::1' || k === '::') return true;
-    // IPv4-abgebildet: ::ffff:127.0.0.1
-    const abgebildet = /^::ffff:(\d{1,3}(?:\.\d{1,3}){3})$/.exec(k);
-    if (abgebildet?.[1] !== undefined) return istPrivateAdresse(abgebildet[1]);
-    // NAT64 (RFC 6052): 64:ff9b::/96 bettet eine IPv4-Adresse in die unteren 32 Bit ein —
-    // dieselbe Pruefung wie bei ::ffff:, nur mit dem anderen Praefix.
-    const nat64 = /^64:ff9b::(\d{1,3}(?:\.\d{1,3}){3})$/.exec(k);
-    if (nat64?.[1] !== undefined) return istPrivateAdresse(nat64[1]);
-    const erstes = k.split(':')[0] ?? '';
-    if (erstes.length === 0) return true;
-    const wort = Number.parseInt(erstes, 16);
-    if (!Number.isFinite(wort)) return true;
+    const w = ipv6Woerter(adresse.toLowerCase().split('%')[0] ?? '');
+    if (w === null) return true;
+    const [w0, w1, w2, w3, w4, w5, w6, w7] = w as [number, number, number, number, number, number, number, number];
+    // ::ffff:0:0/96 bettet IPv4 ein; Node schreibt es mal gepunktet, mal hexadezimal.
+    if (w0 === 0 && w1 === 0 && w2 === 0 && w3 === 0 && w4 === 0 && w5 === 0xffff) return istPrivateAdresse(ipv4Aus(w6, w7));
+    // Der Rest von 0::/16 (::, ::1, IPv4-kompatibel, SIIT) ist nie ein oeffentliches Ziel.
+    if (w0 === 0) return true;
+    if (w0 === 0x64 && w1 === 0xff9b) {
+      // NAT64 (RFC 6052): Nur im bekannten Praefix 64:ff9b::/96 steht die IPv4-Adresse fest in
+      // den unteren 32 Bit — dort pruefen, statt jedes Netz mit DNS64 auszusperren.
+      if (w2 === 0 && w3 === 0 && w4 === 0 && w5 === 0) return istPrivateAdresse(ipv4Aus(w6, w7));
+      // 64:ff9b:1::/48 (RFC 8215) und der Rest: Lage der IPv4 haengt am Netz, also ablehnen.
+      return true;
+    }
+    if (w0 === 0x100 && w1 === 0 && w2 === 0 && w3 === 0) return true; // 100::/64 Discard (RFC 6666)
     // 6to4 (RFC 3056): 2002::/16 tunnelt zu einer eingebetteten IPv4-Adresse. Legacy und
     // ungenutzt hier — statt die Adresse zu dekodieren, pauschal den ganzen Block ablehnen.
-    if (wort === 0x2002) return true;
-    if ((wort & 0xfe00) === 0xfc00) return true; // fc00::/7 unique local
-    if ((wort & 0xffc0) === 0xfe80) return true; // fe80::/10 link local
-    if ((wort & 0xff00) === 0xff00) return true; // ff00::/8 multicast
+    if (w0 === 0x2002) return true;
+    if ((w0 & 0xfe00) === 0xfc00) return true; // fc00::/7 unique local
+    if ((w0 & 0xffc0) === 0xfe80) return true; // fe80::/10 link local
+    if ((w0 & 0xff00) === 0xff00) return true; // ff00::/8 multicast
     return false;
   }
 
