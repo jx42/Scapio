@@ -120,7 +120,7 @@ kennt vier Werte: `laufend`, `erfolg`, `teilweise`, `fehler`.
   - `E_DATEI_FREMD`: siehe [Datei im Datenverzeichnis abgelehnt](#datei-im-datenverzeichnis-abgelehnt).
   - Fonds-Holdings nicht erreichbar — beim ETF-Anbieter aus `funds.json` im Datenverzeichnis
     oder aus der automatischen Fondsauflösung [ADR-065] (Host-Allowlist in `erlaubteHosts`, Zeitlimit `csvZeitlimitMs`).
-    Abgerufen wird nur mit `"top25": true` in `einstellungen.json` [ADR-038].
+    Nicht abgerufen wird mit `"top25": false` in `einstellungen.json` [ADR-066].
     Die Codes kommen aus `ingest/netz.ts`:
     - `E_NETZ_HOST`: der Host steht nicht in `erlaubteHosts`.
     - `E_NETZ_ADRESSE`, `E_NETZ_SCHEMA`: keine gültige URL, Zugangsdaten in der Adresse

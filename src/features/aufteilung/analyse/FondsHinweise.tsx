@@ -43,7 +43,7 @@ export function FondsHinweise({ daten }: FondsHinweiseProps) {
         type="button"
         variant="link"
         onClick={() => setAnleitungOffen(true)}
-        className="h-auto gap-1 p-0 font-normal whitespace-normal"
+        className="h-auto gap-1 p-0 font-normal whitespace-normal not-last:me-2"
       >
         <Info aria-hidden="true" className="size-3.5" />
         {de.top25.leerAnleitungTitel}

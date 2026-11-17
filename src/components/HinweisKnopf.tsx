@@ -29,7 +29,7 @@ export function HinweisKnopf({ anzahl, titel, beschreibung, breit = false, child
         type="button"
         variant="link"
         onClick={() => setOffen(true)}
-        className="h-auto min-h-6 gap-1 p-0 font-normal"
+        className="h-auto min-h-6 gap-1 p-0 font-normal not-last:me-2"
       >
         <TriangleAlert aria-hidden="true" className="size-3.5 text-warnung" />
         {de.hinweisKnopf.anzahl(anzahl, zahl(anzahl))}

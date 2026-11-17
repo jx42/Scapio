@@ -1,5 +1,9 @@
 # ADR-038: Top 25 nur auf Wunsch, Schalter in `einstellungen.json`
 
+> **Teilweise abgelöst:** Die Vorgabe ist `true`, ausgeschaltet wird mit `"top25": false` —
+> [ADR-066](ADR-066-analyse-ab-werk-an.md). Schalter, `/api/health` und der übersprungene
+> Fondsschritt gelten weiter.
+
 ## Kontext
 
 Die Kachel „Top 25 Unternehmen“ hängt an Schnittstellen von iShares, Xtrackers und Amundi,

@@ -165,7 +165,7 @@ Windows — mit der Begründung im Dateikopf, damit niemand sie später für ver
 Abwägung**: dann gehört entweder `icacls` nachgezogen oder der Windows-Einstieg zurückgezogen.
 
 **3. Mit `top25` erfahren die Fondsanbieter, welche ETFs im Depot liegen.**
-Ist der Look-Through eingeschaltet ([ADR-038](entscheidungen/ADR-038-top25-nur-auf-wunsch.md)), fragt
+Ist der Look-Through eingeschaltet — ab Werk ja ([ADR-066](entscheidungen/ADR-066-analyse-ab-werk-an.md)) —, fragt
 der Ingest bei iShares, Xtrackers, Amundi, Invesco, J.P. Morgan, Goldman Sachs und Franklin
 Templeton die Bestandsliste je gehaltenem Fonds ab: die ISIN steht im Pfad (`xtrackers.ts`,
 `invesco.ts`), in der Query (`jpmorgan.ts`) oder im Rumpf (`amundi.ts`, `goldmansachs.ts`); bei
@@ -179,9 +179,9 @@ einmal je ISIN und Ablauffrist (`fondsKatalogFrischeTage`,
 (Sitemaps, Amundi-Katalog, J.P.-Morgan-Fund-Explorer), Eurostat und die EZB werden ohne
 Depotbezug abgefragt und verraten nichts.
 
-Getragen, weil ohne diese Abrufe die Kachel nicht entsteht und der Schalter ab Werk aus ist:
-wer ihn setzt, liest den Satz dazu in der Vorlage `docs/einstellungen.example.json` und in der
-README. Bewusst **nicht** behoben durch Abruf aller Fonds eines Anbieters (Größenordnung
+Getragen, weil ohne diese Abrufe der Reiter Analyse nicht entsteht und die Abrufe weder Mengen
+noch Beträge tragen. Wer sie nicht will, setzt `"top25": false` vor dem ersten Lauf; wie, steht
+in der Vorlage `docs/einstellungen.example.json`. Bewusst **nicht** behoben durch Abruf aller Fonds eines Anbieters (Größenordnung
 Tausende Abrufe je Lauf) oder einen Mittler (neue Gegenstelle). **Wenn ein Abruf jemals Mengen
 oder Beträge tragen soll, kippt diese Abwägung.**
 

@@ -106,19 +106,19 @@ describe('einstellungen.json im Datenverzeichnis [ADR-037]', () => {
     });
   });
 
-  it('schaltet top25 nur auf Wunsch ein [ADR-038]', () => {
+  it('schaltet top25 ab Werk ein, abschaltbar [ADR-066]', () => {
     mitDateien({}, {}, (c, e) => {
-      expect(ladeKonfiguration(c, e).top25).toBe(false);
-    });
-    mitDateien({}, { top25: true }, (c, e) => {
       expect(ladeKonfiguration(c, e).top25).toBe(true);
+    });
+    mitDateien({}, { top25: false }, (c, e) => {
+      expect(ladeKonfiguration(c, e).top25).toBe(false);
     });
   });
 
   it('nimmt die Vorlage einstellungen.example.json an', () => {
     const vorlage: unknown = JSON.parse(readFileSync(join(PROJEKTWURZEL, 'docs', 'einstellungen.example.json'), 'utf8'));
     mitDateien({}, vorlage, (c, e) => {
-      expect(ladeKonfiguration(c, e).top25).toBe(true);
+      expect(ladeKonfiguration(c, e).top25).toBe(false);
       expect(ladeKonfiguration(c, e)).not.toHaveProperty('hinweis');
     });
   });
