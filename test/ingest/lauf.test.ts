@@ -440,4 +440,9 @@ describe('fuehreLaufAus — Schalter top25 [ADR-038]', () => {
     const { quellen } = await laufMit(true);
     expect(Object.keys(quellen).some((q) => q.startsWith('fondskatalog:'))).toBe(true);
   });
+
+  it('wertet eine fehlende funds.json als leere Liste, nicht als Fehler', async () => {
+    const { quellen } = await laufMit(true);
+    expect(quellen.fonds).toBe('übersprungen');
+  });
 });

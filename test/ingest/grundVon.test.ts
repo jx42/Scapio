@@ -6,6 +6,7 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { grundVon } from '../../ingest/laufZustand.ts';
+import { NetzFehler } from '../../ingest/netz.ts';
 import { HoldingsAntwort, pruefe } from '../../ingest/schema.ts';
 import { FIXTURE, json } from '../fixtures/index.ts';
 
@@ -30,6 +31,12 @@ describe('grundVon', () => {
     const grund = grundVon(fehler);
     expect(grund).toBe('SchemaFehler/E_SCHEMA (wert: invalid_type)');
     expect(grund).not.toContain('GEHEIMER-NAME');
+  });
+
+  it('nennt bei E_NETZ den Code der Ursache', () => {
+    expect(grundVon(new NetzFehler('E_NETZ', 'x', 'UNABLE_TO_GET_ISSUER_CERT_LOCALLY'))).toBe(
+      'NetzFehler/E_NETZ (UNABLE_TO_GET_ISSUER_CERT_LOCALLY)',
+    );
   });
 
   it('bleibt bei anderen Fehlern beim Code', () => {

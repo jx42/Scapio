@@ -23,11 +23,24 @@ import type { NetzFehlerCode } from '../shared/laufFehler.ts';
 
 export class NetzFehler extends Error {
   readonly code: NetzFehlerCode;
-  constructor(code: NetzFehlerCode, meldung: string) {
+  /** Code der Ursache aus Node oder undici, etwa `SELF_SIGNED_CERT_IN_CHAIN` — nie ihr Text. */
+  readonly ursache: string | null;
+  constructor(code: NetzFehlerCode, meldung: string, ursache: string | null = null) {
     super(meldung);
     this.name = 'NetzFehler';
     this.code = code;
+    this.ursache = ursache;
   }
+}
+
+/**
+ * `fetch failed` allein sagt nicht, ob DNS, Verbindung oder Zertifikat scheiterte. Nur ein
+ * Code-foermiger Wert wird uebernommen, damit kein Fremdtext ins Protokoll gelangt.
+ */
+function ursacheVon(fehler: unknown): string | null {
+  const ursache = (fehler as { cause?: { code?: unknown } }).cause;
+  const code = ursache?.code;
+  return typeof code === 'string' && /^[A-Z][A-Z0-9_]{1,63}$/.test(code) ? code : null;
 }
 
 /** Die acht 16-Bit-Woerter einer IPv6-Adresse; ein gepunkteter IPv4-Schwanz zaehlt als zwei. */
@@ -255,7 +268,7 @@ export async function holeText(adresse: string, optionen: HolOptionen): Promise<
     if ((fehler as Error).name === 'AbortError') {
       throw new NetzFehler('E_NETZ_ZEIT', `Zeitlimit von ${optionen.zeitlimitMs} ms ueberschritten.`);
     }
-    throw new NetzFehler('E_NETZ', `Abruf gescheitert: ${(fehler as Error).name}`);
+    throw new NetzFehler('E_NETZ', `Abruf gescheitert: ${(fehler as Error).name}`, ursacheVon(fehler));
   } finally {
     clearTimeout(wecker);
   }

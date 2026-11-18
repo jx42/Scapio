@@ -25,6 +25,7 @@ import type { Hinweis } from '../shared/hinweise.ts';
 import { istLaufFehlerCode, type LaufFehlerCode } from '../shared/laufFehler.ts';
 import type { QuellenSchluessel } from '../shared/quellen.ts';
 import type { EtfStand, Kontext, Schnappschuss } from './importieren.ts';
+import { NetzFehler } from './netz.ts';
 import type { Befunde } from './plausibilitaet.ts';
 import { SchemaFehler } from './schema/pruefe.ts';
 
@@ -68,6 +69,7 @@ export function grundVon(fehler: unknown): string {
   // Ohne die Stelle bleibt ein E_SCHEMA nur mit echten Werten aufzuklaeren. Die Stellen
   // nennen Pfad und zod-Code, nie den Wert (`pruefe`). [INV-12, ADR-042]
   if (fehler instanceof SchemaFehler && fehler.stellen.length > 0) return `${grund} (${fehler.stellen.join('; ')})`;
+  if (fehler instanceof NetzFehler && fehler.ursache !== null) return `${grund} (${fehler.ursache})`;
   return grund;
 }
 

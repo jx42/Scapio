@@ -19,7 +19,7 @@
  * bevor sie die Datenbank erreichen [INV-06].
  */
 
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import type { Bestandteil } from '../../core/lookthrough.ts';
 import type { Isin } from '../../core/typen.ts';
 import type { Katalogeintrag } from '../anbieter.ts';
@@ -33,6 +33,8 @@ import { FundsDatei, GRENZE, ISIN_MUSTER, IsharesAntwort, IsharesKopf, IsharesSu
 export const quelleFuer = (isin: Isin): string => `ishares:${isin}`;
 
 export function ladeFonds(datei: string): readonly Fonds[] {
+  // Seit der automatischen Aufloesung optional [ADR-065]; eine frische Installation hat keine.
+  if (!existsSync(datei)) return [];
   const inhalt = pruefe('funds.json', FundsDatei, JSON.parse(readFileSync(datei, 'utf8')));
   return inhalt.fonds;
 }
