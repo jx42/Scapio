@@ -150,7 +150,7 @@ const A11Y_SETTINGS = {
 };
 
 export default tseslint.config(
-  { ignores: ['dist/**', 'node_modules/**', 'coverage/**', '.claude/**', '.demo-export/**'] },
+  { ignores: ['dist/**', 'node_modules/**', 'coverage/**', '.claude/**', '.demo-export/**', 'plans/**'] },
 
   js.configs.recommended,
   ...tseslint.configs.recommended,
