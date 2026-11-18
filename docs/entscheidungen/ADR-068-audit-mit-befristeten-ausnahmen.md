@@ -11,6 +11,9 @@ Eine korrigierte Version gibt es nicht. Der einzige Fix, den `npm audit fix` ken
 
 Die Ausnutzbarkeit ist gering: `picomatch` läuft nur im Bau und nur mit Mustern aus dem Projekt.
 
+Am 2026-11-18 hat GitHub die Advisory zurückgezogen. Die Ausnahme ist entfernt, `AUSNAHMEN` ist leer
+und bleibt als Mechanismus.
+
 ## Entscheidung
 
 - **`npm run audit` ist `start/audit.ts`.** Das Skript liest `npm audit --json` für das Hauptpaket
