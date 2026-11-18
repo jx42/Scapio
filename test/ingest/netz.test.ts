@@ -303,6 +303,19 @@ describe('holeText', () => {
     expect((fehler as NetzFehler).message).not.toContain('10.0.0.5');
   });
 
+  it('uebernimmt den Code der Ursache, nicht ihren Text', async () => {
+    const ursache = (code: string): TypeError =>
+      new TypeError('fetch failed', { cause: Object.assign(new Error('Fremdtext 10.0.0.5'), { code }) });
+    vi.stubGlobal('fetch', () => Promise.reject(ursache('SELF_SIGNED_CERT_IN_CHAIN')));
+    const fehler = (await holeText(`https://${OEFFENTLICH}/x.csv`, OPTIONEN).catch((f: unknown) => f)) as NetzFehler;
+    expect(fehler.ursache).toBe('SELF_SIGNED_CERT_IN_CHAIN');
+    expect(fehler.message).not.toContain('10.0.0.5');
+
+    vi.stubGlobal('fetch', () => Promise.reject(ursache('kein code: 10.0.0.5')));
+    const ohne = (await holeText(`https://${OEFFENTLICH}/x.csv`, OPTIONEN).catch((f: unknown) => f)) as NetzFehler;
+    expect(ohne.ursache).toBeNull();
+  });
+
   it('sendet ohne json-Option ein GET ohne Rumpf', async () => {
     const { optionen } = fetchGibt(new Response('x'));
     await holeText(`https://${OEFFENTLICH}/x.csv`, OPTIONEN);
