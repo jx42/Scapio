@@ -15,10 +15,7 @@ import { PROJEKTWURZEL } from '../shared/konfiguration.ts';
 
 export type Ausnahme = { readonly advisory: string; readonly paket: string; readonly bis: Tag };
 
-export const AUSNAHMEN: readonly Ausnahme[] = [
-  // ReDoS bei Extglobs; picomatch laeuft nur im Bau mit eigenen Mustern. Kein Fix fuer 4.x.
-  { advisory: 'GHSA-fc5q-39xc-vjpf', paket: 'picomatch', bis: '2027-02-17' as Tag },
-];
+export const AUSNAHMEN: readonly Ausnahme[] = [];
 
 const AB_HIGH: ReadonlySet<string> = new Set(['high', 'critical']);
 const AB_MODERATE: ReadonlySet<string> = new Set(['moderate', ...AB_HIGH]);
