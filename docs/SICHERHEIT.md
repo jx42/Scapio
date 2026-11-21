@@ -201,6 +201,19 @@ oder Beträge tragen soll, kippt diese Abwägung.**
 - Verzeichnis `0700`, Dateien `0600` im Datenverzeichnis — POSIX; unter Windows wirkungslos,
   siehe Restrisiko 2 oben.
 
+## Download prüfen
+
+Optional. Jedes Release trägt neben dem ZIP eine Datei
+[`SHA256SUMS`](https://github.com/jx42/Scapio/releases/latest/download/SHA256SUMS); die Prüfsumme
+des ZIPs muss mit der Zahl darin übereinstimmen:
+
+- macOS: `shasum -a 256 ~/Downloads/Scapio.zip`
+- Windows: `certutil -hashfile %USERPROFILE%\Downloads\Scapio.zip SHA256`
+
+Mit der [GitHub CLI](https://cli.github.com) lässt sich zusätzlich die Herkunft prüfen:
+`gh attestation verify Scapio.zip --repo jx42/Scapio` bestätigt, dass das ZIP aus diesem
+Repository gebaut wurde.
+
 ## Prüfliste vor Übergabe
 
 Technische Hälfte deckt `npm run check` ab, der Rest wird gelesen und von Hand geprüft:

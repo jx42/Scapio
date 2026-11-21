@@ -39,7 +39,7 @@ aber fremden Code ausführen können:
 - **Feste Images, stabile Namen.** Die Matrix nennt `macos-15`, `ubuntu-24.04`, `windows-2025`;
   der Jobname ist `check (macos|linux|windows)`. Ein Image-Wechsel ist ein Commit, kein
   Ruleset-Eingriff.
-- **Download prüfen.** Die README erklärt `SHA256SUMS` und `gh attestation verify`. Die
+- **Download prüfen.** `docs/SICHERHEIT.md` erklärt `SHA256SUMS` und `gh attestation verify`. Die
   Attestation belegt die Herkunft; bytegleich nachbauen lässt sich das ZIP nicht.
 - **Demo.** `demo-worker/` hat ein eigenes `package.json` mit fest gepinntem `wrangler` und
   Lockfile. Angemeldet wird per API-Token mit nur „Workers Scripts: Edit“, gesetzt für eine
