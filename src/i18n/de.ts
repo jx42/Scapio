@@ -143,9 +143,14 @@ export const de = {
     fehlerUnbekannt: 'Der Grund ist unbekannt. Ein Neuladen der Seite hilft meist. Der Rest der Seite bleibt bedienbar.',
     abgestuerzt: 'Diese Kachel ist beim Zeichnen gescheitert.',
     abgestuerztHinweis:
-      'Der Rest der Seite bleibt bedienbar. Ein Neuladen der Seite setzt die Kachel zurück.',
+      'Der Rest der Seite bleibt bedienbar. Ein Neuladen der Seite setzt die Kachel zurück. Passiert es wieder, melde den Fehler bitte.',
   },
 
+  /** Knopf zum Fehlerformular auf GitHub [ADR-070]. */
+  fehlerMelden: {
+    knopf: 'Fehler melden',
+    oeffnen: 'Fehler auf GitHub melden, neuer Tab',
+  },
   aktualisieren: {
     knopf: 'Aktualisieren',
     laeuft: 'Aktualisieren…',

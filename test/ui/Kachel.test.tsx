@@ -87,6 +87,10 @@ describe('Kachel: Fehlerisolation [P-06]', () => {
 
     const verlauf = screen.getByRole('region', { name: 'Verlauf' });
     expect(within(verlauf).getByText(de.zustand.abgestuerzt)).toBeInTheDocument();
+    expect(within(verlauf).getByRole('link', { name: de.fehlerMelden.oeffnen })).toHaveAttribute(
+      'href',
+      'https://github.com/jx42/Scapio/issues/new?template=bug.yml',
+    );
 
     const kennzahlen = screen.getByRole('region', { name: 'Kennzahlen' });
     expect(within(kennzahlen).getByText('Kennzahlen-Inhalt')).toBeInTheDocument();

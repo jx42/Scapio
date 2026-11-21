@@ -9,7 +9,7 @@ import { kontext, mcp, netz } from './hilfen.ts';
 vi.mock('../../../ingest/mcp.ts', () => ({ mcpAufrufRoh: vi.fn() }));
 vi.mock('../../../ingest/netz.ts', () => ({ holeText: vi.fn() }));
 
-const { holeXtrackers } = await import('../../../ingest/quellen/xtrackers.ts');
+const { holeXtrackers, katalogXtrackers } = await import('../../../ingest/quellen/xtrackers.ts');
 
 beforeEach(() => {
   mcp.mockReset();
@@ -65,5 +65,24 @@ describe('holeXtrackers', () => {
       }),
     );
     await expect(holeXtrackers(kontext(), FONDS)).rejects.toThrow(/keine verwertbare Zeile/);
+  });
+});
+
+describe('katalogXtrackers', () => {
+  it('liest die ISIN aus den Fondsadressen der Sitemap und uebergeht alle anderen Seiten', async () => {
+    netz.mockResolvedValue(
+      [
+        '<urlset>',
+        '<url><loc>https://etf.deutsche-am.com/de-de/ueber-uns/ueber-xtrackers/</loc></url>',
+        '<url><loc>https://etf.deutsche-am.com/de-de/LU0779800910-csi300-swap-ucits-etf-1c/</loc></url>',
+        '<url><loc>https://etf.deutsche-am.com/en-gb/LU0643975161-germany-government-bond-ucits-etf-1c/</loc></url>',
+        '</urlset>',
+      ].join('\n'),
+    );
+
+    const katalog = await katalogXtrackers(kontext());
+
+    expect([...katalog.keys()]).toEqual(['LU0779800910']);
+    expect(netz.mock.calls[0]?.[0]).toBe('https://etf.deutsche-am.com/de-de/sitemap.xml');
   });
 });

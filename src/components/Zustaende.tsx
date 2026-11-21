@@ -13,6 +13,7 @@ import { de } from '@/i18n/de';
 import { cn } from '@/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Skeleton } from '@/components/ui/skeleton';
+import { FehlerMelden } from '@/components/FehlerMelden';
 
 export type Ladehoehe = 'klein' | 'mittel' | 'gross';
 
@@ -71,7 +72,18 @@ export function LeerZustand({
 }
 
 /** `still`: ohne `role="alert"`, weil die Seite denselben Fehler schon einmal meldet. */
-export function FehlerZustand({ text, hinweis, still }: { text?: string; hinweis?: string | null; still?: boolean }) {
+export function FehlerZustand({
+  text,
+  hinweis,
+  still,
+  melden,
+}: {
+  text?: string;
+  hinweis?: string | null;
+  still?: boolean;
+  /** „Fehler melden“ darunter — nur bei einem Programmfehler, nicht bei einem Ausfall der API. */
+  melden?: boolean;
+}) {
   return (
     <Alert variant="verlust" role={still === true ? undefined : 'alert'} className="rounded-md px-4 py-4">
       <AlertTitle>{de.zustand.fehler}</AlertTitle>
@@ -80,6 +92,11 @@ export function FehlerZustand({ text, hinweis, still }: { text?: string; hinweis
       {hinweis !== null && hinweis !== undefined && hinweis !== '' ? (
         <p className="col-start-2 text-xs text-text-leise">{hinweis}</p>
       ) : null}
+      {melden === true && (
+        <div className="col-start-2 mt-2">
+          <FehlerMelden />
+        </div>
+      )}
     </Alert>
   );
 }

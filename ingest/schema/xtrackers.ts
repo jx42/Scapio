@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { GRENZE, hoechstensEintraege, Isin } from './grundlagen.ts';
 
 // ---------------------------------------------------------------------------
-// Xtrackers-Holdings (Tabellen-Widget, roh von etf.dws.com)
+// Xtrackers-Holdings (Tabellen-Widget, roh von etf.deutsche-am.com)
 // ---------------------------------------------------------------------------
 
 /**
@@ -47,13 +47,13 @@ export type Xtrackerstabelle = z.infer<typeof XtrackersTabelle>;
 export type Xtrackerszeile = z.infer<typeof XtrackersZeile>;
 
 // ---------------------------------------------------------------------------
-// Xtrackers-Produktkatalog (Sitemap, roh von etf.dws.com)
+// Xtrackers-Produktkatalog (Sitemap, roh von etf.deutsche-am.com)
 // ---------------------------------------------------------------------------
 
 /**
  * Die Sitemap ist XML, kein JSON — dafuer gibt es hier keinen Parser: `xtrackers.ts` liest
  * nur die ISIN aus jeder passenden `<loc>`-Adresse per Muster
- * (`https://etf.dws.com/de-de/<ISIN>-<slug>/`) heraus und wirft den Rest des Dokuments weg.
+ * (`https://etf.deutsche-am.com/de-de/<ISIN>-<slug>/`) heraus und wirft den Rest des Dokuments weg.
  * [INV-12] wird ueber die Obergrenze auf der Ergebnisliste UND die strenge `Isin` je Eintrag
  * erfuellt — nicht ueber einen XML-Baum, den ohnehin niemand braucht.
  */

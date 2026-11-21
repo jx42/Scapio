@@ -19,13 +19,22 @@ export type QuellenMeldung = {
   readonly tun: string;
   readonly code: string | null;
   readonly erneutSinnvoll: boolean;
+  readonly meldenSinnvoll: boolean;
 };
 
 const q = de.laufhinweise.quelle;
 const c = de.laufhinweise.quelleCode;
 
 /** Hier hilft kein zweiter Versuch, nur eine neue Version. */
-const SCHNITTSTELLE: ReadonlySet<string> = new Set(['E_MCP_RPC', 'E_SCHEMA', 'E_MCP_ARGUMENT', 'E_MCP_SEITEN'] satisfies LaufFehlerCode[]);
+const SCHNITTSTELLE: ReadonlySet<string> = new Set(['E_MCP_RPC', 'E_SCHEMA', 'E_MCP_ARGUMENT', 'E_MCP_SEITEN', 'E_NETZ_HOST'] satisfies LaufFehlerCode[]);
+
+/**
+ * Codes, bei denen „Fehler melden“ steht: die Abhilfe ist eine neue Version, oder der Lauf ist
+ * an einer unerwarteten Stelle gescheitert. Beides erfaehrt der Entwickler sonst nicht.
+ */
+export function meldenSinnvoll(code: string): boolean {
+  return SCHNITTSTELLE.has(code) || code === 'E_WAEHRUNG' || code === 'E_UNBEKANNT';
+}
 
 function codeText(code: string): { readonly grund: string; readonly tun: string } {
   if (code in c) return c[code as keyof typeof c];
@@ -34,13 +43,20 @@ function codeText(code: string): { readonly grund: string; readonly tun: string 
   return c.sonst;
 }
 
+/** „A“, „A und B“, „A, B und C“. */
+function aufzaehlung(namen: readonly string[]): string {
+  return namen.length < 2 ? (namen[0] ?? '') : `${namen.slice(0, -1).join(', ')} und ${namen.at(-1) ?? ''}`;
+}
+
 function quellenText(art: string, teile: readonly string[]): { readonly titel: string; readonly folge: string; readonly tun?: string } {
   if (!istQuellenArt(art) || art === 'transaktionen') return { titel: q.sonst.titel, folge: q.sonst.folge(teile.join(', ')) };
   switch (art) {
     case 'kurse':
       return { titel: q.kurse.titel, folge: q.kurse.folge(teile.length) };
-    case 'fondskatalog':
-      return { titel: q.fondskatalog.titel, folge: q.fondskatalog.folge(teile.map((t) => de.top25.anbieterName[t] ?? t).join(', ')) };
+    case 'fondskatalog': {
+      const anbieter = aufzaehlung(teile.map((t) => de.top25.anbieterName[t] ?? t));
+      return { titel: q.fondskatalog.titel(anbieter), folge: q.fondskatalog.folge(anbieter) };
+    }
     case 'holdings':
     case 'cash':
     case 'sparplaene':
@@ -90,6 +106,7 @@ export function quellenMeldungen(
       tun: quelle.tun ?? ursache?.tun ?? de.laufhinweise.erneutVersuchen,
       code,
       erneutSinnvoll: art !== 'fonds' && (code === null || !SCHNITTSTELLE.has(code)),
+      meldenSinnvoll: code !== null && meldenSinnvoll(code),
     };
   });
 }

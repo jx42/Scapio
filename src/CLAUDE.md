@@ -8,8 +8,8 @@ Fünf Kacheln, eine Seite, dunkel, dicht. Rendert nur — gerechnet wird in `cor
 - Kein Hex-Wert, keine Farbe, kein px-Literal in einer Komponente, keine Tailwind-Standardpalette
   (sie ist abgeschaltet). Tokens aus `styles/theme.css`, Maße der Charts aus `lib/chartmasse.ts`.
 - Kein `dangerouslySetInnerHTML`, kein Fremdtext in `href`. [INV-06] Ausnahme: geprüfte ISIN
-  zu onvista, feste Adressen im Footer (EZB, Eurostat, Scalable Capital, Repository, `/assets/drittlizenzen.txt`) und im Demo-Band —
-  geschlossene Liste, siehe ADR-021, ADR-022, ADR-052 und ADR-055.
+  zu onvista, feste Adressen im Footer (EZB, Eurostat, Scalable Capital, Repository, `/assets/drittlizenzen.txt`), im Demo-Band
+  und „Fehler melden“ — geschlossene Liste, siehe ADR-021, ADR-022, ADR-052, ADR-055 und ADR-070.
 - Formatierung ausschließlich über `lib/format.ts`, Texte aus `i18n/de.ts` — auch Doppelpunkt
   und Klammern (`de.satz`).
 - Ansichtskomponenten holen keine Daten. Container (`*Kachel.tsx`) holen sie, rechnen aber ebenfalls
