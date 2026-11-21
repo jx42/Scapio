@@ -24,7 +24,7 @@ import { setTimeout as warten } from 'node:timers/promises';
 const WURZEL = resolve(import.meta.dirname, '..');
 const WORKER = join(WURZEL, 'demo-worker');
 const REPO = 'jx42/Scapio';
-const DEMO_ADRESSE = 'https://demo.scapio.workers.dev';
+const DEMO_ADRESSE = 'https://scapio.jroehm.workers.dev';
 /** Eintrag im macOS-Schlüsselbund; Konto-Feld fest, damit genau ein Eintrag passt. */
 export const SCHLUESSEL = { dienst: 'scapio-demo-deploy', konto: 'cloudflare' } as const;
 const LABELS = ['neu', 'korrektur', 'intern', 'ohne-notiz', 'dependencies'] as const;
