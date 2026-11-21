@@ -116,6 +116,11 @@ export const de = {
     fussEurostatOeffnen: 'Jährliche Inflationsraten (HVPI) bei Eurostat öffnen, neuer Tab',
     fussEzb: 'EZB (Zins)',
     fussEzbOeffnen: '€STR-Zeitreihe im Datenportal der EZB öffnen, neuer Tab',
+    fussUrheber: (jahr: string) => `© ${jahr}, Jürgen Röhm`,
+    fussImpressum: 'Impressum',
+    fussImpressumOeffnen: 'Impressum der Demo auf jroehm.com öffnen, neuer Tab',
+    fussDatenschutz: 'Datenschutz',
+    fussDatenschutzOeffnen: 'Datenschutz der Demo auf jroehm.com öffnen, neuer Tab',
   },
 
   /** Zeichensetzung um fertige Werte — Bezeichnung mit Doppelpunkt, Nebenwert in Klammern. */

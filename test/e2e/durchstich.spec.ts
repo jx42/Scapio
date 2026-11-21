@@ -47,6 +47,8 @@ test('Durchstich: echte CSP, echter Browser, echtes Recharts-Rendering', async (
 
   const chart = page.getByRole('img', { name: /Flächenchart/ });
   await expect(chart).toBeVisible();
+  // Impressum und Datenschutz gehören zur öffentlichen Demo, nicht zur lokalen App [ADR-069].
+  await expect(page.locator('footer a[href^="https://www.jroehm.com/"]')).toHaveCount(0);
 
   const svg = chart.locator('svg').first();
   await expect(svg).toBeVisible();
@@ -244,6 +246,7 @@ test.describe('Barrierefreiheit der Randschichten', () => {
       await alsDemo(page);
       await warteAufKacheln(page);
       await expect(page.locator('[data-demo-band]')).toBeVisible();
+      await expect(page.locator('footer a[href^="https://www.jroehm.com/"]')).toHaveCount(2);
       await erwarteAxeOhneVerstoss(page);
     });
   }

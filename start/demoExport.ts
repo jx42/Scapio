@@ -3,11 +3,15 @@
  *
  * Die Antworten kommen per `app.inject()` aus demselben Server wie `npm run demo`; es
  * lauscht nichts auf einem Port. Die Seite trägt den Token-Platzhalter statt eines
- * Schlüssels — die Oberfläche hält „Aktualisieren“ dann ohnehin gesperrt.
+ * Schlüssels — die Oberfläche hält „Aktualisieren“ dann ohnehin gesperrt. Nur hier, nicht im
+ * Bau, kommt Plausible in die Seite [ADR-069].
  */
 
+import { execFileSync } from 'node:child_process';
 import { cpSync, existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
+import { tagAus } from '../core/kalender.ts';
+import { PLAUSIBLE } from '../server/kopfzeilen.ts';
 import { baueServer } from '../server/server.ts';
 import { abzugAnfragen, abzugPfad } from '../shared/demoAbzug.ts';
 import { PROJEKTWURZEL } from '../shared/konfiguration.ts';
@@ -16,10 +20,41 @@ import { baueDemo } from './demoServer.ts';
 const ZIEL = join(PROJEKTWURZEL, '.demo-export');
 const DIST = join(PROJEKTWURZEL, 'dist');
 
+/** Das Snippet aus dem Plausible-Konto für `demo.scapio.workers.dev`. */
+export const PLAUSIBLE_SKRIPT = `${PLAUSIBLE}/js/pa-rcjDY-5hDM9SU7ElgbxA4.js`;
+/** Die Warteschlange aus dem Snippet, als eigene Datei: die CSP erlaubt kein Inline-Skript. */
+export const STATISTIK_DATEI = 'statistik.js';
+const STATISTIK_START =
+  'window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},' +
+  'plausible.init=plausible.init||function(i){plausible.o=i||{}};\nplausible.init();\n';
+
+/** Synchron vor dem asynchronen Skript, damit die Warteschlange steht, wenn es ankommt. */
+export function mitStatistik(seite: string): string {
+  if (!seite.includes('</head>')) throw new Error('index.html ohne </head>.');
+  const kopf = `<script src="/${STATISTIK_DATEI}"></script><script async src="${PLAUSIBLE_SKRIPT}"></script>`;
+  return seite.replace('</head>', `${kopf}</head>`);
+}
+
+/** Berliner Jahr eines Commit-Zeitpunkts (Unix-Sekunden, wie `git show -s --format=%ct`). */
+export function jahrAusCommitZeit(sekunden: string): string {
+  const zahl = Number(sekunden.trim());
+  if (!Number.isInteger(zahl) || zahl <= 0) throw new Error(`Commit-Zeit unlesbar: ${sekunden}`);
+  return tagAus(new Date(zahl * 1000).toISOString()).slice(0, 4);
+}
+
+/** Für den Urhebervermerk in der Fußzeile; `src/lib/releaseJahr.ts` liest es. */
+export function mitReleaseJahr(seite: string, jahr: string): string {
+  if (!/^\d{4}$/.test(jahr)) throw new Error(`Kein Jahr: ${jahr}`);
+  if (!seite.includes('</head>')) throw new Error('index.html ohne </head>.');
+  return seite.replace('</head>', `<meta name="release-jahr" content="${jahr}"></head>`);
+}
+
 async function haupt(): Promise<void> {
   if (!existsSync(join(DIST, 'index.html'))) {
     throw new Error('dist/index.html fehlt — erst `npm run build`.');
   }
+  // Der Release-Ablauf exportiert auf dem ausgecheckten Tag; dessen Commit trägt das Datum.
+  const jahr = jahrAusCommitZeit(execFileSync('git', ['show', '-s', '--format=%ct', 'HEAD'], { cwd: PROJEKTWURZEL, encoding: 'utf8' }));
   const { db, konfiguration, heute } = await baueDemo();
   const { app, token, sperre } = baueServer({ db, konfiguration, demoModus: true, heute, protokoll: false });
   const kopf = { host: `127.0.0.1:${String(konfiguration.port)}`, 'sec-fetch-site': 'same-origin' };
@@ -31,7 +66,8 @@ async function haupt(): Promise<void> {
 
     const seite = await app.inject({ method: 'GET', url: '/', headers: kopf });
     if (seite.statusCode !== 200) throw new Error(`GET / → ${String(seite.statusCode)}`);
-    writeFileSync(join(ZIEL, 'index.html'), seite.body.replace(`content="${token}"`, 'content="__PORTFOLIO_TOKEN__"'));
+    writeFileSync(join(ZIEL, 'index.html'), mitReleaseJahr(mitStatistik(seite.body.replace(`content="${token}"`, 'content="__PORTFOLIO_TOKEN__"')), jahr));
+    writeFileSync(join(ZIEL, STATISTIK_DATEI), STATISTIK_START);
 
     const anfragen = abzugAnfragen();
     for (const url of anfragen) {

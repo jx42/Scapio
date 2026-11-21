@@ -10,7 +10,7 @@ import type { FastifyInstance } from 'fastify';
 import { tagAus } from '../../core/kalender.ts';
 import { testDatenbank } from '../../db/verbindung.ts';
 import worker from '../../demo-worker/index.ts';
-import { KOPFZEILEN, UNVERAENDERLICH } from '../../server/kopfzeilen.ts';
+import { DEMO_KOPFZEILEN, UNVERAENDERLICH } from '../../server/kopfzeilen.ts';
 import { baueServer } from '../../server/server.ts';
 import { abzugAnfragen, abzugPfad } from '../../shared/demoAbzug.ts';
 import { aufraeumen, eigeneNavigation, konfiguration } from '../api/hilfen.ts';
@@ -138,11 +138,11 @@ describe('Demo-Abzug — Worker', () => {
     }
   });
 
-  it('holt eine API-Antwort aus dem Abzug, mit den Kopfzeilen des Servers', async () => {
+  it('holt eine API-Antwort aus dem Abzug, mit den Kopfzeilen der Demo', async () => {
     abgerufen.length = 0;
     const antwort = await worker.fetch(new Request('https://demo.test/api/fluesse?fenster=3m'), umgebung);
     expect(abgerufen).toEqual(['/api/fluesse/3m.json']);
-    for (const [name, wert] of KOPFZEILEN) expect(antwort.headers.get(name)).toBe(wert);
+    for (const [name, wert] of DEMO_KOPFZEILEN) expect(antwort.headers.get(name)).toBe(wert);
   });
 
   it('beantwortet eine unbekannte API-Anfrage mit 404, ohne den Abzug zu fragen', async () => {

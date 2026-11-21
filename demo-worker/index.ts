@@ -1,10 +1,11 @@
 /**
  * Worker der öffentlichen Demo [ADR-048]: liest nur aus dem Abzug, rechnet nichts, schreibt
- * nichts. Abfrageparameter werden über `shared/demoAbzug.ts` zu Dateipfaden.
+ * nichts. Abfrageparameter werden über `shared/demoAbzug.ts` zu Dateipfaden. Die CSP lässt
+ * zusätzlich Plausible zu [ADR-069].
  */
 
 import { abzugPfad } from '../shared/demoAbzug.ts';
-import { KOPFZEILEN, UNVERAENDERLICH, istUnveraenderlich } from '../server/kopfzeilen.ts';
+import { DEMO_KOPFZEILEN, UNVERAENDERLICH, istUnveraenderlich } from '../server/kopfzeilen.ts';
 
 /** Nur das, was der Worker vom Binding braucht — keine Abhängigkeit auf die Workers-Typen. */
 export type Umgebung = {
@@ -13,7 +14,7 @@ export type Umgebung = {
 
 function mitKopfzeilen(antwort: Response, pfad: string): Response {
   const neu = new Response(antwort.body, antwort);
-  for (const [name, wert] of KOPFZEILEN) neu.headers.set(name, wert);
+  for (const [name, wert] of DEMO_KOPFZEILEN) neu.headers.set(name, wert);
   if (antwort.status === 200 && istUnveraenderlich(pfad)) neu.headers.set('Cache-Control', UNVERAENDERLICH);
   return neu;
 }

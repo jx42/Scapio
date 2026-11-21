@@ -52,7 +52,7 @@ der Geschichte stehen. Eine neue ADR bekommt die nächste freie Nummer und eine 
 | [045](ADR-045-woechentliche-sicherung-beim-start.md) | Wöchentliche Sicherung beim Start | Nachtrag: 056 |
 | [046](ADR-046-footer-link-zur-readme.md) | Footer-Link zur Readme | gilt |
 | [047](ADR-047-release-kette-und-auslieferung.md) | Release-Kette und Auslieferung: ZIP aus Releases, Audit über den Bau-Pfad | Nachtrag: 055, 067 |
-| [048](ADR-048-demo-als-statischer-abzug.md) | Demo als statischer Abzug | Nachtrag: 055, 067 |
+| [048](ADR-048-demo-als-statischer-abzug.md) | Demo als statischer Abzug | Nachtrag: 055, 067; INV-11 für die Demo abgelöst durch 069 |
 | [049](ADR-049-deinstallation-loescht-nur-den-datenordner.md) | Deinstallation löscht nur den Datenordner | Nachtrag: 056 |
 | [050](ADR-050-zeitzonen-in-der-ci-nur-unter-linux.md) | Zeitzonen in der CI nur unter Linux, ohne UTC | gilt |
 | [051](ADR-051-main-nur-ueber-pull-requests.md) | `main` nur über Pull Requests, ohne Bypass | Nachtrag: 055 |
@@ -73,3 +73,4 @@ der Geschichte stehen. Eine neue ADR bekommt die nächste freie Nummer und eine 
 | [066](ADR-066-analyse-ab-werk-an.md) | Analyse ab Werk an, ausschalten mit `"top25": false` | gilt |
 | [067](ADR-067-release-per-skript.md) | Release per Skript, Deploy-Token im Schlüsselbund | gilt |
 | [068](ADR-068-audit-mit-befristeten-ausnahmen.md) | `npm run audit` mit befristeten Ausnahmen je Advisory | gilt |
+| [069](ADR-069-plausible-in-der-demo.md) | Plausible, Impressum und Datenschutz nur in der öffentlichen Demo | gilt |
