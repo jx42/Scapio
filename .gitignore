@@ -16,6 +16,7 @@ playwright-report/
 plans/
 ingest/funds.json
 .vscode/settings.json
+.vscode/launch.json
 ingest/seed.json
 tsconfig.tsbuildinfo
 
