@@ -13,19 +13,14 @@
 
 - **Rendite:** deine persönliche Rendite (IZF, interner Zinsfuß) auch nach Abzug der Inflation. So weißt du, was real übrig bleibt.
 - **Benchmark:** dein Depot (TWR, Time-Weighted Return) im Vergleich zu MSCI World, MSCI ACWI, Gold, Bitcoin und dem risikofreien Zins. So siehst du, ob sich deine Strategie lohnt.
-- **Risiko:** Volatilität*, maximaler Drawdown und Sharpe-Ratio*. So erkennst du, wie stark dein Depot schwankt und ob sich das Risiko auszahlt. 
+- **Risiko:** Volatilität, maximaler Drawdown und Sharpe-Ratio. So erkennst du, wie stark dein Depot schwankt und ob sich das Risiko auszahlt. 
 - **Länder, Sektoren und Top 25:** in welchen Ländern, Sektoren und Unternehmen du über alle ETFs hinweg wirklich investiert bist. So erkennst du Klumpenrisiken. Abschaltbar, siehe [Länder, Sektoren und Unternehmen ausschalten](#-länder-sektoren-und-unternehmen-ausschalten).
 - **Erträge & Steuern:** realisierte Gewinne, Zinsen, Ausschüttungen und Steuern einzeln aufgeschlüsselt.
 - **Sparen:** Käufe, Verkäufe und aktive Sparpläne. So siehst du, wie viel du monatlich investierst.
 
-**Volatilität und Sharpe-Ratio erscheinen erst, wenn dein Depot mindestens 13 Monate alt ist. Vorher gibt es zu wenige Monatsrenditen für eine belastbare Aussage.*
-
 ## 🔒 Sicherheit
 
-Deine Daten bleiben sicher: Scapio läuft lokal auf deinem Computer (ohne Cloud) und liest nur Daten ohne etwas zu ändern oder zu handeln. Scapio nutzt die offizielle Anmeldung und MCP-Schnittstelle von Scalable Capital und speichert keine Zugangsdaten.
-
-> [!TIP]
-> Stelle die Zugriffsstufe des MCP bei Scalable auf „Leserechte“ – dann ist jede Änderung zusätzlich auf Seiten der Bank ausgeschlossen.
+Deine Daten bleiben sicher: Scapio läuft lokal auf deinem Computer (ohne Cloud) und liest nur Daten ohne etwas zu ändern oder zu handeln. Scapio nutzt die offizielle Anmeldung und MCP-Schnittstelle von Scalable Capital und speichert keine Zugangsdaten. Mit der Zugriffsstufe „Leserechte“ (Installation, Schritt 1) schließt zusätzlich die Bank jede Änderung aus.
 
 Auf einem Windows-Rechner mit mehreren Benutzerkonten sind die lokalen Daten weniger streng geschützt als unter macOS – Details in [docs/SICHERHEIT.md](docs/SICHERHEIT.md).
 
@@ -46,11 +41,10 @@ Das war's. Danach öffnet sich Scapio im Browser, baut beim ersten Mal seine Obe
 
 > [!TIP]
 > **Warnung beim ersten Start?** Die Startdateien sind nicht signiert, deshalb fragt das System einmal nach.
+>
 > - **macOS 15 (Sequoia) und neuer:** Die Meldung, dass die Datei nicht geöffnet wurde, mit „Fertig“ schließen. Dann **Systemeinstellungen → Datenschutz & Sicherheit** öffnen, nach unten scrollen und bei „Start.command wurde blockiert“ auf **„Dennoch öffnen“** klicken, mit Passwort oder Touch ID bestätigen.
-> - **macOS 14 und älter:** Rechtsklick auf die Datei → „Öffnen“ → „Öffnen“.
+>
 > - **Windows** meldet „Der Computer wurde durch Windows geschützt“: „Weitere Informationen“ → „Trotzdem ausführen“.
-
-**Download prüfen** (optional): Jedes Release trägt neben dem ZIP eine Datei [`SHA256SUMS`](https://github.com/jx42/Scapio/releases/latest/download/SHA256SUMS). Die Prüfsumme des ZIPs muss mit der Zahl darin übereinstimmen. Unter macOS liefert sie `shasum -a 256 ~/Downloads/Scapio.zip`, unter Windows `certutil -hashfile %USERPROFILE%\Downloads\Scapio.zip SHA256`. Wer die [GitHub CLI](https://cli.github.com) hat, prüft zusätzlich die Herkunft: `gh attestation verify Scapio.zip --repo jx42/Scapio` bestätigt, dass das ZIP aus diesem Repository gebaut wurde.
 
 **Alternative: Installation mit Git** (für Fortgeschrittene, Updates dann per Doppelklick)
 
@@ -76,7 +70,7 @@ Der Reiter „Analyse“ in der Kachel Aufteilung zeigt, in welche Länder, Sekt
 1. Die Datei `docs/einstellungen.example.json` aus dem Scapio-Ordner in den Datenordner kopieren (siehe [Wo liegen meine Daten?](#-wo-liegen-meine-daten)) und in `einstellungen.json` umbenennen. Liegt dort schon eine `einstellungen.json`, stattdessen die Zeile `"top25": false` in sie übernehmen.
 2. Scapio neu starten.
 
-Ausgeschaltet fragt Scapio keinen Fondsanbieter ab. Wieder einschalten: in `einstellungen.json` `false` durch `true` ersetzen oder die Zeile löschen und neu starten. Erkennt Scapio einen ETF von iShares, Xtrackers oder Amundi nicht, erklärt der Reiter, wie du ihn in einer `funds.json` einträgst.
+Ausgeschaltet fragt Scapio keinen Fondsanbieter ab. Wieder einschalten: in `einstellungen.json` `false` durch `true` ersetzen oder die Zeile löschen und neu starten. Erkennt Scapio einen ETF dieser Anbieter nicht, erklärt der Reiter, wie du ihn in einer `funds.json` einträgst.
 
 ## ⏹️ Beenden
 
@@ -98,7 +92,7 @@ Was sich in einer Version geändert hat, steht unter [Releases](https://github.c
 > [!TIP]
 > **Windows:** Vor dem Entpacken Rechtsklick auf das ZIP → „Eigenschaften“ → unten „Zulassen“ anhaken → „OK“. Dann fragt Windows beim Start nicht erneut nach.
 
-**Mit Git installiert:** Dashboard schließen, dann [Aktualisieren.command](Aktualisieren.command) (macOS) bzw. [Aktualisieren.bat](Aktualisieren.bat) (Windows) doppelklicken. Scapio startet danach von selbst neu, eigene Einstellungen bleiben erhalten.
+**Mit Git installiert:** Dashboard schließen, dann [Aktualisieren.command](Aktualisieren.command) (macOS) bzw. [Aktualisieren.bat](Aktualisieren.bat) (Windows) doppelklicken. Scapio startet danach von selbst neu.
 
 Wer auch das Entpacken sparen will, steigt einmal auf die Installation mit Git um (unter „Installation“ → „Alternative: Installation mit Git“).
 
@@ -119,15 +113,15 @@ Ohne das Skript: den Datenordner von Hand löschen (siehe [Wo liegen meine Daten
 | Scalable Capital, offizielle MCP-Schnittstelle                                                                                                                                                            | Dein Depot: Positionen, Transaktionen, Sparpläne; Kurshistorie der Benchmarks | dein eigener, ausschließlich lesender Zugriff auf deine eigenen Daten |
 | Eurostat, harmonisierter Verbraucherpreisindex ([`prc_hicp_midx`](https://ec.europa.eu/eurostat/databrowser/view/prc_hicp_midx), [`ei_cphi_m`](https://ec.europa.eu/eurostat/databrowser/view/ei_cphi_m)) | Inflation für die Realrendite                                                 | © Europäische Union; Weiterverwendung mit Quellenangabe erlaubt       |
 | Europäische Zentralbank, [€STR (`EST`)](https://data.ecb.europa.eu/data/datasets/EST)                                                                                                                     | Risikofreier Zins für die Sharpe-Ratio und als Benchmark                      | Weiterverwendung mit Quellenangabe erlaubt                            |
-| iShares, DWS Xtrackers, Amundi                                                                                                                                                                            | Bestandslisten der ETFs, nur mit eingeschaltetem Look-Through                 | Nutzungsbedingungen des jeweiligen Anbieters                          |
+| Fondsanbieter (iShares, Xtrackers, Amundi, Invesco, J.P. Morgan, Goldman Sachs, Franklin Templeton)                                                                                                       | Bestandslisten der ETFs, nur mit eingeschalteter Analyse                      | Nutzungsbedingungen des jeweiligen Anbieters                          |
 
-Die Schnittstellen von iShares, Xtrackers und Amundi sind nicht offiziell dokumentiert und können sich jederzeit ändern. Fehlen Länder, Sektoren oder Unternehmen nach einem Update eines Anbieters, liegt das meist dort und nicht an deinem Depot.
+Die Schnittstellen der Fondsanbieter sind nicht offiziell dokumentiert und können sich jederzeit ändern. Fehlen Länder, Sektoren oder Unternehmen nach einem Update eines Anbieters, liegt das meist dort und nicht an deinem Depot.
 
 Je weiter die Kurshistorie von Scalable Capital zurückreicht, desto gröber ist sie: Für Zeiträume älter als etwa ein Jahr liefert die Schnittstelle nur monatliche Kurse, näher an heute zweitäglich bis täglich. Eine als auffällig markierte Kursbewegung in älteren Daten ist deshalb oft eine normale Bewegung über mehrere Wochen, kein echter Tagessprung.
 
 ## ⚠️ Haftungsausschluss
 
-- **Scapio ist ein unabhängiges Community-Projekt. Es ist kein offizielles Produkt der Scalable Capital GmbH und wird von ihr weder betrieben noch unterstützt oder empfohlen.** Dasselbe gilt für BlackRock (iShares), DWS (Xtrackers), Amundi und MSCI. Alle genannten Namen sind Marken ihrer Inhaber und werden hier nur genannt, um zu beschreiben, mit welchem Depot und welchen Datenquellen Scapio zusammenarbeitet.
+- **Scapio ist ein unabhängiges Community-Projekt. Es ist kein offizielles Produkt der Scalable Capital GmbH und wird von ihr weder betrieben noch unterstützt oder empfohlen.** Dasselbe gilt für die genannten Fondsanbieter und MSCI. Alle genannten Namen sind Marken ihrer Inhaber und werden hier nur genannt, um zu beschreiben, mit welchem Depot und welchen Datenquellen Scapio zusammenarbeitet.
 - **Scapio zeigt Kennzahlen zu Informationszwecken.** Es ist keine Anlageberatung, keine Steuerberatung und keine Empfehlung zum Kauf oder Verkauf eines Wertpapiers.
 - **Maßgeblich sind allein die Abrechnungen und Steuerbescheinigungen deiner Bank**. Alle Zahlen werden aus den Rohdaten der Bank neu berechnet und können von deren Abrechnungen abweichen, besonders bei Steuern, Teilfreistellung und Vorabpauschale.
 - **Die Software wird ohne Gewähr bereitgestellt,** die Nutzung erfolgt auf eigenes Risiko; Einzelheiten in der [Lizenz](LICENSE).
