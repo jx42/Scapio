@@ -150,7 +150,7 @@ describe('INV-11 — die Ausnahme der Demo bleibt eng [ADR-069]', () => {
 
   it('setzt das Snippet nur in den Abzug, ohne Inline-Skript', () => {
     const seite = mitStatistik('<html><head><title>x</title></head><body></body></html>');
-    const skripte = [...seite.matchAll(/<script\b([^>]*)>([^<]*)<\/script>/g)];
+    const skripte = [...seite.matchAll(/<script\b([^>]*)>([^<]*)<\/script[^>]*>/gi)];
     expect(skripte.map((s) => s[1]!.trim())).toEqual([`src="/${STATISTIK_DATEI}"`, `async src="${PLAUSIBLE_SKRIPT}"`]);
     expect(skripte.every((s) => s[2] === '')).toBe(true);
     expect(PLAUSIBLE_SKRIPT.startsWith(`${PLAUSIBLE}/js/`)).toBe(true);
