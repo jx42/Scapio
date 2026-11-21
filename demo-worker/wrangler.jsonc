@@ -2,7 +2,7 @@
 // geht durch den Worker, damit auch die Assets die Kopfzeilen des Servers tragen. Die Konto-ID ist
 // kein Geheimnis; sie steht hier, damit der Token nur „Workers Scripts: Edit“ braucht.
 {
-  "name": "demo",
+  "name": "scapio",
   "account_id": "b57e338bba84afa848baa12012f40afc",
   "main": "index.ts",
   "compatibility_date": "2026-10-01",

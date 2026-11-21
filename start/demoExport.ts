@@ -20,7 +20,7 @@ import { baueDemo } from './demoServer.ts';
 const ZIEL = join(PROJEKTWURZEL, '.demo-export');
 const DIST = join(PROJEKTWURZEL, 'dist');
 
-/** Das Snippet aus dem Plausible-Konto für `demo.scapio.workers.dev`. */
+/** Das Snippet aus dem Plausible-Konto für `scapio.jroehm.workers.dev`. */
 export const PLAUSIBLE_SKRIPT = `${PLAUSIBLE}/js/pa-rcjDY-5hDM9SU7ElgbxA4.js`;
 /** Die Warteschlange aus dem Snippet, als eigene Datei: die CSP erlaubt kein Inline-Skript. */
 export const STATISTIK_DATEI = 'statistik.js';
