@@ -24,7 +24,7 @@ function zellwert(zeile: Xtrackerszeile, schluessel: string | undefined): string
 
 export async function holeXtrackers(ctx: Kontext, fonds: FondsXtrackers): Promise<Ernte<Xtrackersernte>> {
   const quelle = quelleFuer(fonds.isin);
-  const text = await holeText(`https://etf.dws.com/api/pdp/en-gb/etf/${fonds.isin}/holdings`, {
+  const text = await holeText(`https://etf.deutsche-am.com/api/pdp/en-gb/etf/${fonds.isin}/holdings`, {
     erlaubteHosts: ctx.konfiguration.erlaubteHosts,
     zeitlimitMs: ctx.konfiguration.csvZeitlimitMs,
     groesstMb: ctx.konfiguration.csvGroesstMb,
@@ -91,7 +91,7 @@ export async function holeXtrackers(ctx: Kontext, fonds: FondsXtrackers): Promis
 // Katalog: ISIN -> nichts weiter, die Bestandteile kommen ohnehin ueber die ISIN
 // ---------------------------------------------------------------------------
 
-const SITEMAP_ADRESSE = 'https://etf.dws.com/de-de/sitemap.xml';
+const SITEMAP_ADRESSE = 'https://etf.deutsche-am.com/de-de/sitemap.xml';
 
 /**
  * Jede Fondsseite traegt ihre ISIN im Pfad (`/de-de/<ISIN>-<slug>/`) — die Sitemap listet
@@ -100,7 +100,7 @@ const SITEMAP_ADRESSE = 'https://etf.dws.com/de-de/sitemap.xml';
  * bleibt unangesehen. [INV-12] steht ueber der Obergrenze und der strengen `Isin` je Treffer
  * in `XtrackersKatalogIsins`.
  */
-const EINTRAG_MUSTER = /<loc>https:\/\/etf\.dws\.com\/de-de\/([A-Z0-9]{12})-[a-z0-9-]+\/<\/loc>/g;
+const EINTRAG_MUSTER = /<loc>https:\/\/etf\.deutsche-am\.com\/de-de\/([A-Z0-9]{12})-[a-z0-9-]+\/<\/loc>/g;
 
 export async function katalogXtrackers(ctx: Kontext): Promise<ReadonlyMap<Isin, Katalogeintrag>> {
   const text = await holeText(SITEMAP_ADRESSE, {

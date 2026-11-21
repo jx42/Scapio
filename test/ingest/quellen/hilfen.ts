@@ -37,7 +37,7 @@ export function konfiguration(teil: Partial<Konfiguration> = {}): Konfiguration 
     port: 4732,
     erlaubteHosts: [
       'www.ishares.com',
-      'etf.dws.com',
+      'etf.deutsche-am.com',
       'www.amundietf.de',
       'dng-api.invesco.com',
       'am.jpmorgan.com',

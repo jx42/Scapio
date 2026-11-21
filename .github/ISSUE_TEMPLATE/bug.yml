@@ -7,6 +7,12 @@ body:
       value: |
         Sicherheitsfunde bitte nicht hier, sondern auf dem Weg aus [SECURITY.md](https://github.com/jx42/Scapio/blob/main/.github/SECURITY.md).
         Vor dem Absenden Depotwerte, ISINs und Beträge aus Ausgaben und Screenshots entfernen, wenn sie nicht öffentlich sein sollen.
+  - type: input
+    id: code
+    attributes:
+      label: Code aus der Meldung
+      description: Steht klein unter der Meldung auf der Seite, zum Beispiel `E_NETZ_HOST`. Leer lassen, wenn es keine gibt.
+      placeholder: E_…
   - type: textarea
     id: beschreibung
     attributes:

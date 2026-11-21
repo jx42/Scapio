@@ -174,7 +174,7 @@ Der Start zieht beide einmalig aus dem Projektordner um (`start/uebernahme.ts`)
 | `csvZeitlimitMs` | `30000` | Zeitlimit je Abruf außerhalb des MCP (ETF-Anbieter, Eurostat, EZB) |
 | `csvGroesstMb` | `32` | Größtgrenze einer Holdings-/CSV-Antwort |
 | `fondsKatalogFrischeTage` | `5` | Tage, die eine Zeile der Fondsauflösung gilt, bevor sie Kataloge und, ohne Katalogtreffer, die Suche je ISIN neu befragt [ADR-018](entscheidungen/ADR-018-fondskataloge-statt-einzelabfrage.md), [ADR-065](entscheidungen/ADR-065-fondsaufloesung-ohne-funds-json.md) |
-| `erlaubteHosts` | `www.ishares.com`, `etf.dws.com`, `www.amundietf.de`, `dng-api.invesco.com`, `am.jpmorgan.com`, `am.gs.com`, `www.franklintempleton.de`, `ec.europa.eu`, `data-api.ecb.europa.eu` | Allowlist für jeden Netzabruf, keine Musterliste; Vorgabe abgeleitet aus `shared/hosts.ts` |
+| `erlaubteHosts` | `www.ishares.com`, `etf.deutsche-am.com`, `www.amundietf.de`, `dng-api.invesco.com`, `am.jpmorgan.com`, `am.gs.com`, `www.franklintempleton.de`, `ec.europa.eu`, `data-api.ecb.europa.eu` | Allowlist für jeden Netzabruf, keine Musterliste; Vorgabe abgeleitet aus `shared/hosts.ts` |
 | `inflationsquelle` | `eurostat` | siehe [ADR-003](entscheidungen/ADR-003-eurostat-statt-destatis.md) |
 | `zinsquelle` | `ecb` | siehe [ADR-009](entscheidungen/ADR-009-risikokennzahlen.md) |
 | `driftSchwellen` | `{ hinweis: 0.001, banner: 0.005, abbruch: 0.02 }` | müssen aufsteigend sein, siehe [`docs/RUNBOOK.md`](RUNBOOK.md) |

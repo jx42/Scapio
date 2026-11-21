@@ -10,6 +10,8 @@
  * - uebrige Hinweise (`lib/hinweisText.ts`): Titel, Satz, Abhilfe — per X ausblendbar,
  *   gemerkt je Lauf im Browser, die Daten bleiben unberuehrt.
  *
+ * „Fehler melden“ steht, wo nur eine neue Version hilft oder etwas Unerwartetes passiert ist.
+ *
  * Die Reihe ist eine Live-Region, die immer im DOM steht, auch leer — gefuellt eingefuegt,
  * sagt ein Screenreader sie oft nicht an. Leer ist sie `sr-only` und nimmt keinen Abstand.
  */
@@ -19,11 +21,12 @@ import { RefreshCw, TriangleAlert, X } from 'lucide-react';
 import { de } from '@/i18n/de';
 import type { LaufFehlerCode } from '../../shared/laufFehler.ts';
 import type { LaufHinweis } from '@/lib/api';
-import { hinweisSchluessel, hinweisText, hinweisTitel, hinweisTun } from '@/lib/hinweisText';
-import { quellenMeldungen, type QuellenMeldung } from '@/lib/quellenMeldung';
+import { hinweisMelden, hinweisSchluessel, hinweisText, hinweisTitel, hinweisTun } from '@/lib/hinweisText';
+import { meldenSinnvoll, quellenMeldungen, type QuellenMeldung } from '@/lib/quellenMeldung';
 import { useAusgeblendet } from '@/lib/speicher';
 import { Alert, AlertAction, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
+import { FehlerMelden } from '@/components/FehlerMelden';
 
 /** Codes, bei denen ein erneuter Lauf oft schon genuegt — nur dort steht der Knopf. */
 const ERNEUT_SINNVOLL: ReadonlySet<string> = new Set([
@@ -70,7 +73,10 @@ export function Laufhinweise({
             </p>
             <p className="text-xs text-text-leise">{de.laufhinweise.code(fehler.code)}</p>
           </AlertDescription>
-          {ERNEUT_SINNVOLL.has(fehler.code) && <AktualisierenAktion onAktualisieren={onAktualisieren} />}
+          <Aktionen
+            aktualisieren={ERNEUT_SINNVOLL.has(fehler.code) ? onAktualisieren : null}
+            melden={meldenSinnvoll(fehler.code)}
+          />
         </Alert>
       )}
       {meldungen.map((meldung) => (
@@ -84,7 +90,8 @@ export function Laufhinweise({
             <p>{hinweisText(hinweis)}</p>
             <p>{hinweisTun(hinweis)}</p>
           </AlertDescription>
-          <AlertAction>
+          <AlertAction className="flex items-center gap-2">
+            {hinweisMelden(hinweis) && <FehlerMelden />}
             <Button
               type="button"
               variant="ghost"
@@ -120,18 +127,28 @@ function QuellenAlert({
         <p>{meldung.tun}</p>
         {meldung.code !== null && <p className="text-xs text-text-leise">{de.laufhinweise.code(meldung.code)}</p>}
       </AlertDescription>
-      {meldung.erneutSinnvoll && <AktualisierenAktion onAktualisieren={onAktualisieren} />}
+      <Aktionen aktualisieren={meldung.erneutSinnvoll ? onAktualisieren : null} melden={meldung.meldenSinnvoll} />
     </Alert>
   );
 }
 
-function AktualisierenAktion({ onAktualisieren }: { readonly onAktualisieren: () => void }) {
+function Aktionen({
+  aktualisieren,
+  melden,
+}: {
+  readonly aktualisieren: (() => void) | null;
+  readonly melden: boolean;
+}) {
+  if (aktualisieren === null && !melden) return null;
   return (
-    <AlertAction>
-      <Button type="button" size="sm" variant="outline" onClick={onAktualisieren}>
-        <RefreshCw aria-hidden="true" />
-        {de.aktualisieren.knopf}
-      </Button>
+    <AlertAction className="flex flex-wrap items-center gap-2">
+      {aktualisieren !== null && (
+        <Button type="button" size="sm" variant="outline" onClick={aktualisieren}>
+          <RefreshCw aria-hidden="true" />
+          {de.aktualisieren.knopf}
+        </Button>
+      )}
+      {melden && <FehlerMelden />}
     </AlertAction>
   );
 }

@@ -197,6 +197,66 @@ describe('Laufhinweise', () => {
     expect(screen.queryByRole('button')).not.toBeInTheDocument();
   });
 
+  it('verlinkt dort, wo nur eine neue Version hilft, fest auf das Fehlerformular [ADR-070]', () => {
+    rendern(
+      <Laufhinweise
+        laufId={1}
+        hinweise={[{ art: 'quelleGescheitert', werte: { quelle: 'fondskatalog:xtrackers', code: 'E_NETZ_HOST' } }]}
+        quellen={{ 'fondskatalog:xtrackers': 'fehler' }}
+        fehler={{ code: 'E_SCHEMA', text: null }}
+        onAktualisieren={() => {}}
+      />,
+    );
+    const links = screen.getAllByRole('link', { name: de.fehlerMelden.oeffnen });
+    expect(links).toHaveLength(2);
+    for (const link of links) {
+      expect(link).toHaveAttribute('href', 'https://github.com/jx42/Scapio/issues/new?template=bug.yml');
+      expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+    }
+    expect(screen.getByRole('status')).toHaveTextContent('Fondsliste von Xtrackers nicht abgerufen');
+  });
+
+  it('bietet bei einem unerwarteten Fehler beides an: erneut versuchen und melden', () => {
+    rendern(
+      <Laufhinweise
+        laufId={1}
+        hinweise={[{ art: 'quelleGescheitert', werte: { quelle: 'sparplaene', code: 'E_UNBEKANNT' } }]}
+        quellen={{ sparplaene: 'fehler' }}
+        fehler={null}
+        onAktualisieren={() => {}}
+      />,
+    );
+    expect(screen.getByRole('button', { name: de.aktualisieren.knopf })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: de.fehlerMelden.oeffnen })).toBeInTheDocument();
+  });
+
+  it('bietet bei einem Hinweis, den nur eine neue Version behebt, das Fehlerformular neben dem X an', () => {
+    rendern(
+      <Laufhinweise
+        laufId={1}
+        hinweise={[{ art: 'unbekannteTypen', werte: { typen: ['NEU'] } }, ERSTER]}
+        quellen={{}}
+        fehler={null}
+        onAktualisieren={() => {}}
+      />,
+    );
+    expect(screen.getAllByRole('link', { name: de.fehlerMelden.oeffnen })).toHaveLength(1);
+    expect(screen.getAllByRole('button', { name: de.laufhinweise.ausblenden })).toHaveLength(2);
+  });
+
+  it('bietet bei einem Fehler, der sich von selbst loest, kein Fehlerformular an', () => {
+    rendern(
+      <Laufhinweise
+        laufId={1}
+        hinweise={[{ art: 'quelleGescheitert', werte: { quelle: 'kurse:ZZ0000000003', code: 'E_NETZ_ZEIT' } }]}
+        quellen={{}}
+        fehler={{ code: 'E_MCP_DROSSEL', text: null }}
+        onAktualisieren={() => {}}
+      />,
+    );
+    expect(screen.queryByRole('link')).not.toBeInTheDocument();
+  });
+
   it('zeigt gescheiterte Transaktionen nur einmal: als gescheiterten Lauf', () => {
     rendern(
       <Laufhinweise

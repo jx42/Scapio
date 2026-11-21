@@ -16,7 +16,7 @@ import type { AutomatischerAnbieter } from '../db/repository/fondsAufloesung.ts'
 
 export const ANBIETER_HOSTS = {
   ishares: ['www.ishares.com'],
-  xtrackers: ['etf.dws.com'],
+  xtrackers: ['etf.deutsche-am.com'],
   amundi: ['www.amundietf.de'],
   invesco: ['dng-api.invesco.com'],
   jpmorgan: ['am.jpmorgan.com'],
