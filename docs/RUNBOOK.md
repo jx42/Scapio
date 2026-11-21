@@ -122,7 +122,8 @@ kennt vier Werte: `laufend`, `erfolg`, `teilweise`, `fehler`.
     oder aus der automatischen Fondsauflösung [ADR-065] (Host-Allowlist in `erlaubteHosts`, Zeitlimit `csvZeitlimitMs`).
     Nicht abgerufen wird mit `"top25": false` in `einstellungen.json` [ADR-066].
     Die Codes kommen aus `ingest/netz.ts`:
-    - `E_NETZ_HOST`: der Host steht nicht in `erlaubteHosts`.
+    - `E_NETZ_HOST`: der Host steht nicht in `erlaubteHosts`. Meist leitet der Anbieter auf eine
+      neue Domain um; die gehört dann in `shared/hosts.ts` und `config.json`.
     - `E_NETZ_ADRESSE`, `E_NETZ_SCHEMA`: keine gültige URL, Zugangsdaten in der Adresse
       oder nicht `https`.
     - `E_NETZ_DNS`, `E_NETZ_PRIVAT`: der Host löst nicht auf, oder er zeigt auf eine

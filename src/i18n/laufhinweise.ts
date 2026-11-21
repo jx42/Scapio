@@ -72,9 +72,9 @@ export const laufhinweise = {
       folge: 'Die Durchsicht durch die ETFs zeigt den Stand des letzten erfolgreichen Abrufs.',
     },
     fondskatalog: {
-      titel: 'Fondsverzeichnis nicht abgerufen',
+      titel: (anbieter: string) => `Fondsliste von ${anbieter} nicht abgerufen`,
       folge: (anbieter: string) =>
-        `Das Fondsverzeichnis von ${anbieter} fehlt. Bereits erkannte Fonds bleiben erkannt; neu gekaufte Fonds dieses Anbieters werden erst nach dem nächsten erfolgreichen Abruf durchleuchtet.`,
+        `An dieser Liste erkennt Scapio, welche deiner Fonds von ${anbieter} stammen. Bereits erkannte Fonds werden weiter aufgeschlüsselt, ein neu gekaufter erst nach dem nächsten erfolgreichen Abruf.`,
     },
     sonst: {
       titel: 'Eine Datenquelle wurde nicht abgerufen',
@@ -107,6 +107,10 @@ export const laufhinweise = {
     schnittstelle: {
       grund: 'Die Antwort hatte eine unerwartete Form. Vermutlich hat sich die Schnittstelle geändert.',
       tun: 'Hole mit Aktualisieren.command bzw. .bat die neueste Version von Scapio. Bis dahin bleibt diese Quelle auf dem alten Stand.',
+    },
+    E_NETZ_HOST: {
+      grund: 'Die Webseite leitet auf eine Adresse um, die Scapio nicht kennt. Meist ist sie umgezogen.',
+      tun: 'Hole mit Aktualisieren.command bzw. .bat die neueste Version von Scapio. Erneutes „Aktualisieren“ hilft hier nicht.',
     },
     netz: {
       grund: 'Die Webseite des Anbieters war nicht erreichbar oder hat unerwartet geantwortet.',

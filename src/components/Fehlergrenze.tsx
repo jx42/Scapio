@@ -36,6 +36,6 @@ export class Fehlergrenze extends Component<Props, State> {
   override render(): ReactNode {
     if (!this.state.gefallen) return this.props.children;
     if (this.props.rueckfall !== undefined) return this.props.rueckfall;
-    return <FehlerZustand text={de.zustand.abgestuerzt} hinweis={de.zustand.abgestuerztHinweis} />;
+    return <FehlerZustand text={de.zustand.abgestuerzt} hinweis={de.zustand.abgestuerztHinweis} melden />;
   }
 }

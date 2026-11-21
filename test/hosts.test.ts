@@ -24,7 +24,7 @@ describe('Host-Allowlist [ADR-018]', () => {
         'data-api.ecb.europa.eu',
         'dng-api.invesco.com',
         'ec.europa.eu',
-        'etf.dws.com',
+        'etf.deutsche-am.com',
         'www.amundietf.de',
         'www.franklintempleton.de',
         'www.ishares.com',

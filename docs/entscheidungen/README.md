@@ -74,3 +74,4 @@ der Geschichte stehen. Eine neue ADR bekommt die nächste freie Nummer und eine 
 | [067](ADR-067-release-per-skript.md) | Release per Skript, Deploy-Token im Schlüsselbund | gilt |
 | [068](ADR-068-audit-mit-befristeten-ausnahmen.md) | `npm run audit` mit befristeten Ausnahmen je Advisory | gilt |
 | [069](ADR-069-plausible-in-der-demo.md) | Plausible, Impressum und Datenschutz nur in der öffentlichen Demo | gilt |
+| [070](ADR-070-fehler-melden-aus-den-laufhinweisen.md) | „Fehler melden“, wo nur eine neue Version hilft | gilt |

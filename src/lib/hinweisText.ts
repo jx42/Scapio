@@ -121,6 +121,20 @@ export function hinweisTun(h: LaufHinweis): string {
   return de.laufhinweise.artTun[h.art] ?? de.laufhinweise.artTun.unbekannt;
 }
 
+/** Hinweisarten, deren Abhilfe (`artTun`) eine neue Version ist — dort steht „Fehler melden“ [ADR-070]. */
+const NEUE_VERSION: ReadonlySet<string> = new Set([
+  'unbekannteTypen',
+  'transaktionenSeitenGrenze',
+  'zeileOhneZeitstempel',
+  'zeileOhneZweig',
+  'kursfensterSchema',
+  'kursfensterAndereIsin',
+]);
+
+export function hinweisMelden(h: LaufHinweis): boolean {
+  return NEUE_VERSION.has(h.art);
+}
+
 /**
  * Stabil ueber Neuladen hinweg — dient als React-Key und zum Merken weggeklickter Hinweise.
  * Die Werte nur als FNV-1a-Pruefsumme: der Schluessel landet in `localStorage`, und dort
