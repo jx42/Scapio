@@ -23,10 +23,11 @@ Monat und hat einen Kaltstart.
 - **Worker (`demo-worker/`):** Workers Static Assets mit `run_worker_first`. Nur GET und HEAD,
   sonst 405. `/api/*` geht über `abzugPfad`; was nicht im Abzug liegt, wird 404, ohne dass
   ein Asset gelesen wird. Jede Antwort trägt `KOPFZEILEN` aus `server/kopfzeilen.ts`, also
-  dieselbe CSP wie lokal. Dafür kommen die Kopfzeilen ohne Node-Import aus einer eigenen Datei.
+  dieselbe CSP wie lokal (seit ADR-069 `DEMO_KOPFZEILEN`, ergänzt um Plausible). Dafür kommen die Kopfzeilen ohne Node-Import aus einer eigenen Datei.
 - **Daten:** ausschließlich synthetisch. Kein echtes Depot gelangt in den Abzug, denn der
   Export öffnet nie das Datenverzeichnis.
-- **INV-11:** gilt auch für die Demo. Cloudflare Web Analytics bleibt aus.
+- **INV-11:** gilt auch für die Demo. Cloudflare Web Analytics bleibt aus. Abgelöst durch
+  [ADR-069](ADR-069-plausible-in-der-demo.md): Die Demo misst mit Plausible.
 - **Deploy:** von Hand mit `wrangler deploy`. Im Repository liegt dafür kein
   Secret, und `wrangler` ist keine Abhängigkeit der Anwendung — seit
   [ADR-055](ADR-055-update-und-release-kette.md) eine von `demo-worker/` mit eigenem

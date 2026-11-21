@@ -9,7 +9,8 @@ Fastify auf 127.0.0.1, liefert API und gebaute Oberfläche aus demselben Prozess
 - Header und Origin/Host-Prüfung stehen im Plugin `sicherheit.ts`, die Header selbst in
   `kopfzeilen.ts`. Keine Route entscheidet selbst.
 - `style-src-attr 'unsafe-inline'` in der CSP ist ABSICHT: Recharts setzt style-Attribute.
-  Nicht entfernen, ohne die Charts zu prüfen. `script-src` bleibt unangetastet.
+  Nicht entfernen, ohne die Charts zu prüfen. `script-src` bleibt unangetastet; nur
+  `DEMO_KOPFZEILEN` für den Demo-Worker ergänzt Plausible [ADR-069].
 - Zwei `sha256-…` in `style-src` sind ebenfalls ABSICHT: `sonner` speist sein Grundgerüst
   per `<style>` ein, unabhängig davon ob `<Toaster>` gerendert wird. Begründung und
   Neuberechnung bei einem `sonner`-Update stehen bei `CSP` in `kopfzeilen.ts`.

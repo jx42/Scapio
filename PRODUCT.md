@@ -76,7 +76,7 @@ Begriffe stehen in [docs/GLOSSAR.md](docs/GLOSSAR.md). Zwei Zahlen dürfen nie v
 - Handeln, Sparpläne ändern, Orders vorbereiten. Scapio ist Beobachter, kein Akteur.
 - Ein zweites Depot, eine zweite Bank, eine Steuererklärung.
 - Prognosen, Empfehlungen, Bewertungen einzelner Wertpapiere, Benachrichtigungen.
-- Ein Konto, eine Cloud, Analytics, ein Hintergrunddienst, ein Selbst-Update.
+- Ein Konto, eine Cloud, Analytics, ein Hintergrunddienst, ein Selbst-Update. Nur die öffentliche Demo zählt Besuche ([ADR-069](docs/entscheidungen/ADR-069-plausible-in-der-demo.md)).
 - Eine Mobile-App. Die Seite funktioniert aber ab 375 px Breite.
 
 Die technischen Grenzen (Invarianten, Routen, Allowlist) stehen in [AGENTS.md](AGENTS.md).

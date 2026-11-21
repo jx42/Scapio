@@ -50,6 +50,21 @@ export const KOPFZEILEN: ReadonlyArray<readonly [string, string]> = [
 ];
 
 /**
+ * Nur die öffentliche Demo zählt Besuche mit Plausible: Skript und Ereignisse gehen an
+ * diesen einen Ursprung. Der lokale Server setzt `KOPFZEILEN`, nie diese. [ADR-069]
+ */
+export const PLAUSIBLE = 'https://plausible.io';
+
+export const DEMO_CSP = CSP.replace("script-src 'self'", `script-src 'self' ${PLAUSIBLE}`).replace(
+  "connect-src 'self'",
+  `connect-src 'self' ${PLAUSIBLE}`,
+);
+
+export const DEMO_KOPFZEILEN: ReadonlyArray<readonly [string, string]> = KOPFZEILEN.map(
+  ([name, wert]) => [name, name === 'Content-Security-Policy' ? DEMO_CSP : wert] as const,
+);
+
+/**
  * Die eine bewusste Ausnahme von `no-store`.
  *
  * Vite schreibt Bundle, Stylesheet und Schriften als `name-<hash>.ext` nach

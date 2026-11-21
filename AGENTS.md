@@ -80,7 +80,7 @@ Jede hat einen Test in `test/invarianten/`; begründet sind sie in den verlinkte
 | INV-08 | Genau **zwei** mutierende Routen: `POST /api/refresh` und `POST /api/mcp-anmeldung`, beide ohne Parameter. |
 | INV-09 | Jeder Import ist atomar und idempotent. |
 | INV-10 | Änderst du `core/`, erhöhe `KERN_VERSION`. |
-| INV-11 | Das Frontend lädt keine externe Ressource. |
+| INV-11 | Das Frontend lädt keine externe Ressource. Einzige Ausnahme: Plausible in der öffentlichen Demo ([ADR-069](docs/entscheidungen/ADR-069-plausible-in-der-demo.md)). |
 | INV-12 | Jede fremde Antwort geht durch zod, bevor sie die Datenbank berührt. |
 
 ## Was hier nie hinzukommt

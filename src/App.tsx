@@ -23,6 +23,7 @@ import { ArrowUpRight, ChartLine, RefreshCw } from 'lucide-react';
 import { de } from '@/i18n/de';
 import { api, istNetzFehler, schluessel } from '@/lib/api';
 import { istDemoModus } from '@/lib/demoModus';
+import { releaseJahr } from '@/lib/releaseJahr';
 import { tokenVorhanden } from '@/lib/token';
 import { linkVariants } from '@/lib/linkStil';
 import { cn } from '@/lib/utils';
@@ -72,6 +73,7 @@ function Seite() {
   // den Schluessel, kein zweiter Netzwerkzugriff.
   const lauf = useQuery({ queryKey: schluessel.lauf, queryFn: api.lauf });
   const stand = health.data?.stand ?? null;
+  const jahr = releaseJahr();
   const [anmeldungStatus, setAnmeldungStatus] = useState<McpAnmeldungStatus>({
     noetig: false,
     erstmals: false,
@@ -242,6 +244,35 @@ function Seite() {
             {de.seite.fussEzb}
           </a>
         </p>
+        {istDemoModus() && (
+          <p>
+            {jahr !== null && (
+              <>
+                {de.seite.fussUrheber(jahr)}
+                {de.satz.trenner}
+              </>
+            )}
+            <a
+              href="https://www.jroehm.com/legal-notice/" /* INV-AUSNAHME: feste Adresse, kein Wert — ADR-069 */
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={de.seite.fussImpressumOeffnen}
+              className={FUSS_LINK}
+            >
+              {de.seite.fussImpressum}
+            </a>
+            {de.satz.trenner}
+            <a
+              href="https://www.jroehm.com/privacy-policy/" /* INV-AUSNAHME: feste Adresse, kein Wert — ADR-069 */
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={de.seite.fussDatenschutzOeffnen}
+              className={FUSS_LINK}
+            >
+              {de.seite.fussDatenschutz}
+            </a>
+          </p>
+        )}
       </footer>
     </div>
   );
